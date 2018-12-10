@@ -112,3 +112,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Albert
+_external_data/
+History/
+Logs/
+Testing/
+
