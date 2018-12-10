@@ -1,9 +1,9 @@
 DESC,SOURCE_DSN,SOURCE_USER,SOURCE_PW,DEST_NAME,DEST_PATH,SCHEMA
-Kuali,KFS_PROD,gas,Potjiekos,Kfs.sqlite,W:/,KFS
-People,HR_PROD,IOBABJVR,potjiekos,People.sqlite,W:/,PEOPLE
-People conflict,HR_PROD,IOBABJVR,potjiekos,People_conflict.sqlite,W:/,CONFLICT
-People leave,HR_PROD,IOBABJVR,potjiekos,People_leave.sqlite,W:/,LEAVE
-People payroll,HR_PROD,IOBABJVR,potjiekos,People_payroll.sqlite,W:/,PAYROLL
-Vss,VSS_PROD,gas,potjiekos,Vss.sqlite,W:/,STUDENT
-Vss deferment,VSS_PROD,gas,potjiekos,Vss_deferment.sqlite,W:/,DEFERM
-Vss residence,VSS_PROD,gas,potjiekos,Vss_residence.sqlite,W:/,RESIDENCE
+Kuali,KFS_PROD,gas,Potjiekos,Kfs.sqlite,W:/Kfs/,KFS
+People,HR_PROD,IOBABJVR,potjiekos,People.sqlite,W:/People/,PEOPLE
+People conflict,HR_PROD,IOBABJVR,potjiekos,People_conflict.sqlite,W:/People_conflict/,CONFLICT
+People leave,HR_PROD,IOBABJVR,potjiekos,People_leave.sqlite,W:/People_leave/,LEAVE
+People payroll,HR_PROD,IOBABJVR,potjiekos,People_payroll.sqlite,W:/People_payroll/,PAYROLL
+Vss,VSS_PROD,gas,potjiekos,Vss.sqlite,W:/Vss/,STUDENT
+Vss deferment,VSS_PROD,gas,potjiekos,Vss_deferment.sqlite,W:/Vss_deferment/,DEFERM
+Vss residence,VSS_PROD,gas,potjiekos,Vss_residence.sqlite,W:/Vss_residence/,RESIDENCE
