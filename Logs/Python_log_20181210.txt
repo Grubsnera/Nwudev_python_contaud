@@ -397,3 +397,252 @@ COMPLETED: A000_RUN_ALL
 -----------------------
 04:41:27 DEFINITION: Send mail python_log
 04:41:33 MAIL SUCCESS: 21162395@nwu.ac.za (Albert)
+----------------
+2018-12-10 15:43
+SCRIPT: A001_ORACLE_TO_SQLITE_RUN
+---------------------------------
+----------------
+2018-12-10 15:43
+SCRIPT: A001_ORACLE_TO_SQLITE
+-----------------------------
+OPEN DATABASE: Kuali
+OPEN DATABASE: People
+OPEN DATABASE: People conflict
+OPEN DATABASE: People leave
+OPEN DATABASE: People payroll
+OPEN DATABASE: Vss
+OPEN DATABASE: Vss deferment
+OPEN DATABASE: Vss residence
+--------------------------------
+COMPLETED: A001_ORACLE_TO_SQLITE
+----------------
+2018-12-10 15:43
+COMPLETED: A001_ORACLE_TO_SQLITE_RUN
+------------------------------------
+----------------
+2018-12-10 15:43
+SCRIPT: A001_ORACLE_TO_SQLITE_RUN
+---------------------------------
+----------------
+2018-12-10 15:43
+SCRIPT: A001_ORACLE_TO_SQLITE
+-----------------------------
+OPEN DATABASE: Kuali
+OPEN DATABASE: People
+OPEN DATABASE: People conflict
+OPEN DATABASE: People leave
+OPEN DATABASE: People payroll
+OPEN DATABASE: Vss
+OPEN DATABASE: Vss deferment
+OPEN DATABASE: Vss residence
+--------------------------------
+COMPLETED: A001_ORACLE_TO_SQLITE
+----------------
+2018-12-10 15:43
+COMPLETED: A001_ORACLE_TO_SQLITE_RUN
+------------------------------------
+----------------
+2018-12-10 15:52
+SCRIPT: A001_ORACLE_TO_SQLITE_RUN
+---------------------------------
+----------------
+2018-12-10 15:52
+SCRIPT: A001_ORACLE_TO_SQLITE
+-----------------------------
+OPEN DATABASE: Kuali
+OPEN DATABASE: People
+OPEN DATABASE: People conflict
+OPEN DATABASE: People leave
+OPEN DATABASE: People payroll
+OPEN DATABASE: Vss
+OPEN DATABASE: Vss deferment
+OPEN DATABASE: Vss residence
+--------------------------------
+COMPLETED: A001_ORACLE_TO_SQLITE
+----------------
+2018-12-10 15:52
+COMPLETED: A001_ORACLE_TO_SQLITE_RUN
+------------------------------------
+----------------
+2018-12-10 15:54
+SCRIPT: A001_ORACLE_TO_SQLITE_RUN
+---------------------------------
+----------------
+2018-12-10 15:54
+SCRIPT: A001_ORACLE_TO_SQLITE
+-----------------------------
+OPEN DATABASE: Kuali
+OPEN DATABASE: People
+OPEN DATABASE: People conflict
+OPEN DATABASE: People leave
+OPEN DATABASE: People payroll
+15:54:28 ERROR: OperationalError
+15:54:28 ERROR: unable to open database file
+----------------
+2018-12-10 15:54
+COMPLETED: A001_ORACLE_TO_SQLITE_RUN
+------------------------------------
+----------------
+2018-12-10 15:54
+SCRIPT: A001_ORACLE_TO_SQLITE_RUN
+---------------------------------
+----------------
+2018-12-10 15:54
+SCRIPT: A001_ORACLE_TO_SQLITE
+-----------------------------
+OPEN DATABASE: Kuali
+OPEN DATABASE: People
+OPEN DATABASE: People conflict
+OPEN DATABASE: People leave
+OPEN DATABASE: People payroll
+15:54:38 ERROR: OperationalError
+15:54:38 ERROR: unable to open database file
+----------------
+2018-12-10 15:54
+COMPLETED: A001_ORACLE_TO_SQLITE_RUN
+------------------------------------
+----------------
+2018-12-10 15:59
+SCRIPT: A001_ORACLE_TO_SQLITE_RUN
+---------------------------------
+----------------
+2018-12-10 15:59
+SCRIPT: A001_ORACLE_TO_SQLITE
+-----------------------------
+OPEN DATABASE: Kuali
+OPEN DATABASE: People
+OPEN DATABASE: People conflict
+OPEN DATABASE: People leave
+OPEN DATABASE: People payroll
+15:59:58 ERROR: OperationalError
+15:59:58 ERROR: unable to open database file
+----------------
+2018-12-10 15:59
+COMPLETED: A001_ORACLE_TO_SQLITE_RUN
+------------------------------------
+----------------
+2018-12-10 16:03
+SCRIPT: A001_ORACLE_TO_SQLITE_RUN
+---------------------------------
+----------------
+2018-12-10 16:03
+SCRIPT: A001_ORACLE_TO_SQLITE
+-----------------------------
+OPEN DATABASE: Kuali
+OPEN DATABASE: People
+OPEN DATABASE: People conflict
+OPEN DATABASE: People leave
+OPEN DATABASE: People payroll
+16:03:37 ERROR: OperationalError
+16:03:37 ERROR: unable to open database file
+----------------
+2018-12-10 16:03
+COMPLETED: A001_ORACLE_TO_SQLITE_RUN
+------------------------------------
+----------------
+2018-12-10 16:09
+SCRIPT: A001_ORACLE_TO_SQLITE_RUN
+---------------------------------
+----------------
+2018-12-10 16:09
+SCRIPT: A001_ORACLE_TO_SQLITE
+-----------------------------
+OPEN DATABASE: Kuali
+16:09:16 ERROR: IndexError
+16:09:16 ERROR: list index out of range
+----------------
+2018-12-10 16:09
+COMPLETED: A001_ORACLE_TO_SQLITE_RUN
+------------------------------------
+----------------
+2018-12-10 16:10
+SCRIPT: A001_ORACLE_TO_SQLITE_RUN
+---------------------------------
+----------------
+2018-12-10 16:10
+SCRIPT: A001_ORACLE_TO_SQLITE
+-----------------------------
+OPEN DATABASE: Kuali
+OPEN DATABASE: People
+OPEN DATABASE: People conflict
+16:10:52 WRITE TABLE: XXNWU_COI_DECLARATIONS()
+16:10:55 WRITE TABLE: XXNWU_COI_INTERESTS()
+16:10:57 WRITE TABLE: XXNWU_REST_2018_OE_NAMES()
+16:10:57 WRITE TABLE: XXNWU_REST_2018_ORGS()
+OPEN DATABASE: People leave
+OPEN DATABASE: People payroll
+16:10:58 ERROR: OperationalError
+16:10:58 ERROR: unable to open database file
+----------------
+2018-12-10 16:10
+COMPLETED: A001_ORACLE_TO_SQLITE_RUN
+------------------------------------
+----------------
+2018-12-10 16:14
+SCRIPT: A001_ORACLE_TO_SQLITE_RUN
+---------------------------------
+----------------
+2018-12-10 16:14
+SCRIPT: A001_ORACLE_TO_SQLITE
+-----------------------------
+OPEN DATABASE: Kuali
+OPEN DATABASE: People
+OPEN DATABASE: People conflict
+16:14:41 WRITE TABLE: XXNWU_COI_DECLARATIONS()
+16:14:44 WRITE TABLE: XXNWU_COI_INTERESTS()
+16:14:46 WRITE TABLE: XXNWU_REST_2018_OE_NAMES()
+16:14:46 WRITE TABLE: XXNWU_REST_2018_ORGS()
+OPEN DATABASE: People leave
+OPEN DATABASE: People payroll
+16:14:46 ERROR: OperationalError
+16:14:46 ERROR: unable to open database file
+----------------
+2018-12-10 16:14
+COMPLETED: A001_ORACLE_TO_SQLITE_RUN
+------------------------------------
+----------------
+2018-12-10 16:18
+SCRIPT: A001_ORACLE_TO_SQLITE_RUN
+---------------------------------
+----------------
+2018-12-10 16:18
+SCRIPT: A001_ORACLE_TO_SQLITE
+-----------------------------
+OPEN DATABASE: Kuali
+OPEN DATABASE: People
+OPEN DATABASE: People conflict
+16:18:53 WRITE TABLE: XXNWU_COI_DECLARATIONS()
+16:18:56 WRITE TABLE: XXNWU_COI_INTERESTS()
+16:18:58 WRITE TABLE: XXNWU_REST_2018_OE_NAMES()
+16:18:58 WRITE TABLE: XXNWU_REST_2018_ORGS()
+OPEN DATABASE: People leave
+OPEN DATABASE: People payroll
+OPEN DATABASE: Vss
+OPEN DATABASE: Vss deferment
+OPEN DATABASE: Vss residence
+--------------------------------
+COMPLETED: A001_ORACLE_TO_SQLITE
+----------------
+2018-12-10 16:18
+COMPLETED: A001_ORACLE_TO_SQLITE_RUN
+------------------------------------
+----------------
+2018-12-10 16:22
+SCRIPT: A000_RUN_ALL
+--------------------
+----------------
+2018-12-10 16:22
+SCRIPT: A001_ORACLE_TO_SQLITE
+-----------------------------
+OPEN DATABASE: Kuali
+16:22:51 WRITE TABLE: CA_ACCOUNT_T()
+16:22:58 WRITE TABLE: CA_ACCOUNT_TYPE_T()
+16:22:59 WRITE TABLE: CA_BALANCE_TYPE_T()
+16:22:59 WRITE TABLE: CA_CHART_T()
+16:22:59 WRITE TABLE: CA_OBJ_TYPE_T()
+16:22:59 WRITE TABLE: CA_OBJECT_CODE_T()
+16:23:13 WRITE TABLE: CA_ORG_T()
+16:23:14 WRITE TABLE: CA_ORG_TYPE_T()
+16:23:14 WRITE TABLE: CA_SOF_T()
+16:23:14 WRITE TABLE: FS_ORIGIN_CODE_T()
+16:23:15 WRITE TABLE: GL_ENTRY_T(GL_ENTRY_T_CURR)
