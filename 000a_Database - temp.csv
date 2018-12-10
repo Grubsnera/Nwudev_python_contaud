@@ -1,0 +1,5 @@
+DESC,SOURCE_DSN,SOURCE_USER,SOURCE_PW,DEST_NAME,DEST_PATH,SCHEMA
+Kuali,Kfs,gas,Potjiekos,Kfs.sqlite,W:/,KFS
+Vss,Vss,gas,potjiekos,Vss.sqlite,W:/,STUDENT
+Vss deferment,Vss,gas,potjiekos,Vss_deferment.sqlite,W:/,DEFERM
+Vss residence,Vss,gas,potjiekos,Vss_residence.sqlite,W:/,RESIDENCE

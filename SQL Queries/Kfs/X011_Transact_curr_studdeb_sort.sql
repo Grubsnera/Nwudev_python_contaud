@@ -1,0 +1,38 @@
+﻿SELECT
+  X010_Studdeb_tranlist.CAMPUS,
+  X010_Studdeb_tranlist.CAMPUS_VSS,
+  X010_Studdeb_tranlist.UNIV_FISCAL_YR AS YEAR,
+  X010_Studdeb_tranlist.UNIV_FISCAL_PRD_CD AS MONTH,
+  X010_Studdeb_tranlist.CALC_COST_STRING AS COST_STRING,
+  X010_Studdeb_tranlist.TRANSACTION_DT AS DATE_TRAN,
+  X010_Studdeb_tranlist.FDOC_NBR AS EDOC,
+  X010_Studdeb_tranlist.CALC_AMOUNT AS AMOUNT,
+  X010_Studdeb_tranlist.TRN_LDGR_ENTR_DESC AS DESC_FULL,
+  X010_Studdeb_tranlist.DESCRIPTION AS DESC_VSS,
+  X010_Studdeb_tranlist.BURSARY_CODE AS BURSARY,
+  X010_Studdeb_tranlist.STUDENT,
+  X010_Studdeb_tranlist.FS_ORIGIN_CD AS ORIGIN_CODE,
+  X010_Studdeb_tranlist.FS_DATABASE_DESC AS ORIGIN,
+  X010_Studdeb_tranlist.ORG_NM AS ORG_NAME,
+  X010_Studdeb_tranlist.ACCOUNT_NM AS ACC_NAME,
+  X010_Studdeb_tranlist.FIN_OBJ_CD_NM AS OBJ_NAME,
+  X010_Studdeb_tranlist.ACCT_TYP_NM AS ACC_TYPE,
+  X010_Studdeb_tranlist.TRN_POST_DT AS DATE_POST,
+  X010_Studdeb_tranlist."TIMESTAMP" AS TIME_POST,
+  X010_Studdeb_tranlist.FIN_COA_CD AS ORG,
+  X010_Studdeb_tranlist.ACCOUNT_NBR AS ACC,
+  X010_Studdeb_tranlist.FIN_OBJECT_CD AS OBJ,
+  X010_Studdeb_tranlist.FIN_BALANCE_TYP_CD AS BAL_TYPE,
+  X010_Studdeb_tranlist.FIN_OBJ_TYP_CD AS OBJ_TYPE,
+  X010_Studdeb_tranlist.FDOC_TYP_CD AS DOC_TYPE,
+  X010_Studdeb_tranlist.TRN_ENTR_SEQ_NBR,
+  X010_Studdeb_tranlist.FDOC_REF_TYP_CD,
+  X010_Studdeb_tranlist.FS_REF_ORIGIN_CD,
+  X010_Studdeb_tranlist.FDOC_REF_NBR,
+  X010_Studdeb_tranlist.FDOC_REVERSAL_DT,
+  X010_Studdeb_tranlist.TRN_ENCUM_UPDT_CD
+FROM
+  X010_Studdeb_tranlist
+ORDER BY
+  X010_Studdeb_tranlist.CAMPUS,
+  TIME_POST

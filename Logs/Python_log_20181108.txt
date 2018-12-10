@@ -1,0 +1,140 @@
+----------------
+2018-11-08 16:01
+SCRIPT: WEB_IA_NWU
+------------------
+16:01:06 OPEN DATABASE: Web_ia_nwu
+16:01:06 DROPPED TABLE: FINDING(ia_finding)
+----------------
+2018-11-08 16:01
+SCRIPT: WEB_IA_NWU
+------------------
+16:01:30 OPEN DATABASE: Web_ia_nwu
+16:01:30 DROPPED TABLE: FINDING(ia_finding)
+16:01:31 CREATED TABLE: USER(ia_finding)
+16:01:31 CREATED TABLE: PEOPLE(ia_people)
+16:01:31 DROPPED TABLE: USER(ia_user)
+16:01:31 CREATED TABLE: USER(ia_user)
+16:01:31 INSERTED DATA: USER(ia_user)
+16:01:31 CREATED TABLE: ASSIGNMENT(ia_assignment)
+16:01:31 DROPPED TABLE: ASSIGNMENT_CATEGORY(ia_assignment_category)
+16:01:31 CREATED TABLE: ASSIGNMENT_CATEGORY(ia_assignment_category)
+16:01:31 INSERTED DATA: ASSIGNMENT_CATEGORY(ia_assignment_category)
+16:01:31 DROPPED TABLE: ASSIGNMENT_STATUS(ia_assignment_type)
+16:01:31 CREATED TABLE: ASSIGNMENT_STATUS(ia_assignment_type)
+16:01:31 INSERTED DATA: ASSIGNMENT_STATUS(ia_assignment_type)
+16:01:31 DROPPED TABLE: ASSIGNMENT_STATUS(ia_assignment_status)
+16:01:31 CREATED TABLE: ASSIGNMENT_STATUS(ia_assignment_status)
+16:01:31 INSERTED DATA: ASSIGNMENT_STATUS(ia_assignment_status)
+16:01:31 DROPPED TABLE: ASSIGNMENT_ORIGIN(ia_assignment_origin)
+16:01:31 CREATED TABLE: ASSIGNMENT_ORIGIN(ia_assignment_origin)
+16:01:31 INSERTED DATA: ASSIGNMENT_ORIGIN(ia_assignment_origin)
+16:01:31 DROPPED TABLE: ASSIGNMENT_SITE(ia_assignment_site)
+16:01:31 CREATED TABLE: ASSIGNMENT_SITE(ia_assignment_site)
+16:01:31 INSERTED DATA: ASSIGNMENT_SITE(ia_assignment_site)
+16:01:31 DROPPED TABLE: ASSIGNMENT_REPORT(ia_assignment_report)
+16:01:31 CREATED TABLE: ASSIGNMENT_REPORT(ia_assignment_report)
+16:01:31 INSERTED DATA: ASSIGNMENT_REPORT(ia_assignment_report)
+16:01:31 DROPPED TABLE: FINDING_RATE(ia_finding_rate)
+16:01:31 CREATED TABLE: FINDING_RATE(ia_finding_rate)
+16:01:31 INSERTED DATA: FINDING_RATE(ia_finding_rate)
+16:01:31 DROPPED TABLE: FINDING_STATUS(ia_finding_status)
+16:01:31 CREATED TABLE: FINDING_STATUS(ia_finding_status)
+16:01:31 INSERTED DATA: FINDING_STATUS(ia_finding_status)
+---------------------
+COMPLETED: WEB_IA_NWU
+----------------
+2018-11-08 16:03
+SCRIPT: FABRIK_INSERT_01_GROUP
+------------------------------
+16:03:11 OPEN DATABASE: Web_ia_joomla
+16:03:11 ADD DATA: Web_ia_joomla.ianwu_fabrik_groups:Finding
+---------------------------------
+COMPLETED: FABRIK_INSERT_01_GROUP
+----------------
+2018-11-08 16:04
+SCRIPT: FABRIK_INSERT_01_GROUP
+------------------------------
+16:04:04 OPEN DATABASE: Web_ia_joomla
+16:04:04 ADD DATA: Web_ia_joomla.ianwu_fabrik_groups:Finding 1st respondent
+---------------------------------
+COMPLETED: FABRIK_INSERT_01_GROUP
+----------------
+2018-11-08 16:04
+SCRIPT: FABRIK_INSERT_01_GROUP
+------------------------------
+16:04:35 OPEN DATABASE: Web_ia_joomla
+16:04:35 ADD DATA: Web_ia_joomla.ianwu_fabrik_groups:Finding text detail
+---------------------------------
+COMPLETED: FABRIK_INSERT_01_GROUP
+----------------
+2018-11-08 16:05
+SCRIPT: FABRIK_INSERT_02_FORM
+-----------------------------
+16:05:24 OPEN DATABASE: Web_ia_joomla
+16:05:24 ADD DATA: Web_ia_joomla.ianwu_fabrik_forms:Finding
+--------------------------------
+COMPLETED: FABRIK_INSERT_02_FORM
+----------------
+2018-11-08 16:06
+SCRIPT: FABRIK_INSERT_03_FORMGROUP
+----------------------------------
+16:06:04 OPEN DATABASE: Web_ia_joomla
+16:06:04 ADD DATA: Web_ia_joomla.ianwu_fabrik_formgroup:FormGroup
+-------------------------------------
+COMPLETED: FABRIK_INSERT_03_FORMGROUP
+----------------
+2018-11-08 16:06
+SCRIPT: FABRIK_INSERT_03_FORMGROUP
+----------------------------------
+16:06:14 OPEN DATABASE: Web_ia_joomla
+16:06:14 ADD DATA: Web_ia_joomla.ianwu_fabrik_formgroup:FormGroup
+-------------------------------------
+COMPLETED: FABRIK_INSERT_03_FORMGROUP
+----------------
+2018-11-08 16:06
+SCRIPT: FABRIK_INSERT_03_FORMGROUP
+----------------------------------
+16:06:23 OPEN DATABASE: Web_ia_joomla
+16:06:23 ADD DATA: Web_ia_joomla.ianwu_fabrik_formgroup:FormGroup
+-------------------------------------
+COMPLETED: FABRIK_INSERT_03_FORMGROUP
+----------------
+2018-11-08 16:07
+SCRIPT: FABRIK_INSERT_04_LISTS
+------------------------------
+16:07:08 OPEN DATABASE: Web_ia_joomla
+16:07:08 ADD DATA: Web_ia_joomla.ianwu_fabrik_lists:Findings
+---------------------------------
+COMPLETED: FABRIK_INSERT_04_LISTS
+----------------
+2018-11-08 16:07
+SCRIPT: FABRIK_INSERT_05_ELEMENT_INTERNALID
+-------------------------------------------
+16:07:53 OPEN DATABASE: Web_ia_joomla
+16:07:53 ADD DATA: Web_ia_joomla.ianwu_fabrik_elements:ia_find_auto
+----------------------------------------------
+COMPLETED: FABRIK_INSERT_05_ELEMENT_INTERNALID
+----------------
+2018-11-08 16:09
+SCRIPT: FABRIK_INSERT_05_ELEMENT_FIELD_TEXT
+-------------------------------------------
+16:09:15 OPEN DATABASE: Web_ia_joomla
+16:09:15 ADD DATA: Web_ia_joomla.ianwu_fabrik_elements:Finding *
+----------------------------------------------
+COMPLETED: FABRIK_INSERT_05_ELEMENT_FIELD_TEXT
+----------------
+2018-11-08 16:11
+SCRIPT: FABRIK_INSERT_05_ELEMENT_RADIOBUTTON
+--------------------------------------------
+16:11:02 OPEN DATABASE: Web_ia_joomla
+16:11:02 ADD DATA: Web_ia_joomla.ianwu_fabrik_elements:Send mail
+----------------------------------------------
+COMPLETED: FABRIK_INSERT_05_ELEMENT_RADIOBUTTON
+----------------
+2018-11-08 16:11
+SCRIPT: FABRIK_INSERT_05_ELEMENT_TEXTAREA_255
+---------------------------------------------
+16:11:48 OPEN DATABASE: Web_ia_joomla
+16:11:48 ADD DATA: Web_ia_joomla.ianwu_fabrik_elements:Description
+------------------------------------------------
+COMPLETED: FABRIK_INSERT_05_ELEMENT_TEXTAREA_255

@@ -1,0 +1,1033 @@
+----------------
+2018-07-05 00:57
+SCRIPT: A000_RUN_ALL
+--------------------
+----------------
+2018-07-05 00:57
+SCRIPT: A001_ORACLE_TO_SQLITE
+-----------------------------
+00:57:26 OPEN DATABASE: Kuali
+00:57:26 WRITE TABLE: CA_ACCOUNT_T()
+00:57:35 WRITE TABLE: CA_ACCOUNT_TYPE_T()
+00:57:35 WRITE TABLE: CA_BALANCE_TYPE_T()
+00:57:36 WRITE TABLE: CA_CHART_T()
+00:57:36 WRITE TABLE: CA_OBJ_TYPE_T()
+00:57:36 WRITE TABLE: CA_OBJECT_CODE_T()
+00:57:51 WRITE TABLE: CA_ORG_T()
+00:57:52 WRITE TABLE: CA_ORG_TYPE_T()
+00:57:52 WRITE TABLE: CA_SOF_T()
+00:57:53 WRITE TABLE: FS_ORIGIN_CODE_T()
+00:57:53 WRITE TABLE: GL_ENTRY_T(GL_ENTRY_T_CURR)
+01:01:05 ERROR: OperationalError
+----------------
+2018-07-05 01:40
+SCRIPT: A000_RUN_ALL
+--------------------
+----------------
+2018-07-05 01:40
+SCRIPT: A001_ORACLE_TO_SQLITE
+-----------------------------
+01:40:43 OPEN DATABASE: Kuali
+01:40:43 WRITE TABLE: CA_ACCOUNT_T()
+01:40:52 WRITE TABLE: CA_ACCOUNT_TYPE_T()
+01:40:52 WRITE TABLE: CA_BALANCE_TYPE_T()
+01:40:53 WRITE TABLE: CA_CHART_T()
+01:40:53 WRITE TABLE: CA_OBJ_TYPE_T()
+01:40:53 WRITE TABLE: CA_OBJECT_CODE_T()
+01:41:09 WRITE TABLE: CA_ORG_T()
+01:41:10 WRITE TABLE: CA_ORG_TYPE_T()
+01:41:10 WRITE TABLE: CA_SOF_T()
+01:41:11 WRITE TABLE: FS_ORIGIN_CODE_T()
+01:41:11 WRITE TABLE: GL_ENTRY_T(GL_ENTRY_T_CURR)
+01:55:58 WRITE TABLE: SH_ACCT_PERIOD_T()
+01:55:59 OPEN DATABASE: People
+01:55:59 WRITE TABLE: HR_LOOKUPS()
+01:56:51 WRITE TABLE: HR_ALL_ORGANIZATION_UNITS()
+01:56:53 WRITE TABLE: HR_ALL_POSITIONS_F()
+01:59:11 WRITE TABLE: HR_LOCATIONS_ALL()
+01:59:12 WRITE TABLE: HR_ORGANIZATION_INFORMATION()
+01:59:17 WRITE TABLE: PAY_PEOPLE_GROUPS()
+01:59:17 WRITE TABLE: PER_ADDRESSES()
+02:00:12 WRITE TABLE: PER_ALL_ASSIGNMENTS_F()
+02:01:27 WRITE TABLE: PER_ALL_PEOPLE_F()
+02:06:24 WRITE TABLE: PER_ALL_POSITIONS()
+02:06:56 WRITE TABLE: PER_GRADE_DEFINITIONS()
+02:06:57 WRITE TABLE: PER_GRADES()
+02:06:57 WRITE TABLE: PER_JOB_DEFINITIONS()
+02:06:59 WRITE TABLE: PER_JOBS()
+02:07:00 WRITE TABLE: PER_PERIODS_OF_SERVICE()
+02:07:53 WRITE TABLE: PER_PERSON_TYPES()
+02:07:53 WRITE TABLE: PER_PHONES()
+02:08:21 WRITE TABLE: PER_POSITION_DEFINITIONS()
+02:08:36 WRITE TABLE: PER_POSITION_INFO_TYPES()
+02:08:36 WRITE TABLE: PER_POSITION_STRUCTURES()
+02:08:37 WRITE TABLE: PER_VALID_GRADES()
+02:09:01 OPEN DATABASE: People conflict
+02:09:02 WRITE TABLE: XXNWU_COI_DECLARATIONS()
+02:09:04 WRITE TABLE: XXNWU_COI_INTERESTS()
+02:09:05 OPEN DATABASE: People leave
+02:09:05 WRITE TABLE: PER_ABS_ATTENDANCE_REASONS()
+02:09:06 WRITE TABLE: PER_ABSENCE_ATTENDANCE_TYPES()
+02:09:06 WRITE TABLE: PER_ABSENCE_ATTENDANCES()
+02:11:54 OPEN DATABASE: People payroll
+02:11:54 OPEN DATABASE: Vss
+02:11:55 WRITE TABLE: CODEDESCRIPTION()
+02:11:59 WRITE TABLE: COURSE()
+02:12:00 WRITE TABLE: COURSELEVEL()
+02:12:01 WRITE TABLE: FIELDOFSTUDY()
+02:12:03 WRITE TABLE: FINAID()
+02:12:04 WRITE TABLE: FINAIDNAME()
+02:12:05 WRITE TABLE: FINAIDSITE()
+02:12:07 WRITE TABLE: LECTURERQUALIFICATION()
+02:12:07 WRITE TABLE: MODULE()
+02:12:14 WRITE TABLE: MODULEENROLSTUD(MODULEENROLSTUD_CURR)
+02:17:45 WRITE TABLE: MODULEPRESENTINGOU()
+02:18:43 WRITE TABLE: ORGUNIT()
+02:18:44 WRITE TABLE: ORGUNITINSTANCE()
+02:18:45 WRITE TABLE: ORGUNITNAME()
+02:18:47 WRITE TABLE: PARTY()
+02:31:12 WRITE TABLE: PARTYEXTERNALREFERENCE()
+02:35:45 WRITE TABLE: PARTYNAME()
+02:36:15 WRITE TABLE: PARTYPINPASSWORD()
+02:38:23 WRITE TABLE: PARTYROLE()
+02:42:29 WRITE TABLE: PRESENTOUENROLPRESENTCAT()
+02:44:41 WRITE TABLE: PROGRAM()
+02:44:58 WRITE TABLE: QUALENROLPRESENTATION()
+02:45:01 WRITE TABLE: QUALIFICATION()
+02:45:02 WRITE TABLE: QUALIFICATIONLEVEL()
+02:45:04 WRITE TABLE: QUALLEVELADMINISTRATION()
+02:45:05 WRITE TABLE: QUALLEVELENROLSTUD(QUALLEVELENROLSTUD_CURR)
+02:45:43 WRITE TABLE: QUALLEVELPRESENTINGOU()
+02:45:51 WRITE TABLE: STUDACC()
+02:50:37 WRITE TABLE: STUDENTSITE()
+02:53:46 WRITE TABLE: STUDQUALFOSRESULT()
+02:57:41 WRITE TABLE: STUDYTRANS(STUDYTRANS_CURR)
+03:12:00 WRITE TABLE: SYSTEMUSER()
+03:12:02 WRITE TABLE: TRANSINST()
+03:17:54 WRITE TABLE: TRANSMASTER()
+03:17:56 WRITE TABLE: TRANSMASTERDESC()
+03:17:59 OPEN DATABASE: Vss deferment
+03:17:59 WRITE TABLE: ACCDEFERMENT()
+03:21:08 OPEN DATABASE: Vss residence
+03:21:09 WRITE TABLE: ACCOMMRESIDENCELOG()
+03:21:50 WRITE TABLE: ACCOMMRESIDENCY()
+03:22:53 WRITE TABLE: RESIDENCE()
+03:22:54 WRITE TABLE: RESIDENCELOG()
+03:24:22 WRITE TABLE: RESIDENCENAME()
+03:24:22 WRITE TABLE: TRANSINST()
+--------------------------------
+COMPLETED: A001_ORACLE_TO_SQLITE
+----------------
+2018-07-05 03:24
+SCRIPT: B001_PEOPLE_LISTS
+-------------------------
+03:24:26 OPEN DATABASE: PEOPLE.SQLITE
+03:24:26 IMPORT TABLE: X000_OWN_HR_LOOKUPS
+03:24:26 BUILD TABLE: X000_GRADES
+03:24:27 ADD COLUMNS: GRADE_NAME
+03:24:29 BUILD TABLE: X000_POSITIONS
+03:24:31 ADD COLUMNS: ACAD_SUPP
+03:24:31 BUILD TABLE: X000_JOBS
+03:24:32 ADD COLUMNS: JOB_SEGMENT_NAME
+03:24:32 BUILD TABLE: X000_ORGANIZATION
+03:24:32 BUILD VIEW: X000_PER_PERIODS_OF_SERVICE
+03:24:32 BUILD VIEW: X000_PER_ALL_ASSIGNMENTS
+03:24:33 BUILD VIEW: X000_PER_ALL_PEOPLE
+03:24:33 BUILD VIEW: X000_COUNT_ASSIGNMENTS
+03:24:33 BUILD VIEW: X000_COUNT_PEOPLE
+03:24:33 BUILD VIEW: X000_COUNT_PERIODOS
+03:24:33 BUILD VIEW: X000_COUNTS
+03:24:44 BUILD TABLE: X000_ADDRESSES
+03:24:52 ADD COLUMN: COUNTRY_NAME
+03:25:02 ADD COLUMN: ADDRESS_STYLE
+03:25:08 ADD COLUMN: ADDRESS_SARS
+03:25:15 ADD COLUMN: ADDRESS_HOME
+03:25:21 ADD COLUMN: ADDRESS_POST
+03:25:28 ADD COLUMN: ADDRESS_OTHE
+03:25:28 BUILD VIEW: X000_ADDRESS_SARS
+03:25:28 BUILD VIEW: X000_ADDRESS_POST
+03:25:28 BUILD VIEW: X000_ADDRESS_HOME
+03:25:28 BUILD VIEW: X000_ADDRESS_OTHE
+03:25:29 BUILD VIEW: X000_PHONE_MOBI_CURR
+03:25:29 BUILD VIEW: X000_PHONE_MOBI_CURR_LIST
+03:25:29 BUILD VIEW: X000_PHONE_WORK_CURR
+03:25:29 BUILD VIEW: X000_PHONE_WORK_CURR_LIST
+03:25:29 BUILD VIEW: X000_PHONE_HOME_CURR
+03:25:29 BUILD VIEW: X000_PHONE_HOME_CURR_LIST
+03:25:35 BUILD TABLE: X001_ASSIGNMENT_CURR_01
+03:25:37 ADD COLUMN: DATE_ASS_LOOKUP
+03:25:40 ADD COLUMN: ASS_ACTIVE
+03:25:43 ADD COLUMN: DATE_EMP_LOOKUP
+03:25:45 ADD COLUMN: EMP_ACTIVE
+03:26:29 BUILD TABLE: X001_ASSIGNMENT_CURR
+03:26:31 EXPORT DATA: R:/People/2018/Assignment_001_all_2018
+03:26:35 BUILD TABLE: X001_ASSIGNMENT_MONT_01
+03:26:37 ADD COLUMN: DATE_ASS_LOOKUP
+03:26:39 ADD COLUMN: ASS_ACTIVE
+03:26:40 ADD COLUMN: DATE_EMP_LOOKUP
+03:26:42 ADD COLUMN: EMP_ACTIVE
+03:27:20 BUILD TABLE: X001_ASSIGNMENT_MONT
+03:27:22 EXPORT DATA: R:/People/2018/Assignment_001_month_06
+03:27:47 BUILD TABLE: X002_PEOPLE_CURR
+03:27:48 ADD COLUMN: INITIALS
+03:27:49 ADD COLUMN: NAME_LIST
+03:27:50 ADD COLUMN: NAME_ADDR
+03:27:51 ADD COLUMN: POSITION_NAME
+03:27:52 EXPORT DATA: R:/People/2018/People_002_all_2018
+03:28:18 BUILD TABLE: X002_PEOPLE_MONT
+03:28:19 ADD COLUMN: INITIALS
+03:28:20 ADD COLUMN: NAME_LIST
+03:28:22 ADD COLUMN: NAME_ADDR
+03:28:23 ADD COLUMN: POSITION_NAME
+03:28:25 EXPORT DATA: R:/People/2018/People_002_month_06
+03:28:26 BUILD TABLE: X003_PEOPLE_SUMM
+03:28:27 EXPORT DATA: R:/People/2018/People_003_summary_07
+03:28:27 DEFINITION: Send mail hr_people_summary
+03:28:28 BUILD TABLE: X003_PEOPLE_ORGA
+03:28:30 EXPORT DATA: R:/People/2018/People_003_organogram_07
+03:28:30 DEFINITION: Send mail hr_people_organogram
+03:28:30 BUILD TABLE: X003_PEOPLE_BIRT
+03:28:30 EXPORT DATA: R:/People/2018/People_003_birthday_
+03:28:30 DEFINITION: Send mail hr_people_birthday
+03:28:31 OPEN DATABASE: PEOPLE_LEAVE.SQLITE
+03:28:31 ATTACH DATABASE: PEOPLE.SQLITE
+03:28:52 BUILD TABLE: X100_PER_ABSENCE_ATTENDANCES
+03:28:53 BUILD TABLE:  X101_PER_ABS_ATTENDANCE_REASONS
+03:28:55 BUILD TABLE:  X102_PER_ABSENCE_ATTENDANCE_TYPES
+----------------------------
+COMPLETED: B001_PEOPLE_LISTS
+----------------
+2018-07-05 03:28
+SCRIPT: B002_KFS_LISTS
+----------------------
+03:28:55 OPEN DATABASE: KFS
+03:30:24 CALC COLUMNS: Combined cost string
+03:31:49 CALC COLUMNS: Amount
+03:31:50 BUILD TABLE: Organization list
+03:31:50 BUILD TABLE: Organization structure
+03:31:51 BUILD TABLE: Account list
+03:31:51 BUILD VIEW: Current yr transaction list
+03:31:52 BUILD VIEW: Previous yr transaction list
+-------------------------
+COMPLETED: B002_KFS_LISTS
+----------------
+2018-07-05 03:31
+SCRIPT: B003_VSS_LISTS
+----------------------
+03:31:52 OPEN DATABASE: VSS.SQLITE
+03:31:52 IMPORT TABLE: X000_OWN_LOOKUPS
+03:31:53 BUILD TABLE: X000_Codedescription
+03:31:53 BUILD VIEW: X000_Orgunitname
+03:31:53 BUILD VIEW: X000_Orgunit
+03:31:54 BUILD TABLE: X000_Orgunitinstance
+03:31:58 BUILD TABLE: X000_Present_enrol_category
+03:31:58 BUILD VIEW: X000_Student_qual_result
+03:31:59 BUILD VIEW: X001aa_Qualification
+03:31:59 BUILD VIEW: X001ba_Qualification_level
+03:31:59 BUILD VIEW: X001ca_Stud_qual_curr
+03:31:59 BUILD VIEW: X001cb_Stud_qual_curr
+03:32:00 BUILD VIEW: X001cc_Stud_qual_curr
+03:32:00 BUILD VIEW: X000_Student_qual_result_curr
+03:32:00 BUILD VIEW: X001cd_Stud_qual_curr
+03:32:00 BUILD VIEW: X002aa_Module
+03:32:00 BUILD VIEW: X002ba_Module_present_org
+03:32:01 BUILD VIEW: X002bb_Module_present_enrol
+03:32:01 BUILD VIEW: X004aa_Bursaries
+03:32:01 BUILD VIEW: X004ab_Bursary_site
+03:32:02 BUILD TABLE: X004_Bursaries
+03:32:02 BUILD VIEW: X005aa_Party_extref
+03:32:02 BUILD VIEW: X005ab_Party_idno_curr
+03:33:01 BUILD TABLE: X000_Party
+03:34:09 BUILD VIEW: X000_Transmaster
+03:34:52 BUILD VIEW: X010_Studytrans
+-------------------------
+COMPLETED: B003_VSS_LISTS
+----------------
+2018-07-05 03:34
+SCRIPT: C200_REPORT_STUDDEB_RECON
+---------------------------------
+03:34:52 OPEN DATABASE: Kfs
+03:34:53 ATTACH DATABASE: PEOPLE.SQLITE
+03:34:53 ATTACH DATABASE: KFS_SQLITE
+03:34:53 ATTACH DATABASE: VSS.SQLITE
+03:34:53 ---------- PREPARE GL TRANSACTIONS ----------
+03:34:57 BUILD TABLE: X001aa_gl_tranlist
+03:34:59 ADD COLUMN: Campus code
+03:35:00 ADD COLUMN: Transaction month
+03:35:01 ADD COLUMNS: Bursary code
+03:35:03 ADD COLUMNS: Student number
+03:35:10 ADD COLUMNS: Temp description
+03:35:11 ADD COLUMNS: Description link
+03:35:12 BUILD TABLE: X001ab_gl_transort
+03:35:15 EXPORT DATA: R:/Debtorstud/2018/Debtor_001_gltran_
+03:35:15 BUILD TABLE: X001cb_gl_balmonth
+03:35:16 BUILD TABLE: X001cc_gl_summtype
+03:35:16 EXPORT DATA: R:/Debtorstud/2018/Debtor_001_glsummtype_
+03:35:16 BUILD TABLE: X001cd_gl_postmonth
+03:35:16 ---------- PREPARE VSS TRANSACTIONS ----------
+03:36:10 BUILD TABLE: X002aa_vss_tranlist
+03:37:21 ADD COLUMN: Vss campus name
+03:38:38 ADD COLUMN: Vss transaction month
+03:39:53 ADD COLUMN: Vss debit amount
+03:41:10 ADD COLUMN: Vss credit amount
+03:46:16 CALC COLUMN: Temp afr description
+03:51:03 CALC COLUMN: Temp eng description
+03:51:50 BUILD TABLE: X002ab_vss_transort
+03:51:57 BUILD TABLE: X002cb_vss_balmonth
+03:52:06 BUILD TABLE: X002cc_vss_summtype
+03:52:06 EXPORT DATA: R:/Debtorstud/2018/Debtor_002_vsssummtype_
+03:52:12 BUILD TABLE: X002da_vss_student_balance
+03:52:13 ADD COLUMN: Vss debit amount
+03:52:14 ADD COLUMN: Vss credit amount
+03:52:14 BUILD TABLE: X002db_vss_campus_balance
+03:52:15 BUILD TABLE: X002ea_vss_gl_balance_month
+03:52:15 BUILD TABLE: X002eb_impo_report_officer
+03:52:15 BUILD TABLE: X002ec_impo_report_supervisor
+03:52:15 BUILD TABLE: X002ex_vss_gl_balance_month
+03:52:15 ---------- JOIN VSS & GL TRANSACTIONS ----------
+03:52:16 BUILD TABLE: X003aa_vss_gl_join
+03:52:16 ADD COLUMN: Vss gl matched
+03:52:16 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_
+03:52:16 BUILD TABLE: X003ab_gl_vss_join
+03:52:16 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_
+03:52:17 BUILD TABLE: X003aa_vss_gl_join_eng
+03:52:17 ADD COLUMN: Vss gl matched
+03:52:17 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_eng_
+03:52:17 BUILD TABLE: X003ab_gl_vss_join_eng
+03:52:17 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_eng_
+03:52:17 BUILD TABLE: X004aa_matched_summary
+03:52:18 BUILD TABLE: X004ba_nomatch_trantype
+03:52:18 BUILD TABLE: X004bb_impo_report_officer
+03:52:18 BUILD TABLE: X004bc_impo_report_supervisor
+03:52:18 BUILD TABLE: X004bx_nomatch_trantype
+03:52:18 BUILD TABLE: X004ca_invss_nogl
+03:52:19 BUILD TABLE: X004cb_impo_report_officer
+03:52:19 BUILD TABLE: X004cc_impo_report_supervisor
+03:52:19 BUILD TABLE: X004cx_invss_nogl
+03:52:19 BUILD TABLE: X004da_ingl_novss
+03:52:19 BUILD TABLE: X004db_impo_report_officer
+03:52:20 BUILD TABLE: X004dc_impo_report_supervisor
+03:52:20 BUILD TABLE: X004dx_ingl_novss
+03:52:20 ---------- PREPARE BURSARY TRANSACTIONS ----------
+03:52:22 BUILD TABLE: X010aa_vss_burs
+03:52:23 ADD COLUMN: Bursary vss row id
+03:52:23 BUILD VIEW: X002cd_vss_summtypeburs
+03:52:24 EXPORT DATA: R:/Debtorstud/2018/Debtor_002_vsssummtypeburs_
+03:52:25 BUILD TABLE: X010ba_gl_burs
+03:52:26 ADD COLUMN: Bursary gl row id
+03:52:26 BUILD VIEW: X001cd_gl_summtypeburs
+03:52:26 EXPORT DATA: R:/Debtorstud/2018/Debtor_001_glsummtypeburs_
+03:52:28 BUILD TABLE: X010ca_join_vss_gl_burs
+03:52:28 BUILD TABLE: X010cb_join_vss_gl_matched
+03:52:28 ---------- TEST BURSARY INGL NOVSS ----------
+03:52:29 BUILD TABLE: X010da_test_burs_ingl_novss
+03:52:29 EXPORT DATA: R:/Debtorstud/2018/Debtor_010d_test_burs_ingl_novss_
+03:52:29 ---------- TEST BURSARY INVSS NOGL ----------
+03:52:29 BUILD TABLE: X010ea_test_burs_invss_nogl
+03:52:29 EXPORT DATA: R:/Debtorstud/2018/Debtor_010e_test_burs_invss_nogl_
+03:52:29 ---------- TEST BURSARY VSS DIFF CAMPUS GL ----------
+03:52:30 IMPORT TABLE: S:/_external_data/200_reported.txt (X010_prev_reported)
+03:52:30 BUILD TABLE: X010fa_test_burs_gl_diffcampus
+03:52:30 BUILD TABLE: X010fb_join_prev_reported
+03:52:30 EXPORT DATA: R:/Debtorstud/2018/Debtor_010fb_test_burs_gl_diffcampus_
+03:52:31 BUILD TABLE: X010fc_prev_reported
+03:52:31 EXPORT DATA: S:/_external_data/200_reported
+03:52:31 BUILD TABLE: X010fd_impo_report_officer
+03:52:31 BUILD TABLE: X010fe_impo_report_supervisor
+03:52:33 BUILD TABLE: X010fx_test_burs_gl_diffcampus
+03:52:33 EXPORT DATA: R:/Debtorstud/2018/Debtor_010fx_test_burs_gl_diffcampus_
+------------------------------------
+COMPLETED: C200_REPORT_STUDDEB_RECON
+----------------
+2018-07-05 03:52
+SCRIPT: C300_TEST_STUDENT_GENERAL
+---------------------------------
+03:52:33 OPEN DATABASE: VSS_GENERAL
+03:52:33 ATTACH DATABASE: Vss.sqlite
+03:52:33 ---------- STUDENT ID NUMBER LIST ----------
+03:52:37 BUILD TABLE: X001aa_impo_vsstran
+03:53:38 BUILD TABLE: X001ab_impo_vssparty
+03:53:41 IMPORT TABLE: S:/_external_data/300_reported.txt (X001ac_impo_reported)
+03:53:47 BUILD TABLE: X001ba_join_tran_vss
+03:53:50 BUILD TABLE: X001ca_join_prev_reported
+03:53:54 BUILD TABLE: X001da_report_idlist
+03:53:56 BUILD TABLE: X001da_report_idlist
+03:53:57 BUILD TABLE: X001ea_prev_reported
+03:53:57 EXPORT DATA: X001ea_prev_reported
+03:53:57 DEFINITION: Send mail vss_list_idno_ytd
+03:53:57 DEFINITION: Send mail vss_list_idno_curr
+03:54:10 MAIL SUCCESS: 21162395@nwu.ac.za (Albert)
+03:54:10 **************************************************
+------------------------------------
+COMPLETED: C300_TEST_STUDENT_GENERAL
+----------------
+2018-07-05 03:54
+COMPLETED: A000_RUN_ALL
+-----------------------
+03:54:11 DEFINITION: Send mail python_log
+03:54:14 MAIL SUCCESS: 21162395@nwu.ac.za (Albert)
+----------------
+2018-07-05 09:37
+SCRIPT: C200_REPORT_STUDDEB_RECON_DEV
+-------------------------------------
+09:37:44 OPEN DATABASE: Kfs_vss_studdeb
+----------------
+2018-07-05 09:38
+SCRIPT: C200_REPORT_STUDDEB_RECON_DEV
+-------------------------------------
+09:38:07 OPEN DATABASE: Kfs_vss_studdeb
+----------------
+2018-07-05 09:38
+SCRIPT: C200_REPORT_STUDDEB_RECON_DEV
+-------------------------------------
+09:38:23 OPEN DATABASE: Kfs_vss_studdeb
+09:38:23 BUILD TABLE: X003aa_vss_gl_join
+09:38:23 ADD COLUMN: Vss gl matched
+09:38:24 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_
+----------------------------------------
+COMPLETED: C200_REPORT_STUDDEB_RECON_DEV
+----------------
+2018-07-05 09:39
+SCRIPT: C200_REPORT_STUDDEB_RECON_DEV
+-------------------------------------
+09:39:58 OPEN DATABASE: Kfs_vss_studdeb
+09:39:59 BUILD TABLE: X003aa_vss_gl_join
+09:39:59 ADD COLUMN: Vss gl matched
+09:39:59 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_
+----------------------------------------
+COMPLETED: C200_REPORT_STUDDEB_RECON_DEV
+----------------
+2018-07-05 09:46
+SCRIPT: C200_REPORT_STUDDEB_RECON_DEV
+-------------------------------------
+09:46:31 OPEN DATABASE: Kfs_vss_studdeb
+09:46:31 BUILD TABLE: X003aa_vss_gl_join
+09:46:31 ADD COLUMN: Vss gl matched
+09:46:31 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_
+09:46:32 BUILD TABLE: X003ab_gl_vss_join
+09:46:32 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_
+----------------------------------------
+COMPLETED: C200_REPORT_STUDDEB_RECON_DEV
+----------------
+2018-07-05 09:47
+SCRIPT: C200_REPORT_STUDDEB_RECON_DEV
+-------------------------------------
+09:47:49 OPEN DATABASE: Kfs_vss_studdeb
+09:47:49 BUILD TABLE: X003aa_vss_gl_join
+09:47:49 ADD COLUMN: Vss gl matched
+09:47:49 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_
+09:47:50 BUILD TABLE: X003ab_gl_vss_join
+09:47:50 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_
+----------------------------------------
+COMPLETED: C200_REPORT_STUDDEB_RECON_DEV
+----------------
+2018-07-05 09:48
+SCRIPT: C200_REPORT_STUDDEB_RECON_DEV
+-------------------------------------
+09:48:50 OPEN DATABASE: Kfs_vss_studdeb
+09:48:50 BUILD TABLE: X003aa_vss_gl_join
+09:48:51 ADD COLUMN: Vss gl matched
+09:48:51 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_
+09:48:51 BUILD TABLE: X003ab_gl_vss_join
+09:48:51 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_
+----------------------------------------
+COMPLETED: C200_REPORT_STUDDEB_RECON_DEV
+----------------
+2018-07-05 11:08
+SCRIPT: C200_REPORT_STUDDEB_RECON_RUN
+-------------------------------------
+----------------
+2018-07-05 11:08
+SCRIPT: C200_REPORT_STUDDEB_RECON
+---------------------------------
+11:08:38 OPEN DATABASE: Kfs
+11:08:38 ATTACH DATABASE: PEOPLE.SQLITE
+11:08:38 ATTACH DATABASE: KFS_SQLITE
+11:08:38 ATTACH DATABASE: VSS.SQLITE
+11:08:38 ---------- PREPARE GL TRANSACTIONS ----------
+11:08:44 BUILD TABLE: X001aa_gl_tranlist
+11:08:46 ADD COLUMN: Campus code
+11:08:48 ADD COLUMN: Transaction month
+11:08:50 ADD COLUMNS: Bursary code
+11:08:52 ADD COLUMNS: Student number
+11:08:59 ADD COLUMNS: Temp description
+11:09:00 ADD COLUMNS: Description link
+11:09:01 BUILD TABLE: X001ab_gl_transort
+11:09:04 EXPORT DATA: R:/Debtorstud/2018/Debtor_001_gltran_
+11:09:05 BUILD TABLE: X001cb_gl_balmonth
+11:09:05 BUILD TABLE: X001cc_gl_summtype
+11:09:05 EXPORT DATA: R:/Debtorstud/2018/Debtor_001_glsummtype_
+11:09:05 BUILD TABLE: X001cd_gl_postmonth
+11:09:06 ---------- PREPARE VSS TRANSACTIONS ----------
+11:10:36 BUILD TABLE: X002aa_vss_tranlist
+11:12:10 ADD COLUMN: Vss campus name
+11:14:00 ADD COLUMN: Vss transaction month
+11:15:50 ADD COLUMN: Vss debit amount
+11:17:39 ADD COLUMN: Vss credit amount
+11:22:52 CALC COLUMN: Temp afr description
+11:27:58 CALC COLUMN: Temp eng description
+11:28:50 BUILD TABLE: X002ab_vss_transort
+11:28:58 BUILD TABLE: X002cb_vss_balmonth
+11:29:08 BUILD TABLE: X002cc_vss_summtype
+11:29:08 EXPORT DATA: R:/Debtorstud/2018/Debtor_002_vsssummtype_
+11:29:15 BUILD TABLE: X002da_vss_student_balance
+11:29:16 ADD COLUMN: Vss debit amount
+11:29:17 ADD COLUMN: Vss credit amount
+11:29:18 BUILD TABLE: X002db_vss_campus_balance
+11:29:18 BUILD TABLE: X002ea_vss_gl_balance_month
+11:29:18 BUILD TABLE: X002eb_impo_report_officer
+11:29:18 BUILD TABLE: X002ec_impo_report_supervisor
+11:29:19 BUILD TABLE: X002ex_vss_gl_balance_month
+11:29:19 ---------- JOIN VSS & GL TRANSACTIONS ----------
+11:29:19 BUILD TABLE: X003aa_vss_gl_join
+11:29:20 ADD COLUMN: Vss gl matched
+11:29:20 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_
+11:29:20 BUILD TABLE: X003ab_gl_vss_join
+11:29:20 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_
+11:29:20 BUILD TABLE: X003aa_vss_gl_join_eng
+11:29:21 ADD COLUMN: Vss gl matched
+11:29:21 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_eng_
+11:29:21 BUILD TABLE: X003ab_gl_vss_join_eng
+11:29:21 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_eng_
+11:29:22 BUILD TABLE: X004aa_matched_summary
+11:29:22 BUILD TABLE: X004ba_nomatch_trantype
+11:29:22 BUILD TABLE: X004bb_impo_report_officer
+11:29:22 BUILD TABLE: X004bc_impo_report_supervisor
+11:29:23 BUILD TABLE: X004bx_nomatch_trantype
+11:29:23 BUILD TABLE: X004ca_invss_nogl
+11:29:23 BUILD TABLE: X004cb_impo_report_officer
+11:29:23 BUILD TABLE: X004cc_impo_report_supervisor
+11:29:24 BUILD TABLE: X004cx_invss_nogl
+11:29:24 BUILD TABLE: X004da_ingl_novss
+11:29:24 BUILD TABLE: X004db_impo_report_officer
+11:29:25 BUILD TABLE: X004dc_impo_report_supervisor
+11:29:25 BUILD TABLE: X004dx_ingl_novss
+11:29:25 ---------- PREPARE BURSARY TRANSACTIONS ----------
+11:29:28 BUILD TABLE: X010aa_vss_burs
+11:29:29 ADD COLUMN: Bursary vss row id
+11:29:29 BUILD VIEW: X002cd_vss_summtypeburs
+11:29:30 EXPORT DATA: R:/Debtorstud/2018/Debtor_002_vsssummtypeburs_
+11:29:31 BUILD TABLE: X010ba_gl_burs
+11:29:32 ADD COLUMN: Bursary gl row id
+11:29:33 BUILD VIEW: X001cd_gl_summtypeburs
+11:29:33 EXPORT DATA: R:/Debtorstud/2018/Debtor_001_glsummtypeburs_
+11:29:35 BUILD TABLE: X010ca_join_vss_gl_burs
+11:29:36 BUILD TABLE: X010cb_join_vss_gl_matched
+11:29:36 ---------- TEST BURSARY INGL NOVSS ----------
+11:29:36 BUILD TABLE: X010da_test_burs_ingl_novss
+11:29:36 EXPORT DATA: R:/Debtorstud/2018/Debtor_010d_test_burs_ingl_novss_
+11:29:36 ---------- TEST BURSARY INVSS NOGL ----------
+11:29:36 BUILD TABLE: X010ea_test_burs_invss_nogl
+11:29:36 EXPORT DATA: R:/Debtorstud/2018/Debtor_010e_test_burs_invss_nogl_
+11:29:36 ---------- TEST BURSARY VSS DIFF CAMPUS GL ----------
+11:29:37 IMPORT TABLE: S:/_external_data/200_reported.txt (X010_prev_reported)
+11:29:37 BUILD TABLE: X010fa_test_burs_gl_diffcampus
+11:29:37 BUILD TABLE: X010fb_join_prev_reported
+11:29:38 EXPORT DATA: R:/Debtorstud/2018/Debtor_010fb_test_burs_gl_diffcampus_
+11:29:38 BUILD TABLE: X010fc_prev_reported
+11:29:38 EXPORT DATA: S:/_external_data/200_reported
+11:29:39 BUILD TABLE: X010fd_impo_report_officer
+11:29:39 BUILD TABLE: X010fe_impo_report_supervisor
+11:29:40 BUILD TABLE: X010fx_test_burs_gl_diffcampus
+11:29:40 EXPORT DATA: R:/Debtorstud/2018/Debtor_010fx_test_burs_gl_diffcampus_
+------------------------------------
+COMPLETED: C200_REPORT_STUDDEB_RECON
+----------------
+2018-07-05 11:29
+COMPLETED: C200_REPORT_STUDDEB_RECON_RUN
+----------------------------------------
+----------------
+2018-07-05 12:24
+SCRIPT: C200_REPORT_STUDDEB_RECON_RUN
+-------------------------------------
+----------------
+2018-07-05 12:24
+SCRIPT: C200_REPORT_STUDDEB_RECON
+---------------------------------
+12:24:22 OPEN DATABASE: Kfs
+12:24:22 ATTACH DATABASE: PEOPLE.SQLITE
+12:24:22 ATTACH DATABASE: KFS_SQLITE
+12:24:22 ATTACH DATABASE: VSS.SQLITE
+12:24:22 ---------- PREPARE GL TRANSACTIONS ----------
+12:24:27 BUILD TABLE: X001aa_gl_tranlist
+12:24:30 ADD COLUMN: Campus code
+12:24:31 ADD COLUMN: Transaction month
+12:24:33 ADD COLUMNS: Bursary code
+12:24:35 ADD COLUMNS: Student number
+12:24:42 ADD COLUMNS: Temp description
+12:24:43 ADD COLUMNS: Description link
+12:24:45 BUILD TABLE: X001ab_gl_transort
+12:24:47 EXPORT DATA: R:/Debtorstud/2018/Debtor_001_gltran_
+12:24:47 BUILD TABLE: X001cb_gl_balmonth
+12:24:48 BUILD TABLE: X001cc_gl_summtype
+12:24:48 EXPORT DATA: R:/Debtorstud/2018/Debtor_001_glsummtype_
+12:24:48 BUILD TABLE: X001cd_gl_postmonth
+12:24:48 ---------- PREPARE VSS TRANSACTIONS ----------
+12:26:10 BUILD TABLE: X002aa_vss_tranlist
+12:27:41 ADD COLUMN: Vss campus name
+12:29:05 ADD COLUMN: Vss transaction month
+12:30:38 ADD COLUMN: Vss debit amount
+12:32:11 ADD COLUMN: Vss credit amount
+12:37:01 CALC COLUMN: Temp afr description
+12:41:01 CALC COLUMN: Temp eng description
+12:41:52 BUILD TABLE: X002ab_vss_transort
+12:41:58 BUILD TABLE: X002cb_vss_balmonth
+12:42:08 BUILD TABLE: X002cc_vss_summtype
+12:42:08 EXPORT DATA: R:/Debtorstud/2018/Debtor_002_vsssummtype_
+12:42:14 BUILD TABLE: X002da_vss_student_balance
+12:42:15 ADD COLUMN: Vss debit amount
+12:42:16 ADD COLUMN: Vss credit amount
+12:42:16 BUILD TABLE: X002db_vss_campus_balance
+12:42:17 BUILD TABLE: X002ea_vss_gl_balance_month
+12:42:17 BUILD TABLE: X002eb_impo_report_officer
+12:42:17 BUILD TABLE: X002ec_impo_report_supervisor
+12:42:18 BUILD TABLE: X002ex_vss_gl_balance_month
+12:42:18 ---------- JOIN VSS & GL TRANSACTIONS ----------
+12:42:18 BUILD TABLE: X003aa_vss_gl_join
+12:42:18 ADD COLUMN: Vss gl matched
+12:42:18 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_
+12:42:19 BUILD TABLE: X003ab_gl_vss_join
+12:42:19 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_
+12:42:19 BUILD TABLE: X003aa_vss_gl_join_eng
+12:42:19 ADD COLUMN: Vss gl matched
+12:42:19 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_eng_
+12:42:20 BUILD TABLE: X003ab_gl_vss_join_eng
+12:42:20 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_eng_
+12:42:20 BUILD TABLE: X004aa_matched_summary
+12:42:20 BUILD TABLE: X004ba_nomatch_trantype
+12:42:21 BUILD TABLE: X004bb_impo_report_officer
+12:42:21 BUILD TABLE: X004bc_impo_report_supervisor
+12:42:21 BUILD TABLE: X004bx_nomatch_trantype
+12:42:21 BUILD TABLE: X004ca_invss_nogl
+12:42:21 BUILD TABLE: X004cb_impo_report_officer
+12:42:22 BUILD TABLE: X004cc_impo_report_supervisor
+12:42:22 BUILD TABLE: X004cx_invss_nogl
+12:42:22 BUILD TABLE: X004da_ingl_novss
+12:42:22 BUILD TABLE: X004db_impo_report_officer
+12:42:23 BUILD TABLE: X004dc_impo_report_supervisor
+12:42:23 BUILD TABLE: X004dx_ingl_novss
+12:42:23 ---------- PREPARE BURSARY TRANSACTIONS ----------
+12:42:26 BUILD TABLE: X010aa_vss_burs
+12:42:27 ADD COLUMN: Bursary vss row id
+12:42:27 BUILD VIEW: X002cd_vss_summtypeburs
+12:42:27 EXPORT DATA: R:/Debtorstud/2018/Debtor_002_vsssummtypeburs_
+12:42:28 BUILD TABLE: X010ba_gl_burs
+12:42:29 ADD COLUMN: Bursary gl row id
+12:42:29 BUILD VIEW: X001cd_gl_summtypeburs
+12:42:30 EXPORT DATA: R:/Debtorstud/2018/Debtor_001_glsummtypeburs_
+12:42:31 BUILD TABLE: X010ca_join_vss_gl_burs
+12:42:32 BUILD TABLE: X010cb_join_vss_gl_matched
+12:42:32 ---------- TEST BURSARY INGL NOVSS ----------
+12:42:32 BUILD TABLE: X010da_test_burs_ingl_novss
+12:42:32 EXPORT DATA: R:/Debtorstud/2018/Debtor_010d_test_burs_ingl_novss_
+12:42:32 ---------- TEST BURSARY INVSS NOGL ----------
+12:42:32 BUILD TABLE: X010ea_test_burs_invss_nogl
+12:42:33 EXPORT DATA: R:/Debtorstud/2018/Debtor_010e_test_burs_invss_nogl_
+12:42:33 ---------- TEST BURSARY VSS DIFF CAMPUS GL ----------
+12:42:33 IMPORT TABLE: S:/_external_data/200_reported.txt (X010_prev_reported)
+12:42:33 BUILD TABLE: X010fa_test_burs_gl_diffcampus
+12:42:34 BUILD TABLE: X010fb_join_prev_reported
+12:42:34 EXPORT DATA: R:/Debtorstud/2018/Debtor_010fb_test_burs_gl_diffcampus_
+12:42:34 BUILD TABLE: X010fc_prev_reported
+12:42:35 EXPORT DATA: No new data to export
+12:42:35 BUILD TABLE: X010fd_impo_report_officer
+12:42:35 BUILD TABLE: X010fe_impo_report_supervisor
+12:42:35 BUILD TABLE: X010fx_test_burs_gl_diffcampus
+12:42:35 EXPORT DATA: No new data to export
+------------------------------------
+COMPLETED: C200_REPORT_STUDDEB_RECON
+----------------
+2018-07-05 12:42
+COMPLETED: C200_REPORT_STUDDEB_RECON_RUN
+----------------------------------------
+----------------
+2018-07-05 13:40
+SCRIPT: C200_REPORT_STUDDEB_RECON_DEV
+-------------------------------------
+13:40:02 OPEN DATABASE: Kfs_vss_studdeb
+----------------
+2018-07-05 13:41
+SCRIPT: C200_REPORT_STUDDEB_RECON_DEV
+-------------------------------------
+13:41:09 OPEN DATABASE: Kfs_vss_studdeb
+13:41:09 BUILD TABLE: X003aa_vss_gl_join
+----------------
+2018-07-05 13:42
+SCRIPT: C200_REPORT_STUDDEB_RECON_DEV
+-------------------------------------
+13:42:45 OPEN DATABASE: Kfs_vss_studdeb
+----------------
+2018-07-05 13:42
+SCRIPT: C200_REPORT_STUDDEB_RECON_DEV
+-------------------------------------
+13:42:59 OPEN DATABASE: Kfs_vss_studdeb
+13:43:00 BUILD TABLE: X003aa_vss_gl_join
+----------------
+2018-07-05 13:44
+SCRIPT: C200_REPORT_STUDDEB_RECON_DEV
+-------------------------------------
+13:44:44 OPEN DATABASE: Kfs_vss_studdeb
+13:44:45 BUILD TABLE: X003aa_vss_gl_join
+13:44:46 ADD COLUMN: Vss gl matched
+13:44:46 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_
+----------------------------------------
+COMPLETED: C200_REPORT_STUDDEB_RECON_DEV
+----------------
+2018-07-05 13:50
+SCRIPT: C200_REPORT_STUDDEB_RECON_RUN
+-------------------------------------
+----------------
+2018-07-05 13:50
+SCRIPT: C200_REPORT_STUDDEB_RECON
+---------------------------------
+13:50:23 OPEN DATABASE: Kfs
+13:50:23 ATTACH DATABASE: PEOPLE.SQLITE
+13:50:23 ATTACH DATABASE: KFS_SQLITE
+13:50:23 ATTACH DATABASE: VSS.SQLITE
+13:50:23 ---------- PREPARE GL TRANSACTIONS ----------
+13:50:30 BUILD TABLE: X001aa_gl_tranlist
+13:50:32 ADD COLUMN: Campus code
+13:50:34 ADD COLUMN: Transaction month
+13:50:37 ADD COLUMNS: Bursary code
+13:50:39 ADD COLUMNS: Student number
+13:50:46 ADD COLUMNS: Temp description
+13:50:47 ADD COLUMNS: Description link
+13:50:49 BUILD TABLE: X001ab_gl_transort
+13:50:52 EXPORT DATA: R:/Debtorstud/2018/Debtor_001_gltran_
+13:50:52 BUILD TABLE: X001cb_gl_balmonth
+13:50:52 BUILD TABLE: X001cc_gl_summtype
+13:50:52 EXPORT DATA: R:/Debtorstud/2018/Debtor_001_glsummtype_
+13:50:53 BUILD TABLE: X001cd_gl_postmonth
+13:50:53 ---------- PREPARE VSS TRANSACTIONS ----------
+13:52:42 BUILD TABLE: X002aa_vss_tranlist
+13:54:51 ADD COLUMN: Vss campus name
+13:57:04 ADD COLUMN: Vss transaction month
+13:58:55 ADD COLUMN: Vss debit amount
+14:00:52 ADD COLUMN: Vss credit amount
+14:05:15 CALC COLUMN: Temp afr description
+14:09:16 CALC COLUMN: Temp eng description
+14:10:06 BUILD TABLE: X002ab_vss_transort
+14:10:13 BUILD TABLE: X002cb_vss_balmonth
+14:10:23 BUILD TABLE: X002cc_vss_summtype
+14:10:23 EXPORT DATA: R:/Debtorstud/2018/Debtor_002_vsssummtype_
+14:10:29 BUILD TABLE: X002da_vss_student_balance
+14:10:31 ADD COLUMN: Vss debit amount
+14:10:32 ADD COLUMN: Vss credit amount
+14:10:32 BUILD TABLE: X002db_vss_campus_balance
+14:10:32 BUILD TABLE: X002ea_vss_gl_balance_month
+14:10:33 BUILD TABLE: X002eb_impo_report_officer
+14:10:33 BUILD TABLE: X002ec_impo_report_supervisor
+14:10:33 BUILD TABLE: X002ex_vss_gl_balance_month
+14:10:33 ---------- JOIN VSS & GL TRANSACTIONS ----------
+14:10:34 BUILD TABLE: X003aa_vss_gl_join
+14:10:34 ADD COLUMN: Vss gl matched
+14:10:34 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_
+14:10:34 BUILD TABLE: X003ab_gl_vss_join
+14:10:34 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_
+14:10:35 BUILD TABLE: X003aa_vss_gl_join_eng
+14:10:35 ADD COLUMN: Vss gl matched
+14:10:35 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_eng_
+14:10:35 BUILD TABLE: X003ab_gl_vss_join_eng
+14:10:35 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_eng_
+14:10:36 BUILD TABLE: X004aa_matched_summary
+14:10:36 BUILD TABLE: X004ba_nomatch_trantype
+14:10:36 BUILD TABLE: X004bb_impo_report_officer
+14:10:37 BUILD TABLE: X004bc_impo_report_supervisor
+14:10:37 BUILD TABLE: X004bx_nomatch_trantype
+14:10:37 BUILD TABLE: X004ca_invss_nogl
+14:10:37 BUILD TABLE: X004cb_impo_report_officer
+14:10:38 BUILD TABLE: X004cc_impo_report_supervisor
+14:10:38 BUILD TABLE: X004cx_invss_nogl
+14:10:38 BUILD TABLE: X004da_ingl_novss
+14:10:38 BUILD TABLE: X004db_impo_report_officer
+14:10:39 BUILD TABLE: X004dc_impo_report_supervisor
+14:10:39 BUILD TABLE: X004dx_ingl_novss
+14:10:39 ---------- PREPARE BURSARY TRANSACTIONS ----------
+14:10:42 BUILD TABLE: X010aa_vss_burs
+14:10:43 ADD COLUMN: Bursary vss row id
+14:10:43 BUILD VIEW: X002cd_vss_summtypeburs
+14:10:44 EXPORT DATA: R:/Debtorstud/2018/Debtor_002_vsssummtypeburs_
+14:10:45 BUILD TABLE: X010ba_gl_burs
+14:10:46 ADD COLUMN: Bursary gl row id
+14:10:46 BUILD VIEW: X001cd_gl_summtypeburs
+14:10:47 EXPORT DATA: R:/Debtorstud/2018/Debtor_001_glsummtypeburs_
+14:10:49 BUILD TABLE: X010ca_join_vss_gl_burs
+14:10:50 BUILD TABLE: X010cb_join_vss_gl_matched
+14:10:50 ---------- TEST BURSARY INGL NOVSS ----------
+14:10:50 BUILD TABLE: X010da_test_burs_ingl_novss
+14:10:50 EXPORT DATA: R:/Debtorstud/2018/Debtor_010d_test_burs_ingl_novss_
+14:10:50 ---------- TEST BURSARY INVSS NOGL ----------
+14:10:50 BUILD TABLE: X010ea_test_burs_invss_nogl
+14:10:50 EXPORT DATA: R:/Debtorstud/2018/Debtor_010e_test_burs_invss_nogl_
+14:10:50 ---------- TEST BURSARY VSS DIFF CAMPUS GL ----------
+14:10:51 IMPORT TABLE: S:/_external_data/200_reported.txt (X010_prev_reported)
+14:10:51 BUILD TABLE: X010fa_test_burs_gl_diffcampus
+14:10:51 BUILD TABLE: X010fb_join_prev_reported
+14:10:52 EXPORT DATA: R:/Debtorstud/2018/Debtor_010fb_test_burs_gl_diffcampus_
+14:10:52 BUILD TABLE: X010fc_prev_reported
+14:10:52 EXPORT DATA: No new data to export
+14:10:53 BUILD TABLE: X010fd_impo_report_officer
+14:10:53 BUILD TABLE: X010fe_impo_report_supervisor
+14:10:53 BUILD TABLE: X010fx_test_burs_gl_diffcampus
+14:10:53 EXPORT DATA: No new data to export
+------------------------------------
+COMPLETED: C200_REPORT_STUDDEB_RECON
+----------------
+2018-07-05 14:10
+COMPLETED: C200_REPORT_STUDDEB_RECON_RUN
+----------------------------------------
+----------------
+2018-07-05 15:01
+SCRIPT: C200_REPORT_STUDDEB_RECON_RUN
+-------------------------------------
+----------------
+2018-07-05 15:01
+SCRIPT: C200_REPORT_STUDDEB_RECON
+---------------------------------
+15:01:20 OPEN DATABASE: Kfs
+15:01:20 ATTACH DATABASE: PEOPLE.SQLITE
+15:01:20 ATTACH DATABASE: KFS_SQLITE
+15:01:21 ATTACH DATABASE: VSS.SQLITE
+15:01:21 ---------- PREPARE GL TRANSACTIONS ----------
+15:01:26 BUILD TABLE: X001aa_gl_tranlist
+15:01:27 ADD COLUMN: Campus code
+15:01:29 ADD COLUMN: Transaction month
+15:01:31 ADD COLUMNS: Bursary code
+15:01:33 ADD COLUMNS: Student number
+15:01:39 ADD COLUMNS: Temp description
+15:01:40 ADD COLUMNS: Description link
+15:01:41 BUILD TABLE: X001ab_gl_transort
+15:01:43 EXPORT DATA: R:/Debtorstud/2018/Debtor_001_gltran_
+15:01:43 BUILD TABLE: X001ca_gl_balance
+15:01:44 BUILD TABLE: X001cb_gl_balmonth
+15:01:44 BUILD TABLE: X001cc_gl_summtype
+15:01:44 EXPORT DATA: R:/Debtorstud/2018/Debtor_001_glsummtype_
+15:01:44 BUILD TABLE: X001cd_gl_postmonth
+15:01:44 ---------- PREPARE VSS TRANSACTIONS ----------
+15:03:07 BUILD TABLE: X002aa_vss_tranlist
+15:04:46 ADD COLUMN: Vss campus name
+15:06:28 ADD COLUMN: Vss transaction month
+15:07:56 ADD COLUMN: Vss debit amount
+15:09:26 ADD COLUMN: Vss credit amount
+15:13:45 CALC COLUMN: Temp afr description
+15:17:40 CALC COLUMN: Temp eng description
+15:18:31 BUILD TABLE: X002ab_vss_transort
+15:18:36 BUILD TABLE: X002ca_vss_balance
+15:18:44 BUILD TABLE: X002cb_vss_balmonth
+15:18:57 BUILD TABLE: X002cc_vss_summtype
+15:18:57 EXPORT DATA: R:/Debtorstud/2018/Debtor_002_vsssummtype_
+15:19:03 BUILD TABLE: X002da_vss_student_balance
+15:19:04 ADD COLUMN: Vss debit amount
+15:19:06 ADD COLUMN: Vss credit amount
+15:19:06 BUILD TABLE: X002db_vss_campus_balance
+15:19:06 BUILD TABLE: X002ea_vss_gl_balance_month
+15:19:07 BUILD TABLE: X002ec_impo_report_supervisor
+15:19:07 BUILD TABLE: X002ex_vss_gl_balance_month
+15:19:07 ---------- JOIN VSS & GL TRANSACTIONS ----------
+15:19:08 BUILD TABLE: X003aa_vss_gl_join
+15:19:08 ADD COLUMN: Vss gl matched
+15:19:08 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_
+15:19:08 BUILD TABLE: X003ab_gl_vss_join
+15:19:08 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_
+15:19:09 BUILD TABLE: X003aa_vss_gl_join_eng
+15:19:09 ADD COLUMN: Vss gl matched
+15:19:09 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_eng_
+15:19:09 BUILD TABLE: X003ab_gl_vss_join_eng
+15:19:09 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_eng_
+15:19:10 BUILD TABLE: X004aa_matched_summary
+15:19:10 BUILD TABLE: X004ba_nomatch_trantype
+15:19:10 BUILD TABLE: X004bb_impo_report_officer
+15:19:10 BUILD TABLE: X004bc_impo_report_supervisor
+15:19:11 BUILD TABLE: X004bx_nomatch_trantype
+15:19:11 BUILD TABLE: X004ca_invss_nogl
+15:19:11 BUILD TABLE: X004cb_impo_report_officer
+15:19:12 BUILD TABLE: X004cc_impo_report_supervisor
+15:19:12 BUILD TABLE: X004cx_invss_nogl
+15:19:12 BUILD TABLE: X004da_ingl_novss
+15:19:12 BUILD TABLE: X004db_impo_report_officer
+15:19:13 BUILD TABLE: X004dc_impo_report_supervisor
+15:19:13 BUILD TABLE: X004dx_ingl_novss
+15:19:13 ---------- PREPARE BURSARY TRANSACTIONS ----------
+15:19:16 BUILD TABLE: X010aa_vss_burs
+15:19:17 ADD COLUMN: Bursary vss row id
+15:19:18 BUILD VIEW: X002cd_vss_summtypeburs
+15:19:18 EXPORT DATA: R:/Debtorstud/2018/Debtor_002_vsssummtypeburs_
+15:19:19 BUILD TABLE: X010ba_gl_burs
+15:19:21 ADD COLUMN: Bursary gl row id
+15:19:21 BUILD VIEW: X001cd_gl_summtypeburs
+15:19:21 EXPORT DATA: R:/Debtorstud/2018/Debtor_001_glsummtypeburs_
+15:19:23 BUILD TABLE: X010ca_join_vss_gl_burs
+15:19:24 BUILD TABLE: X010cb_join_vss_gl_matched
+15:19:24 ---------- TEST BURSARY INGL NOVSS ----------
+15:19:24 BUILD TABLE: X010da_test_burs_ingl_novss
+15:19:24 EXPORT DATA: R:/Debtorstud/2018/Debtor_010d_test_burs_ingl_novss_
+15:19:24 ---------- TEST BURSARY INVSS NOGL ----------
+15:19:24 BUILD TABLE: X010ea_test_burs_invss_nogl
+15:19:24 EXPORT DATA: R:/Debtorstud/2018/Debtor_010e_test_burs_invss_nogl_
+15:19:25 ---------- TEST BURSARY VSS DIFF CAMPUS GL ----------
+15:19:25 IMPORT TABLE: S:/_external_data/200_reported.txt (X010_prev_reported)
+15:19:25 BUILD TABLE: X010fa_test_burs_gl_diffcampus
+15:19:25 BUILD TABLE: X010fb_join_prev_reported
+15:19:26 EXPORT DATA: R:/Debtorstud/2018/Debtor_010fb_test_burs_gl_diffcampus_
+15:19:26 BUILD TABLE: X010fc_prev_reported
+15:19:26 EXPORT DATA: No new data to export
+15:19:27 BUILD TABLE: X010fd_impo_report_officer
+15:19:27 BUILD TABLE: X010fe_impo_report_supervisor
+15:19:27 BUILD TABLE: X010fx_test_burs_gl_diffcampus
+15:19:27 EXPORT DATA: No new data to export
+------------------------------------
+COMPLETED: C200_REPORT_STUDDEB_RECON
+----------------
+2018-07-05 15:19
+COMPLETED: C200_REPORT_STUDDEB_RECON_RUN
+----------------------------------------
+----------------
+2018-07-05 15:32
+SCRIPT: C200_REPORT_STUDDEB_RECON_RUN
+-------------------------------------
+----------------
+2018-07-05 15:32
+SCRIPT: C200_REPORT_STUDDEB_RECON
+---------------------------------
+15:32:55 OPEN DATABASE: Kfs
+15:32:56 ATTACH DATABASE: PEOPLE.SQLITE
+15:32:56 ATTACH DATABASE: KFS_SQLITE
+15:32:56 ATTACH DATABASE: VSS.SQLITE
+15:32:56 ---------- PREPARE GL TRANSACTIONS ----------
+15:33:02 BUILD TABLE: X001aa_gl_tranlist
+15:33:04 ADD COLUMN: Campus code
+15:33:05 ADD COLUMN: Transaction month
+15:33:07 ADD COLUMNS: Bursary code
+15:33:09 ADD COLUMNS: Student number
+15:33:16 ADD COLUMNS: Temp description
+15:33:16 ADD COLUMNS: Description link
+15:33:18 BUILD TABLE: X001ab_gl_transort
+15:33:20 EXPORT DATA: R:/Debtorstud/2018/Debtor_001_gltran_
+15:33:21 BUILD TABLE: X001ca_gl_balance
+15:33:21 BUILD TABLE: X001cb_gl_balmonth
+15:33:21 BUILD TABLE: X001cc_gl_summtype
+15:33:22 EXPORT DATA: R:/Debtorstud/2018/Debtor_001_glsummtype_
+15:33:22 BUILD TABLE: X001cd_gl_postmonth
+15:33:22 ---------- PREPARE VSS TRANSACTIONS ----------
+15:34:37 BUILD TABLE: X002aa_vss_tranlist
+15:36:10 ADD COLUMN: Vss campus name
+15:37:56 ADD COLUMN: Vss transaction month
+15:39:41 ADD COLUMN: Vss debit amount
+15:41:15 ADD COLUMN: Vss credit amount
+15:46:55 CALC COLUMN: Temp afr description
+15:51:31 CALC COLUMN: Temp eng description
+15:52:20 BUILD TABLE: X002ab_vss_transort
+15:52:26 BUILD TABLE: X002ca_vss_balance
+15:52:33 BUILD TABLE: X002cb_vss_balmonth
+15:52:33 ERROR: OperationalError
+15:52:33 ERROR: wrong number of arguments to function Total()
+----------------
+2018-07-05 15:52
+COMPLETED: C200_REPORT_STUDDEB_RECON_RUN
+----------------------------------------
+----------------
+2018-07-05 15:57
+SCRIPT: C200_REPORT_STUDDEB_RECON_RUN
+-------------------------------------
+----------------
+2018-07-05 15:57
+SCRIPT: C200_REPORT_STUDDEB_RECON
+---------------------------------
+15:57:22 OPEN DATABASE: Kfs
+15:57:22 ATTACH DATABASE: PEOPLE.SQLITE
+15:57:22 ATTACH DATABASE: KFS_SQLITE
+15:57:22 ATTACH DATABASE: VSS.SQLITE
+15:57:22 ---------- PREPARE GL TRANSACTIONS ----------
+15:57:27 BUILD TABLE: X001aa_gl_tranlist
+15:57:29 ADD COLUMN: Campus code
+15:57:31 ADD COLUMN: Transaction month
+15:57:33 ADD COLUMNS: Bursary code
+15:57:34 ADD COLUMNS: Student number
+15:57:41 ADD COLUMNS: Temp description
+15:57:42 ADD COLUMNS: Description link
+15:57:43 BUILD TABLE: X001ab_gl_transort
+15:57:46 EXPORT DATA: R:/Debtorstud/2018/Debtor_001_gltran_
+15:57:46 BUILD TABLE: X001ca_gl_balance
+15:57:46 BUILD TABLE: X001cb_gl_balmonth
+15:57:47 BUILD TABLE: X001cc_gl_summtype
+15:57:47 EXPORT DATA: R:/Debtorstud/2018/Debtor_001_glsummtype_
+15:57:47 BUILD TABLE: X001cd_gl_postmonth
+15:57:47 ---------- PREPARE VSS TRANSACTIONS ----------
+15:59:11 BUILD TABLE: X002aa_vss_tranlist
+16:00:44 ADD COLUMN: Vss campus name
+16:02:32 ADD COLUMN: Vss transaction month
+16:04:25 ADD COLUMN: Vss debit amount
+16:06:21 ADD COLUMN: Vss credit amount
+16:11:22 CALC COLUMN: Temp afr description
+16:15:59 CALC COLUMN: Temp eng description
+16:16:54 BUILD TABLE: X002ab_vss_transort
+16:17:00 BUILD TABLE: X002ca_vss_balance
+16:17:07 BUILD TABLE: X002cb_vss_balmonth
+16:17:19 BUILD TABLE: X002cc_vss_summtype
+16:17:19 EXPORT DATA: R:/Debtorstud/2018/Debtor_002_vsssummtype_
+16:17:24 BUILD TABLE: X002da_vss_student_balance
+16:17:25 ADD COLUMN: Vss debit amount
+16:17:27 ADD COLUMN: Vss credit amount
+16:17:27 BUILD TABLE: X002db_vss_campus_balance
+16:17:28 BUILD TABLE: X002ea_vss_gl_balance_month
+16:17:28 BUILD TABLE: X002eb_impo_report_officer
+16:17:28 BUILD TABLE: X002ec_impo_report_supervisor
+16:17:29 BUILD TABLE: X002ex_vss_gl_balance_month
+16:17:29 ---------- JOIN VSS & GL TRANSACTIONS ----------
+16:17:30 BUILD TABLE: X003aa_vss_gl_join
+16:17:30 ADD COLUMN: Vss gl matched
+16:17:30 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_
+16:17:31 BUILD TABLE: X003ab_gl_vss_join
+16:17:31 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_
+16:17:31 BUILD TABLE: X003aa_vss_gl_join_eng
+16:17:31 ADD COLUMN: Vss gl matched
+16:17:32 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_eng_
+16:17:32 BUILD TABLE: X003ab_gl_vss_join_eng
+16:17:32 EXPORT DATA: R:/Debtorstud/2018/Debtor_003_vss_gl_recon_eng_
+16:17:32 BUILD TABLE: X004aa_matched_summary
+16:17:32 BUILD TABLE: X004ba_nomatch_trantype
+16:17:33 BUILD TABLE: X004bb_impo_report_officer
+16:17:33 BUILD TABLE: X004bc_impo_report_supervisor
+16:17:33 BUILD TABLE: X004bx_nomatch_trantype
+16:17:34 BUILD TABLE: X004ca_invss_nogl
+16:17:34 BUILD TABLE: X004cb_impo_report_officer
+16:17:34 BUILD TABLE: X004cc_impo_report_supervisor
+16:17:34 BUILD TABLE: X004cx_invss_nogl
+16:17:35 BUILD TABLE: X004da_ingl_novss
+16:17:35 BUILD TABLE: X004db_impo_report_officer
+16:17:35 BUILD TABLE: X004dc_impo_report_supervisor
+16:17:35 BUILD TABLE: X004dx_ingl_novss
+16:17:35 ---------- PREPARE BURSARY TRANSACTIONS ----------
+16:17:38 BUILD TABLE: X010aa_vss_burs
+16:17:40 ADD COLUMN: Bursary vss row id
+16:17:40 BUILD VIEW: X002cd_vss_summtypeburs
+16:17:40 EXPORT DATA: R:/Debtorstud/2018/Debtor_002_vsssummtypeburs_
+16:17:42 BUILD TABLE: X010ba_gl_burs
+16:17:43 ADD COLUMN: Bursary gl row id
+16:17:44 BUILD VIEW: X001cd_gl_summtypeburs
+16:17:44 EXPORT DATA: R:/Debtorstud/2018/Debtor_001_glsummtypeburs_
+16:17:46 BUILD TABLE: X010ca_join_vss_gl_burs
+16:17:46 BUILD TABLE: X010cb_join_vss_gl_matched
+16:17:46 ---------- TEST BURSARY INGL NOVSS ----------
+16:17:47 BUILD TABLE: X010da_test_burs_ingl_novss
+16:17:47 EXPORT DATA: R:/Debtorstud/2018/Debtor_010d_test_burs_ingl_novss_
+16:17:47 ---------- TEST BURSARY INVSS NOGL ----------
+16:17:47 BUILD TABLE: X010ea_test_burs_invss_nogl
+16:17:47 EXPORT DATA: R:/Debtorstud/2018/Debtor_010e_test_burs_invss_nogl_
+16:17:47 ---------- TEST BURSARY VSS DIFF CAMPUS GL ----------
+16:17:47 IMPORT TABLE: S:/_external_data/200_reported.txt (X010_prev_reported)
+16:17:48 BUILD TABLE: X010fa_test_burs_gl_diffcampus
+16:17:48 BUILD TABLE: X010fb_join_prev_reported
+16:17:48 EXPORT DATA: R:/Debtorstud/2018/Debtor_010fb_test_burs_gl_diffcampus_
+16:17:49 BUILD TABLE: X010fc_prev_reported
+16:17:49 EXPORT DATA: S:/_external_data/200_reported
+16:17:49 BUILD TABLE: X010fd_impo_report_officer
+16:17:50 BUILD TABLE: X010fe_impo_report_supervisor
+16:17:51 BUILD TABLE: X010fx_test_burs_gl_diffcampus
+16:17:51 EXPORT DATA: R:/Debtorstud/2018/Debtor_010fx_test_burs_gl_diffcampus_
+------------------------------------
+COMPLETED: C200_REPORT_STUDDEB_RECON
+----------------
+2018-07-05 16:17
+COMPLETED: C200_REPORT_STUDDEB_RECON_RUN
+----------------------------------------

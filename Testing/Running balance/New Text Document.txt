@@ -1,0 +1,20 @@
+FROM https://dba.stackexchange.com/questions/183877/running-total-of-a-count-per-day-in-sqlite
+
+select
+a.ORDER_DATE,
+sum(b.ID_COUNT) RunningTotal
+from
+(select
+ORDER_DATE, Count(DISTINCT(SOFTWARE_ID)) ID_COUNT
+from orders
+group by ORDER_DATE
+order by ORDER_DATE) a,
+(select
+ORDER_DATE, Count(DISTINCT(SOFTWARE_ID)) ID_COUNT
+from orders
+group by ORDER_DATE
+order by ORDER_DATE) b
+where a.ORDER_DATE >= b.ORDER_DATE
+group by a.ORDER_DATE
+order by a.ORDER_DATE;
+
