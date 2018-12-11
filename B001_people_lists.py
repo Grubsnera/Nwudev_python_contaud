@@ -133,7 +133,7 @@ def People_lists():
     ilog_severity = 1
     
     # SQLITE Declare variables 
-    so_path = "W:/" #Source database path
+    so_path = "W:/People/" #Source database path
     re_path = "R:/People/"
     so_file = "People.sqlite" #Source database
     s_sql = "" #SQL statements
@@ -1992,7 +1992,7 @@ def People_lists():
     # PEOPLE_LEAVE Database ********************************************************
 
     # Declare variables
-    so_path = "W:/" #Source database path
+    so_path = "W:/People_leave/" #Source database path
     so_file = "People_leave.sqlite" #Source database
     s_sql = "" #SQL statements
 
@@ -2000,7 +2000,7 @@ def People_lists():
     with sqlite3.connect(so_path+so_file) as so_conn:
         so_curs = so_conn.cursor()
     funcfile.writelog("%t OPEN DATABASE: PEOPLE_LEAVE.SQLITE")
-    so_curs.execute("ATTACH DATABASE 'W:/People.sqlite' AS 'PEOPLE'")
+    so_curs.execute("ATTACH DATABASE 'W:/PEOPLE/People.sqlite' AS 'PEOPLE'")
     funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
 
     # Build PER ABS ATTENDANCES ****************************************************
