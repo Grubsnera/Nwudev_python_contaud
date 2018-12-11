@@ -30,7 +30,7 @@ def Kfs_lists():
     ilog_severity = 1
 
     # Declare variables
-    so_path = "W:/" #Source database path
+    so_path = "W:/Kfs/" #Source database path
     so_file = "Kfs.sqlite" #Source database
     s_sql = "" #SQL statements
 
