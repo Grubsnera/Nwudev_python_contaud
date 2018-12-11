@@ -94,12 +94,12 @@ def Oracle_to_sqlite():
             de_sch = row[6] #Database schema
 
         # Open the source ORACLE database
-        print("DSN="+so_dsn+";PWD="+so_pwd)
+        #print("DSN="+so_dsn+";PWD="+so_pwd)
         with pyodbc.connect("DSN="+so_dsn+";PWD="+so_pwd) as so_con:
             so_cur = so_con.cursor()
 
         # Open the destination SQLite database
-        print(de_pat+de_fil)
+        #print(de_pat+de_fil)
         with sqlite3.connect(de_pat+de_fil) as de_con:
             de_cur = de_con.cursor()
 
