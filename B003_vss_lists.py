@@ -32,7 +32,7 @@ def Vss_lists():
     ilog_severity = 1
 
     # Declare variables
-    so_path = "W:/" #Source database path
+    so_path = "W:/Vss/" #Source database path
     so_file = "Vss.sqlite" #Source database
     re_path = "R:/Vss/" #Results
     ed_path = "S:/_external_data/"
