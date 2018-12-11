@@ -36,7 +36,7 @@ def Report_studdeb_recon():
     ilog_severity = 1
 
     # Declare variables
-    so_path = "W:/" #Source database path
+    so_path = "W:/Kfs_vss_studdeb/" #Source database path
     re_path = "R:/Debtorstud/" #Results
     ed_path = "S:/_external_data/" #External data
     so_file = "Kfs_vss_studdeb.sqlite" #Source database
@@ -50,11 +50,11 @@ def Report_studdeb_recon():
     funcfile.writelog("%t OPEN DATABASE: Kfs")
 
     # Attach data sources
-    so_curs.execute("ATTACH DATABASE 'W:/People.sqlite' AS 'PEOPLE'")
+    so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
     funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
-    so_curs.execute("ATTACH DATABASE 'W:/Kfs.sqlite' AS 'KFS'")
-    funcfile.writelog("%t ATTACH DATABASE: KFS_SQLITE")
-    so_curs.execute("ATTACH DATABASE 'W:/Vss.sqlite' AS 'VSS'")
+    so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs.sqlite' AS 'KFS'")
+    funcfile.writelog("%t ATTACH DATABASE: KFS.SQLITE")
+    so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss.sqlite' AS 'VSS'")
     funcfile.writelog("%t ATTACH DATABASE: VSS.SQLITE")
 
     """*************************************************************************
