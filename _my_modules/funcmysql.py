@@ -5,6 +5,7 @@ Copyright (c) AB Janse v Rensburg 2018-10-27
 
 """ Short description of functions *********************************************
 mysql_open 		Open a MYSQL database and return the connection string
+Test
 **************************************************************************** """
 
 # Import the system objects
