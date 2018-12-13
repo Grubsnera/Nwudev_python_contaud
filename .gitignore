@@ -114,15 +114,9 @@ dmypy.json
 .pyre/
 
 # Albert
-*.csv
-_my_modules/
+/*.csv
 funcmysql.py
 _external_data/
-*.*
 History/
-*.*
 Logs/
-*.*
 Testing/
-*.*
-
