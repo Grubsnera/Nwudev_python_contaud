@@ -27,7 +27,7 @@ import sqlite3
 import sys
 
 # Add own module path
-sys.path.append('X:\\Python\\_my_modules')
+sys.path.append('S:/_my_modules')
 
 # Import own modules
 import funcdate
@@ -42,7 +42,7 @@ funcfile.writelog("SCRIPT: Report_vss_deferments")
 
 # DECLARE MODULE WIDE VARIABLES ************************************************
 
-so_path = "W:/" #Source database path
+so_path = "W:/Vss_deferment/" #Source database path
 so_file = "Vss_deferment.sqlite" #Source database
 s_sql = "" #SQL statements
 
@@ -54,7 +54,7 @@ with sqlite3.connect(so_path+so_file) as so_conn:
 
 funcfile.writelog("%t OPEN DATABASE: Vss_deferment")
 
-so_curs.execute("ATTACH DATABASE 'W:/Vss.sqlite' AS 'VSS'")
+so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss.sqlite' AS 'VSS'")
 funcfile.writelog("%t ATTACH DATABASE: Vss.sqlite")
 
 # 01 BUILD THE DEFERMENT LIST **************************************************
@@ -151,7 +151,7 @@ funcfile.writelog("%t BUILD TABLE: X001_Deferments_prev")
 
 sr_file = "X001_deferments_prev"
 sr_filet = sr_file
-sx_path = "O:/Nwudata/Debtorstud/" + funcdate.prev_year() + "/"
+sx_path = "R:/Debtorstud/" + funcdate.prev_year() + "/"
 sx_file = "Deferment_001_deferment_"
 sx_filet = sx_file + funcdate.today_file() #Today
 
@@ -208,7 +208,7 @@ funcfile.writelog("%t BUILD TABLE: X001_Deferments_curr")
 
 sr_file = "X001_deferments_curr"
 sr_filet = sr_file
-sx_path = "O:/Nwudata/Debtorstud/" + funcdate.cur_year() + "/"
+sx_path = "R:/Debtorstud/" + funcdate.cur_year() + "/"
 sx_file = "Deferment_001_deferment_"
 sx_filet = sx_file + funcdate.today_file() #Today
 
