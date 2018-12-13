@@ -1,3 +1,0 @@
-import error
-
-error.h()
