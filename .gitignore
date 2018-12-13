@@ -115,7 +115,11 @@ dmypy.json
 
 # Albert
 _external_data/
+*.*
 History/
+*.*
 Logs/
+*.*
 Testing/
+*.*
 
