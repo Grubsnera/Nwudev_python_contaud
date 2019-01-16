@@ -72,8 +72,8 @@ funcfile.writelog("%t ATTACH DATABASE: Vss.sqlite")
 print("DEFERMENTS")
 print("----------")
 print("Build deferments...")
-
-s_sql = "CREATE TABLE X000_DEFERMENTS AS" + """
+sr_file = "X000_Deferments"
+s_sql = "CREATE TABLE " + sr_file + " AS" + """
 SELECT
   ACCDEFERMENT.KACCDEFERMENTID,
   ACCDEFERMENT.FACCID,
@@ -105,17 +105,15 @@ ORDER BY
   VSS.STUDACC.FBUSENTID,
   ACCDEFERMENT.AUDITDATETIME
 """
-
-so_curs.execute("DROP TABLE IF EXISTS X000_DEFERMENTS")
+so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 so_curs.execute(s_sql)
-
-funcfile.writelog("%t BUILD TABLE: X000_Deferments")
+funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
 # 02 BUILD THE PREVIOUS YEAR DEFERMENT LIST ************************************
 
 print("Build the previous deferments...")
-
-s_sql = "CREATE TABLE X001_DEFERMENTS_PREV AS" + """
+sr_file = "X000_Deferments_prev"
+s_sql = "CREATE TABLE " + sr_file + " AS" + """
 SELECT
   X000_DEFERMENTS.KACCDEFERMENTID,
   X000_DEFERMENTS.FBUSENTID AS 'STUDENT',
@@ -145,34 +143,26 @@ WHERE
 """
 s_sql = s_sql.replace("%PYEARB%",funcdate.prev_yearbegin())
 s_sql = s_sql.replace("%PYEARE%",funcdate.prev_yearend())
-so_curs.execute("DROP TABLE IF EXISTS X001_DEFERMENTS_PREV")
+so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 so_curs.execute(s_sql)
-
-funcfile.writelog("%t BUILD TABLE: X001_Deferments_prev")
-
+funcfile.writelog("%t BUILD TABLE: " + sr_file)
 # Export the declaration data
-
-sr_file = "X001_deferments_prev"
 sr_filet = sr_file
 sx_path = "R:/Debtorstud/" + funcdate.prev_year() + "/"
-sx_file = "Deferment_001_deferment_"
+sx_file = "Deferment_000_deferment_"
 sx_filet = sx_file + funcdate.today_file() #Today
-
 print("Export data..." + sx_path + sx_filet)
-
 # Read the header data
 s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-
 # Write the data
 funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-
 funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
 
 # 03 BUILD THE CURRENT DEFERMENT LIST ******************************************
 
 print("Build the current deferments...")
-
-s_sql = "CREATE TABLE X001_DEFERMENTS_CURR AS" + """
+sr_file = "X000_Deferments_curr"
+s_sql = "CREATE TABLE " + sr_file + " AS" + """
 SELECT
   X000_DEFERMENTS.KACCDEFERMENTID,
   X000_DEFERMENTS.FBUSENTID AS 'STUDENT',
@@ -202,28 +192,20 @@ WHERE
 """
 s_sql = s_sql.replace("%CYEARB%",funcdate.cur_yearbegin())
 s_sql = s_sql.replace("%CYEARE%",funcdate.cur_yearend())
-so_curs.execute("DROP TABLE IF EXISTS X001_DEFERMENTS_CURR")
+so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 so_curs.execute(s_sql)
-
-funcfile.writelog("%t BUILD TABLE: X001_Deferments_curr")
-
+funcfile.writelog("%t BUILD TABLE: " + sr_file)
 # Export the declaration data
-
-sr_file = "X001_deferments_curr"
 sr_filet = sr_file
 sx_path = "R:/Debtorstud/" + funcdate.cur_year() + "/"
-sx_file = "Deferment_001_deferment_"
+sx_file = "Deferment_000_deferment_"
 sx_filet = sx_file + funcdate.today_file() #Today
-
 print("Export data..." + sx_path + sx_filet)
-
 # Read the header data
 s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-
 # Write the data
 funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
 funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
-
 funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
 
 # 04 OBTAIN THE LIST OF CURRENT REGISTERED STUDENTS ****************************
@@ -233,7 +215,7 @@ funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
 # Only include active students (ACTIVE_IND = 'Active')
 
 print("Obtain the current registered students...")
-sr_file = "X002_STUDENTS_CURR"
+sr_file = "X000_Students_curr"
 s_sql = "CREATE TABLE " + sr_file+ " AS" + """
 SELECT
   *
@@ -253,7 +235,7 @@ funcfile.writelog("%t BUILD TABLE: " + sr_file)
 # All transaction type 001, 031 and 061 transactions
 
 print("Obtain the current year opening balances...")
-sr_file = "X003_TRAN_BALOPEN_CURR"
+sr_file = "X000_Tran_balopen_curr"
 s_sql = "CREATE TABLE " + sr_file+ " AS" + """
 SELECT
   VSS.X010_Studytrans.FBUSENTID AS STUDENT,
@@ -276,7 +258,7 @@ funcfile.writelog("%t BUILD TABLE: " + sr_file)
 # All transaction type 002 transactions
 
 print("Obtain the current year registration fee transactions...")
-sr_file = "X003_TRAN_FEEREG_CURR"
+sr_file = "X000_Tran_feereg_curr"
 s_sql = "CREATE TABLE " + sr_file+ " AS" + """
 SELECT
   VSS.X010_Studytrans.FBUSENTID AS STUDENT,
