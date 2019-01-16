@@ -10,6 +10,7 @@ Can be run at any time depeninding on update status of dependancies listed
 03 Build the current year deferment list (X001_deferments_curr)
 04 OBTAIN THE LIST OF CURRENT REGISTERED STUDENTS (X002_Students_curr)
 05 OBTAIN A LIST OF CURRENT YEAR OPENING BALANCES (X003_TRAN_BALOPEN_CURR)
+06 OBTAIN A LIST OF CURRENT YEAR REGISTRATION FEES (X003_TRAN_FEEREG_CURR)
 **************************************************************************** """
 
 """ DEPENDANCIES ***************************************************************
@@ -263,6 +264,27 @@ WHERE
   (VSS.X010_Studytrans.TRANSCODE = "001") OR
   (VSS.X010_Studytrans.TRANSCODE = "031") OR
   (VSS.X010_Studytrans.TRANSCODE = "061")
+GROUP BY
+  VSS.X010_Studytrans.FBUSENTID
+"""
+so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+so_curs.execute(s_sql)
+funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+# 06 OBTAIN A LIST OF CURRENT YEAR REGISTRATION FEES ***************************
+
+# All transaction type 002 transactions
+
+print("Obtain the current year registration fee transactions...")
+sr_file = "X003_TRAN_FEEREG_CURR"
+s_sql = "CREATE TABLE " + sr_file+ " AS" + """
+SELECT
+  VSS.X010_Studytrans.FBUSENTID AS STUDENT,
+  Total(VSS.X010_Studytrans.AMOUNT) AS FEE_REG
+FROM
+  VSS.X010_Studytrans
+WHERE
+  VSS.X010_Studytrans.TRANSCODE = "002"
 GROUP BY
   VSS.X010_Studytrans.FBUSENTID
 """
