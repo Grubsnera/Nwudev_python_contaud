@@ -9,6 +9,7 @@ Can be run at any time depeninding on update status of dependancies listed
 02 Build the previous year deferment list (X001_deferments_prev)
 03 Build the current year deferment list (X001_deferments_curr)
 04 OBTAIN THE LIST OF CURRENT REGISTERED STUDENTS (X002_Students_curr)
+05 OBTAIN A LIST OF CURRENT YEAR OPENING BALANCES (X003_TRAN_BALOPEN_CURR)
 **************************************************************************** """
 
 """ DEPENDANCIES ***************************************************************
@@ -241,6 +242,29 @@ WHERE
   VSS.X001cx_Stud_qual_curr.QUAL_TYPE Not Like '%Short Course%' AND
   VSS.X001cx_Stud_qual_curr.PRESENT_CAT = 'Contact' AND
   VSS.X001cx_Stud_qual_curr.ACTIVE_IND = 'Active'
+"""
+so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+so_curs.execute(s_sql)
+funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+# 05 OBTAIN A LIST OF CURRENT YEAR OPENING BALANCES ****************************
+
+# All transaction type 001, 031 and 061 transactions
+
+print("Obtain the current year opening balances...")
+sr_file = "X003_TRAN_BALOPEN_CURR"
+s_sql = "CREATE TABLE " + sr_file+ " AS" + """
+SELECT
+  VSS.X010_Studytrans.FBUSENTID AS STUDENT,
+  Total(VSS.X010_Studytrans.AMOUNT) AS BAL_OPEN
+FROM
+  VSS.X010_Studytrans
+WHERE
+  (VSS.X010_Studytrans.TRANSCODE = "001") OR
+  (VSS.X010_Studytrans.TRANSCODE = "031") OR
+  (VSS.X010_Studytrans.TRANSCODE = "061")
+GROUP BY
+  VSS.X010_Studytrans.FBUSENTID
 """
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 so_curs.execute(s_sql)
