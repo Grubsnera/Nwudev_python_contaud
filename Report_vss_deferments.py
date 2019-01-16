@@ -239,7 +239,7 @@ sr_file = "X000_Tran_balopen_curr"
 s_sql = "CREATE TABLE " + sr_file+ " AS" + """
 SELECT
   VSS.X010_Studytrans.FBUSENTID AS STUDENT,
-  Total(VSS.X010_Studytrans.AMOUNT) AS BAL_OPEN
+  Cast(Total(VSS.X010_Studytrans.AMOUNT) AS REAL) AS BAL_OPEN
 FROM
   VSS.X010_Studytrans
 WHERE
@@ -262,7 +262,7 @@ sr_file = "X000_Tran_feereg_curr"
 s_sql = "CREATE TABLE " + sr_file+ " AS" + """
 SELECT
   VSS.X010_Studytrans.FBUSENTID AS STUDENT,
-  Total(VSS.X010_Studytrans.AMOUNT) AS FEE_REG
+  Cast(Total(VSS.X010_Studytrans.AMOUNT) AS REAL) AS FEE_REG
 FROM
   VSS.X010_Studytrans
 WHERE
