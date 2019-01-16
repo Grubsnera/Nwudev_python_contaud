@@ -11,6 +11,7 @@ Can be run at any time depeninding on update status of dependancies listed
 04 OBTAIN THE LIST OF CURRENT REGISTERED STUDENTS (X002_Students_curr)
 05 OBTAIN A LIST OF CURRENT YEAR OPENING BALANCES (X003_TRAN_BALOPEN_CURR)
 06 OBTAIN A LIST OF CURRENT YEAR REGISTRATION FEES (X003_TRAN_FEEREG_CURR)
+07 ADD OPEN BALANCE TO REGISTERED STUDENTS (X001aa_Students)
 **************************************************************************** """
 
 """ DEPENDANCIES ***************************************************************
@@ -211,6 +212,7 @@ funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
 # 04 OBTAIN THE LIST OF CURRENT REGISTERED STUDENTS ****************************
 
 # Exclude all short courses (QUAL_TYPE Not Like '%Short Course%')
+# Only main qualifications (ISMAINQUALLEVEL = 1)
 # Only include contact students (PRESENT_CAT = 'Contact')
 # Only include active students (ACTIVE_IND = 'Active')
 
@@ -223,9 +225,10 @@ FROM
   VSS.X001cx_Stud_qual_curr
 WHERE
   VSS.X001cx_Stud_qual_curr.QUAL_TYPE Not Like '%Short Course%' AND
-  VSS.X001cx_Stud_qual_curr.PRESENT_CAT = 'Contact' AND
+  VSS.X001cx_Stud_qual_curr.ISMAINQUALLEVEL = 1 AND
   VSS.X001cx_Stud_qual_curr.ACTIVE_IND = 'Active'
 """
+# VSS.X001cx_Stud_qual_curr.PRESENT_CAT = 'Contact' AND
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 so_curs.execute(s_sql)
 funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -269,6 +272,22 @@ WHERE
   VSS.X010_Studytrans.TRANSCODE = "002"
 GROUP BY
   VSS.X010_Studytrans.FBUSENTID
+"""
+so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+so_curs.execute(s_sql)
+funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+# 07 ADD OPEN BALANCE TO REGISTERED STUDENTS ***********************************
+
+print("Add opening balance to list of students...")
+sr_file = "X001aa_Students"
+s_sql = "CREATE TABLE " + sr_file+ " AS" + """
+SELECT
+  X000_Students_curr.*,
+  X000_Tran_balopen_curr.BAL_OPEN AS BALOPEN_AMOUNT
+FROM
+  X000_Students_curr
+  INNER JOIN X000_Tran_balopen_curr ON X000_Tran_balopen_curr.STUDENT = X000_Students_curr.KSTUDBUSENTID
 """
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 so_curs.execute(s_sql)
