@@ -8,6 +8,7 @@ Can be run at any time depeninding on update status of dependancies listed
 01 Build the current year deferment list (X000_DEFERMENTS)
 02 Build the previous year deferment list (X001_deferments_prev)
 03 Build the current year deferment list (X001_deferments_curr)
+04 OBTAIN THE LIST OF CURRENT REGISTERED STUDENTS (X002_Students_curr)
 **************************************************************************** """
 
 """ DEPENDANCIES ***************************************************************
@@ -222,6 +223,28 @@ funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
 funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
 
 funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
+
+# 04 OBTAIN THE LIST OF CURRENT REGISTERED STUDENTS ****************************
+
+# Exclude all short courses (QUAL_TYPE Not Like '%Short Course%')
+# Only include contact students (PRESENT_CAT = 'Contact')
+# Only include active students (ACTIVE_IND = 'Active')
+
+print("Obtain the current registered students...")
+sr_file = "X002_STUDENTS_CURR"
+s_sql = "CREATE TABLE " + sr_file+ " AS" + """
+SELECT
+  *
+FROM
+  VSS.X001cx_Stud_qual_curr
+WHERE
+  VSS.X001cx_Stud_qual_curr.QUAL_TYPE Not Like '%Short Course%' AND
+  VSS.X001cx_Stud_qual_curr.PRESENT_CAT = 'Contact' AND
+  VSS.X001cx_Stud_qual_curr.ACTIVE_IND = 'Active'
+"""
+so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+so_curs.execute(s_sql)
+funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
 # CLOSE THE DATABASE CONNECTION ************************************************
 so_conn.close()
