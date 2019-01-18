@@ -37,25 +37,20 @@ with sqlite3.connect(so_path+so_file) as so_conn:
     so_curs = so_conn.cursor()
 
 funcfile.writelog("%t OPEN DATABASE: Vss_deferment")
-
 so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss.sqlite' AS 'VSS'")
 funcfile.writelog("%t ATTACH DATABASE: Vss.sqlite")
 
-# 07 ADD OPEN BALANCE TO REGISTERED STUDENTS ***********************************
+funcfile.writelog("%t OPEN DATABASE: Kfs_vss_studdeb")
+so_curs.execute("ATTACH DATABASE 'W:/Kfs_vss_studdeb/Kfs_vss_studdeb.sqlite' AS 'TRAN'")
+funcfile.writelog("%t ATTACH DATABASE: Kfs_vss_studdeb.sqlite")
 
-print("Add opening balance to list of students...")
-sr_file = "X001aa_Students"
-s_sql = "CREATE TABLE " + sr_file+ " AS" + """
-SELECT
-  X000_Students_curr.*,
-  X000_Tran_balopen_curr.BAL_OPEN AS BALOPEN_AMOUNT
-FROM
-  X000_Students_curr
-  INNER JOIN X000_Tran_balopen_curr ON X000_Tran_balopen_curr.STUDENT = X000_Students_curr.KSTUDBUSENTID
-"""
-so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-so_curs.execute(s_sql)
-funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+
+
+
+
+
+
 
 # CLOSE THE DATABASE CONNECTION ************************************************
 so_conn.close()
