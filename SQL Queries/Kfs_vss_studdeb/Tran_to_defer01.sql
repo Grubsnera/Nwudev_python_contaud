@@ -1,0 +1,13 @@
+﻿SELECT
+  X002ab_vss_transort.STUDENT_VSS,
+  X002ab_vss_transort.CAMPUS_VSS,
+  X002ab_vss_transort.TRANSCODE_VSS,
+  X002ab_vss_transort.MONTH_VSS,
+  X002ab_vss_transort.TRANSDATE_VSS,
+  X002ab_vss_transort.DESCRIPTION_E,
+  X002ab_vss_transort.TRANUSER,
+  X002ab_vss_transort.AMOUNT_VSS,
+  X002ab_vss_transort.AMOUNT_DT,
+  X002ab_vss_transort.AMOUNT_CR
+FROM
+  X002ab_vss_transort
