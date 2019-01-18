@@ -57,9 +57,12 @@ with sqlite3.connect(so_path+so_file) as so_conn:
     so_curs = so_conn.cursor()
 
 funcfile.writelog("%t OPEN DATABASE: Vss_deferment")
-
 so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss.sqlite' AS 'VSS'")
 funcfile.writelog("%t ATTACH DATABASE: Vss.sqlite")
+
+funcfile.writelog("%t OPEN DATABASE: Kfs_vss_studdeb")
+so_curs.execute("ATTACH DATABASE 'W:/Kfs_vss_studdeb/Kfs_vss_studdeb.sqlite' AS 'TRAN'")
+funcfile.writelog("%t ATTACH DATABASE: Kfs_vss_studdeb.sqlite")
 
 # 01 BUILD THE DEFERMENT LIST **************************************************
 
@@ -213,7 +216,6 @@ funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
 
 # Exclude all short courses (QUAL_TYPE Not Like '%Short Course%')
 # Only main qualifications (ISMAINQUALLEVEL = 1)
-# Only include contact students (PRESENT_CAT = 'Contact')
 # Only include active students (ACTIVE_IND = 'Active')
 
 print("Obtain the current registered students...")
@@ -233,65 +235,131 @@ so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 so_curs.execute(s_sql)
 funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-# 05 OBTAIN A LIST OF CURRENT YEAR OPENING BALANCES ****************************
+# OBTAIN A COPY OF VSS TRANSACTIONS TO DATE (CURRENT YEAR STUDENT ACCOUNT ******
 
-# All transaction type 001, 031 and 061 transactions
-
-print("Obtain the current year opening balances...")
-sr_file = "X000_Tran_balopen_curr"
+print("Import current year student transactions...")
+sr_file = "X000_Transaction_curr"
 s_sql = "CREATE TABLE " + sr_file+ " AS" + """
 SELECT
-  VSS.X010_Studytrans.FBUSENTID AS STUDENT,
-  Cast(Total(VSS.X010_Studytrans.AMOUNT) AS REAL) AS BAL_OPEN
+  TRAN.X002ab_vss_transort.STUDENT_VSS,
+  TRAN.X002ab_vss_transort.CAMPUS_VSS,
+  TRAN.X002ab_vss_transort.TRANSCODE_VSS,
+  TRAN.X002ab_vss_transort.MONTH_VSS,
+  TRAN.X002ab_vss_transort.TRANSDATE_VSS,
+  TRAN.X002ab_vss_transort.DESCRIPTION_E,
+  TRAN.X002ab_vss_transort.TRANUSER,
+  TRAN.X002ab_vss_transort.AMOUNT_VSS,
+  TRAN.X002ab_vss_transort.AMOUNT_DT,
+  TRAN.X002ab_vss_transort.AMOUNT_CR
 FROM
-  VSS.X010_Studytrans
+  TRAN.X002ab_vss_transort
+"""
+so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+so_curs.execute(s_sql)
+funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+# CALCULATE THE STUDENT ACCOUNT OPENING BALANCE ********************************
+
+print("Calculate the account opening balance...")
+sr_file = "X001aa_Trans_balopen"
+s_sql = "CREATE VIEW " + sr_file+ " AS" + """
+SELECT
+  X000_Transaction_curr.STUDENT_VSS,
+  CAST(TOTAL(X000_Transaction_curr.AMOUNT_CR) AS REAL) AS BAL_OPEN
+FROM
+  X000_Transaction_curr
 WHERE
-  (VSS.X010_Studytrans.TRANSCODE = "001") OR
-  (VSS.X010_Studytrans.TRANSCODE = "031") OR
-  (VSS.X010_Studytrans.TRANSCODE = "061")
+  (X000_Transaction_curr.TRANSCODE_VSS = "001") OR
+  (X000_Transaction_curr.TRANSCODE_VSS = "031") OR
+  (X000_Transaction_curr.TRANSCODE_VSS = "061")
 GROUP BY
-  VSS.X010_Studytrans.FBUSENTID
+  X000_Transaction_curr.STUDENT_VSS
 """
-so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
 so_curs.execute(s_sql)
-funcfile.writelog("%t BUILD TABLE: " + sr_file)
+funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
-# 06 OBTAIN A LIST OF CURRENT YEAR REGISTRATION FEES ***************************
+# CALCULATE THE REGISTRATION FEES LEVIED ***************************************
 
-# All transaction type 002 transactions
-
-print("Obtain the current year registration fee transactions...")
-sr_file = "X000_Tran_feereg_curr"
-s_sql = "CREATE TABLE " + sr_file+ " AS" + """
+print("Calculate the registration fee transactions...")
+sr_file = "X001ab_Trans_feereg"
+s_sql = "CREATE VIEW " + sr_file+ " AS" + """
 SELECT
-  VSS.X010_Studytrans.FBUSENTID AS STUDENT,
-  Cast(Total(VSS.X010_Studytrans.AMOUNT) AS REAL) AS FEE_REG
+  X000_Transaction_curr.STUDENT_VSS,
+  CAST(TOTAL(X000_Transaction_curr.AMOUNT_CR) AS REAL) AS FEE_REG
 FROM
-  VSS.X010_Studytrans
+  X000_Transaction_curr
 WHERE
-  VSS.X010_Studytrans.TRANSCODE = "002"
+  X000_Transaction_curr.TRANSCODE_VSS = "002"
 GROUP BY
-  VSS.X010_Studytrans.FBUSENTID
+  X000_Transaction_curr.STUDENT_VSS
 """
-so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
 so_curs.execute(s_sql)
-funcfile.writelog("%t BUILD TABLE: " + sr_file)
+funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
-# 07 ADD OPEN BALANCE TO REGISTERED STUDENTS ***********************************
+# ADD THE REGISTRATION DATE TO THE LIST OF TRANSACTIONS ************************
 
-print("Add opening balance to list of students...")
-sr_file = "X001aa_Students"
-s_sql = "CREATE TABLE " + sr_file+ " AS" + """
+print("Add the registration date to the list of transactions...")
+sr_file = "X001ac_Trans_addreg"
+s_sql = "CREATE VIEW " + sr_file+ " AS" + """
 SELECT
-  X000_Students_curr.*,
-  X000_Tran_balopen_curr.BAL_OPEN AS BALOPEN_AMOUNT
+  X000_Transaction_curr.*,
+  X000_Students_curr.DATEENROL
 FROM
-  X000_Students_curr
-  INNER JOIN X000_Tran_balopen_curr ON X000_Tran_balopen_curr.STUDENT = X000_Students_curr.KSTUDBUSENTID
+  X000_Transaction_curr
+  INNER JOIN X000_Students_curr ON X000_Students_curr.KSTUDBUSENTID = X000_Transaction_curr.STUDENT_VSS
 """
-so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
 so_curs.execute(s_sql)
-funcfile.writelog("%t BUILD TABLE: " + sr_file)
+funcfile.writelog("%t BUILD VIEW: " + sr_file)
+
+# CALCULATE THE STUDENT ACCOUNT BALANCE ON REGISTRATION DATE *******************
+
+print("Calculate the account balance on registration date...")
+sr_file = "X001ad_Trans_balreg"
+s_sql = "CREATE VIEW " + sr_file+ " AS" + """
+SELECT
+  X001ac_Trans_addreg.STUDENT_VSS,
+  CAST(TOTAL(X001ac_Trans_addreg.AMOUNT_VSS) AS REAL) AS BAL_REG
+FROM
+  X001ac_Trans_addreg
+WHERE
+  X001ac_Trans_addreg.TRANSDATE_VSS <= X001ac_Trans_addreg.DATEENROL
+GROUP BY
+  X001ac_Trans_addreg.STUDENT_VSS
+"""
+so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
+so_curs.execute(s_sql)
+funcfile.writelog("%t BUILD VIEW: " + sr_file)
+
+# CALCULATE THE STUDENT ACCOUNT CREDIT TRANSACTIONS AFTER REGISTRATION *********
+
+print("Calculate the credits after registration date...")
+sr_file = "X001ae_Trans_crereg"
+s_sql = "CREATE VIEW " + sr_file+ " AS" + """
+SELECT
+  X001ac_Trans_addreg.STUDENT_VSS,
+  CAST(TOTAL(X001ac_Trans_addreg.AMOUNT_CR) AS REAL) AS CRE_REG
+FROM
+  X001ac_Trans_addreg
+WHERE
+  X001ac_Trans_addreg.TRANSDATE_VSS > X001ac_Trans_addreg.DATEENROL
+GROUP BY
+  X001ac_Trans_addreg.STUDENT_VSS
+"""
+so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
+so_curs.execute(s_sql)
+funcfile.writelog("%t BUILD VIEW: " + sr_file)
+
+
+
+
+
+
+
+
+
 
 # CLOSE THE DATABASE CONNECTION ************************************************
 so_conn.close()
