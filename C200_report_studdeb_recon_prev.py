@@ -622,6 +622,15 @@ so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
 so_curs.execute(s_sql)
 so_conn.commit()
 funcfile.writelog("%t BUILD TABLE: "+sr_file)
+# Export the data
+print("Export vss campus balances per transaction type...")
+sr_filet = sr_file
+sx_path = re_path + funcdate.prev_year() + "/"
+sx_file = "Debtor_001_vsssummmonth_"
+sx_filet = sx_file + funcdate.prev_monthendfile()
+s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
+funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)   
 
 # Calculate vss balances per campus per month per transaction type *********
 print("Calculate vss balances per transaction type...")
