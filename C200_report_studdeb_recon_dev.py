@@ -53,125 +53,37 @@ funcfile.writelog("%t OPEN DATABASE: Kfs_vss_studdeb")
 
 # Development script ***********************************************************
 
-gl_month = "07"
 
 
-
-"""*************************************************************************
-***
-*** TEST TRANSACTION TYPES IN GL BUT NOT IN VSS
-***
-*** Detail list of transaction types in gl but not in vss
-***   Add rowid campus+month+trantype
-***   Add org as nwu
-*** Import reporting officer name and email address for campus and organization
-*** Import reporting supervisor name and email address for campus and organization
-*** 
-*************************************************************************"""
-
-# Identify transaction types in gl but not in vss ******************************
-print("Identify transaction types in gl but not in vss...")
-sr_file = "X004da_ingl_novss"
-s_sql = "CREATE TABLE " + sr_file + " AS " + """
+# Calculate vss balances per campus per month ******************************
+print("Calculate vss campus balances per month...")
+sr_file = "X002cb_vss_balmonth"
+s_sql = "CREATE TABLE "+sr_file+" AS " + """
 SELECT
-  UPPER(SUBSTR(X003ab_gl_vss_join.CAMPUS_VSS,1,3))||TRIM(X003ab_gl_vss_join.MONTH_VSS)||REPLACE(UPPER(X003ab_gl_vss_join.DESC_VSS),' ','') AS ROWID,
-  'NWU' AS ORG,
-  X003ab_gl_vss_join.CAMPUS_VSS AS CAMPUS,
-  X003ab_gl_vss_join.MONTH_VSS AS MONTH,
-  X003ab_gl_vss_join.DESC_VSS AS GL_DESCRIPTION,
-  Round(X003ab_gl_vss_join.AMOUNT,2) AS AMOUNT_GL
+  X002ab_vss_transort.CAMPUS_VSS,
+  X002ab_vss_transort.MONTH_VSS,
+  Total(X002ab_vss_transort.AMOUNT_DT) AS AMOUNT_DT,
+  Total(X002ab_vss_transort.AMOUNT_CR) AS AMOUNT_CT,
+  Total(X002ab_vss_transort.AMOUNT_VSS) AS AMOUNT
 FROM
-  X003ab_gl_vss_join
-ORDER BY
-  X003ab_gl_vss_join.MONTH_VSS,
-  X003ab_gl_vss_join.CAMPUS_VSS,
-  X003ab_gl_vss_join.DESC_VSS
+  X002ab_vss_transort
+GROUP BY
+  X002ab_vss_transort.CAMPUS_VSS,
+  X002ab_vss_transort.MONTH_VSS
 ;"""
-so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+so_curs.execute("DROP TABLE IF EXISTS "+sr_file)    
 so_curs.execute(s_sql)
 so_conn.commit()
-funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
-# Import the reporting officers ************************************************
-print("Import reporting officers from VSS.SQLITE...")
-sr_file = "X004db_impo_report_officer"
-s_sql = "CREATE TABLE " + sr_file + " AS " + """
-SELECT
-  VSS.X000_OWN_LOOKUPS.LOOKUP,
-  VSS.X000_OWN_LOOKUPS.LOOKUP_CODE AS CAMPUS,
-  VSS.X000_OWN_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-  PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
-  PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
-FROM
-  VSS.X000_OWN_LOOKUPS
-  LEFT JOIN PEOPLE.X002_PEOPLE_CURR ON PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = VSS.X000_OWN_LOOKUPS.LOOKUP_DESCRIPTION
-WHERE
-  VSS.X000_OWN_LOOKUPS.LOOKUP = 'stud_debt_recon_test_ingl_novss_officer'
-;"""
-so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-so_curs.execute(s_sql)
-so_conn.commit()
-funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
-# Import the reporting supervisors *********************************************
-print("Import reporting supervisors from VSS.SQLITE...")
-sr_file = "X004dc_impo_report_supervisor"
-s_sql = "CREATE TABLE " + sr_file + " AS " + """
-SELECT
-  VSS.X000_OWN_LOOKUPS.LOOKUP,
-  VSS.X000_OWN_LOOKUPS.LOOKUP_CODE AS CAMPUS,
-  VSS.X000_OWN_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-  PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
-  PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
-FROM
-  VSS.X000_OWN_LOOKUPS
-  LEFT JOIN PEOPLE.X002_PEOPLE_CURR ON PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = VSS.X000_OWN_LOOKUPS.LOOKUP_DESCRIPTION
-WHERE
-  VSS.X000_OWN_LOOKUPS.LOOKUP = 'stud_debt_recon_test_ingl_novss_supervisor'
-;"""
-so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-so_curs.execute(s_sql)
-so_conn.commit()
-funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
-# Add the reporting officer and supervisor *************************************
-print("Add the reporting officer and supervisor...")
-sr_file = "X004dx_ingl_novss"
-s_sql = "CREATE TABLE " + sr_file + " AS " + """
-SELECT
-  X004da_ingl_novss."ROWID",
-  X004da_ingl_novss.ORG,
-  X004da_ingl_novss.CAMPUS,
-  X004da_ingl_novss.MONTH,
-  X004da_ingl_novss.GL_DESCRIPTION,
-  X004da_ingl_novss.AMOUNT_GL,
-  CAMP_OFFICER.EMPLOYEE_NUMBER AS OFFICER_CAMP,
-  CAMP_OFFICER.KNOWN_NAME AS OFFICER_NAME_CAMP,
-  CAMP_OFFICER.EMAIL_ADDRESS AS OFFICER_MAIL_CAMP,
-  ORG_OFFICER.EMPLOYEE_NUMBER AS OFFICER_ORG,
-  ORG_OFFICER.KNOWN_NAME AS OFFICER_NAME_ORG,
-  ORG_OFFICER.EMAIL_ADDRESS AS OFFICER_MAIL_ORG,
-  CAMP_SUPERVISOR.EMPLOYEE_NUMBER AS SUPERVISOR_CAMP,
-  CAMP_SUPERVISOR.KNOWN_NAME AS SUPERVISOR_NAME_CAMP,
-  CAMP_SUPERVISOR.EMAIL_ADDRESS AS SUPERVISOR_MAIL_CAMP,
-  ORG_SUPERVISOR.EMPLOYEE_NUMBER AS SUPERVISOR_ORG,
-  ORG_SUPERVISOR.KNOWN_NAME AS SUPERVISOR_NAME_ORG,
-  ORG_SUPERVISOR.EMAIL_ADDRESS AS SUPERVISOR_MAIL_ORG
-FROM
-  X004da_ingl_novss
-  LEFT JOIN X004db_impo_report_officer CAMP_OFFICER ON CAMP_OFFICER.CAMPUS = X004da_ingl_novss.CAMPUS
-  LEFT JOIN X004db_impo_report_officer ORG_OFFICER ON ORG_OFFICER.CAMPUS = X004da_ingl_novss.ORG
-  LEFT JOIN X004dc_impo_report_supervisor CAMP_SUPERVISOR ON CAMP_SUPERVISOR.CAMPUS = X004da_ingl_novss.CAMPUS
-  LEFT JOIN X004dc_impo_report_supervisor ORG_SUPERVISOR ON ORG_SUPERVISOR.CAMPUS = X004da_ingl_novss.ORG
-;"""
-so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-so_curs.execute(s_sql)
-so_conn.commit()
-funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
-
-
-
+funcfile.writelog("%t BUILD TABLE: "+sr_file)
+# Export the data
+print("Export vss campus balances per transaction type...")
+sr_filet = sr_file
+sx_path = re_path + funcdate.prev_year() + "/"
+sx_file = "Debtor_001_vsssummmonth_"
+sx_filet = sx_file + funcdate.prev_monthendfile()
+s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
+funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)  
 
 
 
