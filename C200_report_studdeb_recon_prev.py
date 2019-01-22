@@ -7,6 +7,11 @@
 ***
 *****************************************************************************"""
 
+"""
+LIST GL TRANSACTIONS
+LIST VSS TRANSACTIONS
+"""
+
 # Import python modules
 import csv
 import datetime
@@ -547,7 +552,7 @@ so_curs.execute(s_sql)
 so_conn.commit()
 funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
-# Calculate vss balances per campus per month per transaction type *********
+# PREPARE A TRANSACTION FILE FOR EXPORT ****************************************
 print("Prepare data for analysis...")
 sr_file = "X002ac_vss_tranexpo"
 s_sql = "CREATE TABLE "+sr_file+" AS " + """
