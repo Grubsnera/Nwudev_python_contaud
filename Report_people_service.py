@@ -27,7 +27,7 @@ print("--------------")
 ilog_severity = 1
 
 # Declare variables
-so_path = "W:/" #Source database path
+so_path = "W:/People/" #Source database path
 so_file = "People.sqlite" #Source database
 s_sql = "" #SQL statements
 s_export = "True"
