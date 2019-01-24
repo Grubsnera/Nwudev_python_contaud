@@ -10,6 +10,8 @@
 """
 LIST GL TRANSACTIONS
 LIST VSS TRANSACTIONS
+BURSARY VSS GL RECON
+
 """
 
 # Import python modules
@@ -1516,6 +1518,7 @@ funcfile.writelog("%t BUILD TABLE: " + sr_file)
 ***   X010bb Summarize gl bursary transactions per campus month
 ***   X010ca Join vss gl bursary summary totals
 ***   X010cb Join the matched vss and gl bursary transactions
+***   X010cc Group matched vss gl transactions on campus & month
 ***   X011aa Join vss gl bursary summary totals
 ***   X011ab Join vss gl bursary summary totals
 ***   X011ac Import reporting supervisors from VSS.SQLITE
@@ -1870,10 +1873,35 @@ so_curs.execute(s_sql)
 so_conn.commit()
 funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
+# BURSARY VSS GL RECON X010cc Group matched vss gl transactions on campus & month
 
-
-
-
+print("Group matched vss and gl bursary transactions on campus and month...")
+sr_file = "X010cc_group_vss_gl_matched"    
+s_sql = "CREATE TABLE "+sr_file+" AS " + """
+SELECT
+  X010cb_join_vss_gl_matched.CAMPUS_VSS,
+  X010cb_join_vss_gl_matched.MONTH_VSS,
+  Total(X010cb_join_vss_gl_matched.AMOUNT_VSS) AS Total_AMOUNT_VSS
+FROM
+  X010cb_join_vss_gl_matched
+GROUP BY
+  X010cb_join_vss_gl_matched.CAMPUS_VSS,
+  X010cb_join_vss_gl_matched.MONTH_VSS
+;"""
+so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+so_curs.execute(s_sql)
+so_conn.commit()
+funcfile.writelog("%t BUILD TABLE: "+sr_file)
+# Export the data
+print("Export grouped matched bursary transactions...")
+sr_filet = sr_file
+sx_path = re_path + funcdate.prev_year() + "/"
+sx_file = "Debtor_010c_burs_matched_summmonth_"
+sx_filet = sx_file + funcdate.prev_monthendfile()
+s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
+#funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
+funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 
 
 """*************************************************************************
