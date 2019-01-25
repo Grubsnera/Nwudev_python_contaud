@@ -7,11 +7,6 @@
 ***
 *****************************************************************************"""
 
-"""
-LIST GL TRANSACTIONS
-LIST VSS TRANSACTIONS
-"""
-
 # Import python modules
 import csv
 import datetime
@@ -31,11 +26,11 @@ import funcsys
 # Open the script log file ******************************************************
 
 funcfile.writelog("Now")
-funcfile.writelog("SCRIPT: C200_REPORT_STUDDEB_RECON")
-funcfile.writelog("---------------------------------")
-print("-------------------------")
-print("C200_REPORT_STUDDEB_RECON")
-print("-------------------------")
+funcfile.writelog("SCRIPT: C200_REPORT_STUDDEB_RECON_PREV")
+funcfile.writelog("--------------------------------------")
+print("------------------------------")
+print("C200_REPORT_STUDDEB_RECON_PREV")
+print("------------------------------")
 ilog_severity = 1
 
 # Declare variables
@@ -61,22 +56,9 @@ so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss.sqlite' AS 'VSS'")
 funcfile.writelog("%t ATTACH DATABASE: VSS.SQLITE")
 
 """*************************************************************************
-***
-*** LIST GL TRANSACTIONS
-***
-***   Import GL transactions from KFS.SQLITE
-***   Add required fields
-***   X001da Identify new accounts linked to a campus
-***
 *************************************************************************"""
 
-print("--- PREPARE GL TRANSACTIONS ---")
-funcfile.writelog("PREPARE GL TRANSACTIONS")
 
-
-
-so_curs.execute("DROP VIEW IF EXISTS X002ea_calc_vss_runbal")
-so_curs.execute("DROP VIEW IF EXISTS X002ea_calc_gl_runbal")
 
 # Calculate the running vss balance ********************************************
 print("Calculate the running vss balance...")
@@ -162,6 +144,66 @@ s_sql = s_sql.replace("%PMONTH%",gl_month)
 so_curs.execute(s_sql)
 so_conn.commit()
 funcfile.writelog("%t BUILD TABLE: "+sr_file)
+
+# Add columns ******************************************************************
+# Reconciling amount
+print("Add column vss gl difference...")
+so_curs.execute("ALTER TABLE X002ea_vss_gl_balance_month ADD COLUMN DIFF REAL;")
+so_curs.execute("UPDATE X002ea_vss_gl_balance_month SET DIFF = VSS_RUNBAL - GL_RUNBAL;")
+so_conn.commit()
+funcfile.writelog("%t ADD COLUMN: DIFF")
+
+# Calculate the running recon amount *******************************************
+print("Calculate the running recon amount...")
+sr_file = "X002ea_vss_gl_balance_month_move"
+s_sql = "CREATE TABLE "+sr_file+" AS " + """
+SELECT
+  a.ROWID,
+  a.ORG,
+  a.CAMPUS,
+  a.MONTH,
+  a.VSS_TRAN_DT,
+  a.VSS_TRAN_CT,
+  a.VSS_TRAN,
+  a.VSS_RUNBAL,
+  a.GL_TRAN,
+  a.GL_RUNBAL,
+  a.DIFF,
+  a.DIFF - b.DIFF AS MOVE
+FROM
+  X002ea_vss_gl_balance_month a,
+  X002ea_vss_gl_balance_month b
+WHERE
+  (a.CAMPUS = b.CAMPUS AND
+  a.MONTH > b.MONTH) OR
+  (a.CAMPUS = b.CAMPUS AND
+  b.MONTH = "00")
+  
+GROUP BY
+  a.CAMPUS,
+  a.MONTH
+ORDER BY
+  a.CAMPUS,
+  a.MONTH
+;"""
+so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+so_curs.execute(s_sql)
+so_conn.commit()
+funcfile.writelog("%t BUILD TABLE: "+sr_file)
+# Export the data
+print("Export vss campus balances per month...")
+sr_filet = sr_file
+sx_path = re_path + funcdate.prev_year() + "/"
+sx_file = "Debtor_000_vss_gl_summmonth_"
+sx_filet = sx_file + funcdate.prev_monthendfile()
+s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
+#funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
+funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
+
+
+"""*****************************************************************************
+*****************************************************************************"""
 
 
 # Close the table connection ***************************************************
