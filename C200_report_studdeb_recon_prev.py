@@ -936,7 +936,7 @@ SELECT
   X002ea_vss_gl_balance_month_move.GL_TRAN,
   X002ea_vss_gl_balance_month_move.GL_RUNBAL,
   X002ea_vss_gl_balance_month_move.DIFF,
-  X002ea_vss_gl_balance_month_move.VSS_MOVE,
+  X002ea_vss_gl_balance_month_move.MOVE,
   CAMP_OFFICER.EMPLOYEE_NUMBER AS OFFICER_CAMP,
   CAMP_OFFICER.KNOWN_NAME AS OFFICER_NAME_CAMP,
   CAMP_OFFICER.EMAIL_ADDRESS AS OFFICER_MAIL_CAMP,
