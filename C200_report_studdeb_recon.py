@@ -7,6 +7,20 @@
 ***
 *****************************************************************************"""
 
+""" CONTENTS *******************************************************************
+LIST GL TRANSACTIONS
+LIST VSS TRANSACTIONS
+JOIN VSS & GL MONTHLY TOTALS
+JOIN VSS & GL TRANSACTIONS
+TEST MATCHED TRANSACTION TYPES
+TEST TRANSACTION TYPES IN VSS BUT NOT IN GL
+TEST TRANSACTION TYPES IN GL BUT NOT IN VSS
+BURSARY VSS GL RECON
+TEST BURSARY INGL NOVSS
+TEST BURSARY INVSS NOGL
+TEST BURSARY POST TO DIFF CAMPUS IN GL
+*****************************************************************************"""
+
 def Report_studdeb_recon():
 
     # Import python modules
@@ -275,6 +289,33 @@ def Report_studdeb_recon():
     GROUP BY
       X001ab_gl_transort.CAMPUS,
       X001ab_gl_transort.MONTH
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+
+    # Calculate the running gl balance ********************************************
+    print("Calculate the running gl balance...")
+    sr_file = "X001ce_gl_balmonth_calc_runbal"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    SELECT
+      a.CAMPUS,
+      a.MONTH,
+      a.BALANCE,
+      TOTAL(b.BALANCE) RUNBAL
+    FROM
+      X001cb_gl_balmonth a,
+      X001cb_gl_balmonth b
+    WHERE
+      (a.CAMPUS = b.CAMPUS AND
+      a.MONTH >= b.MONTH)
+    GROUP BY
+      a.CAMPUS,
+      a.MONTH
+    ORDER BY
+      a.CAMPUS,
+      a.MONTH
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     so_curs.execute(s_sql)
@@ -615,6 +656,35 @@ def Report_studdeb_recon():
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
+     # Calculate the running vss balance ********************************************
+    print("Calculate the running vss balance...")
+    sr_file = "X002ce_vss_balmonth_calc_runbal"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    SELECT
+      a.CAMPUS_VSS,
+      a.MONTH_VSS,
+      a.AMOUNT_DT,
+      a.AMOUNT_CT,
+      a.AMOUNT,
+      TOTAL(b.AMOUNT) RUNBAL
+    FROM
+      X002cb_vss_balmonth a,
+      X002cb_vss_balmonth b
+    WHERE
+      (a.CAMPUS_VSS = b.CAMPUS_VSS AND
+      a.MONTH_VSS >= b.MONTH_VSS)
+    GROUP BY
+      a.CAMPUS_VSS,
+      a.MONTH_VSS
+    ORDER BY
+      a.CAMPUS_VSS,
+      a.MONTH_VSS
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)   
+
     # Calculate vss balances per campus per month per transaction type *********
     print("Calculate vss balances per transaction type...")
     sr_file = "X002cc_vss_summtype"
@@ -736,26 +806,84 @@ def Report_studdeb_recon():
     sr_file = "X002ea_vss_gl_balance_month"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     SELECT
-      UPPER(SUBSTR(X002cb_vss_balmonth.CAMPUS_VSS,1,3))||TRIM(X002cb_vss_balmonth.MONTH_VSS) AS ROWID,
+      UPPER(SUBSTR(X002ce_vss_balmonth_calc_runbal.CAMPUS_VSS,1,3))||TRIM(X002ce_vss_balmonth_calc_runbal.MONTH_VSS) AS ROWID,
       'NWU' AS ORG,
-      X002cb_vss_balmonth.CAMPUS_VSS AS CAMPUS,
-      X002cb_vss_balmonth.MONTH_VSS AS MONTH,
-      X002cb_vss_balmonth.AMOUNT_DT AS VSS_TRAN_DT,
-      X002cb_vss_balmonth.AMOUNT_CT AS VSS_TRAN_CT,
-      X002cb_vss_balmonth.AMOUNT AS VSS_TRAN,
-      X001cb_gl_balmonth.BALANCE AS GL_TRAN
+      X002ce_vss_balmonth_calc_runbal.CAMPUS_VSS AS CAMPUS,
+      X002ce_vss_balmonth_calc_runbal.MONTH_VSS AS MONTH,
+      X002ce_vss_balmonth_calc_runbal.AMOUNT_DT AS VSS_TRAN_DT,
+      X002ce_vss_balmonth_calc_runbal.AMOUNT_CT AS VSS_TRAN_CT,
+      X002ce_vss_balmonth_calc_runbal.AMOUNT AS VSS_TRAN,
+      X002ce_vss_balmonth_calc_runbal.RUNBAL AS VSS_RUNBAL,
+      X001ce_gl_balmonth_calc_runbal.BALANCE AS GL_TRAN,
+      X001ce_gl_balmonth_calc_runbal.RUNBAL AS GL_RUNBAL
     FROM
-      X002cb_vss_balmonth
-      LEFT JOIN X001cb_gl_balmonth ON X001cb_gl_balmonth.CAMPUS = X002cb_vss_balmonth.CAMPUS_VSS AND
-        X001cb_gl_balmonth.MONTH = X002cb_vss_balmonth.MONTH_VSS
+      X002ce_vss_balmonth_calc_runbal
+      LEFT JOIN X001ce_gl_balmonth_calc_runbal ON X001ce_gl_balmonth_calc_runbal.CAMPUS = X002ce_vss_balmonth_calc_runbal.CAMPUS_VSS AND
+        X001ce_gl_balmonth_calc_runbal.MONTH = X002ce_vss_balmonth_calc_runbal.MONTH_VSS
     WHERE
-      X002cb_vss_balmonth.MONTH_VSS <= '%PMONTH%'
+      X002ce_vss_balmonth_calc_runbal.MONTH_VSS <= '%PMONTH%'
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     s_sql = s_sql.replace("%PMONTH%",gl_month) 
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
+
+    # Add columns ******************************************************************
+    # Reconciling amount
+    print("Add column vss gl difference...")
+    so_curs.execute("ALTER TABLE X002ea_vss_gl_balance_month ADD COLUMN DIFF REAL;")
+    so_curs.execute("UPDATE X002ea_vss_gl_balance_month SET DIFF = VSS_RUNBAL - GL_RUNBAL;")
+    so_conn.commit()
+    funcfile.writelog("%t ADD COLUMN: DIFF")
+
+    # Calculate the running recon amount *******************************************
+    print("Calculate the running recon amount...")
+    sr_file = "X002ea_vss_gl_balance_month_move"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    SELECT
+      a.ROWID,
+      a.ORG,
+      a.CAMPUS,
+      a.MONTH,
+      a.VSS_TRAN_DT,
+      a.VSS_TRAN_CT,
+      a.VSS_TRAN,
+      a.VSS_RUNBAL,
+      a.GL_TRAN,
+      a.GL_RUNBAL,
+      a.DIFF,
+      a.DIFF - b.DIFF AS MOVE
+    FROM
+      X002ea_vss_gl_balance_month a,
+      X002ea_vss_gl_balance_month b
+    WHERE
+      (a.CAMPUS = b.CAMPUS AND
+      a.MONTH > b.MONTH) OR
+      (a.CAMPUS = b.CAMPUS AND
+      b.MONTH = "00")
+      
+    GROUP BY
+      a.CAMPUS,
+      a.MONTH
+    ORDER BY
+      a.CAMPUS,
+      a.MONTH
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+    # Export the data
+    print("Export vss campus balances per month...")
+    sr_filet = sr_file
+    sx_path = re_path + funcdate.cur_year() + "/"
+    sx_file = "Debtor_000_vss_gl_summmonth_"
+    sx_filet = sx_file + funcdate.prev_monthendfile()
+    s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
+    #funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
+    funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 
     # Import the reporting officers ************************************************
     print("Import reporting officers from VSS.SQLITE...")
@@ -804,14 +932,18 @@ def Report_studdeb_recon():
     sr_file = "X002ex_vss_gl_balance_month"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     SELECT
-      X002ea_vss_gl_balance_month."ROWID",
-      X002ea_vss_gl_balance_month.ORG,
-      X002ea_vss_gl_balance_month.CAMPUS,
-      X002ea_vss_gl_balance_month.MONTH,
-      X002ea_vss_gl_balance_month.VSS_TRAN_DT,
-      X002ea_vss_gl_balance_month.VSS_TRAN_CT,
-      X002ea_vss_gl_balance_month.VSS_TRAN,
-      X002ea_vss_gl_balance_month.GL_TRAN,
+      X002ea_vss_gl_balance_month_move."ROWID",
+      X002ea_vss_gl_balance_month_move.ORG,
+      X002ea_vss_gl_balance_month_move.CAMPUS,
+      X002ea_vss_gl_balance_month_move.MONTH,
+      X002ea_vss_gl_balance_month_move.VSS_TRAN_DT,
+      X002ea_vss_gl_balance_month_move.VSS_TRAN_CT,
+      X002ea_vss_gl_balance_month_move.VSS_TRAN,
+      X002ea_vss_gl_balance_month_move.VSS_RUNBAL,
+      X002ea_vss_gl_balance_month_move.GL_TRAN,
+      X002ea_vss_gl_balance_month_move.GL_RUNBAL,
+      X002ea_vss_gl_balance_month_move.DIFF,
+      X002ea_vss_gl_balance_month_move.MOVE,
       CAMP_OFFICER.EMPLOYEE_NUMBER AS OFFICER_CAMP,
       CAMP_OFFICER.KNOWN_NAME AS OFFICER_NAME_CAMP,
       CAMP_OFFICER.EMAIL_ADDRESS AS OFFICER_MAIL_CAMP,
@@ -825,11 +957,11 @@ def Report_studdeb_recon():
       ORG_SUPERVISOR.KNOWN_NAME AS SUPERVISOR_NAME_ORG,
       ORG_SUPERVISOR.EMAIL_ADDRESS AS SUPERVISOR_MAIL_ORG
     FROM
-      X002ea_vss_gl_balance_month
-      LEFT JOIN X002eb_impo_report_officer CAMP_OFFICER ON CAMP_OFFICER.CAMPUS = X002ea_vss_gl_balance_month.CAMPUS
-      LEFT JOIN X002eb_impo_report_officer ORG_OFFICER ON ORG_OFFICER.CAMPUS = X002ea_vss_gl_balance_month.ORG
-      LEFT JOIN X002ec_impo_report_supervisor CAMP_SUPERVISOR ON CAMP_SUPERVISOR.CAMPUS = X002ea_vss_gl_balance_month.CAMPUS
-      LEFT JOIN X002ec_impo_report_supervisor ORG_SUPERVISOR ON ORG_SUPERVISOR.CAMPUS = X002ea_vss_gl_balance_month.ORG
+      X002ea_vss_gl_balance_month_move
+      LEFT JOIN X002eb_impo_report_officer CAMP_OFFICER ON CAMP_OFFICER.CAMPUS = X002ea_vss_gl_balance_month_move.CAMPUS
+      LEFT JOIN X002eb_impo_report_officer ORG_OFFICER ON ORG_OFFICER.CAMPUS = X002ea_vss_gl_balance_month_move.ORG
+      LEFT JOIN X002ec_impo_report_supervisor CAMP_SUPERVISOR ON CAMP_SUPERVISOR.CAMPUS = X002ea_vss_gl_balance_month_move.CAMPUS
+      LEFT JOIN X002ec_impo_report_supervisor ORG_SUPERVISOR ON ORG_SUPERVISOR.CAMPUS = X002ea_vss_gl_balance_month_move.ORG
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
