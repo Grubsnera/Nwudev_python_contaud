@@ -25,7 +25,7 @@ funcfile.writelog("SCRIPT: Report_people_leave")
 ilog_severity = 1
 
 # Declare variables
-so_path = "W:/" #Source database path
+so_path = "W:/People_leave/" #Source database path
 so_file = "People_leave.sqlite" #Source database
 s_sql = "" #SQL statements
 
@@ -35,7 +35,7 @@ with sqlite3.connect(so_path+so_file) as so_conn:
 
 funcfile.writelog("%t OPEN DATABASE: People_leave.sqlite")
 
-so_curs.execute("ATTACH DATABASE 'W:/People.sqlite' AS 'PEOPLE'")
+so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
 funcfile.writelog("%t ATTACH DATABASE: People.sqlite")
 
 print("PEOPLE LEAVE REPORTS")
@@ -117,7 +117,7 @@ funcfile.writelog("%t BUILD TABLE: X103_Per_absence_attendances_curr")
 
 sr_file = "X103_Per_absence_attendances_curr"
 sr_filet = sr_file
-sx_path = "O:/Nwudata/People/" + funcdate.cur_year() + "/"
+sx_path = "R:/People/" + funcdate.cur_year() + "/"
 sx_file = "Leave_103_lst_transact_" + funcdate.cur_year() + "_"
 sx_filet = sx_file + funcdate.today_file() #Today
 
@@ -150,7 +150,7 @@ funcfile.writelog("%t BUILD TABLE: X103_Per_absence_attendances_prev")
 
 sr_file = "X103_Per_absence_attendances_prev"
 sr_filet = sr_file
-sx_path = "O:/Nwudata/People/" + funcdate.prev_year() + "/"
+sx_path = "R:/People/" + funcdate.prev_year() + "/"
 sx_file = "Leave_103_lst_transact_" + funcdate.prev_year() + "_"
 sx_filet = sx_file + funcdate.today_file() #Today
 
