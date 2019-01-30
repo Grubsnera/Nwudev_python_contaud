@@ -18,6 +18,8 @@ import funccsv
 import funcfile
 import funcmail
 import funcsys
+import funcmysql
+
 
 # Open the script log file ******************************************************
 
@@ -43,7 +45,6 @@ with sqlite3.connect(so_path+so_file) as so_conn:
     so_curs = so_conn.cursor()
 funcfile.writelog("%t OPEN DATABASE: Kfs_vss_studdeb")
 
-
 #so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
 #funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
 #so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs.sqlite' AS 'KFS'")
@@ -51,151 +52,100 @@ funcfile.writelog("%t OPEN DATABASE: Kfs_vss_studdeb")
 #so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss.sqlite' AS 'VSS'")
 #funcfile.writelog("%t ATTACH DATABASE: VSS.SQLITE")
 
+# Open the MYSQL DESTINATION table
+s_database = "Web_ia_nwu"
+ms_cnxn = funcmysql.mysql_open(s_database)
+ms_curs = ms_cnxn.cursor()
+funcfile.writelog("%t OPEN MYSQL DATABASE: " + s_database)
+
 # Development script ***********************************************************
 
-gl_month = "01"
+# Create MYSQL PEOPLE TO WEB table *****************************************
+print("Build mysql monthly balances...")
+ms_curs.execute("DROP TABLE IF EXISTS ia_finding_5")
+funcfile.writelog("%t DROPPED MYSQL TABLE: PEOPLE (ia_finding_5)")
+#ia_find_1_auto INT(11) NOT NULL AUTO_INCREMENT,
+s_sql = """
+CREATE TABLE IF NOT EXISTS ia_finding_5 (
+ia_find5_auto INT(11) NOT NULL AUTO_INCREMENT,
+ia_find_auto INT(11),
+ia_find5_rowid VARCHAR(150),
+ia_find5_org VARCHAR(20),
+ia_find5_campus VARCHAR(20),
+ia_find5_month VARCHAR(2),
+ia_find5_vss_tran_dt DECIMAL(15,2),
+ia_find5_vss_tran_ct DECIMAL(15,2),
+ia_find5_vss_tran DECIMAL(15,2),
+ia_find5_vss_runbal DECIMAL(15,2),
+ia_find5_gl_tran DECIMAL(15,2),
+ia_find5_gl_runbal DECIMAL(15,2),
+ia_find5_diff DECIMAL(15,2),
+ia_find5_move DECIMAL(15,2),
+ia_find5_officer_camp VARCHAR(10),
+ia_find5_officer_name_camp VARCHAR(50),
+ia_find5_officer_mail_camp VARCHAR(100),
+ia_find5_officer_org VARCHAR(10),
+ia_find5_officer_name_org VARCHAR(50),
+ia_find5_officer_mail_org VARCHAR(100),
+ia_find5_supervisor_camp VARCHAR(10),
+ia_find5_supervisor_name_camp VARCHAR(50),
+ia_find5_supervisor_mail_camp VARCHAR(100),
+ia_find5_supervisor_org VARCHAR(10),
+ia_find5_supervisor_name_org VARCHAR(50),
+ia_find5_supervisor_mail_org VARCHAR(100),
+PRIMARY KEY (ia_find5_auto)
+)
+ENGINE = InnoDB
+CHARSET=utf8mb4
+COLLATE utf8mb4_unicode_ci
+COMMENT = 'Table to store vss and gl monthly balances'
+""" + ";"
+ms_curs.execute(s_sql)
+funcfile.writelog("%t CREATED MYSQL TABLE: VSS GL MONTHLY BAL (ia_find_5)")
 
-# Calculate the running vss balance ********************************************
-print("Calculate the running vss balance...")
-sr_file = "X002ce_vss_balmonth_calc_runbal"
-s_sql = "CREATE TABLE "+sr_file+" AS " + """
-SELECT
-  a.CAMPUS_VSS,
-  a.MONTH_VSS,
-  a.AMOUNT_DT,
-  a.AMOUNT_CT,
-  a.AMOUNT,
-  TOTAL(b.AMOUNT) RUNBAL
-FROM
-  X002cb_vss_balmonth a,
-  X002cb_vss_balmonth b
-WHERE
-  (a.CAMPUS_VSS = b.CAMPUS_VSS AND
-  a.MONTH_VSS >= b.MONTH_VSS)
-GROUP BY
-  a.CAMPUS_VSS,
-  a.MONTH_VSS
-ORDER BY
-  a.CAMPUS_VSS,
-  a.MONTH_VSS
-;"""
-so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-so_curs.execute(s_sql)
-so_conn.commit()
-funcfile.writelog("%t BUILD TABLE: "+sr_file)
+# Open the SOURCE file to obtain column headings
+print("Build mysql monthly balances columns...")
+funcfile.writelog("%t OPEN DATABASE: VSS_CL MONTHLY BAL")
+s_head = funcmysql.get_colnames_sqlite_text(so_curs,"X002ex_vss_gl_balance_month","ia_find5_")
+s_head = "(`ia_find_auto`, " + s_head.rstrip(", ") + ")"
+#print(s_head)
 
-# Calculate the running gl balance ********************************************
-print("Calculate the running gl balance...")
-sr_file = "X001ce_gl_balmonth_calc_runbal"
-s_sql = "CREATE TABLE "+sr_file+" AS " + """
-SELECT
-  a.CAMPUS,
-  a.MONTH,
-  a.BALANCE,
-  TOTAL(b.BALANCE) RUNBAL
-FROM
-  X001cb_gl_balmonth a,
-  X001cb_gl_balmonth b
-WHERE
-  (a.CAMPUS = b.CAMPUS AND
-  a.MONTH >= b.MONTH)
-GROUP BY
-  a.CAMPUS,
-  a.MONTH
-ORDER BY
-  a.CAMPUS,
-  a.MONTH
-;"""
-so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-so_curs.execute(s_sql)
-so_conn.commit()
-funcfile.writelog("%t BUILD TABLE: "+sr_file)
-
-# Join vss gl monthly account totals ******************************************
-print("Join vss and gl monthly totals...")
-sr_file = "X002ea_vss_gl_balance_month"
-s_sql = "CREATE TABLE "+sr_file+" AS " + """
-SELECT
-  UPPER(SUBSTR(X002ce_vss_balmonth_calc_runbal.CAMPUS_VSS,1,3))||TRIM(X002ce_vss_balmonth_calc_runbal.MONTH_VSS) AS ROWID,
-  'NWU' AS ORG,
-  X002ce_vss_balmonth_calc_runbal.CAMPUS_VSS AS CAMPUS,
-  X002ce_vss_balmonth_calc_runbal.MONTH_VSS AS MONTH,
-  X002ce_vss_balmonth_calc_runbal.AMOUNT_DT AS VSS_TRAN_DT,
-  X002ce_vss_balmonth_calc_runbal.AMOUNT_CT AS VSS_TRAN_CT,
-  X002ce_vss_balmonth_calc_runbal.AMOUNT AS VSS_TRAN,
-  X002ce_vss_balmonth_calc_runbal.RUNBAL AS VSS_RUNBAL,
-  X001ce_gl_balmonth_calc_runbal.BALANCE AS GL_TRAN,
-  X001ce_gl_balmonth_calc_runbal.RUNBAL AS GL_RUNBAL
-FROM
-  X002ce_vss_balmonth_calc_runbal
-  LEFT JOIN X001ce_gl_balmonth_calc_runbal ON X001ce_gl_balmonth_calc_runbal.CAMPUS = X002ce_vss_balmonth_calc_runbal.CAMPUS_VSS AND
-    X001ce_gl_balmonth_calc_runbal.MONTH = X002ce_vss_balmonth_calc_runbal.MONTH_VSS
-WHERE
-  X002ce_vss_balmonth_calc_runbal.MONTH_VSS <= '%PMONTH%'
-;"""
-so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-s_sql = s_sql.replace("%PMONTH%",gl_month) 
-so_curs.execute(s_sql)
-so_conn.commit()
-funcfile.writelog("%t BUILD TABLE: "+sr_file)
-
-# Add columns ******************************************************************
-# Reconciling amount
-print("Add column vss gl difference...")
-so_curs.execute("ALTER TABLE X002ea_vss_gl_balance_month ADD COLUMN DIFF REAL;")
-so_curs.execute("UPDATE X002ea_vss_gl_balance_month SET DIFF = VSS_RUNBAL - GL_RUNBAL;")
-so_conn.commit()
-funcfile.writelog("%t ADD COLUMN: DIFF")
-
-# Calculate the running recon amount *******************************************
-print("Calculate the running recon amount...")
-sr_file = "X002ea_vss_gl_balance_month_move"
-s_sql = "CREATE TABLE "+sr_file+" AS " + """
-SELECT
-  a.ROWID,
-  a.ORG,
-  a.CAMPUS,
-  a.MONTH,
-  a.VSS_TRAN_DT,
-  a.VSS_TRAN_CT,
-  a.VSS_TRAN,
-  a.VSS_RUNBAL,
-  a.GL_TRAN,
-  a.GL_RUNBAL,
-  a.DIFF,
-  a.DIFF - b.DIFF AS MOVE
-FROM
-  X002ea_vss_gl_balance_month a,
-  X002ea_vss_gl_balance_month b
-WHERE
-  (a.CAMPUS = b.CAMPUS AND
-  a.MONTH > b.MONTH) OR
-  (a.CAMPUS = b.CAMPUS AND
-  b.MONTH = "00")
-  
-GROUP BY
-  a.CAMPUS,
-  a.MONTH
-ORDER BY
-  a.CAMPUS,
-  a.MONTH
-;"""
-so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-so_curs.execute(s_sql)
-so_conn.commit()
-funcfile.writelog("%t BUILD TABLE: "+sr_file)
-# Export the data
-print("Export vss campus balances per month...")
-sr_filet = sr_file
-sx_path = re_path + funcdate.cur_year() + "/"
-sx_file = "Debtor_000_vss_gl_summmonth_"
-sx_filet = sx_file + funcdate.prev_monthendfile()
-s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-#funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
-funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
-
-
+# Open the SOURCE file to obtain the data
+print("Insert mysql monthly balances...")
+with sqlite3.connect(so_path+so_file) as rs_conn:
+    rs_conn.row_factory = sqlite3.Row
+rs_curs = rs_conn.cursor()
+rs_curs.execute("SELECT * FROM X002ex_vss_gl_balance_month")
+rows = rs_curs.fetchall()
+i_tota = 0
+i_coun = 0
+for row in rows:
+    s_data = "(9, "
+    for member in row:
+        print(type(member))
+        if type(member) == str:
+            s_data = s_data + "'" + member + "', "
+        elif type(member) == int:
+            s_data = s_data + str(member) + ", "
+        elif type(member) == float:
+            s_data = s_data + str(member) + ", "
+        else:
+            s_data = s_data + "'', "
+    s_data = s_data.rstrip(", ") + ")"
+    print(s_data)
+    s_sql = "INSERT INTO `ia_finding_5` " + s_head + " VALUES " + s_data + ";"
+    ms_curs.execute(s_sql)
+    i_tota = i_tota + 1
+    i_coun = i_coun + 1
+    if i_coun == 100:
+        ms_cnxn.commit()
+        i_coun = 0
+        
+# Close the ROW Connection
+ms_cnxn.commit()
+rs_conn.close()
+print("Inserted " + str(i_tota) + " mysql vss gl monthly balances...")
+funcfile.writelog("%t POPULATE MYSQL TABLE: VSS GL MONTHLY BALANCES (ia_finding_5) " + str(i_tota) + " records")
 
 
 
@@ -205,6 +155,7 @@ funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 
 # Close the table connection ***************************************************
 so_conn.close()
+ms_cnxn.close()
 
 # Close the log writer *********************************************************
 funcfile.writelog("----------------------------------------")
