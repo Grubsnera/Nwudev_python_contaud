@@ -1511,6 +1511,7 @@ def People_lists():
     people_count_peo INT(11),
     people_date_emp_lookup DATETIME,
     people_mailto VARCHAR(150),
+    people_proposed_salary_n DECIMAL(2,2),
     people_initials VARCHAR(30),
     people_name_list VARCHAR(150),
     people_name_addr VARCHAR(150),
