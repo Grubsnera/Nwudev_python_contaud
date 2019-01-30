@@ -38,6 +38,8 @@ def Report_studdeb_recon():
     import funcfile
     import funcmail
     import funcsys
+    import funcmysql
+    
 
     # Open the script log file ******************************************************
 
@@ -70,6 +72,12 @@ def Report_studdeb_recon():
     funcfile.writelog("%t ATTACH DATABASE: KFS.SQLITE")
     so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss.sqlite' AS 'VSS'")
     funcfile.writelog("%t ATTACH DATABASE: VSS.SQLITE")
+
+    # Open the MYSQL DESTINATION table
+    s_database = "Web_ia_nwu"
+    ms_cnxn = funcmysql.mysql_open(s_database)
+    ms_curs = ms_cnxn.cursor()
+    funcfile.writelog("%t OPEN MYSQL DATABASE: " + s_database)    
 
     """*************************************************************************
     ***
@@ -2291,6 +2299,7 @@ def Report_studdeb_recon():
 
     # Close the table connection ***************************************************
     so_conn.close()
+    ms_cnxn.close()    
 
     # Close the log writer *********************************************************
     funcfile.writelog("------------------------------------")
