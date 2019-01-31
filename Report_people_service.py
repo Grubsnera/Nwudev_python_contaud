@@ -31,6 +31,7 @@ so_path = "W:/People/" #Source database path
 so_file = "People.sqlite" #Source database
 s_sql = "" #SQL statements
 s_export = "True"
+sd_acti = "Y"
 
 # Open the SOURCE file
 with sqlite3.connect(so_path+so_file) as so_conn:
@@ -47,6 +48,12 @@ s_to = funcdate.prev_monthend()
 s_to = input("  To which date? (yyyy-mm-dd) ")
 s_on = funcdate.prev_monthend()
 s_on = input("  On which date? (yyyy-mm-dd) ")
+# Input active or not
+print("")
+print("Default:"+sd_acti)
+s_acti = input("Only include active people? ")
+if s_acti == "":
+    s_acti = sd_acti
 print("")
 
 # 12 Build current assignment round 1 ******************************************
@@ -237,7 +244,7 @@ funcfile.writelog("%t BUILD VIEW: X000_PHONE_HOME_PERI_LIST")
 
 # 16 Build PEOPLE CURRENT ******************************************************
 
-funcpeople.People01(so_conn,"X002_PEOPLE_PERI","X001_ASSIGNMENT_PERI","PERI","Build period people...")
+funcpeople.People01(so_conn,"X002_PEOPLE_PERI","X001_ASSIGNMENT_PERI","PERI","Build period people...",s_acti)
 
 if s_export == "True":
     
