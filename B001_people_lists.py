@@ -1391,7 +1391,7 @@ def People_lists():
 
     # 27 Build PEOPLE CURRENT ******************************************************
 
-    funcpeople.People01(so_conn,"X002_PEOPLE_CURR","X001_ASSIGNMENT_CURR","CURR","Build current people...")
+    funcpeople.People01(so_conn,"X002_PEOPLE_CURR","X001_ASSIGNMENT_CURR","CURR","Build current people...","Y")
 
     if l_export == True:
         
@@ -1414,7 +1414,7 @@ def People_lists():
 
     # 28 Build PEOPLE PREVIOUS MONT ************************************************
 
-    funcpeople.People01(so_conn,"X002_PEOPLE_MONT","X001_ASSIGNMENT_MONT","CURR","Build previous month people...")
+    funcpeople.People01(so_conn,"X002_PEOPLE_MONT","X001_ASSIGNMENT_MONT","CURR","Build previous month people...","N")
 
     if l_export == True:
         
@@ -1509,7 +1509,10 @@ def People_lists():
     people_count_pos INT(11),
     people_count_ass INT(11),
     people_count_peo INT(11),
+    people_date_ass_lookup DATETIME,
+    people_ass_active VARCHAR(1),
     people_date_emp_lookup DATETIME,
+    people_emp_active VARCHAR(1),
     people_mailto VARCHAR(150),
     people_proposed_salary_n DECIMAL(2,2),
     people_initials VARCHAR(30),
