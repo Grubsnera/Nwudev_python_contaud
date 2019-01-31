@@ -239,16 +239,23 @@ def Assign02(so_conn,s_table,s_source,s_mess):
 
 # 19 Build PEOPLE CURRENT ******************************************************
 
-def People01(so_conn,s_table,s_source,s_peri,s_mess):
+def People01(so_conn,s_table,s_source,s_peri,s_mess,s_acti):
 
     """ Function to build the X002_People table from different assignments
     Parameters: s_table = Table name to create
                 s_source = source table
                 s_mess = Print and log message
+                s_acti = Should list include only active people = Y (or active assignments = N)
     """
     
     print(s_mess)
     so_curs = so_conn.cursor()
+    s_wher = ""
+
+    if s_acti == "Y":
+       s_wher = "%SOURCET%.EMP_ACTIVE = 'Y'"
+    else:
+       s_wher = "%SOURCET%.ASS_ACTIVE = 'Y'"
     
     s_sql = "CREATE TABLE " + s_table + " AS" + """
     SELECT
@@ -313,7 +320,10 @@ def People01(so_conn,s_table,s_source,s_peri,s_mess):
       %SOURCET%.COUNT_POS,
       %SOURCET%.COUNT_ASS,
       %SOURCET%.COUNT_PEO,
+      %SOURCET%.DATE_ASS_LOOKUP,
+      %SOURCET%.ASS_ACTIVE,
       %SOURCET%.DATE_EMP_LOOKUP,
+      %SOURCET%.EMP_ACTIVE,      
       %SOURCET%.MAILTO,
       PER_PAY_PROPOSALS.PROPOSED_SALARY_N
     FROM
@@ -340,7 +350,7 @@ def People01(so_conn,s_table,s_source,s_peri,s_mess):
         PER_PAY_PROPOSALS.CHANGE_DATE <= %SOURCET%.DATE_EMP_LOOKUP AND
         PER_PAY_PROPOSALS.DATE_TO >= %SOURCET%.DATE_EMP_LOOKUP
     WHERE
-      %SOURCET%.EMP_ACTIVE = 'Y'
+    """ + s_wher + """
     GROUP BY
       %SOURCET%.EMPLOYEE_NUMBER
     """
