@@ -12,6 +12,7 @@ cur_day 		This day in DD format ex 01
 cur_month		This month in MM format ex 01
 cur_monthbegin 		This month begin date in YYYY-MM-DD format ex 2018-01-01
 cur_monthend 		This month end date in YYYY-MM-DD format ex 2018-01-31
+cur_monthendfile	This month end date in YYYYMM format ex 201901
 cur_year		This year in YYYY format ex 2018
 cur_yearbegin		This year begin date in YYYY-MM-DD format ex 2018-01-01
 cur_yearend		This year end date in YYYY-MM-DD format ex 2018-12-31
@@ -61,6 +62,11 @@ def cur_monthend():
         else:
             s_retu += "28"
     return s_retu #Current month end
+
+#Function This month end date in YYYY-MM-DD format ex 2018-01-31
+def cur_monthendfile():
+    s_retu = cur_year() + cur_month()
+    return s_retu #Current month end file
 	
 #Function This year in YYYY format ex 2018
 def cur_year():
