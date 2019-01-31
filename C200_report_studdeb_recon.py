@@ -79,6 +79,12 @@ def Report_studdeb_recon():
     ms_curs = ms_cnxn.cursor()
     funcfile.writelog("%t OPEN MYSQL DATABASE: " + s_database)    
 
+
+    so_curs.execute("DROP TABLE IF EXISTS X003ab_gl_vss_join")
+    so_curs.execute("DROP TABLE IF EXISTS X003ab_gl_vss_join_eng")
+
+
+
     """*************************************************************************
     ***
     *** LIST GL TRANSACTIONS
@@ -991,7 +997,7 @@ def Report_studdeb_recon():
     print("--- JOIN VSS & GL TRANSACTIONS ---")
     funcfile.writelog("JOIN VSS & GL TRANSACTIONS")
 
-    # Join the vss and gl transaction summaries ********************************
+    # Join the vss and gl transaction summaries on afrikaans description *******
     print("Join vss gl transaction summaries...")
     sr_file = "X003aa_vss_gl_join"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
@@ -1049,19 +1055,10 @@ def Report_studdeb_recon():
                     ;""")
     so_conn.commit()
     funcfile.writelog("%t CALC COLUMN: Vss gl matched")
-    print("Export vss gl recon...")
-    sr_filet = sr_file
-    sx_path = re_path + funcdate.cur_year() + "/"
-    sx_file = "Debtor_003_vss_gl_recon_"
-    sx_filet = sx_file + funcdate.prev_monthendfile()
-    s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
-    funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 
     # Join gl and vss on afrikaans description *********************************
     print("Join gl vss transactions...")
-    sr_file = "X003ab_gl_vss_join"
+    sr_file = "X003aa_gl_vss_join"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     SELECT
       X001cc_gl_summtype.CAMPUS AS CAMPUS_VSS,
@@ -1096,14 +1093,40 @@ def Report_studdeb_recon():
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
-    print("Export gl vss recon...")
+
+    # Report on vss and gl transaction type join *******************************
+    print("Report vss gl join transaction type...")
+    sr_file = "X003ax_vss_gl_join"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    SELECT
+      X003aa_vss_gl_join.CAMPUS_VSS AS CAMPUS,
+      X003aa_vss_gl_join.MONTH_VSS AS MONTH,
+      X003aa_vss_gl_join.TRANSCODE_VSS AS TRANCODE,
+      X003aa_vss_gl_join.TEMP_DESC_A AS VSS_DESCRIPTION,
+      CAST(X003aa_vss_gl_join.AMOUNT_VSS AS REAL) AS VSS_AMOUNT,
+      X003aa_vss_gl_join.DESC_VSS AS GL_DESCRIPTION,
+      CAST(X003aa_vss_gl_join.AMOUNT AS REAL) AS GL_AMOUNT,
+      X003aa_vss_gl_join.DIFF,
+      X003aa_vss_gl_join.MATCHED,
+      X003aa_vss_gl_join.PERIOD
+    FROM
+      X003aa_vss_gl_join
+    ORDER BY
+      CAMPUS,
+      MONTH
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)    
+    print("Export vss gl recon...")
     sr_filet = sr_file
     sx_path = re_path + funcdate.cur_year() + "/"
     sx_file = "Debtor_003_vss_gl_recon_"
-    sx_filet = sx_file + funcdate.prev_monthendfile()
+    sx_filet = sx_file + funcdate.cur_monthendfile()
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head,"a")
-    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head,"a")
+    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
+    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
     funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 
     # Join vss and gl on english vss descriptions ******************************
@@ -1149,19 +1172,10 @@ def Report_studdeb_recon():
                     ;""")
     so_conn.commit()
     funcfile.writelog("%t ADD COLUMN: Vss gl matched")
-    print("Export vss gl transactions eng...")
-    sr_filet = sr_file
-    sx_path = re_path + funcdate.cur_year() + "/"
-    sx_file = "Debtor_003_vss_gl_recon_eng_"
-    sx_filet = sx_file + funcdate.prev_monthendfile()
-    s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
-    funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file) 
 
     # Join gl and vss on english description *********************************
     print("Join gl vss transactions eng...")
-    sr_file = "X003ab_gl_vss_join_eng"
+    sr_file = "X003aa_gl_vss_join_eng"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     SELECT
       X001cc_gl_summtype.CAMPUS AS CAMPUS_VSS,
@@ -1192,16 +1206,41 @@ def Report_studdeb_recon():
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
-    print("Export gl vss recon eng...")
+
+    # Report on vss and gl transaction type join *******************************
+    print("Report vss gl join transaction type...")
+    sr_file = "X003ax_vss_gl_join_eng"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    SELECT
+      X003aa_vss_gl_join.CAMPUS_VSS AS CAMPUS,
+      X003aa_vss_gl_join.MONTH_VSS AS MONTH,
+      X003aa_vss_gl_join.TRANSCODE_VSS AS TRANCODE,
+      X003aa_vss_gl_join.TEMP_DESC_E AS VSS_DESCRIPTION,
+      CAST(X003aa_vss_gl_join.AMOUNT_VSS AS REAL) AS VSS_AMOUNT,
+      X003aa_vss_gl_join.DESC_VSS AS GL_DESCRIPTION,
+      CAST(X003aa_vss_gl_join.AMOUNT AS REAL) AS GL_AMOUNT,
+      X003aa_vss_gl_join.DIFF,
+      X003aa_vss_gl_join.MATCHED,
+      X003aa_vss_gl_join.PERIOD
+    FROM
+      X003aa_vss_gl_join
+    ORDER BY
+      CAMPUS,
+      MONTH
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)    
+    print("Export vss gl recon...")
     sr_filet = sr_file
     sx_path = re_path + funcdate.cur_year() + "/"
     sx_file = "Debtor_003_vss_gl_recon_eng_"
-    sx_filet = sx_file + funcdate.prev_monthendfile()
+    sx_filet = sx_file + funcdate.cur_monthendfile()
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head,"a")
-    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head,"a")
+    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
+    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
     funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
-
 
 
 
@@ -1519,18 +1558,18 @@ def Report_studdeb_recon():
     sr_file = "X004da_ingl_novss"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     SELECT
-      UPPER(SUBSTR(X003ab_gl_vss_join.CAMPUS_VSS,1,3))||TRIM(X003ab_gl_vss_join.MONTH_VSS)||REPLACE(UPPER(X003ab_gl_vss_join.DESC_VSS),' ','') AS ROWID,
+      UPPER(SUBSTR(X003aa_gl_vss_join.CAMPUS_VSS,1,3))||TRIM(X003aa_gl_vss_join.MONTH_VSS)||REPLACE(UPPER(X003aa_gl_vss_join.DESC_VSS),' ','') AS ROWID,
       'NWU' AS ORG,
-      X003ab_gl_vss_join.CAMPUS_VSS AS CAMPUS,
-      X003ab_gl_vss_join.MONTH_VSS AS MONTH,
-      X003ab_gl_vss_join.DESC_VSS AS GL_DESCRIPTION,
-      Round(X003ab_gl_vss_join.AMOUNT,2) AS AMOUNT_GL
+      X003aa_gl_vss_join.CAMPUS_VSS AS CAMPUS,
+      X003aa_gl_vss_join.MONTH_VSS AS MONTH,
+      X003aa_gl_vss_join.DESC_VSS AS GL_DESCRIPTION,
+      Round(X003aa_gl_vss_join.AMOUNT,2) AS AMOUNT_GL
     FROM
-      X003ab_gl_vss_join
+      X003aa_gl_vss_join
     ORDER BY
-      X003ab_gl_vss_join.MONTH_VSS,
-      X003ab_gl_vss_join.CAMPUS_VSS,
-      X003ab_gl_vss_join.DESC_VSS
+      X003aa_gl_vss_join.MONTH_VSS,
+      X003aa_gl_vss_join.CAMPUS_VSS,
+      X003aa_gl_vss_join.DESC_VSS
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
