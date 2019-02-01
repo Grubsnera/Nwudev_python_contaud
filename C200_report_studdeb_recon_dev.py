@@ -60,27 +60,24 @@ funcfile.writelog("%t OPEN MYSQL DATABASE: " + s_database)
 
 # Development script ***********************************************************
 
-# Create MYSQL PEOPLE TO WEB table *****************************************
-print("Build mysql monthly balances...")
+# Create MYSQL VSS GL MONTHLY BALANCES TO WEB table ****************************
+print("Build mysql vss gl monthly balances...")
 ms_curs.execute("DROP TABLE IF EXISTS ia_finding_5")
-funcfile.writelog("%t DROPPED MYSQL TABLE: PEOPLE (ia_finding_5)")
-#ia_find_1_auto INT(11) NOT NULL AUTO_INCREMENT,
+funcfile.writelog("%t DROPPED MYSQL TABLE: ia_finding_5")
 s_sql = """
 CREATE TABLE IF NOT EXISTS ia_finding_5 (
-ia_find5_auto INT(11) NOT NULL AUTO_INCREMENT,
 ia_find_auto INT(11),
-ia_find5_rowid VARCHAR(150),
-ia_find5_org VARCHAR(20),
+ia_find5_auto INT(11) AUTO_INCREMENT,
 ia_find5_campus VARCHAR(20),
 ia_find5_month VARCHAR(2),
-ia_find5_vss_tran_dt DECIMAL(15,2),
-ia_find5_vss_tran_ct DECIMAL(15,2),
-ia_find5_vss_tran DECIMAL(15,2),
-ia_find5_vss_runbal DECIMAL(15,2),
-ia_find5_gl_tran DECIMAL(15,2),
-ia_find5_gl_runbal DECIMAL(15,2),
-ia_find5_diff DECIMAL(15,2),
-ia_find5_move DECIMAL(15,2),
+ia_find5_vss_tran_dt DECIMAL(20,2),
+ia_find5_vss_tran_ct DECIMAL(20,2),
+ia_find5_vss_tran DECIMAL(20,2),
+ia_find5_vss_runbal DECIMAL(20,2),
+ia_find5_gl_tran DECIMAL(20,2),
+ia_find5_gl_runbal DECIMAL(20,2),
+ia_find5_diff DECIMAL(20,2),
+ia_find5_move DECIMAL(20,2),
 ia_find5_officer_camp VARCHAR(10),
 ia_find5_officer_name_camp VARCHAR(50),
 ia_find5_officer_mail_camp VARCHAR(100),
@@ -93,7 +90,9 @@ ia_find5_supervisor_mail_camp VARCHAR(100),
 ia_find5_supervisor_org VARCHAR(10),
 ia_find5_supervisor_name_org VARCHAR(50),
 ia_find5_supervisor_mail_org VARCHAR(100),
-PRIMARY KEY (ia_find5_auto)
+PRIMARY KEY (ia_find5_auto),
+INDEX fb_order_ia_find5_campus_INDEX (ia_find5_campus),
+INDEX fb_order_ia_find5_month_INDEX (ia_find5_month)
 )
 ENGINE = InnoDB
 CHARSET=utf8mb4
@@ -101,17 +100,15 @@ COLLATE utf8mb4_unicode_ci
 COMMENT = 'Table to store vss and gl monthly balances'
 """ + ";"
 ms_curs.execute(s_sql)
-funcfile.writelog("%t CREATED MYSQL TABLE: VSS GL MONTHLY BAL (ia_find_5)")
-
+funcfile.writelog("%t CREATED MYSQL TABLE: ia_finding_5 (vss gl monthly balances per campus per month)")
 # Open the SOURCE file to obtain column headings
-print("Build mysql monthly balances columns...")
-funcfile.writelog("%t OPEN DATABASE: VSS_CL MONTHLY BAL")
+print("Build mysql vss gl monthly balance columns...")
+funcfile.writelog("%t OPEN DATABASE: ia_finding_5")
 s_head = funcmysql.get_colnames_sqlite_text(so_curs,"X002ex_vss_gl_balance_month","ia_find5_")
 s_head = "(`ia_find_auto`, " + s_head.rstrip(", ") + ")"
-#print(s_head)
-
+print(s_head)
 # Open the SOURCE file to obtain the data
-print("Insert mysql monthly balances...")
+print("Insert mysql vss gl monthly balance data...")
 with sqlite3.connect(so_path+so_file) as rs_conn:
     rs_conn.row_factory = sqlite3.Row
 rs_curs = rs_conn.cursor()
@@ -120,9 +117,9 @@ rows = rs_curs.fetchall()
 i_tota = 0
 i_coun = 0
 for row in rows:
-    s_data = "(9, "
+    s_data = "(5, "
     for member in row:
-        print(type(member))
+        #print(type(member))
         if type(member) == str:
             s_data = s_data + "'" + member + "', "
         elif type(member) == int:
@@ -140,13 +137,9 @@ for row in rows:
     if i_coun == 100:
         ms_cnxn.commit()
         i_coun = 0
-        
-# Close the ROW Connection
 ms_cnxn.commit()
-rs_conn.close()
-print("Inserted " + str(i_tota) + " mysql vss gl monthly balances...")
-funcfile.writelog("%t POPULATE MYSQL TABLE: VSS GL MONTHLY BALANCES (ia_finding_5) " + str(i_tota) + " records")
-
+print("Inserted " + str(i_tota) + " rows...")
+funcfile.writelog("%t POPULATE MYSQL TABLE: ia_finding_5 with " + str(i_tota) + " rows")
 
 
 
@@ -155,6 +148,7 @@ funcfile.writelog("%t POPULATE MYSQL TABLE: VSS GL MONTHLY BALANCES (ia_finding_
 
 # Close the table connection ***************************************************
 so_conn.close()
+ms_cnxn.commit()
 ms_cnxn.close()
 
 # Close the log writer *********************************************************
