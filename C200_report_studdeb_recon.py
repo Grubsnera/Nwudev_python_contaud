@@ -1175,6 +1175,47 @@ def Report_studdeb_recon():
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
+    # Transfer GL transactions to the VSS file *********************************
+    # Open the SOURCE file to obtain column headings
+    print("Transfer gl data to the vss database...")
+    funcfile.writelog("%t GET COLUMN HEADINGS: X003aa_vss_gl_join")
+    s_head = funcmysql.get_colnames_sqlite_text(so_curs,"X003aa_vss_gl_join","")
+    s_head = "(" + s_head.rstrip(", ") + ")"
+    #print(s_head)
+    # Open the SOURCE file to obtain the data
+    print("Insert gl data into vss table...")
+    #with sqlite3.connect(so_path+so_file) as rs_conn:
+    #    rs_conn.row_factory = sqlite3.Row
+    #rs_curs = rs_conn.cursor()
+    so_curs.execute("SELECT * FROM X003aa_gl_vss_join")
+    rows = so_curs.fetchall()
+    i_tota = 0
+    i_coun = 0
+    for row in rows:
+        s_data = "("
+        for member in row:
+            #print(type(member))
+            if type(member) == str:
+                s_data = s_data + "'" + member + "', "
+            elif type(member) == int:
+                s_data = s_data + str(member) + ", "
+            elif type(member) == float:
+                s_data = s_data + str(member) + ", "
+            else:
+                s_data = s_data + "'', "
+        s_data = s_data.rstrip(", ") + ")"
+        #print(s_data)
+        s_sql = "INSERT INTO `X003aa_vss_gl_join` " + s_head + " VALUES " + s_data + ";"
+        so_curs.execute(s_sql)
+        i_tota = i_tota + 1
+        i_coun = i_coun + 1
+        if i_coun == 100:
+            so_conn.commit()
+            i_coun = 0
+    so_conn.commit()        
+    print("Inserted " + str(i_tota) + " rows...")
+    funcfile.writelog("%t POPULATE TABLE: X003aa_vss_gl_join with " + str(i_tota) + " rows")
+
     # Report on VSS and GL comparison per campus per month *********************
     print("Report vss gl join transaction type...")
     sr_file = "X003ax_vss_gl_join"
@@ -1194,7 +1235,8 @@ def Report_studdeb_recon():
       X003aa_vss_gl_join
     ORDER BY
       CAMPUS,
-      MONTH
+      MONTH,
+      TRANCODE
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     so_curs.execute(s_sql)
