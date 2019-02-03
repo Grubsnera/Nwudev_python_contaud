@@ -60,64 +60,24 @@ funcfile.writelog("%t OPEN MYSQL DATABASE: " + s_database)
 
 # Development script ***********************************************************
 
-# Create MYSQL VSS GL MONTHLY BALANCES TO WEB table ****************************
-print("Build mysql vss gl monthly balances...")
-ms_curs.execute("DROP TABLE IF EXISTS ia_finding_5")
-funcfile.writelog("%t DROPPED MYSQL TABLE: ia_finding_5")
-s_sql = """
-CREATE TABLE IF NOT EXISTS ia_finding_5 (
-ia_find_auto INT(11),
-ia_find5_auto INT(11) AUTO_INCREMENT,
-ia_find5_campus VARCHAR(20),
-ia_find5_month VARCHAR(2),
-ia_find5_vss_tran_dt DECIMAL(20,2),
-ia_find5_vss_tran_ct DECIMAL(20,2),
-ia_find5_vss_tran DECIMAL(20,2),
-ia_find5_vss_runbal DECIMAL(20,2),
-ia_find5_gl_tran DECIMAL(20,2),
-ia_find5_gl_runbal DECIMAL(20,2),
-ia_find5_diff DECIMAL(20,2),
-ia_find5_move DECIMAL(20,2),
-ia_find5_officer_camp VARCHAR(10),
-ia_find5_officer_name_camp VARCHAR(50),
-ia_find5_officer_mail_camp VARCHAR(100),
-ia_find5_officer_org VARCHAR(10),
-ia_find5_officer_name_org VARCHAR(50),
-ia_find5_officer_mail_org VARCHAR(100),
-ia_find5_supervisor_camp VARCHAR(10),
-ia_find5_supervisor_name_camp VARCHAR(50),
-ia_find5_supervisor_mail_camp VARCHAR(100),
-ia_find5_supervisor_org VARCHAR(10),
-ia_find5_supervisor_name_org VARCHAR(50),
-ia_find5_supervisor_mail_org VARCHAR(100),
-PRIMARY KEY (ia_find5_auto),
-INDEX fb_order_ia_find5_campus_INDEX (ia_find5_campus),
-INDEX fb_order_ia_find5_month_INDEX (ia_find5_month)
-)
-ENGINE = InnoDB
-CHARSET=utf8mb4
-COLLATE utf8mb4_unicode_ci
-COMMENT = 'Table to store vss and gl monthly balances'
-""" + ";"
-ms_curs.execute(s_sql)
-funcfile.writelog("%t CREATED MYSQL TABLE: ia_finding_5 (vss gl monthly balances per campus per month)")
 # Open the SOURCE file to obtain column headings
-print("Build mysql vss gl monthly balance columns...")
-funcfile.writelog("%t OPEN DATABASE: ia_finding_5")
-s_head = funcmysql.get_colnames_sqlite_text(so_curs,"X002ex_vss_gl_balance_month","ia_find5_")
-s_head = "(`ia_find_auto`, " + s_head.rstrip(", ") + ")"
-print(s_head)
+print("Transfer gl data to the vss database...")
+funcfile.writelog("%t GET COLUMN HEADINGS: X003aa_vss_gl_join")
+s_head = funcmysql.get_colnames_sqlite_text(so_curs,"X003aa_vss_gl_join","")
+s_head = "(" + s_head.rstrip(", ") + ")"
+#print(s_head)
+
 # Open the SOURCE file to obtain the data
-print("Insert mysql vss gl monthly balance data...")
-with sqlite3.connect(so_path+so_file) as rs_conn:
-    rs_conn.row_factory = sqlite3.Row
-rs_curs = rs_conn.cursor()
-rs_curs.execute("SELECT * FROM X002ex_vss_gl_balance_month")
-rows = rs_curs.fetchall()
+print("Insert gl data into vss table...")
+#with sqlite3.connect(so_path+so_file) as rs_conn:
+#    rs_conn.row_factory = sqlite3.Row
+#rs_curs = rs_conn.cursor()
+so_curs.execute("SELECT * FROM X003aa_gl_vss_join")
+rows = so_curs.fetchall()
 i_tota = 0
 i_coun = 0
 for row in rows:
-    s_data = "(5, "
+    s_data = "("
     for member in row:
         #print(type(member))
         if type(member) == str:
@@ -129,24 +89,21 @@ for row in rows:
         else:
             s_data = s_data + "'', "
     s_data = s_data.rstrip(", ") + ")"
-    print(s_data)
-    s_sql = "INSERT INTO `ia_finding_5` " + s_head + " VALUES " + s_data + ";"
-    ms_curs.execute(s_sql)
+    #print(s_data)
+    s_sql = "INSERT INTO `X003aa_vss_gl_join` " + s_head + " VALUES " + s_data + ";"
+    so_curs.execute(s_sql)
     i_tota = i_tota + 1
     i_coun = i_coun + 1
     if i_coun == 100:
-        ms_cnxn.commit()
+        so_conn.commit()
         i_coun = 0
-ms_cnxn.commit()
+so_conn.commit()        
 print("Inserted " + str(i_tota) + " rows...")
-funcfile.writelog("%t POPULATE MYSQL TABLE: ia_finding_5 with " + str(i_tota) + " rows")
-
-
-
-
+funcfile.writelog("%t POPULATE TABLE: X003aa_vss_gl_join with " + str(i_tota) + " rows")
 
 
 # Close the table connection ***************************************************
+so_conn.commit()
 so_conn.close()
 ms_cnxn.commit()
 ms_cnxn.close()
