@@ -4,7 +4,7 @@ Author: Albert J v Rensburg
 """
 
 """ SCRIPT DESCRIPTION (and reulting table/view) *******************************
-Can be run at any time depeninding on update status of dependancies listed
+Can be run at any time depending on update status of dependancies listed
 01 Build the current year deferment list (X000_DEFERMENTS)
 02 Build the previous year deferment list (X001_deferments_prev)
 03 Build the current year deferment list (X001_deferments_curr)
