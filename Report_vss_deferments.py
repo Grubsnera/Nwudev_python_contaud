@@ -453,12 +453,13 @@ s_sql = "CREATE TABLE " + sr_file+ " AS" + """
 SELECT
   X000_Students_curr.*,
   X001aa_Trans_balopen.BAL_OPEN,
-  X001ad_Trans_balreg.BAL_REG,
   X001ae_Trans_crebefreg.CRE_REG_BEFORE,
-  X001af_Trans_creaftreg.CRE_REG_AFTER,
-  X001ab_Trans_feereg.FEE_REG,
   CAST(0 AS REAL) AS BAL_REG_CALC,
-  X001ag_Trans_balance.BAL_CUR
+  X001ad_Trans_balreg.BAL_REG,
+  X001af_Trans_creaftreg.CRE_REG_AFTER,
+  CAST(0 AS REAL) AS BAL_CRE_CALC,
+  X001ag_Trans_balance.BAL_CUR,
+  X001ab_Trans_feereg.FEE_REG
 FROM
   X000_Students_curr
   LEFT JOIN X001ad_Trans_balreg ON X001ad_Trans_balreg.STUDENT_VSS = X000_Students_curr.KSTUDBUSENTID
@@ -471,7 +472,7 @@ FROM
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 so_curs.execute(s_sql)
 funcfile.writelog("%t BUILD TABLE: " + sr_file)
-# Calc indicator for non-entering and first-time students
+# Calc balance after credits up to registration
 print("Add column bal_reg_calc...")
 so_curs.execute("UPDATE " + sr_file + """
                 SET BAL_REG_CALC =
@@ -483,7 +484,18 @@ so_curs.execute("UPDATE " + sr_file + """
                 END
                 ;""")
 so_conn.commit()
-funcfile.writelog("%t ADD COLUMN: entry_level_calc")
+funcfile.writelog("%t ADD COLUMN: bal_reg_calc")
+# Calc balance including all credits
+print("Add column bal_cre_calc...")
+so_curs.execute("UPDATE " + sr_file + """
+                SET BAL_CRE_CALC =
+                CASE
+                    WHEN TYPEOF(CRE_REG_AFTER) = "null"  THEN BAL_REG_CALC
+                    ELSE BAL_REG_CALC + CRE_REG_AFTER
+                END
+                ;""")
+so_conn.commit()
+funcfile.writelog("%t ADD COLUMN: bal_cre_calc")
 
 
 
