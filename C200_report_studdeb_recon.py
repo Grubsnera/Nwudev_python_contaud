@@ -309,6 +309,16 @@ def Report_studdeb_recon():
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
+    # Add previous year gl opening balances (TEMPORARY)
+    s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`,`MONTH`,`BALANCE`) VALUES ('Mafikeng','00','66689094.80');"
+    so_curs.execute(s_sql)
+    s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`,`MONTH`,`BALANCE`) VALUES ('Potchefstroom','00','-18337263.56');"
+    so_curs.execute(s_sql)
+    s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`,`MONTH`,`BALANCE`) VALUES ('Vaal Triangle','00','39482933.18');"
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t ADD ROWS: GL Opening balances (temporary)")
+
     # Calculate the running gl balance ********************************************
     print("Calculate the running gl balance...")
     sr_file = "X001ce_gl_balmonth_calc_runbal"
@@ -979,6 +989,11 @@ def Report_studdeb_recon():
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+
+
+
+    
 
     # Create MYSQL VSS GL MONTHLY BALANCES TO WEB table ****************************
     print("Build mysql vss gl monthly balances...")
