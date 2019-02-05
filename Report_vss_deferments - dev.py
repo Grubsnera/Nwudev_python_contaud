@@ -53,18 +53,35 @@ SELECT
   X000_Students_curr.*,
   X001aa_Trans_balopen.BAL_OPEN,
   X001ad_Trans_balreg.BAL_REG,
-  X001ae_Trans_crereg.CRE_REG,
-  X001ab_Trans_feereg.FEE_REG
+  X001ae_Trans_crebefreg.CRE_REG_BEFORE,
+  X001af_Trans_creaftreg.CRE_REG_AFTER,
+  X001ab_Trans_feereg.FEE_REG,
+  CAST(0 AS REAL) AS BAL_REG_CALC
 FROM
   X000_Students_curr
   LEFT JOIN X001ad_Trans_balreg ON X001ad_Trans_balreg.STUDENT_VSS = X000_Students_curr.KSTUDBUSENTID
-  LEFT JOIN X001ae_Trans_crereg ON X001ae_Trans_crereg.STUDENT_VSS = X000_Students_curr.KSTUDBUSENTID
   LEFT JOIN X001aa_Trans_balopen ON X001aa_Trans_balopen.STUDENT_VSS = X000_Students_curr.KSTUDBUSENTID
+  LEFT JOIN X001ae_Trans_crebefreg ON X001ae_Trans_crebefreg.STUDENT_VSS = X000_Students_curr.KSTUDBUSENTID
+  LEFT JOIN X001af_Trans_creaftreg ON X001af_Trans_creaftreg.STUDENT_VSS = X000_Students_curr.KSTUDBUSENTID
   LEFT JOIN X001ab_Trans_feereg ON X001ab_Trans_feereg.STUDENT_VSS = X000_Students_curr.KSTUDBUSENTID
 """
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 so_curs.execute(s_sql)
 funcfile.writelog("%t BUILD TABLE: " + sr_file)
+# Calc indicator for non-entering and first-time students
+print("Add column bal_reg_calc...")
+so_curs.execute("UPDATE " + sr_file + """
+                SET BAL_REG_CALC =
+                CASE
+                    WHEN TYPEOF(BAL_OPEN) = "null" AND TYPEOF(CRE_REG_BEFORE) = "null" THEN 0
+                    WHEN TYPEOF(BAL_OPEN) = "null" THEN CRE_REG_BEFORE
+                    WHEN TYPEOF(CRE_REG_BEFORE) = "null"  THEN BAL_OPEN
+                    ELSE BAL_OPEN + CRE_REG_BEFORE
+                END
+                ;""")
+so_conn.commit()
+funcfile.writelog("%t ADD COLUMN: entry_level_calc")
+
 
 
 
