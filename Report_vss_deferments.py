@@ -234,6 +234,47 @@ WHERE
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 so_curs.execute(s_sql)
 funcfile.writelog("%t BUILD TABLE: " + sr_file)
+# Add calculated dateenrol if earlier than current year
+# Calc dateenrol if earlier than startdate
+print("Add column dateenrol_calc...")
+so_curs.execute("ALTER TABLE "+sr_file+" ADD COLUMN DATEENROL_CALC TEXT;")
+so_curs.execute("UPDATE " + sr_file + """
+                SET DATEENROL_CALC = 
+                CASE
+                   WHEN DATEENROL < STARTDATE THEN STARTDATE
+                   ELSE DATEENROL
+                END
+                ;""")
+so_conn.commit()
+funcfile.writelog("%t ADD COLUMN: dateenrol_calc")
+# Calc indicator for non-entering and first-time students
+print("Add column entry_level_calc...")
+so_curs.execute("ALTER TABLE "+sr_file+" ADD COLUMN ENTRY_LEVEL_CALC INT;")
+so_curs.execute("UPDATE " + sr_file + """
+                SET ENTRY_LEVEL_CALC = 
+                CASE
+                   WHEN FENTRYLEVELCODEID = 4407 THEN 0
+                   WHEN FENTRYLEVELCODEID = 4410 THEN 0
+                   WHEN FENTRYLEVELCODEID = 4406 THEN 1
+                   WHEN FENTRYLEVELCODEID = 4409 THEN 1
+                   ELSE 9
+                END
+                ;""")
+so_conn.commit()
+funcfile.writelog("%t ADD COLUMN: entry_level_calc")
+"""
+2019-02-04
+FENTRYLEVELCODEID	ENTRY_LEVEL	Count_KSTUDBUSENTID	
+4406	First-time Entering Student Undergraduate (f)	10838
+4407	Non-entering Student Undergraduate (n)	29593
+4408	Transfer Student Undergraduate (t)	857
+4409	First-time Entering Student Postgraduate (f)	2191
+4410	Non-entering Student Postgraduate (n)	4283
+4411	Transfer Student Postgraduate (t)	303
+4412	Embarking On Different Qualification Undergraduate (e)	2148
+4413	Embarking On Different Qualification Postgraduate (e)	504
+
+"""
 
 # OBTAIN A COPY OF VSS TRANSACTIONS TO DATE (CURRENT YEAR STUDENT ACCOUNT ******
 
@@ -250,13 +291,27 @@ SELECT
   TRAN.X002ab_vss_transort.TRANUSER,
   TRAN.X002ab_vss_transort.AMOUNT_VSS,
   TRAN.X002ab_vss_transort.AMOUNT_DT,
-  TRAN.X002ab_vss_transort.AMOUNT_CR
+  TRAN.X002ab_vss_transort.AMOUNT_CR,
+  0 AS IS_OPEN_BAL
 FROM
   TRAN.X002ab_vss_transort
 """
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 so_curs.execute(s_sql)
 funcfile.writelog("%t BUILD TABLE: " + sr_file)
+# Calc indicator for non-entering and first-time students
+print("Add column entry_level_calc...")
+so_curs.execute("UPDATE " + sr_file + """
+                SET IS_OPEN_BAL = 
+                CASE
+                   WHEN TRANSCODE_VSS = "001" THEN 1
+                   WHEN TRANSCODE_VSS = "031" THEN 1
+                   WHEN TRANSCODE_VSS = "061" THEN 1
+                   ELSE 0
+                END
+                ;""")
+so_conn.commit()
+funcfile.writelog("%t ADD COLUMN: entry_level_calc")
 
 # CALCULATE THE STUDENT ACCOUNT OPENING BALANCE ********************************
 
@@ -265,13 +320,11 @@ sr_file = "X001aa_Trans_balopen"
 s_sql = "CREATE VIEW " + sr_file+ " AS" + """
 SELECT
   X000_Transaction_curr.STUDENT_VSS,
-  CAST(TOTAL(X000_Transaction_curr.AMOUNT_CR) AS REAL) AS BAL_OPEN
+  CAST(TOTAL(X000_Transaction_curr.AMOUNT_VSS) AS REAL) AS BAL_OPEN
 FROM
   X000_Transaction_curr
 WHERE
-  (X000_Transaction_curr.TRANSCODE_VSS = "001") OR
-  (X000_Transaction_curr.TRANSCODE_VSS = "031") OR
-  (X000_Transaction_curr.TRANSCODE_VSS = "061")
+  X000_Transaction_curr.IS_OPEN_BAL = 1
 GROUP BY
   X000_Transaction_curr.STUDENT_VSS
 """
@@ -286,7 +339,7 @@ sr_file = "X001ab_Trans_feereg"
 s_sql = "CREATE VIEW " + sr_file+ " AS" + """
 SELECT
   X000_Transaction_curr.STUDENT_VSS,
-  CAST(TOTAL(X000_Transaction_curr.AMOUNT_CR) AS REAL) AS FEE_REG
+  CAST(TOTAL(X000_Transaction_curr.AMOUNT_VSS) AS REAL) AS FEE_REG
 FROM
   X000_Transaction_curr
 WHERE
@@ -305,7 +358,7 @@ sr_file = "X001ac_Trans_addreg"
 s_sql = "CREATE VIEW " + sr_file+ " AS" + """
 SELECT
   X000_Transaction_curr.*,
-  X000_Students_curr.DATEENROL
+  X000_Students_curr.DATEENROL_CALC
 FROM
   X000_Transaction_curr
   INNER JOIN X000_Students_curr ON X000_Students_curr.KSTUDBUSENTID = X000_Transaction_curr.STUDENT_VSS
@@ -325,34 +378,112 @@ SELECT
 FROM
   X001ac_Trans_addreg
 WHERE
-  X001ac_Trans_addreg.TRANSDATE_VSS <= X001ac_Trans_addreg.DATEENROL
+  X001ac_Trans_addreg.TRANSDATE_VSS <= X001ac_Trans_addreg.DATEENROL_CALC
 GROUP BY
   X001ac_Trans_addreg.STUDENT_VSS
 """
 so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
+so_curs.execute(s_sql)
+funcfile.writelog("%t BUILD VIEW: " + sr_file)
+
+# CALCULATE THE STUDENT ACCOUNT CREDIT TRANSACTIONS BEFORE REGISTRATION *********
+
+print("Calculate the credits after registration date...")
+sr_file = "X001ae_Trans_crebefreg"
+s_sql = "CREATE VIEW " + sr_file+ " AS" + """
+SELECT
+  X001ac_Trans_addreg.STUDENT_VSS,
+  CAST(TOTAL(X001ac_Trans_addreg.AMOUNT_CR) AS REAL) AS CRE_REG_BEFORE
+FROM
+  X001ac_Trans_addreg
+WHERE
+  X001ac_Trans_addreg.IS_OPEN_BAL = 0 AND
+  X001ac_Trans_addreg.TRANSDATE_VSS <= X001ac_Trans_addreg.DATEENROL_CALC
+GROUP BY
+  X001ac_Trans_addreg.STUDENT_VSS
+"""
+so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
+so_curs.execute("DROP VIEW IF EXISTS X001ae_Trans_crereg")
 so_curs.execute(s_sql)
 funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
 # CALCULATE THE STUDENT ACCOUNT CREDIT TRANSACTIONS AFTER REGISTRATION *********
 
 print("Calculate the credits after registration date...")
-sr_file = "X001ae_Trans_crereg"
+sr_file = "X001af_Trans_creaftreg"
 s_sql = "CREATE VIEW " + sr_file+ " AS" + """
 SELECT
   X001ac_Trans_addreg.STUDENT_VSS,
-  CAST(TOTAL(X001ac_Trans_addreg.AMOUNT_CR) AS REAL) AS CRE_REG
+  CAST(TOTAL(X001ac_Trans_addreg.AMOUNT_CR) AS REAL) AS CRE_REG_AFTER
 FROM
   X001ac_Trans_addreg
 WHERE
-  X001ac_Trans_addreg.TRANSDATE_VSS > X001ac_Trans_addreg.DATEENROL
+  X001ac_Trans_addreg.IS_OPEN_BAL = 0 AND
+  X001ac_Trans_addreg.TRANSDATE_VSS > X001ac_Trans_addreg.DATEENROL_CALC
 GROUP BY
   X001ac_Trans_addreg.STUDENT_VSS
+"""
+so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
+so_curs.execute("DROP VIEW IF EXISTS X001ae_Trans_crereg")
+so_curs.execute(s_sql)
+funcfile.writelog("%t BUILD VIEW: " + sr_file)
+
+# CALCULATE THE STUDENT ACCOUNT BALANCE ****************************************
+
+print("Calculate the account balance...")
+sr_file = "X001ag_Trans_balance"
+s_sql = "CREATE VIEW " + sr_file+ " AS" + """
+SELECT
+  X000_Transaction_curr.STUDENT_VSS,
+  CAST(TOTAL(X000_Transaction_curr.AMOUNT_VSS) AS REAL) AS BAL_CUR
+FROM
+  X000_Transaction_curr
+GROUP BY
+  X000_Transaction_curr.STUDENT_VSS
 """
 so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
 so_curs.execute(s_sql)
 funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
+# ADD THE BALANCES TO THE LIST OF REGISTERED STUDENTS **************************
 
+print("Add the calculated balances to the students list...")
+sr_file = "X001aa_Students"
+s_sql = "CREATE TABLE " + sr_file+ " AS" + """
+SELECT
+  X000_Students_curr.*,
+  X001aa_Trans_balopen.BAL_OPEN,
+  X001ad_Trans_balreg.BAL_REG,
+  X001ae_Trans_crebefreg.CRE_REG_BEFORE,
+  X001af_Trans_creaftreg.CRE_REG_AFTER,
+  X001ab_Trans_feereg.FEE_REG,
+  CAST(0 AS REAL) AS BAL_REG_CALC,
+  X001ag_Trans_balance.BAL_CUR
+FROM
+  X000_Students_curr
+  LEFT JOIN X001ad_Trans_balreg ON X001ad_Trans_balreg.STUDENT_VSS = X000_Students_curr.KSTUDBUSENTID
+  LEFT JOIN X001aa_Trans_balopen ON X001aa_Trans_balopen.STUDENT_VSS = X000_Students_curr.KSTUDBUSENTID
+  LEFT JOIN X001ae_Trans_crebefreg ON X001ae_Trans_crebefreg.STUDENT_VSS = X000_Students_curr.KSTUDBUSENTID
+  LEFT JOIN X001af_Trans_creaftreg ON X001af_Trans_creaftreg.STUDENT_VSS = X000_Students_curr.KSTUDBUSENTID
+  LEFT JOIN X001ab_Trans_feereg ON X001ab_Trans_feereg.STUDENT_VSS = X000_Students_curr.KSTUDBUSENTID
+  LEFT JOIN X001ag_Trans_balance ON X001ag_Trans_balance.STUDENT_VSS = X000_Students_curr.KSTUDBUSENTID
+"""
+so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+so_curs.execute(s_sql)
+funcfile.writelog("%t BUILD TABLE: " + sr_file)
+# Calc indicator for non-entering and first-time students
+print("Add column bal_reg_calc...")
+so_curs.execute("UPDATE " + sr_file + """
+                SET BAL_REG_CALC =
+                CASE
+                    WHEN TYPEOF(BAL_OPEN) = "null" AND TYPEOF(CRE_REG_BEFORE) = "null" THEN 0
+                    WHEN TYPEOF(BAL_OPEN) = "null" THEN CRE_REG_BEFORE
+                    WHEN TYPEOF(CRE_REG_BEFORE) = "null"  THEN BAL_OPEN
+                    ELSE BAL_OPEN + CRE_REG_BEFORE
+                END
+                ;""")
+so_conn.commit()
+funcfile.writelog("%t ADD COLUMN: entry_level_calc")
 
 
 
