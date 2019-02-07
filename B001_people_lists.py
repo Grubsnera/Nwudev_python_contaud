@@ -152,7 +152,6 @@ def People_lists():
     funcfile.writelog("%t OPEN MYSQL DATABASE: " + s_database)
     
     # Drop tables
-    so_curs.execute("DROP TABLE IF EXISTS X001_ASSIGNMENT_01_PERI")
 
     # DEFINITIONS ******************************************************************
 
