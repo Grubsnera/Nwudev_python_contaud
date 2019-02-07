@@ -21,7 +21,7 @@ TEST BURSARY INVSS NOGL
 TEST BURSARY POST TO DIFF CAMPUS IN GL
 *****************************************************************************"""
 
-def Report_studdeb_recon():
+def Report_studdeb_recon(dOpenMaf,dOpenPot,dOpenVaa):
 
     # Import python modules
     import csv
@@ -489,12 +489,15 @@ def Report_studdeb_recon():
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
     # Add previous year gl opening balances (TEMPORARY)
-    s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`,`MONTH`,`BALANCE`) VALUES ('Mafikeng','00','66689094.80');"
-    so_curs.execute(s_sql)
-    s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`,`MONTH`,`BALANCE`) VALUES ('Potchefstroom','00','-18337263.56');"
-    so_curs.execute(s_sql)
-    s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`,`MONTH`,`BALANCE`) VALUES ('Vaal Triangle','00','39482933.18');"
-    so_curs.execute(s_sql)
+    if dOpenMaf <> 0:
+        s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`,`MONTH`,`BALANCE`) VALUES ('Mafikeng','00','66689094.80');"
+        so_curs.execute(s_sql)
+    if dOpenPot <> 0:
+        s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`,`MONTH`,`BALANCE`) VALUES ('Potchefstroom','00','-18337263.56');"
+        so_curs.execute(s_sql)
+    if dOPenVaa <> 0:
+        s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`,`MONTH`,`BALANCE`) VALUES ('Vaal Triangle','00','39482933.18');"
+        so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t ADD ROWS: GL Opening balances (temporary)")
 
