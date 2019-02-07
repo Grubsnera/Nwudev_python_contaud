@@ -84,6 +84,153 @@ def Report_studdeb_recon():
     so_curs.execute("DROP TABLE IF EXISTS X003ab_gl_vss_join_eng")
 
 
+    """*************************************************************************
+    ***
+    *** LIST VSS TRANSACTIONS
+    ***   Do first to obtain list of transaction types
+    ***
+    *************************************************************************"""
+
+    print("--- PREPARE VSS TRANSACTIONS ---")
+    funcfile.writelog("PREPARE VSS TRANSACTIONS")
+    
+    # Extract vss transactions from VSS.SQLITE *********************************
+    print("Import vss transactions from VSS.SQLITE...")
+    sr_file = "X002aa_vss_tranlist"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    SELECT
+      *
+    FROM
+      VSS.X010_Studytrans
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+    # Add column vss campus name
+    print("Add column vss campus name...")
+    so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN CAMPUS TEXT;")
+    so_curs.execute("UPDATE X002aa_vss_tranlist " + """
+                    SET CAMPUS = 
+                    CASE
+                       WHEN FDEBTCOLLECTIONSITE = '-9' THEN 'Mafikeng'
+                       WHEN FDEBTCOLLECTIONSITE = '-2' THEN 'Vaal Triangle'
+                       ELSE 'Potchefstroom'
+                    END
+                    ;""")
+    so_conn.commit()
+    funcfile.writelog("%t ADD COLUMN: Vss campus name")
+    # Add column vss transaction month
+    print("Add column vss transaction month...")
+    so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN MONTH TEXT;")
+    so_curs.execute("UPDATE X002aa_vss_tranlist " + """
+                    SET MONTH = 
+                    CASE
+                       WHEN SUBSTR(TRANSDATE,6,5)='01-01' AND INSTR('001z031z061',TRANSCODE)>0 THEN '00'
+                       WHEN SUBSTR(POSTDATEDTRANSDATE,1,4)>=strftime('%Y','now') THEN SUBSTR(POSTDATEDTRANSDATE,6,2)
+                       ELSE SUBSTR(TRANSDATE,6,2)
+                    END
+                    ;""")
+    so_conn.commit()
+    funcfile.writelog("%t ADD COLUMN: Vss transaction month")
+    # Add column vss debit amount
+    print("Add column vss dt amount...")
+    so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN AMOUNT_DT REAL;")
+    so_curs.execute("UPDATE X002aa_vss_tranlist " + """
+                    SET AMOUNT_DT = 
+                    CASE
+                       WHEN AMOUNT > 0 THEN AMOUNT
+                       ELSE 0
+                    END
+                    ;""")
+    so_conn.commit()
+    funcfile.writelog("%t ADD COLUMN: Vss debit amount")
+    # Add column vss credit amount
+    print("Add column vss ct amount...")
+    so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN AMOUNT_CR REAL;")
+    so_curs.execute("UPDATE X002aa_vss_tranlist " + """
+                    SET AMOUNT_CR = 
+                    CASE
+                       WHEN AMOUNT < 0 THEN AMOUNT
+                       ELSE 0
+                    END
+                    ;""")
+    so_conn.commit()
+    funcfile.writelog("%t ADD COLUMN: Vss credit amount")
+   # Temp description - Remove characters from description ********************
+    print("Add column vss description in afrikaans...")
+    so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN TEMP_DESC_A TEXT;")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(UPPER(TRIM(DESCRIPTION_A)),'0','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'1','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'2','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'3','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'4','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'5','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'6','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'7','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'8','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'9','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'(','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,')','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'.','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'-','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,':','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'/','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'&','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'ë','E');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'?','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,' ','');")
+    funcfile.writelog("%t CALC COLUMN: Temp afr description")
+    # Temp description - Remove characters from description ********************
+    print("Add column vss description in english...")
+    so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN TEMP_DESC_E TEXT;")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(UPPER(TRIM(DESCRIPTION_E)),'0','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'1','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'2','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'3','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'4','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'5','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'6','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'7','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'8','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'9','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'(','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,')','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'.','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'-','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,':','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'/','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'&','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'ë','E');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'?','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,' ','');")
+    funcfile.writelog("%t CALC COLUMN: Temp eng description")
+
+    # Build a transaction code language list ***************************************
+    print("Build a transaction code language list...")
+    sr_file = "X002aa_vss_tranlist_langsumm"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    SELECT
+      X002aa_vss_tranlist.TRANSCODE,
+      X002aa_vss_tranlist.TEMP_DESC_A AS DESC_AFR,
+      X002aa_vss_tranlist.TEMP_DESC_E AS DESC_ENG,
+      Sum(X002aa_vss_tranlist.AMOUNT) AS SUM,
+      Count(X002aa_vss_tranlist.CAMPUS) AS COUNT
+    FROM
+      X002aa_vss_tranlist
+    WHERE
+      X002aa_vss_tranlist.TEMP_DESC_A IS NOT NULL
+    GROUP BY
+      X002aa_vss_tranlist.TRANSCODE,
+      X002aa_vss_tranlist.TEMP_DESC_A,
+      X002aa_vss_tranlist.TEMP_DESC_E
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+
+
 
     """*************************************************************************
     ***
@@ -140,6 +287,8 @@ def Report_studdeb_recon():
                     SET MONTH = 
                     CASE
                        WHEN UNIV_FISCAL_PRD_CD = 'BB' THEN '00'
+                       WHEN UNIV_FISCAL_PRD_CD = '13' THEN '12'
+                       WHEN UNIV_FISCAL_PRD_CD = '14' THEN '12'
                        ELSE UNIV_FISCAL_PRD_CD
                     END
                     ;""")
@@ -214,6 +363,36 @@ def Report_studdeb_recon():
     so_conn.commit()
     funcfile.writelog("%t ADD COLUMNS: Description link")
 
+
+    # Join the transaction languages to the gl transaction file ********************
+    print("Join the gl transactions with transaction code languages...")
+    sr_file = "X001aa_gl_tranlist_lang"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    SELECT
+      X001aa_gl_tranlist.*,
+      X002aa_vss_tranlist_langsumm.DESC_ENG,
+      '' AS DESC_GL
+    FROM
+      X001aa_gl_tranlist
+      LEFT JOIN X002aa_vss_tranlist_langsumm ON X002aa_vss_tranlist_langsumm.DESC_AFR = X001aa_gl_tranlist.DESCRIPTION
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+    # Build final gl description
+    print("Add column gl business unit id...")
+    so_curs.execute("UPDATE X001aa_gl_tranlist_lang " + """
+                    SET DESC_GL = 
+                    CASE
+                       WHEN DESC_ENG <> '' THEN DESC_ENG
+                       ELSE DESCRIPTION
+                    END
+                    ;""")
+    so_conn.commit()
+    funcfile.writelog("%t ADD COLUMN: Description gl (DESC_GL)")
+
+
     # Build sort rename column gl transaction file *****************************
     print("Build and sort gl transaction file...")
     sr_file = "X001ab_gl_transort"
@@ -221,39 +400,39 @@ def Report_studdeb_recon():
     SELECT
       VSS.X000_Orgunitinstance.ORGUNIT_NAME AS CAMPUS,
       VSS.X000_Orgunitinstance.FORGUNITNUMBER AS CAMPUS_VSS,
-      X001aa_gl_tranlist.UNIV_FISCAL_YR AS YEAR,
-      X001aa_gl_tranlist.MONTH,
-      X001aa_gl_tranlist.CALC_COST_STRING AS COST_STRING,
-      X001aa_gl_tranlist.TRANSACTION_DT AS DATE_TRAN,
-      X001aa_gl_tranlist.FDOC_NBR AS EDOC,
-      Round(X001aa_gl_tranlist.CALC_AMOUNT,2) AS AMOUNT,
-      X001aa_gl_tranlist.TRN_LDGR_ENTR_DESC AS DESC_FULL,
-      X001aa_gl_tranlist.DESCRIPTION AS DESC_VSS,
-      X001aa_gl_tranlist.BURSARY_CODE AS BURSARY,
-      X001aa_gl_tranlist.STUDENT,
-      X001aa_gl_tranlist.FS_ORIGIN_CD AS ORIGIN_CODE,
-      X001aa_gl_tranlist.FS_DATABASE_DESC AS ORIGIN,
-      X001aa_gl_tranlist.ORG_NM AS ORG_NAME,
-      X001aa_gl_tranlist.ACCOUNT_NM AS ACC_NAME,
-      X001aa_gl_tranlist.FIN_OBJ_CD_NM AS OBJ_NAME,
-      X001aa_gl_tranlist.ACCT_TYP_NM AS ACC_TYPE,
-      X001aa_gl_tranlist.TRN_POST_DT AS DATE_POST,
-      X001aa_gl_tranlist."TIMESTAMP" AS TIME_POST,
-      X001aa_gl_tranlist.FIN_COA_CD AS ORG,
-      X001aa_gl_tranlist.ACCOUNT_NBR AS ACC,
-      X001aa_gl_tranlist.FIN_OBJECT_CD AS OBJ,
-      X001aa_gl_tranlist.FIN_BALANCE_TYP_CD AS BAL_TYPE,
-      X001aa_gl_tranlist.FIN_OBJ_TYP_CD AS OBJ_TYPE,
-      X001aa_gl_tranlist.FDOC_TYP_CD AS DOC_TYPE,
-      X001aa_gl_tranlist.TRN_ENTR_SEQ_NBR,
-      X001aa_gl_tranlist.FDOC_REF_TYP_CD,
-      X001aa_gl_tranlist.FS_REF_ORIGIN_CD,
-      X001aa_gl_tranlist.FDOC_REF_NBR,
-      X001aa_gl_tranlist.FDOC_REVERSAL_DT,
-      X001aa_gl_tranlist.TRN_ENCUM_UPDT_CD
+      X001aa_gl_tranlist_lang.UNIV_FISCAL_YR AS YEAR,
+      X001aa_gl_tranlist_lang.MONTH,
+      X001aa_gl_tranlist_lang.CALC_COST_STRING AS COST_STRING,
+      X001aa_gl_tranlist_lang.TRANSACTION_DT AS DATE_TRAN,
+      X001aa_gl_tranlist_lang.FDOC_NBR AS EDOC,
+      Round(X001aa_gl_tranlist_lang.CALC_AMOUNT,2) AS AMOUNT,
+      X001aa_gl_tranlist_lang.TRN_LDGR_ENTR_DESC AS DESC_FULL,
+      X001aa_gl_tranlist_lang.DESC_GL AS DESC_VSS,
+      X001aa_gl_tranlist_lang.BURSARY_CODE AS BURSARY,
+      X001aa_gl_tranlist_lang.STUDENT,
+      X001aa_gl_tranlist_lang.FS_ORIGIN_CD AS ORIGIN_CODE,
+      X001aa_gl_tranlist_lang.FS_DATABASE_DESC AS ORIGIN,
+      X001aa_gl_tranlist_lang.ORG_NM AS ORG_NAME,
+      X001aa_gl_tranlist_lang.ACCOUNT_NM AS ACC_NAME,
+      X001aa_gl_tranlist_lang.FIN_OBJ_CD_NM AS OBJ_NAME,
+      X001aa_gl_tranlist_lang.ACCT_TYP_NM AS ACC_TYPE,
+      X001aa_gl_tranlist_lang.TRN_POST_DT AS DATE_POST,
+      X001aa_gl_tranlist_lang."TIMESTAMP" AS TIME_POST,
+      X001aa_gl_tranlist_lang.FIN_COA_CD AS ORG,
+      X001aa_gl_tranlist_lang.ACCOUNT_NBR AS ACC,
+      X001aa_gl_tranlist_lang.FIN_OBJECT_CD AS OBJ,
+      X001aa_gl_tranlist_lang.FIN_BALANCE_TYP_CD AS BAL_TYPE,
+      X001aa_gl_tranlist_lang.FIN_OBJ_TYP_CD AS OBJ_TYPE,
+      X001aa_gl_tranlist_lang.FDOC_TYP_CD AS DOC_TYPE,
+      X001aa_gl_tranlist_lang.TRN_ENTR_SEQ_NBR,
+      X001aa_gl_tranlist_lang.FDOC_REF_TYP_CD,
+      X001aa_gl_tranlist_lang.FS_REF_ORIGIN_CD,
+      X001aa_gl_tranlist_lang.FDOC_REF_NBR,
+      X001aa_gl_tranlist_lang.FDOC_REVERSAL_DT,
+      X001aa_gl_tranlist_lang.TRN_ENCUM_UPDT_CD
     FROM
-      X001aa_gl_tranlist
-      LEFT JOIN VSS.X000_Orgunitinstance ON VSS.X000_Orgunitinstance.KBUSINESSENTITYID = X001aa_gl_tranlist.BUSINESSENTITYID
+      X001aa_gl_tranlist_lang
+      LEFT JOIN VSS.X000_Orgunitinstance ON VSS.X000_Orgunitinstance.KBUSINESSENTITYID = X001aa_gl_tranlist_lang.BUSINESSENTITYID
     ORDER BY
       VSS.X000_Orgunitinstance.ORGUNIT_NAME,
       TIME_POST
@@ -449,120 +628,7 @@ def Report_studdeb_recon():
     ***
     *************************************************************************"""
 
-    print("--- PREPARE VSS TRANSACTIONS ---")
-    funcfile.writelog("PREPARE VSS TRANSACTIONS")
-    
-    # Extract vss transactions from VSS.SQLITE *********************************
-    print("Import vss transactions from VSS.SQLITE...")
-    sr_file = "X002aa_vss_tranlist"
-    s_sql = "CREATE TABLE "+sr_file+" AS " + """
-    SELECT
-      *
-    FROM
-      VSS.X010_Studytrans
-    ;"""
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: "+sr_file)
-    # Add column vss campus name
-    print("Add column vss campus name...")
-    so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN CAMPUS TEXT;")
-    so_curs.execute("UPDATE X002aa_vss_tranlist " + """
-                    SET CAMPUS = 
-                    CASE
-                       WHEN FDEBTCOLLECTIONSITE = '-9' THEN 'Mafikeng'
-                       WHEN FDEBTCOLLECTIONSITE = '-2' THEN 'Vaal Triangle'
-                       ELSE 'Potchefstroom'
-                    END
-                    ;""")
-    so_conn.commit()
-    funcfile.writelog("%t ADD COLUMN: Vss campus name")
-    # Add column vss transaction month
-    print("Add column vss transaction month...")
-    so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN MONTH TEXT;")
-    so_curs.execute("UPDATE X002aa_vss_tranlist " + """
-                    SET MONTH = 
-                    CASE
-                       WHEN SUBSTR(TRANSDATE,6,5)='01-01' AND INSTR('001z031z061',TRANSCODE)>0 THEN '00'
-                       WHEN SUBSTR(POSTDATEDTRANSDATE,1,4)>=strftime('%Y','now') THEN SUBSTR(POSTDATEDTRANSDATE,6,2)
-                       ELSE SUBSTR(TRANSDATE,6,2)
-                    END
-                    ;""")
-    so_conn.commit()
-    funcfile.writelog("%t ADD COLUMN: Vss transaction month")
-    # Add column vss debit amount
-    print("Add column vss dt amount...")
-    so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN AMOUNT_DT REAL;")
-    so_curs.execute("UPDATE X002aa_vss_tranlist " + """
-                    SET AMOUNT_DT = 
-                    CASE
-                       WHEN AMOUNT > 0 THEN AMOUNT
-                       ELSE 0
-                    END
-                    ;""")
-    so_conn.commit()
-    funcfile.writelog("%t ADD COLUMN: Vss debit amount")
-    # Add column vss credit amount
-    print("Add column vss ct amount...")
-    so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN AMOUNT_CR REAL;")
-    so_curs.execute("UPDATE X002aa_vss_tranlist " + """
-                    SET AMOUNT_CR = 
-                    CASE
-                       WHEN AMOUNT < 0 THEN AMOUNT
-                       ELSE 0
-                    END
-                    ;""")
-    so_conn.commit()
-    funcfile.writelog("%t ADD COLUMN: Vss credit amount")
-   # Temp description - Remove characters from description ********************
-    print("Add column vss description in afrikaans...")
-    so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN TEMP_DESC_A TEXT;")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(UPPER(TRIM(DESCRIPTION_A)),'0','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'1','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'2','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'3','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'4','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'5','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'6','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'7','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'8','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'9','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'(','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,')','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'.','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'-','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,':','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'/','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'&','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'ë','E');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'?','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,' ','');")
-    funcfile.writelog("%t CALC COLUMN: Temp afr description")
-    # Temp description - Remove characters from description ********************
-    print("Add column vss description in english...")
-    so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN TEMP_DESC_E TEXT;")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(UPPER(TRIM(DESCRIPTION_E)),'0','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'1','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'2','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'3','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'4','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'5','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'6','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'7','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'8','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'9','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'(','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,')','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'.','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'-','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,':','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'/','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'&','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'ë','E');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'?','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,' ','');")
-    funcfile.writelog("%t CALC COLUMN: Temp eng description")
+
 
     # Sort vss transactions **************************************************
     print("Build and sort vss transactions...")
@@ -1041,7 +1107,7 @@ def Report_studdeb_recon():
     funcfile.writelog("%t OPEN DATABASE: ia_finding_5")
     s_head = funcmysql.get_colnames_sqlite_text(so_curs,"X002ex_vss_gl_balance_month","ia_find5_")
     s_head = "(`ia_find_auto`, " + s_head.rstrip(", ") + ")"
-    print(s_head)
+    #print(s_head)
     # Open the SOURCE file to obtain the data
     print("Insert mysql vss gl monthly balance data...")
     with sqlite3.connect(so_path+so_file) as rs_conn:
@@ -1064,7 +1130,7 @@ def Report_studdeb_recon():
             else:
                 s_data = s_data + "'', "
         s_data = s_data.rstrip(", ") + ")"
-        print(s_data)
+        #print(s_data)
         s_sql = "INSERT INTO `ia_finding_5` " + s_head + " VALUES " + s_data + ";"
         ms_curs.execute(s_sql)
         i_tota = i_tota + 1
@@ -1098,7 +1164,7 @@ def Report_studdeb_recon():
       X002cc_vss_summtype.CAMPUS_VSS,
       X002cc_vss_summtype.MONTH_VSS,
       X002cc_vss_summtype.TRANSCODE_VSS,    
-      X002cc_vss_summtype.TEMP_DESC_A,
+      X002cc_vss_summtype.TEMP_DESC_E,
       Round(X002cc_vss_summtype.AMOUNT_VSS,2) AS AMOUNT_VSS,
       X001cc_gl_summtype.DESC_VSS,
       Round(X001cc_gl_summtype.AMOUNT,2) AS AMOUNT,
@@ -1111,7 +1177,7 @@ def Report_studdeb_recon():
       X002cc_vss_summtype
       LEFT JOIN X001cc_gl_summtype ON X001cc_gl_summtype.CAMPUS = X002cc_vss_summtype.CAMPUS_VSS AND
         X001cc_gl_summtype.MONTH = X002cc_vss_summtype.MONTH_VSS AND X001cc_gl_summtype.DESC_VSS =
-        X002cc_vss_summtype.TEMP_DESC_A
+        X002cc_vss_summtype.TEMP_DESC_E
     ORDER BY
       X002cc_vss_summtype.CAMPUS_VSS,
       X002cc_vss_summtype.MONTH_VSS,
@@ -1157,7 +1223,7 @@ def Report_studdeb_recon():
       X001cc_gl_summtype.CAMPUS AS CAMPUS_VSS,
       X001cc_gl_summtype.MONTH AS MONTH_VSS,
       'X' AS TRANSCODE_VSS,
-      X002cc_vss_summtype.TEMP_DESC_A,
+      X002cc_vss_summtype.TEMP_DESC_E,
       X002cc_vss_summtype.AMOUNT_VSS,
       X001cc_gl_summtype.DESC_VSS,
       X001cc_gl_summtype.AMOUNT,
@@ -1169,7 +1235,7 @@ def Report_studdeb_recon():
     FROM
       X001cc_gl_summtype
       LEFT JOIN X002cc_vss_summtype ON X002cc_vss_summtype.CAMPUS_VSS = X001cc_gl_summtype.CAMPUS AND
-        X002cc_vss_summtype.MONTH_VSS = X001cc_gl_summtype.MONTH AND X002cc_vss_summtype.TEMP_DESC_A =
+        X002cc_vss_summtype.MONTH_VSS = X001cc_gl_summtype.MONTH AND X002cc_vss_summtype.TEMP_DESC_E =
         X001cc_gl_summtype.DESC_VSS
     WHERE
       Length(X002cc_vss_summtype.CAMPUS_VSS) IS NULL AND
@@ -1239,7 +1305,7 @@ def Report_studdeb_recon():
       X003aa_vss_gl_join.CAMPUS_VSS AS CAMPUS,
       X003aa_vss_gl_join.MONTH_VSS AS MONTH,
       X003aa_vss_gl_join.TRANSCODE_VSS AS TRANCODE,
-      X003aa_vss_gl_join.TEMP_DESC_A AS VSS_DESCRIPTION,
+      X003aa_vss_gl_join.TEMP_DESC_E AS VSS_DESCRIPTION,
       CAST(X003aa_vss_gl_join.AMOUNT_VSS AS REAL) AS VSS_AMOUNT,
       X003aa_vss_gl_join.DESC_VSS AS GL_DESCRIPTION,
       CAST(X003aa_vss_gl_join.AMOUNT AS REAL) AS GL_AMOUNT,
@@ -1336,176 +1402,6 @@ def Report_studdeb_recon():
     print("Inserted " + str(i_tota) + " rows...")
     funcfile.writelog("%t POPULATE MYSQL TABLE: ia_finding_6 with " + str(i_tota) + " rows")
 
-    # Join vss and gl on english vss descriptions ******************************
-    print("Join vss gl transactions eng...")
-    sr_file = "X003aa_vss_gl_join_eng"
-    s_sql = "CREATE TABLE "+sr_file+" AS " + """
-    SELECT ALL
-      X002cc_vss_summtype.CAMPUS_VSS,
-      X002cc_vss_summtype.MONTH_VSS,
-      X002cc_vss_summtype.TRANSCODE_VSS,    
-      X002cc_vss_summtype.TEMP_DESC_E,
-      Round(X002cc_vss_summtype.AMOUNT_VSS,2) AS AMOUNT_VSS,
-      X001cc_gl_summtype.DESC_VSS,
-      Round(X001cc_gl_summtype.AMOUNT,2) AS AMOUNT,
-      Round(X002cc_vss_summtype.AMOUNT_VSS - X001cc_gl_summtype.AMOUNT,2) AS DIFF,
-      '' AS MATCHED,
-      '%CYEAR%-'||X002cc_vss_summtype.MONTH_VSS AS PERIOD,      
-      X001cc_gl_summtype.CAMPUS,
-      X001cc_gl_summtype.MONTH
-    FROM
-      X002cc_vss_summtype
-      LEFT JOIN X001cc_gl_summtype ON X001cc_gl_summtype.CAMPUS = X002cc_vss_summtype.CAMPUS_VSS AND
-        X001cc_gl_summtype.MONTH = X002cc_vss_summtype.MONTH_VSS AND X001cc_gl_summtype.DESC_VSS =
-        X002cc_vss_summtype.TEMP_DESC_E
-    ;"""
-    #WHERE
-    #  X002cc_vss_summtype.MONTH_VSS <= '%PMONTH%'
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    s_sql = s_sql.replace("%CYEAR%",funcdate.cur_year())
-    s_sql = s_sql.replace("%PMONTH%",gl_month)    
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: "+sr_file)
-    # Calc column difference
-    print("Calc column difference...")
-    so_curs.execute("UPDATE X003aa_vss_gl_join " + """
-                    SET DIFF = 
-                    CASE
-                       WHEN AMOUNT IS NULL THEN Round(AMOUNT_VSS,2)
-                       ELSE Round(AMOUNT_VSS,2) - Round(AMOUNT,2)
-                    END
-                    ;""")
-    so_conn.commit()
-    # Add column matched
-    print("Add column matched...")
-    so_curs.execute("UPDATE X003aa_vss_gl_join_eng " + """
-                    SET MATCHED = 
-                    CASE
-                       WHEN DESC_VSS IS NULL THEN 'X'                
-                       WHEN AMOUNT_VSS <> AMOUNT THEN 'X'
-                       ELSE 'C'
-                    END
-                    ;""")
-    so_conn.commit()
-    funcfile.writelog("%t ADD COLUMN: Vss gl matched")
-
-    # Join gl and vss on english description *********************************
-    print("Join gl vss transactions eng...")
-    sr_file = "X003aa_gl_vss_join_eng"
-    s_sql = "CREATE TABLE "+sr_file+" AS " + """
-    SELECT
-      X001cc_gl_summtype.CAMPUS AS CAMPUS_VSS,
-      X001cc_gl_summtype.MONTH AS MONTH_VSS,
-      'X' AS TRANSCODE_VSS,
-      X002cc_vss_summtype.TEMP_DESC_E,
-      X002cc_vss_summtype.AMOUNT_VSS,
-      X001cc_gl_summtype.DESC_VSS,
-      X001cc_gl_summtype.AMOUNT,
-      Round(0,2) AS DIFF,
-      'X' AS MATCHED,
-      '%CYEAR%-'||X001cc_gl_summtype.MONTH AS PERIOD,  
-      X001cc_gl_summtype.CAMPUS,
-      X001cc_gl_summtype.MONTH
-    FROM
-      X001cc_gl_summtype
-      LEFT JOIN X002cc_vss_summtype ON X002cc_vss_summtype.CAMPUS_VSS = X001cc_gl_summtype.CAMPUS AND
-        X002cc_vss_summtype.MONTH_VSS = X001cc_gl_summtype.MONTH AND X002cc_vss_summtype.TEMP_DESC_E =
-        X001cc_gl_summtype.DESC_VSS
-    WHERE
-      Length(X002cc_vss_summtype.CAMPUS_VSS) IS NULL AND
-      X001cc_gl_summtype.AMOUNT <> 0
-    ;"""
-    #WHERE
-    #  Length(X002cc_vss_summtype.CAMPUS_VSS) IS NULL AND
-    #  X001cc_gl_summtype.AMOUNT <> 0 AND
-    #  X001cc_gl_summtype.MONTH <= '%PMONTH%'
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    s_sql = s_sql.replace("%CYEAR%",funcdate.cur_year())
-    s_sql = s_sql.replace("%PMONTH%",gl_month)    
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: "+sr_file)
-
-    # Transfer GL transactions to the VSS file *********************************
-    # Open the SOURCE file to obtain column headings
-    print("Transfer english gl data to the vss table...")
-    funcfile.writelog("%t GET COLUMN HEADINGS: X003aa_vss_gl_join_eng")
-    s_head = funcmysql.get_colnames_sqlite_text(so_curs,"X003aa_vss_gl_join_eng","")
-    s_head = "(" + s_head.rstrip(", ") + ")"
-    #print(s_head)
-    # Open the SOURCE file to obtain the data
-    print("Insert english gl data into vss table...")
-    #with sqlite3.connect(so_path+so_file) as rs_conn:
-    #    rs_conn.row_factory = sqlite3.Row
-    #rs_curs = rs_conn.cursor()
-    so_curs.execute("SELECT * FROM X003aa_gl_vss_join_eng")
-    rows = so_curs.fetchall()
-    i_tota = 0
-    i_coun = 0
-    for row in rows:
-        s_data = "("
-        for member in row:
-            #print(type(member))
-            if type(member) == str:
-                s_data = s_data + "'" + member + "', "
-            elif type(member) == int:
-                s_data = s_data + str(member) + ", "
-            elif type(member) == float:
-                s_data = s_data + str(member) + ", "
-            else:
-                s_data = s_data + "'', "
-        s_data = s_data.rstrip(", ") + ")"
-        #print(s_data)
-        s_sql = "INSERT INTO `X003aa_vss_gl_join_eng` " + s_head + " VALUES " + s_data + ";"
-        so_curs.execute(s_sql)
-        i_tota = i_tota + 1
-        i_coun = i_coun + 1
-        if i_coun == 100:
-            so_conn.commit()
-            i_coun = 0
-    so_conn.commit()        
-    print("Inserted " + str(i_tota) + " rows...")
-    funcfile.writelog("%t POPULATE TABLE: X003aa_vss_gl_join_eng with " + str(i_tota) + " rows")
-
-    # Report on vss and gl transaction type join *******************************
-    print("Report vss gl join transaction type...")
-    sr_file = "X003ax_vss_gl_join_eng"
-    s_sql = "CREATE TABLE "+sr_file+" AS " + """
-    SELECT
-      X003aa_vss_gl_join_eng.CAMPUS_VSS AS CAMPUS,
-      X003aa_vss_gl_join_eng.MONTH_VSS AS MONTH,
-      X003aa_vss_gl_join_eng.TRANSCODE_VSS AS TRANCODE,
-      X003aa_vss_gl_join_eng.TEMP_DESC_E AS VSS_DESCRIPTION,
-      CAST(X003aa_vss_gl_join_eng.AMOUNT_VSS AS REAL) AS VSS_AMOUNT,
-      X003aa_vss_gl_join_eng.DESC_VSS AS GL_DESCRIPTION,
-      CAST(X003aa_vss_gl_join_eng.AMOUNT AS REAL) AS GL_AMOUNT,
-      X003aa_vss_gl_join_eng.DIFF,
-      X003aa_vss_gl_join_eng.MATCHED,
-      X003aa_vss_gl_join_eng.PERIOD
-    FROM
-      X003aa_vss_gl_join_eng
-    ORDER BY
-      CAMPUS,
-      MONTH
-    ;"""
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: "+sr_file)    
-    print("Export vss gl recon...")
-    sr_filet = sr_file
-    sx_path = re_path + funcdate.cur_year() + "/"
-    sx_file = "Debtor_003_vss_gl_recon_eng_"
-    sx_filet = sx_file + funcdate.cur_monthendfile()
-    s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
-    funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
-
-
-
-
 
 
     """*************************************************************************
@@ -1572,7 +1468,7 @@ def Report_studdeb_recon():
       X003aa_vss_gl_join.CAMPUS_VSS AS CAMPUS,
       X003aa_vss_gl_join.MONTH_VSS AS MONTH,
       X003aa_vss_gl_join.TRANSCODE_VSS AS TRAN_TYPE,
-      X003aa_vss_gl_join.TEMP_DESC_A AS TRAN_DESCRIPTION,
+      X003aa_vss_gl_join.TEMP_DESC_E AS TRAN_DESCRIPTION,
       X003aa_vss_gl_join.AMOUNT_VSS AS AMOUNT_VSS,
       X003aa_vss_gl_join.AMOUNT AS AMOUNT_GL,
       X003aa_vss_gl_join.AMOUNT_VSS-X003aa_vss_gl_join.AMOUNT AS DIFF
@@ -1702,7 +1598,7 @@ def Report_studdeb_recon():
       X003aa_vss_gl_join.CAMPUS_VSS AS CAMPUS,
       X003aa_vss_gl_join.MONTH_VSS AS MONTH,
       X003aa_vss_gl_join.TRANSCODE_VSS AS TRANS_TYPE,
-      X003aa_vss_gl_join.TEMP_DESC_A AS TRANS_DESCRIPTION,
+      X003aa_vss_gl_join.TEMP_DESC_E AS TRANS_DESCRIPTION,
       Round(X003aa_vss_gl_join.AMOUNT_VSS,2) AS AMOUNT_VSS
     FROM
       X003aa_vss_gl_join
