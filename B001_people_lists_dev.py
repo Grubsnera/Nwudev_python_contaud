@@ -45,56 +45,6 @@ funcfile.writelog("%t OPEN DATABASE: PEOPLE.SQLITE")
 # People script development *****************************************
 
 
-# Build PEOPLE ORGANIZATION STRUCTURE REF **********************************
-print("Build reference people organogram...")
-s_sql = "CREATE TABLE X003_PEOPLE_ORGA_REF AS " + """
-SELECT
-  X002_PEOPLE_CURR.EMPLOYEE_NUMBER AS employee_one,
-  X002_PEOPLE_CURR.NAME_LIST AS name_list_one,
-  X002_PEOPLE_CURR.KNOWN_NAME AS known_name_one,
-  X002_PEOPLE_CURR.POSITION_FULL AS position_full_one,
-  X002_PEOPLE_CURR.LOCATION_DESCRIPTION AS location_description_one,
-  X002_PEOPLE_CURR.DIVISION AS division_one,
-  X002_PEOPLE_CURR.FACULTY AS faculty_one,
-  X002_PEOPLE_CURR.EMAIL_ADDRESS AS email_address_one,
-  X002_PEOPLE_CURR.PHONE_WORK AS phone_work_one,
-  X002_PEOPLE_CURR.PHONE_MOBI AS phone_mobi_one,
-  X002_PEOPLE_CURR.PHONE_HOME AS phone_home_one,
-  X002_PEOPLE_CURR.GRADE_CALC AS grade_calc_one,
-  X002_PEOPLE_CURR.EMPLOYEE_NUMBER AS employee_two,
-  X002_PEOPLE_CURR.NAME_LIST AS name_list_two,
-  X002_PEOPLE_CURR.KNOWN_NAME AS known_name_two,
-  X002_PEOPLE_CURR.POSITION_FULL AS position_full_two,
-  X002_PEOPLE_CURR.LOCATION_DESCRIPTION AS location_description_two,
-  X002_PEOPLE_CURR.DIVISION AS division_two,
-  X002_PEOPLE_CURR.FACULTY AS faculty_two,
-  X002_PEOPLE_CURR.EMAIL_ADDRESS AS email_address_two,
-  X002_PEOPLE_CURR.PHONE_WORK AS phone_work_two,
-  X002_PEOPLE_CURR.PHONE_MOBI AS phone_mobi_two,
-  X002_PEOPLE_CURR.PHONE_HOME AS phone_home_two,
-  X002_PEOPLE_CURR.GRADE_CALC AS grade_calc_two,
-  X002_PEOPLE_CURR.EMPLOYEE_NUMBER AS employee_three,
-  X002_PEOPLE_CURR.NAME_LIST AS name_list_three,
-  X002_PEOPLE_CURR.KNOWN_NAME AS known_name_three,
-  X002_PEOPLE_CURR.POSITION_FULL AS position_full_three,
-  X002_PEOPLE_CURR.LOCATION_DESCRIPTION AS location_description_three,
-  X002_PEOPLE_CURR.DIVISION AS division_three,
-  X002_PEOPLE_CURR.FACULTY AS faculty_three,
-  X002_PEOPLE_CURR.EMAIL_ADDRESS AS email_address_three,
-  X002_PEOPLE_CURR.PHONE_WORK AS phone_work_three,
-  X002_PEOPLE_CURR.PHONE_MOBI AS phone_mobi_three,
-  X002_PEOPLE_CURR.PHONE_HOME AS phone_home_three,
-  X002_PEOPLE_CURR.GRADE_CALC AS grade_calc_three
-FROM
-  X002_PEOPLE_CURR
-  LEFT JOIN X002_PEOPLE_CURR X002_PEOPLE_TWO ON X002_PEOPLE_TWO.EMPLOYEE_NUMBER = X002_PEOPLE_CURR.SUPERVISOR
-  LEFT JOIN X002_PEOPLE_CURR X002_PEOPLE_THREE ON X002_PEOPLE_THREE.EMPLOYEE_NUMBER = X002_PEOPLE_TWO.SUPERVISOR
-"""
-so_curs.execute("DROP TABLE IF EXISTS X003_PEOPLE_ORGA_REF")
-so_curs.execute(s_sql)
-so_conn.commit()
-funcfile.writelog("%t BUILD TABLE: X003_PEOPLE_ORGA_REF")
-
 
 
 
