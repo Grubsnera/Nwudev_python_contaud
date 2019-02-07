@@ -119,6 +119,62 @@ def Payroll_lists():
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
+    # Extract the NWU TOTAL PACKAGE element for export *********************
+    print("Extract the nwu total package element...")
+    sr_file = "X001aa_element_package_curr"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    SELECT
+      X000aa_element_list_curr.ASSIGNMENT_ID,
+      X000aa_element_list_curr.EFFECTIVE_START_DATE,
+      X000aa_element_list_curr.INPUT_VALUE_ID,
+      X000aa_element_list_curr.SCREEN_ENTRY_VALUE,
+      X000aa_element_list_curr.ELEMENT_NAME,
+      SUBSTR(PEOPLE.PER_ALL_ASSIGNMENTS_F.ASSIGNMENT_NUMBER,1,8) AS EMPL_NUMB
+    FROM
+      X000aa_element_list_curr
+      LEFT JOIN PEOPLE.PER_ALL_ASSIGNMENTS_F ON PEOPLE.PER_ALL_ASSIGNMENTS_F.ASSIGNMENT_ID = X000aa_element_list_curr.ASSIGNMENT_ID AND
+        PEOPLE.PER_ALL_ASSIGNMENTS_F.EFFECTIVE_START_DATE <= Date('%TODAY%') AND
+        PEOPLE.PER_ALL_ASSIGNMENTS_F.EFFECTIVE_END_DATE >= Date('%TODAY%')
+    WHERE
+      X000aa_element_list_curr.INPUT_VALUE_ID = 691 AND
+      X000aa_element_list_curr.EFFECTIVE_START_DATE <= Date('%TODAY%') AND
+      X000aa_element_list_curr.EFFECTIVE_END_DATE >= Date('%TODAY%')
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = s_sql.replace("%TODAY%",funcdate.today())
+    #print(s_sql)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # Build the NWU TOTAL PACKAGE export file **************************************
+    print("Build the nwu total package element export file...")
+    sr_file = "X001ax_element_package_curr"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    SELECT
+      X001aa_element_package_curr.EMPL_NUMB,
+      X001aa_element_package_curr.EFFECTIVE_START_DATE AS DATE,
+      CAST(X001aa_element_package_curr.SCREEN_ENTRY_VALUE AS REAL) AS PACKAGE
+    FROM
+      X001aa_element_package_curr
+    ORDER BY
+      X001aa_element_package_curr.EMPL_NUMB
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    # Export the data
+    print("Export previous packages...")
+    sr_filet = sr_file
+    sx_path = re_path + funcdate.cur_year() + "/"
+    sx_file = "Payroll_001ax_package_"
+    sx_filet = sx_file + funcdate.cur_monthendfile()
+    s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
+    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
+    funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
+
     # Extract the previous NWU TOTAL PACKAGE element for export ****************
     print("Extract the previous nwu total package element...")
     sr_file = "X001aa_element_package_prev"
@@ -142,7 +198,7 @@ def Payroll_lists():
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = s_sql.replace("%PYEARE%",funcdate.prev_yearend())
-    print(s_sql)
+    #print(s_sql)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
