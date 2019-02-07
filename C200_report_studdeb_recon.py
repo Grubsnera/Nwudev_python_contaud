@@ -490,13 +490,13 @@ def Report_studdeb_recon(dOpenMaf,dOpenPot,dOpenVaa):
 
     # Add previous year gl opening balances (TEMPORARY)
     if dOpenMaf != 0:
-        s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`,`MONTH`,`BALANCE`) VALUES ('Mafikeng','00','66689094.80');"
+        s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`,`MONTH`,`BALANCE`) VALUES ('Mafikeng','00','"+dOpenMaf+"');"
         so_curs.execute(s_sql)
     if dOpenPot != 0:
-        s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`,`MONTH`,`BALANCE`) VALUES ('Potchefstroom','00','-18337263.56');"
+        s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`,`MONTH`,`BALANCE`) VALUES ('Potchefstroom','00','"+dOpenPot+"');"
         so_curs.execute(s_sql)
-    if dOPenVaa != 0:
-        s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`,`MONTH`,`BALANCE`) VALUES ('Vaal Triangle','00','39482933.18');"
+    if dOpenVaa != 0:
+        s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`,`MONTH`,`BALANCE`) VALUES ('Vaal Triangle','00','"+dOpenVaa+"');"
         so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t ADD ROWS: GL Opening balances (temporary)")
