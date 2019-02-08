@@ -25,7 +25,7 @@ funcfile.writelog("SCRIPT: Report_people_leave_per_person")
 ilog_severity = 1
 
 # Declare variables
-so_path = "W:/" #Source database path
+so_path = "W:/People_leave/" #Source database path
 so_file = "People_leave.sqlite" #Source database
 s_sql = "" #SQL statements
 
@@ -35,7 +35,7 @@ with sqlite3.connect(so_path+so_file) as so_conn:
 
 funcfile.writelog("%t OPEN DATABASE: People_leave.sqlite")
 
-so_curs.execute("ATTACH DATABASE 'W:/People.sqlite' AS 'PEOPLE'")    
+so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")    
 funcfile.writelog("%t ATTACH DATABASE: People.sqlite")
 
 print("PEOPLE LEAVE PER PERSON")

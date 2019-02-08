@@ -21,7 +21,7 @@ TEST BURSARY INVSS NOGL
 TEST BURSARY POST TO DIFF CAMPUS IN GL
 *****************************************************************************"""
 
-def Report_studdeb_recon(dOpenMaf,dOpenPot,dOpenVaa):
+def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
 
     # Import python modules
     import csv
