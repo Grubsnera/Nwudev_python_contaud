@@ -16,7 +16,7 @@ import funcdate
 
 # FUNCTION TO WRITE INTO LOG FILE **********************************************
 
-def writelog(s_entry="\r\n",s_path="S:/Logs/",s_file="Python_log_" + datetime.datetime.now().strftime("%Y%m%d") + ".txt"):
+def writelog(s_entry="\n",s_path="S:/Logs/",s_file="Python_log_" + datetime.datetime.now().strftime("%Y%m%d") + ".txt"):
 
     """ Parameter
     s_entry = Text to write
@@ -29,13 +29,13 @@ def writelog(s_entry="\r\n",s_path="S:/Logs/",s_file="Python_log_" + datetime.da
             # file opened for writing. write to it here
             # Write the log
             if s_entry == "Now":
-                fl.write("----------------\r\n")
-                s_entry = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")+"\r\n"
+                fl.write("----------------\n")
+                s_entry = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")+"\n"
             elif "%t" in s_entry:
                 s_entry = s_entry.replace("%t",datetime.datetime.now().strftime("%H:%M:%S"))
-                s_entry += "\r\n"
+                s_entry += "\n"
             else:
-                s_entry += "\r\n"
+                s_entry += "\n"
             fl.write(s_entry)
             fl.close()
             pass
