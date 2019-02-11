@@ -12,7 +12,8 @@ cur_day 		This day in DD format ex 01
 cur_month		This month in MM format ex 01
 cur_monthbegin 		This month begin date in YYYY-MM-DD format ex 2018-01-01
 cur_monthend 		This month end date in YYYY-MM-DD format ex 2018-01-31
-cur_monthendfile	This month end date in YYYYMM format ex 201901
+cur_monthendfile	This month end date in YYYYMMDD format ex 20190131
+cur_monthfile           This month in YYYYMM format ex 201902
 cur_year		This year in YYYY format ex 2018
 cur_yearbegin		This year begin date in YYYY-MM-DD format ex 2018-01-01
 cur_yearend		This year end date in YYYY-MM-DD format ex 2018-12-31
@@ -20,6 +21,7 @@ prev_month		Previous month in MM format ex 02
 prev_monthbegin		Previous month begin date in YYYY-MM-DD format ex 2017-12-01
 prev_monthend		Previous month end in YYYY-MM-DD format exec 2017-12-31
 prev_monthendfile       Previous month end in YYYYMMDD format exec 20180228
+prev_monthfile          Previous month in YYYYMM format exec 201802
 prev_year		Previous year in YYYY format ex 2017
 prev_yearbegin		Previous year begin date in YYYY-MM-DD format ex 2017-01-01
 prev_yearend		Previous year end date in  YYYY-MM-DD format ex 2017-12-31
@@ -63,11 +65,23 @@ def cur_monthend():
             s_retu += "28"
     return s_retu #Current month end
 
-#Function This month end date in YYYY-MM-DD format ex 2018-01-31
+#Function This month end date in YYYYMMDD format ex 20180131
 def cur_monthendfile():
-    s_retu = cur_year() + cur_month()
-    return s_retu #Current month end file
+    if cur_month() in "01z03z05z07z08z10z12":
+        s_retu = "31"
+    elif cur_month() in "04z06z09z11":
+        s_retu = "30"
+    else:
+        if calendar.isleap(int(cur_year())):
+            s_retu = "29"
+        else:
+            s_retu = "28"
+    return cur_year() + cur_month() + s_retu #Current month end file
 	
+#Function This month date in YYYYMM format ex 201801
+def cur_monthfile():
+    return cur_year() + cur_month() #Current month file
+
 #Function This year in YYYY format ex 2018
 def cur_year():
     return datetime.date.today().strftime("%Y") #Current year
@@ -86,7 +100,7 @@ def prev_month():
     if int(p_month) < 10:
         p_month = "0" + p_month
     if p_month == "00":
-        p_month = "12"
+        p_month = "01"
     return p_month #Previous month
 	
 #Function Previous month begin in YYYY-MM-DD format
@@ -124,12 +138,7 @@ def prev_monthend():
 #Function Previous month end file in YYYYMMDD format
 def prev_monthendfile():
     p_year = cur_year()
-    p_month = str(int(cur_month())-1)
-    if int(p_month) < 10:
-        p_month = "0" + p_month
-    if p_month == "00":
-        p_month = "12"
-        p_year = prev_year()
+    p_month = prev_month()
     if p_month in "01z03z05z07z08z10z12":
         s_retu = "31"
     elif p_month in "04z06z09z11":
@@ -139,9 +148,19 @@ def prev_monthendfile():
             s_retu = "29"
         else:
             s_retu = "28"
-    
     return p_year + p_month + s_retu #Previous month end file
-	
+
+#Function Previous month file in YYYYMM format
+def prev_monthfile():
+    p_year = cur_year()
+    p_month = str(int(cur_month())-1)
+    if int(p_month) < 10:
+        p_month = "0" + p_month
+    if p_month == "00":
+        p_month = "12"
+        p_year = prev_year()
+    return p_year + p_month #Previous month file
+
 #Function Previous year in YYYY format
 def prev_year():
     s_retu = "" + str(int(cur_year())-1)
