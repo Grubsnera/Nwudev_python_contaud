@@ -863,6 +863,30 @@ def People_lists():
 
     funcfile.writelog("%t BUILD VIEW: X000_PER_ALL_PEOPLE")
 
+    # BUILD PERSON TYPES ***********************************************************
+
+    print("Build person types...")
+    sr_file = "X000_PER_PEOPLE_TYPES"
+    s_sql = "CREATE VIEW "+sr_file+" AS " + """
+    SELECT
+      PER_PERSON_TYPE_USAGES_F.PERSON_TYPE_USAGE_ID,
+      PER_PERSON_TYPE_USAGES_F.PERSON_ID,
+      PER_PERSON_TYPE_USAGES_F.PERSON_TYPE_ID,
+      PER_PERSON_TYPE_USAGES_F.EFFECTIVE_START_DATE,
+      PER_PERSON_TYPE_USAGES_F.EFFECTIVE_END_DATE,
+      PER_PERSON_TYPES.ACTIVE_FLAG,
+      PER_PERSON_TYPES.DEFAULT_FLAG,
+      PER_PERSON_TYPES.SYSTEM_PERSON_TYPE,
+      PER_PERSON_TYPES.USER_PERSON_TYPE
+    FROM
+      PER_PERSON_TYPE_USAGES_F
+      LEFT JOIN PER_PERSON_TYPES ON PER_PERSON_TYPES.PERSON_TYPE_ID = PER_PERSON_TYPE_USAGES_F.PERSON_TYPE_ID
+    ;"""
+    so_curs.execute("DROP VIEW IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD VIEW: "+sr_file)
+
     # 08 Count ASSIGNMENTS *********************************************************
 
     print("Count assignments...")
@@ -1471,6 +1495,8 @@ def People_lists():
     people_email_address VARCHAR(150),
     people_curr_empl_flag VARCHAR(1),
     people_user_person_type VARCHAR(30),
+    people_ass_start DATETIME,
+    people_ass_end DATETIME,
     people_emp_start DATETIME,
     people_emp_end DATETIME,
     people_leaving_reason VARCHAR(30),
@@ -1514,6 +1540,7 @@ def People_lists():
     people_emp_active VARCHAR(1),
     people_mailto VARCHAR(150),
     people_proposed_salary_n DECIMAL(2,2),
+    people_person_type VARCHAR(150),
     people_initials VARCHAR(30),
     people_name_list VARCHAR(150),
     people_name_addr VARCHAR(150),
