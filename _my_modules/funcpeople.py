@@ -79,7 +79,7 @@ def Assign01(so_conn,s_table,s_from,s_to,s_on,s_mess):
       X000_PER_ALL_ASSIGNMENTS.EFFECTIVE_START_DATE
     """
     s_sql = s_sql.replace("%FROM%",s_from)
-    s_sql = s_sql.replace("%TO%",s_on)
+    s_sql = s_sql.replace("%TO%",s_to)
     so_curs.execute("DROP TABLE IF EXISTS " + s_table)
     so_curs.execute(s_sql)
     so_conn.commit()
@@ -283,6 +283,8 @@ def People01(so_conn,s_table,s_source,s_peri,s_mess,s_acti):
       X000_PER_ALL_PEOPLE.EMAIL_ADDRESS,
       X000_PER_ALL_PEOPLE.CURRENT_EMPLOYEE_FLAG AS CURR_EMPL_FLAG,
       X000_PER_ALL_PEOPLE.USER_PERSON_TYPE,
+      %SOURCET%.ASS_START,
+      %SOURCET%.ASS_END,
       %SOURCET%.EMP_START,
       %SOURCET%.EMP_END,
       %SOURCET%.LEAVING_REASON,
@@ -325,7 +327,8 @@ def People01(so_conn,s_table,s_source,s_peri,s_mess,s_acti):
       %SOURCET%.DATE_EMP_LOOKUP,
       %SOURCET%.EMP_ACTIVE,      
       %SOURCET%.MAILTO,
-      PER_PAY_PROPOSALS.PROPOSED_SALARY_N
+      PER_PAY_PROPOSALS.PROPOSED_SALARY_N,
+      X000_PER_PEOPLE_TYPES.USER_PERSON_TYPE AS PERSON_TYPE
     FROM
       %SOURCET%
       LEFT JOIN X000_PER_ALL_PEOPLE ON X000_PER_ALL_PEOPLE.PERSON_ID = %SOURCET%.PERSON_ID AND
@@ -349,6 +352,9 @@ def People01(so_conn,s_table,s_source,s_peri,s_mess,s_acti):
       LEFT JOIN PER_PAY_PROPOSALS ON PER_PAY_PROPOSALS.ASSIGNMENT_ID = %SOURCET%.ASS_ID AND
         PER_PAY_PROPOSALS.CHANGE_DATE <= %SOURCET%.DATE_EMP_LOOKUP AND
         PER_PAY_PROPOSALS.DATE_TO >= %SOURCET%.DATE_EMP_LOOKUP
+      LEFT JOIN X000_PER_PEOPLE_TYPES ON X000_PER_PEOPLE_TYPES.PERSON_ID = %SOURCET%.PERSON_ID AND
+        X000_PER_PEOPLE_TYPES.EFFECTIVE_START_DATE <= %SOURCET%.DATE_EMP_LOOKUP AND
+        X000_PER_PEOPLE_TYPES.EFFECTIVE_END_DATE >= %SOURCET%.DATE_EMP_LOOKUP
     WHERE
     """ + s_wher + """
     GROUP BY
