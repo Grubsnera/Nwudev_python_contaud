@@ -51,7 +51,7 @@ except Exception as e:
 
 # Kfs vss studdeb report
 try:
-    C200_report_studdeb_recon.Report_studdeb_recon('66541143.01','-18450460.22','41049069.28')
+    C200_report_studdeb_recon.Report_studdeb_recon('66561452.48','-18340951.06','39482933.18')
 except Exception as e:
     funcsys.ErrMessage(e)
 
