@@ -99,7 +99,12 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     sr_file = "X002aa_vss_tranlist"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     SELECT
-      *
+      *,
+      '' AS CAMPUS,
+      '' AS MONTH,
+      0.00 AS AMOUNT_DT,
+      0.00 AS AMOUNT_CR,
+      '' AS TEMP_DESC_E      
     FROM
       VSS.X010_Studytrans
     ;"""
@@ -109,7 +114,7 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
     # Add column vss campus name
     print("Add column vss campus name...")
-    so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN CAMPUS TEXT;")
+    #so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN CAMPUS TEXT;")
     so_curs.execute("UPDATE X002aa_vss_tranlist " + """
                     SET CAMPUS = 
                     CASE
@@ -122,7 +127,7 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     funcfile.writelog("%t ADD COLUMN: Vss campus name")
     # Add column vss transaction month
     print("Add column vss transaction month...")
-    so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN MONTH TEXT;")
+    #so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN MONTH TEXT;")
     so_curs.execute("UPDATE X002aa_vss_tranlist " + """
                     SET MONTH = 
                     CASE
@@ -135,31 +140,32 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     funcfile.writelog("%t ADD COLUMN: Vss transaction month")
     # Add column vss debit amount
     print("Add column vss dt amount...")
-    so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN AMOUNT_DT REAL;")
+    #so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN AMOUNT_DT REAL;")
     so_curs.execute("UPDATE X002aa_vss_tranlist " + """
                     SET AMOUNT_DT = 
                     CASE
                        WHEN AMOUNT > 0 THEN AMOUNT
-                       ELSE 0
+                       ELSE 0.00
                     END
                     ;""")
     so_conn.commit()
     funcfile.writelog("%t ADD COLUMN: Vss debit amount")
     # Add column vss credit amount
     print("Add column vss ct amount...")
-    so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN AMOUNT_CR REAL;")
+    #so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN AMOUNT_CR REAL;")
     so_curs.execute("UPDATE X002aa_vss_tranlist " + """
                     SET AMOUNT_CR = 
                     CASE
                        WHEN AMOUNT < 0 THEN AMOUNT
-                       ELSE 0
+                       ELSE 0.00
                     END
                     ;""")
     so_conn.commit()
     funcfile.writelog("%t ADD COLUMN: Vss credit amount")
-   # Temp description - Remove characters from description ********************
+    """
+    # Temp description - Remove characters from description ********************
     print("Add column vss description in afrikaans...")
-    so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN TEMP_DESC_A TEXT;")
+    #so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN TEMP_DESC_A TEXT;")
     so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(UPPER(TRIM(DESCRIPTION_A)),'0','');")
     so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'1','');")
     so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'2','');")
@@ -181,9 +187,10 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'?','');")
     so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,' ','');")
     funcfile.writelog("%t CALC COLUMN: Temp afr description")
+    """
     # Temp description - Remove characters from description ********************
     print("Add column vss description in english...")
-    so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN TEMP_DESC_E TEXT;")
+    #so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN TEMP_DESC_E TEXT;")
     so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(UPPER(TRIM(DESCRIPTION_E)),'0','');")
     so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'1','');")
     so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'2','');")
@@ -210,19 +217,17 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     print("Build a transaction code language list...")
     sr_file = "X002aa_vss_tranlist_langsumm"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
-    SELECT
+    SELECT DISTINCT
       X002aa_vss_tranlist.TRANSCODE,
-      X002aa_vss_tranlist.TEMP_DESC_A AS DESC_AFR,
       X002aa_vss_tranlist.TEMP_DESC_E AS DESC_ENG,
       Sum(X002aa_vss_tranlist.AMOUNT) AS SUM,
       Count(X002aa_vss_tranlist.CAMPUS) AS COUNT
     FROM
       X002aa_vss_tranlist
     WHERE
-      X002aa_vss_tranlist.TEMP_DESC_A IS NOT NULL
+      X002aa_vss_tranlist.TEMP_DESC_E IS NOT NULL
     GROUP BY
       X002aa_vss_tranlist.TRANSCODE,
-      X002aa_vss_tranlist.TEMP_DESC_A,
       X002aa_vss_tranlist.TEMP_DESC_E
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
@@ -368,13 +373,13 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     print("Join the gl transactions with transaction code languages...")
     sr_file = "X001aa_gl_tranlist_lang"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
-    SELECT
+    SELECT DISTINCT
       X001aa_gl_tranlist.*,
       X002aa_vss_tranlist_langsumm.DESC_ENG,
       '' AS DESC_GL
     FROM
       X001aa_gl_tranlist
-      LEFT JOIN X002aa_vss_tranlist_langsumm ON X002aa_vss_tranlist_langsumm.DESC_AFR = X001aa_gl_tranlist.DESCRIPTION
+      LEFT JOIN X002aa_vss_tranlist_langsumm ON X002aa_vss_tranlist_langsumm.DESC_ENG = X001aa_gl_tranlist.DESCRIPTION
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     so_curs.execute(s_sql)
@@ -659,7 +664,6 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
       X002aa_vss_tranlist.FUSERBUSINESSENTITYID AS TRANUSER,
       X002aa_vss_tranlist.AMOUNT_DT AS AMOUNT_DT,
       X002aa_vss_tranlist.AMOUNT_CR AS AMOUNT_CR,
-      X002aa_vss_tranlist.TEMP_DESC_A,
       X002aa_vss_tranlist.TEMP_DESC_E  
     FROM
       X002aa_vss_tranlist
@@ -786,7 +790,6 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
       X002ab_vss_transort.CAMPUS_VSS,
       X002ab_vss_transort.MONTH_VSS,
       X002ab_vss_transort.TRANSCODE_VSS,  
-      X002ab_vss_transort.TEMP_DESC_A,
       X002ab_vss_transort.TEMP_DESC_E,
       Total(X002ab_vss_transort.AMOUNT_DT) AS AMOUNT_DT,
       Total(X002ab_vss_transort.AMOUNT_CR) AS AMOUNT_CT,
@@ -796,7 +799,7 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     GROUP BY
       X002ab_vss_transort.CAMPUS_VSS,
       X002ab_vss_transort.MONTH_VSS,
-      X002ab_vss_transort.TEMP_DESC_A
+      X002ab_vss_transort.TEMP_DESC_E
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)    
     so_curs.execute(s_sql)
@@ -820,8 +823,8 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     SELECT
       X002ab_vss_transort.CAMPUS_VSS AS CAMPUS,
       X002ab_vss_transort.STUDENT_VSS AS STUDENT,  
-      Round(0,2) AS BAL_DT,
-      Round(0,2) AS BAL_CT,
+      0.00 AS BAL_DT,
+      0.00 AS BAL_CT,
       Total(X002ab_vss_transort.AMOUNT_VSS) AS BALANCE
     FROM
       X002ab_vss_transort
@@ -839,7 +842,7 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
                     SET BAL_DT = 
                     CASE
                        WHEN BALANCE > 0 THEN BALANCE
-                       ELSE 0
+                       ELSE 0.00
                     END
                     ;""")
     so_conn.commit()
@@ -850,7 +853,7 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
                     SET BAL_CT = 
                     CASE
                        WHEN BALANCE < 0 THEN BALANCE
-                       ELSE 0
+                       ELSE 0.00
                     END
                     ;""")
     so_conn.commit()
