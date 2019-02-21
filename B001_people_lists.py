@@ -1539,7 +1539,7 @@ def People_lists():
     people_date_emp_lookup DATETIME,
     people_emp_active VARCHAR(1),
     people_mailto VARCHAR(150),
-    people_proposed_salary_n DECIMAL(15,2),
+    people_proposed_salary_n VARCHAR(30),
     people_person_type VARCHAR(150),
     people_initials VARCHAR(30),
     people_name_list VARCHAR(150),
