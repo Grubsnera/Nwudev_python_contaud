@@ -104,6 +104,7 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
       '' AS MONTH,
       0.00 AS AMOUNT_DT,
       0.00 AS AMOUNT_CR,
+      '' AS TEMP_DESC_A,      
       '' AS TEMP_DESC_E      
     FROM
       VSS.X010_Studytrans
@@ -162,7 +163,6 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
                     ;""")
     so_conn.commit()
     funcfile.writelog("%t ADD COLUMN: Vss credit amount")
-    """
     # Temp description - Remove characters from description ********************
     print("Add column vss description in afrikaans...")
     #so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN TEMP_DESC_A TEXT;")
@@ -187,7 +187,6 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'?','');")
     so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,' ','');")
     funcfile.writelog("%t CALC COLUMN: Temp afr description")
-    """
     # Temp description - Remove characters from description ********************
     print("Add column vss description in english...")
     #so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN TEMP_DESC_E TEXT;")
@@ -219,15 +218,17 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     SELECT DISTINCT
       X002aa_vss_tranlist.TRANSCODE,
+      X002aa_vss_tranlist.TEMP_DESC_A AS DESC_AFR,
       X002aa_vss_tranlist.TEMP_DESC_E AS DESC_ENG,
       Sum(X002aa_vss_tranlist.AMOUNT) AS SUM,
       Count(X002aa_vss_tranlist.CAMPUS) AS COUNT
     FROM
       X002aa_vss_tranlist
     WHERE
-      X002aa_vss_tranlist.TEMP_DESC_E IS NOT NULL
+      X002aa_vss_tranlist.TEMP_DESC_A IS NOT NULL
     GROUP BY
       X002aa_vss_tranlist.TRANSCODE,
+      X002aa_vss_tranlist.TEMP_DESC_A,
       X002aa_vss_tranlist.TEMP_DESC_E
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
@@ -379,7 +380,7 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
       '' AS DESC_GL
     FROM
       X001aa_gl_tranlist
-      LEFT JOIN X002aa_vss_tranlist_langsumm ON X002aa_vss_tranlist_langsumm.DESC_ENG = X001aa_gl_tranlist.DESCRIPTION
+      LEFT JOIN X002aa_vss_tranlist_langsumm ON X002aa_vss_tranlist_langsumm.DESC_AFR = X001aa_gl_tranlist.DESCRIPTION
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     so_curs.execute(s_sql)
