@@ -96,7 +96,9 @@ SELECT
   '' AS TEMP_DESC_A,
   '' AS TEMP_DESC_E
 FROM
-  VSS.X010_Studytrans_prev  
+  VSS.X010_Studytrans_prev
+WHERE
+  TRANSCODE <> ''
 ;"""
 so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
 so_curs.execute(s_sql)
@@ -118,14 +120,16 @@ funcfile.writelog("%t ADD COLUMN: Vss campus name")
 # Add column vss transaction month
 print("Add column vss transaction month...")
 #so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN MONTH TEXT;")
-so_curs.execute("UPDATE X002aa_vss_tranlist " + """
-                SET MONTH = 
-                CASE
-                   WHEN SUBSTR(TRANSDATE,6,5)='01-01' AND INSTR('001z031z061',TRANSCODE)>0 THEN '00'
-                   WHEN SUBSTR(POSTDATEDTRANSDATE,1,4)>=strftime('%Y','now') THEN SUBSTR(POSTDATEDTRANSDATE,6,2)
-                   ELSE SUBSTR(TRANSDATE,6,2)
-                END
-                ;""")
+s_sql = "UPDATE X002aa_vss_tranlist " + """
+         SET MONTH = 
+         CASE
+           WHEN SUBSTR(TRANSDATE,6,5)='01-01' AND INSTR('001z031z061',TRANSCODE)>0 THEN '00'
+           WHEN SUBSTR(TRANSDATE,1,4)>strftime('%Y','%PYEAREND%') THEN SUBSTR(POSTDATEDTRANSDATE,6,2)
+         ELSE SUBSTR(TRANSDATE,6,2)
+         END
+         ;""")
+s_sql = s_sql.replace("%PYEAREND%",funcdate.prev_yearend())
+so_curs.execute(s_sql)
 so_conn.commit()
 funcfile.writelog("%t ADD COLUMN: Vss transaction month")
 # Add column vss debit amount
@@ -744,7 +748,6 @@ SELECT
   X002ab_vss_transort.CAMPUS_VSS,
   X002ab_vss_transort.MONTH_VSS,
   X002ab_vss_transort.TRANSCODE_VSS,  
-  X002ab_vss_transort.TEMP_DESC_A,
   X002ab_vss_transort.TEMP_DESC_E,
   Total(X002ab_vss_transort.AMOUNT_DT) AS AMOUNT_DT,
   Total(X002ab_vss_transort.AMOUNT_CR) AS AMOUNT_CT,
@@ -862,11 +865,51 @@ so_curs.execute(s_sql)
 so_conn.commit()
 funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
+# EXTRACT POST DATED TRANSACTIONS **********************************************
+print("Extract post dated transactions...")
+sr_file = "X002fa_vss_tran_postdate"
+s_sql = "CREATE TABLE "+sr_file+" AS " + """
+SELECT
+  X002ab_vss_transort.STUDENT_VSS,
+  X002ab_vss_transort.CAMPUS_VSS,
+  X002ab_vss_transort.TRANSCODE_VSS,
+  X002ab_vss_transort.MONTH_VSS,
+  X002ab_vss_transort.TRANSDATE_VSS,
+  X002ab_vss_transort.TRANSDATETIME,
+  X002ab_vss_transort.AMOUNT_VSS,
+  X002ab_vss_transort.DESCRIPTION_E,
+  X002ab_vss_transort.POSTDATEDTRANSDATE
+FROM
+  X002ab_vss_transort
+WHERE
+  X002ab_vss_transort.TRANSDATE_VSS > Date('%PYEAREND%')
+;"""
+s_sql = s_sql.replace("%PYEAREND%",funcdate.prev_yearend())
+so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+so_curs.execute(s_sql)
+so_conn.commit()
+funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
-
-
-
-
+# SUMM POST DATED TRANSACTIONS *************************************************
+print("Summ post dated transactions...")
+sr_file = "X002fb_vss_tran_postdate"
+s_sql = "CREATE TABLE "+sr_file+" AS " + """
+SELECT
+  X002fa_vss_tran_postdate.CAMPUS_VSS,
+  X002fa_vss_tran_postdate.TRANSCODE_VSS,
+  X002fa_vss_tran_postdate.DESCRIPTION_E,
+  Total(X002fa_vss_tran_postdate.AMOUNT_VSS) AS Total_AMOUNT_VSS
+FROM
+  X002fa_vss_tran_postdate
+GROUP BY
+  X002fa_vss_tran_postdate.CAMPUS_VSS,
+  X002fa_vss_tran_postdate.TRANSCODE_VSS,
+  X002fa_vss_tran_postdate.DESCRIPTION_E
+;"""
+so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+so_curs.execute(s_sql)
+so_conn.commit()
+funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
 """*************************************************************************
 ***
