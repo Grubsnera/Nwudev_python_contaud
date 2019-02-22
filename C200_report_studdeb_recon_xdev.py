@@ -59,7 +59,9 @@ ms_cnxn = funcmysql.mysql_open(s_database)
 ms_curs = ms_cnxn.cursor()
 funcfile.writelog("%t OPEN MYSQL DATABASE: " + s_database)
 
-# Development script ***********************************************************
+"""*****************************************************************************
+BEGIN
+*****************************************************************************"""
 
 # CALCULATE OPENING BALANCES ***************************************************
 print("Sum vss student opening balances per campus...")
@@ -128,7 +130,7 @@ so_curs.execute(s_sql)
 so_conn.commit()
 funcfile.writelog("%t BUILD TABLE: "+sr_file)
 # Add column vss debit amount
-print("COrrect the open balance column id null...")
+print("Correct the open balance column id null...")
 so_curs.execute("UPDATE X002dc_vss_prevbal_curopen " + """
                 SET BAL_OPEN =
                 CASE
@@ -163,6 +165,10 @@ so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
 so_curs.execute(s_sql)
 so_conn.commit()
 funcfile.writelog("%t BUILD TABLE: "+sr_file)
+
+"""*****************************************************************************
+END
+*****************************************************************************"""
 
 # Close the table connection ***************************************************
 so_conn.commit()
