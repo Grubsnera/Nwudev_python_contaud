@@ -127,7 +127,7 @@ s_sql = "UPDATE X002aa_vss_tranlist " + """
            WHEN SUBSTR(TRANSDATE,1,4)>strftime('%Y','%PYEAREND%') THEN SUBSTR(POSTDATEDTRANSDATE,6,2)
          ELSE SUBSTR(TRANSDATE,6,2)
          END
-         ;""")
+         ;"""
 s_sql = s_sql.replace("%PYEAREND%",funcdate.prev_yearend())
 so_curs.execute(s_sql)
 so_conn.commit()
@@ -206,7 +206,6 @@ so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_
 so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'MISCELANEOUSFEES','MISCELLANEOUSFEES');")
 funcfile.writelog("%t CALC COLUMN: Temp eng description")
 
-
 # Build a transaction code language list ***************************************
 print("Build a transaction code language list...")
 sr_file = "X002aa_vss_tranlist_langsumm"
@@ -230,8 +229,6 @@ so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
 so_curs.execute(s_sql)
 so_conn.commit()
 funcfile.writelog("%t BUILD TABLE: "+sr_file)
-
-
 
 """*************************************************************************
 ***
@@ -452,7 +449,6 @@ funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
 #funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
 funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 
-
 # Calculate gl balances ****************************************************
 print("Calculate gl balances per month...")
 sr_file = "X001ca_gl_balance"
@@ -611,8 +607,6 @@ so_curs.execute(s_sql)
 so_conn.commit()
 funcfile.writelog("%t BUILD TABLE: "+sr_file)    
 
-
-
 """*************************************************************************
 ***
 *** LIST VSS TRANSACTIONS
@@ -622,7 +616,6 @@ funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
 print("--- PREPARE VSS TRANSACTIONS ---")
 funcfile.writelog("PREPARE VSS TRANSACTIONS")
-
 
 # Sort vss transactions **************************************************
 print("Build and sort vss transactions...")
