@@ -31,7 +31,7 @@ print("-------------------------")
 ilog_severity = 1
 
 # Declare variables
-so_path = "W:/" #Source database path
+so_path = "W:/Vss/" #Source database path
 re_path = "R:/Vss/" #Results
 ed_path = "S:/_external_data/"
 so_file = "Vss_general.sqlite" #Source database
@@ -48,18 +48,15 @@ funcfile.writelog("%t OPEN DATABASE: VSS_GENERAL")
 so_curs.execute("ATTACH DATABASE 'W:/Vss.sqlite' AS 'VSS'")
 funcfile.writelog("%t ATTACH DATABASE: Vss.sqlite")
 
-""" ************************************************************************
-***
-***
-***
-*************************************************************************"""
+""" ****************************************************************************
+BEGIN
+*****************************************************************************"""
+
 
  
-
-
-
-
-
+""" ****************************************************************************
+END
+*****************************************************************************"""
 
 # Close the table connection ***************************************************
 so_conn.close()
