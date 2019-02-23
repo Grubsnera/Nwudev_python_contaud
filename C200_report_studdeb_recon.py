@@ -456,7 +456,7 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 
     # Calculate gl balances ****************************************************
-    print("Calculate gl balances per month...")
+    print("Calculate gl balances per campus...")
     sr_file = "X001ca_gl_balance"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     SELECT
