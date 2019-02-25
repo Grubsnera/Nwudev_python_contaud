@@ -95,12 +95,26 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     SELECT
       *,
-      '' AS CAMPUS,
-      '' AS MONTH,
-      0.00 AS AMOUNT_DT,
-      0.00 AS AMOUNT_CR,
-      '' AS TEMP_DESC_A,      
-      '' AS TEMP_DESC_E      
+      CASE
+        WHEN FDEBTCOLLECTIONSITE = '-9' THEN 'Mafikeng'
+        WHEN FDEBTCOLLECTIONSITE = '-2' THEN 'Vaal Triangle'
+        ELSE 'Potchefstroom'
+      END AS CAMPUS,
+      CASE
+        WHEN SUBSTR(TRANSDATE,6,5)='01-01' AND INSTR('001z031z061',TRANSCODE)>0 THEN '00'
+        WHEN strftime('%Y',TRANSDATE)>strftime('%Y',POSTDATEDTRANSDATE) THEN strftime('%m',POSTDATEDTRANSDATE)
+        ELSE strftime('%m',TRANSDATE)
+      END AS MONTH,
+      CASE
+        WHEN AMOUNT > 0 THEN AMOUNT
+        ELSE 0.00
+      END AS AMOUNT_DT,
+      CASE
+        WHEN AMOUNT < 0 THEN AMOUNT
+        ELSE 0.00
+      END AS AMOUNT_CR,
+      UPPER(TRIM(DESCRIPTION_A)) AS TEMP_DESC_A,
+      UPPER(TRIM(DESCRIPTION_E)) AS TEMP_DESC_E
     FROM
       VSS.X010_Studytrans
     WHERE
@@ -110,106 +124,31 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
-    # Add column vss campus name
-    print("Add column vss campus name...")
-    #so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN CAMPUS TEXT;")
-    so_curs.execute("UPDATE X002aa_vss_tranlist " + """
-                    SET CAMPUS = 
-                    CASE
-                       WHEN FDEBTCOLLECTIONSITE = '-9' THEN 'Mafikeng'
-                       WHEN FDEBTCOLLECTIONSITE = '-2' THEN 'Vaal Triangle'
-                       ELSE 'Potchefstroom'
-                    END
-                    ;""")
-    so_conn.commit()
-    funcfile.writelog("%t ADD COLUMN: Vss campus name")
-    # Add column vss transaction month
-    print("Add column vss transaction month...")
-    #so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN MONTH TEXT;")
-    s_sql = "UPDATE X002aa_vss_tranlist " + """
-             SET MONTH = 
-             CASE
-               WHEN SUBSTR(TRANSDATE,6,5)='01-01' AND INSTR('001z031z061',TRANSCODE)>0 THEN '00'
-               WHEN SUBSTR(TRANSDATE,1,4)>strftime('%Y','%CYEAREND%') THEN SUBSTR(POSTDATEDTRANSDATE,6,2)
-             ELSE SUBSTR(TRANSDATE,6,2)
-             END
-             ;"""
-    s_sql = s_sql.replace("%CYEAREND%",funcdate.cur_yearend())
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t ADD COLUMN: Vss transaction month")
-    # Add column vss debit amount
-    print("Add column vss dt amount...")
-    #so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN AMOUNT_DT REAL;")
-    so_curs.execute("UPDATE X002aa_vss_tranlist " + """
-                    SET AMOUNT_DT = 
-                    CASE
-                       WHEN AMOUNT > 0 THEN AMOUNT
-                       ELSE 0.00
-                    END
-                    ;""")
-    so_conn.commit()
-    funcfile.writelog("%t ADD COLUMN: Vss debit amount")
-    # Add column vss credit amount
-    print("Add column vss ct amount...")
-    #so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN AMOUNT_CR REAL;")
-    so_curs.execute("UPDATE X002aa_vss_tranlist " + """
-                    SET AMOUNT_CR = 
-                    CASE
-                       WHEN AMOUNT < 0 THEN AMOUNT
-                       ELSE 0.00
-                    END
-                    ;""")
-    so_conn.commit()
-    funcfile.writelog("%t ADD COLUMN: Vss credit amount")
+
     # Temp description - Remove characters from description ********************
-    print("Add column vss description in afrikaans...")
-    #so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN TEMP_DESC_A TEXT;")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(UPPER(TRIM(DESCRIPTION_A)),'0','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'1','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'2','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'3','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'4','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'5','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'6','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'7','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'8','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'9','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'(','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,')','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'.','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'-','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,':','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'/','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'&','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'ë','E');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'?','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,' ','');")
-    funcfile.writelog("%t CALC COLUMN: Temp afr description")
-    # Temp description - Remove characters from description ********************
-    print("Add column vss description in english...")
-    #so_curs.execute("ALTER TABLE X002aa_vss_tranlist ADD COLUMN TEMP_DESC_E TEXT;")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(UPPER(TRIM(DESCRIPTION_E)),'0','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'1','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'2','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'3','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'4','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'5','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'6','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'7','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'8','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'9','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'(','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,')','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'.','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'-','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,':','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'/','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'&','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'ë','E');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'?','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,' ','');")
-    funcfile.writelog("%t CALC COLUMN: Temp eng description")
+    print("Add column vss descriptions...")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'0',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'0','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'1',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'1','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'2',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'2','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'3',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'3','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'4',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'4','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'5',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'5','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'6',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'6','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'7',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'7','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'8',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'8','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'9',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'9','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'(',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'(','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,')',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,')','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'.',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'.','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'-',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'-','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,':',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,':','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'/',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'/','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'&',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'&','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'?',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'?','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,' ',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,' ','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'ë','E'), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'ë','E');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'MISCELANEOUSFEES','MISCELLANEOUSFEES');")
+    funcfile.writelog("%t CALC COLUMN: Temp descriptions")
 
     # Build a transaction code language list ***************************************
     print("Build a transaction code language list...")
@@ -253,7 +192,32 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     sr_file = "X001aa_gl_tranlist"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     SELECT
-      *
+      *,
+      CASE
+        WHEN ACCOUNT_NBR = '1G02018' THEN 1
+        WHEN ACCOUNT_NBR = '1G01772' THEN 2
+        WHEN ACCOUNT_NBR = '1G01804' THEN 9
+        WHEN ACCOUNT_NBR = '1G02012' THEN 9
+        ELSE 0
+      END AS BUSINESSENTITYID,
+      CASE
+        WHEN UNIV_FISCAL_PRD_CD = 'BB' THEN '00'
+        WHEN UNIV_FISCAL_PRD_CD = '13' THEN '12'
+        WHEN UNIV_FISCAL_PRD_CD = '14' THEN '12'
+        ELSE UNIV_FISCAL_PRD_CD
+      END AS MONTH,
+      CASE
+        WHEN FS_ORIGIN_CD = '01' AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),'REVERSE COLL') > 0 THEN SUBSTR(TRN_LDGR_ENTR_DESC,INSTR(UPPER(TRN_LDGR_ENTR_DESC),"BEURS:")+6,INSTR(UPPER(TRN_LDGR_ENTR_DESC),"STUDENT:")-8)
+        WHEN FS_ORIGIN_CD = '10' AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),'BEURS:') > 0 AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),"STATUS:U") > 0 THEN SUBSTR(TRN_LDGR_ENTR_DESC,INSTR(UPPER(TRN_LDGR_ENTR_DESC),"BEURS:")+6,INSTR(UPPER(TRN_LDGR_ENTR_DESC),"STUDENT:")-8)
+        WHEN FS_ORIGIN_CD = '10' AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),'BURSARY:') > 0 AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),"STATUS:U") > 0 THEN SUBSTR(TRN_LDGR_ENTR_DESC,INSTR(UPPER(TRN_LDGR_ENTR_DESC),"BURSARY:")+8,INSTR(UPPER(TRN_LDGR_ENTR_DESC),"STUDENT:")-10)
+        WHEN FS_ORIGIN_CD = '10' AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),'BURSARY :') > 0 AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),"STATUS : K") > 0 THEN SUBSTR(TRN_LDGR_ENTR_DESC,INSTR(UPPER(TRN_LDGR_ENTR_DESC),"BURSARY:")+11,INSTR(UPPER(TRN_LDGR_ENTR_DESC),"LEARNER :")-12)                   ELSE ""
+      END AS BURSARY_CODE,
+      CASE
+        WHEN FS_ORIGIN_CD = '01' AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),"REVERSE COLL") > 0 THEN SUBSTR(TRN_LDGR_ENTR_DESC,INSTR(UPPER(TRN_LDGR_ENTR_DESC),"STUDENT:")+8,8)
+        WHEN FS_ORIGIN_CD = '10' AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),"STATUS:U") > 0 THEN SUBSTR(TRN_LDGR_ENTR_DESC,INSTR(UPPER(TRN_LDGR_ENTR_DESC),"STUDENT:")+8,8)
+        WHEN FS_ORIGIN_CD = '10' AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),"STATUS : K") > 0 THEN SUBSTR(TRN_LDGR_ENTR_DESC,INSTR(UPPER(TRN_LDGR_ENTR_DESC),"LEARNER :")+10,8)
+        ELSE ""
+      END AS STUDENT      
     FROM
       KFS.X000_GL_trans_curr
     WHERE
@@ -267,64 +231,7 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
     # Add columns **************************************************************
-    # Calc campus name                      
-    print("Add column gl business unit id...")
-    so_curs.execute("ALTER TABLE X001aa_gl_tranlist ADD COLUMN BUSINESSENTITYID INT;")
-    so_curs.execute("UPDATE X001aa_gl_tranlist " + """
-                    SET BUSINESSENTITYID = 
-                    CASE
-                       WHEN ACCOUNT_NBR = '1G02018' THEN 1
-                       WHEN ACCOUNT_NBR = '1G01772' THEN 2
-                       WHEN ACCOUNT_NBR = '1G01804' THEN 9
-                       WHEN ACCOUNT_NBR = '1G02012' THEN 9
-                       ELSE 0
-                    END
-                    ;""")
-    so_conn.commit()
-    funcfile.writelog("%t ADD COLUMN: Campus code")
-    #                       WHEN ACCOUNT_NBR = '1G01804' THEN 9    
-    # Calc month
-    print("Add column gl transaction month...")    
-    so_curs.execute("ALTER TABLE X001aa_gl_tranlist ADD COLUMN MONTH TEXT;")
-    so_curs.execute("UPDATE X001aa_gl_tranlist " + """
-                    SET MONTH = 
-                    CASE
-                       WHEN UNIV_FISCAL_PRD_CD = 'BB' THEN '00'
-                       WHEN UNIV_FISCAL_PRD_CD = '13' THEN '12'
-                       WHEN UNIV_FISCAL_PRD_CD = '14' THEN '12'
-                       ELSE UNIV_FISCAL_PRD_CD
-                    END
-                    ;""")
-    so_conn.commit()
-    funcfile.writelog("%t ADD COLUMN: Transaction month")
-    # Calc bursary code
-    print("Add column gl bursary code...")
-    so_curs.execute("ALTER TABLE X001aa_gl_tranlist ADD COLUMN BURSARY_CODE TEXT;")
-    so_curs.execute("UPDATE X001aa_gl_tranlist " + """
-                    SET BURSARY_CODE = 
-                    CASE
-                       WHEN FS_ORIGIN_CD = '01' AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),'REVERSE COLL') > 0 THEN SUBSTR(TRN_LDGR_ENTR_DESC,INSTR(UPPER(TRN_LDGR_ENTR_DESC),"BEURS:")+6,INSTR(UPPER(TRN_LDGR_ENTR_DESC),"STUDENT:")-8)
-                       WHEN FS_ORIGIN_CD = '10' AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),'BEURS:') > 0 AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),"STATUS:U") > 0 THEN SUBSTR(TRN_LDGR_ENTR_DESC,INSTR(UPPER(TRN_LDGR_ENTR_DESC),"BEURS:")+6,INSTR(UPPER(TRN_LDGR_ENTR_DESC),"STUDENT:")-8)
-                       WHEN FS_ORIGIN_CD = '10' AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),'BURSARY:') > 0 AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),"STATUS:U") > 0 THEN SUBSTR(TRN_LDGR_ENTR_DESC,INSTR(UPPER(TRN_LDGR_ENTR_DESC),"BURSARY:")+8,INSTR(UPPER(TRN_LDGR_ENTR_DESC),"STUDENT:")-10)
-                       WHEN FS_ORIGIN_CD = '10' AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),'BURSARY :') > 0 AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),"STATUS : K") > 0 THEN SUBSTR(TRN_LDGR_ENTR_DESC,INSTR(UPPER(TRN_LDGR_ENTR_DESC),"BURSARY:")+11,INSTR(UPPER(TRN_LDGR_ENTR_DESC),"LEARNER :")-12)                   ELSE ""
-                    END
-                    ;""")
-    so_conn.commit()
-    funcfile.writelog("%t ADD COLUMNS: Bursary code")
-    # Calc student number
-    print("Add column gl student number...")
-    so_curs.execute("ALTER TABLE X001aa_gl_tranlist ADD COLUMN STUDENT TEXT;")
-    so_curs.execute("UPDATE X001aa_gl_tranlist " + """
-                    SET STUDENT = 
-                    CASE
-                       WHEN FS_ORIGIN_CD = '01' AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),"REVERSE COLL") > 0 THEN SUBSTR(TRN_LDGR_ENTR_DESC,INSTR(UPPER(TRN_LDGR_ENTR_DESC),"STUDENT:")+8,8)
-                       WHEN FS_ORIGIN_CD = '10' AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),"STATUS:U") > 0 THEN SUBSTR(TRN_LDGR_ENTR_DESC,INSTR(UPPER(TRN_LDGR_ENTR_DESC),"STUDENT:")+8,8)
-                       WHEN FS_ORIGIN_CD = '10' AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),"STATUS : K") > 0 THEN SUBSTR(TRN_LDGR_ENTR_DESC,INSTR(UPPER(TRN_LDGR_ENTR_DESC),"LEARNER :")+10,8)
-                       ELSE ""
-                    END
-                    ;""")
-    so_conn.commit()
-    funcfile.writelog("%t ADD COLUMNS: Student number")
+
     # Temp description - Remove characters from description
     print("Add column gl temp description column...")
     so_curs.execute("ALTER TABLE X001aa_gl_tranlist ADD COLUMN TEMP TEXT;")
@@ -349,6 +256,7 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'?','E');")
     so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,' ','');")
     funcfile.writelog("%t ADD COLUMNS: Temp description")
+
     # Calc transaction description
     print("Add column gl description link...")
     so_curs.execute("ALTER TABLE X001aa_gl_tranlist ADD COLUMN DESCRIPTION TEXT;")
@@ -365,7 +273,6 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
                     ;""")
     so_conn.commit()
     funcfile.writelog("%t ADD COLUMNS: Description link")
-
 
     # Join the transaction languages to the gl transaction file ********************
     print("Join the gl transactions with transaction code languages...")
