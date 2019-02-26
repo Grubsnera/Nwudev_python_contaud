@@ -148,7 +148,6 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,' ',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,' ','');")
     so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,' ',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'  ','');")
     so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'ë','E'), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'ë','E');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'MISCELANEOUSFEES','MISCELLANEOUSFEES');")
     funcfile.writelog("%t CALC COLUMN: Temp descriptions")
 
     # Build a transaction code language list ***************************************
@@ -257,14 +256,13 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'ë','E');")
     so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'?','E');")
     so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,' ','');")
-    so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'EDULOANBPEL','FUNDIBPEL');")
-    so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'EDULOANHANDTRANSACTIONS','FUNDIHANDTRANSACTIONS');")
-    so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'LEVYFORBOOKSACCOUNT','FUNDIBOOKALLOWANCE');")
+    so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'FUNDIBPEL','EDULOANBPEL');")
+    so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'FUNDIHANDTRANSACTIONS','EDULOANHANDTRANSACTIONS');")
+    so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'FUNDIBOOKALLOWANCE','LEVYFORBOOKSACCOUNT');")
     funcfile.writelog("%t ADD COLUMNS: Temp description")
 
     # Calc transaction description
     print("Add column gl description link...")
-    so_curs.execute("ALTER TABLE X001aa_gl_tranlist ADD COLUMN DESCRIPTION TEXT;")
     so_curs.execute("UPDATE X001aa_gl_tranlist " + """
                     SET DESCRIPTION = 
                     CASE
@@ -286,7 +284,10 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     SELECT DISTINCT
       X001aa_gl_tranlist.*,
       X002aa_vss_tranlist_langsumm.DESC_ENG,
-      '' AS DESC_GL
+      CASE
+         WHEN DESC_ENG <> '' THEN DESC_ENG
+         ELSE DESCRIPTION
+      END AS DESC_GL
     FROM
       X001aa_gl_tranlist
       LEFT JOIN X002aa_vss_tranlist_langsumm ON X002aa_vss_tranlist_langsumm.DESC_AFR = X001aa_gl_tranlist.DESCRIPTION
@@ -295,18 +296,6 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
-    # Build final gl description
-    print("Add column gl business unit id...")
-    so_curs.execute("UPDATE X001aa_gl_tranlist_lang " + """
-                    SET DESC_GL = 
-                    CASE
-                       WHEN DESC_ENG <> '' THEN DESC_ENG
-                       ELSE DESCRIPTION
-                    END
-                    ;""")
-    so_conn.commit()
-    funcfile.writelog("%t ADD COLUMN: Description gl (DESC_GL)")
-
 
     # Build sort rename column gl transaction file *****************************
     print("Build and sort gl transaction file...")
