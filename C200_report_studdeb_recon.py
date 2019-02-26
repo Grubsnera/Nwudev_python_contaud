@@ -102,7 +102,7 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
       END AS CAMPUS,
       CASE
         WHEN SUBSTR(TRANSDATE,6,5)='01-01' AND INSTR('001z031z061',TRANSCODE)>0 THEN '00'
-        WHEN strftime('%Y',TRANSDATE)>strftime('%Y',POSTDATEDTRANSDATE) THEN strftime('%m',POSTDATEDTRANSDATE)
+        WHEN strftime('%Y',TRANSDATE)>strftime('%Y',POSTDATEDTRANSDATE) THEN strftime('%m',TRANSDATE)
         ELSE strftime('%m',TRANSDATE)
       END AS MONTH,
       CASE
@@ -146,6 +146,7 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'&',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'&','');")
     so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'?',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'?','');")
     so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,' ',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,' ','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,' ',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'  ','');")
     so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'ë','E'), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'ë','E');")
     so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'MISCELANEOUSFEES','MISCELLANEOUSFEES');")
     funcfile.writelog("%t CALC COLUMN: Temp descriptions")
@@ -217,7 +218,9 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
         WHEN FS_ORIGIN_CD = '10' AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),"STATUS:U") > 0 THEN SUBSTR(TRN_LDGR_ENTR_DESC,INSTR(UPPER(TRN_LDGR_ENTR_DESC),"STUDENT:")+8,8)
         WHEN FS_ORIGIN_CD = '10' AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),"STATUS : K") > 0 THEN SUBSTR(TRN_LDGR_ENTR_DESC,INSTR(UPPER(TRN_LDGR_ENTR_DESC),"LEARNER :")+10,8)
         ELSE ""
-      END AS STUDENT      
+      END AS STUDENT,
+      TRIM(TRN_LDGR_ENTR_DESC) AS TEMP,
+      '' AS DESCRIPTION
     FROM
       KFS.X000_GL_trans_curr
     WHERE
@@ -234,8 +237,7 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
 
     # Temp description - Remove characters from description
     print("Add column gl temp description column...")
-    so_curs.execute("ALTER TABLE X001aa_gl_tranlist ADD COLUMN TEMP TEXT;")
-    so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TRN_LDGR_ENTR_DESC,'0','');")
+    so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'0','');")
     so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'1','');")
     so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'2','');")
     so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'3','');")
@@ -255,6 +257,9 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'ë','E');")
     so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'?','E');")
     so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,' ','');")
+    so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'EDULOANBPEL','FUNDIBPEL');")
+    so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'EDULOANHANDTRANSACTIONS','FUNDIHANDTRANSACTIONS');")
+    so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'LEVYFORBOOKSACCOUNT','FUNDIBOOKALLOWANCE');")
     funcfile.writelog("%t ADD COLUMNS: Temp description")
 
     # Calc transaction description
