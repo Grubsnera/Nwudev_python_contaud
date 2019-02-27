@@ -171,6 +171,7 @@ END
 *****************************************************************************"""
 
 # Close the table connection ***************************************************
+#so_conn.execute('VACUUM')
 so_conn.commit()
 so_conn.close()
 ms_cnxn.commit()

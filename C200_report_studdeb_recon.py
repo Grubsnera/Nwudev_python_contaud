@@ -146,7 +146,7 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'&',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'&','');")
     so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'?',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'?','');")
     so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,' ',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,' ','');")
-    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,' ',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'  ','');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,' ',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'\t','');")
     so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'ë','E'), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'ë','E');")
     funcfile.writelog("%t CALC COLUMN: Temp descriptions")
 
@@ -256,9 +256,6 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'ë','E');")
     so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'?','E');")
     so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,' ','');")
-    so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'FUNDIBPEL','EDULOANBPEL');")
-    so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'FUNDIHANDTRANSACTIONS','EDULOANHANDTRANSACTIONS');")
-    so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'FUNDIBOOKALLOWANCE','LEVYFORBOOKSACCOUNT');")
     funcfile.writelog("%t ADD COLUMNS: Temp description")
 
     # Calc transaction description
@@ -266,7 +263,7 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     so_curs.execute("UPDATE X001aa_gl_tranlist " + """
                     SET DESCRIPTION = 
                     CASE
-                       WHEN FS_ORIGIN_CD = '01' AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),"REVERSE COLL") > 0 THEN "BEURSKANSELLASIEKLASGELDE"                   
+                       WHEN FS_ORIGIN_CD = '01' AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),"REVERSE COLL") > 0 THEN "BEURSKANSELLASIEKLASGELDE"
                        WHEN FS_ORIGIN_CD = '10' AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),"LEARNER :") > 0 THEN "BEURSKANSELLASIEKLASGELDE"
                        WHEN FS_ORIGIN_CD = '10' THEN "BEURSEENLENINGSKLASGELDE"
                        WHEN FS_ORIGIN_CD = '11' THEN UPPER(TRIM(TEMP))
@@ -296,6 +293,16 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
+
+    # ALTER SOME COLUMN NAMES TO ALIGNN WITH VSS *******************************
+    print("Add column gl temp description column...")
+    so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'EDULOANBPEL','FUNDIBPEL');")
+    so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'EDULOANHANDTRANSAKSIES','FUNDIHANDTRANSACTIONS');")
+    so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'LEVYFORBOOKSACCOUNT','FUNDIBOOKALLOWANCE');")
+    so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'HEFFINGVIRBOEKEREKENING','FUNDIBOOKALLOWANCE');")
+    so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'NSFASBOEKE','FUNDIBOOKALLOWANCE');")
+    so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'NSFASETES','FUNDIMEALALLOWANCE');")
+    so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'NSFASMEALS','FUNDIMEALALLOWANCE');")
 
     # Build sort rename column gl transaction file *****************************
     print("Build and sort gl transaction file...")
@@ -791,9 +798,10 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     FROM
       X002ab_vss_transort
     WHERE
-      Strftime('%Y',X002ab_vss_transort.POSTDATEDTRANSDATE) = Strftime('%Y','%PYEAREND%')
+      Strftime('%Y',TRANSDATE_VSS) - Strftime('%Y',X002ab_vss_transort.POSTDATEDTRANSDATE) = 1 AND
+      Strftime('%Y',TRANSDATE_VSS) = '%CYEAR%'    
     ;"""
-    s_sql = s_sql.replace("%PYEAREND%",funcdate.prev_yearend())
+    s_sql = s_sql.replace("%CYEAR%",funcdate.cur_year())
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
@@ -837,9 +845,10 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     FROM
       X002ab_vss_transort
     WHERE
-      X002ab_vss_transort.TRANSDATE_VSS > Date('%CYEAREND%')
+      Strftime('%Y',TRANSDATE_VSS) - Strftime('%Y',X002ab_vss_transort.POSTDATEDTRANSDATE) = 1 AND
+      Strftime('%Y',POSTDATEDTRANSDATE) = '%CYEAR%'    
     ;"""
-    s_sql = s_sql.replace("%CYEAREND%",funcdate.cur_yearend())
+    s_sql = s_sql.replace("%CYEAR%",funcdate.cur_year())
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
@@ -2469,10 +2478,6 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     else:
         print("No final test burs to diff gl campus results...")
         funcfile.writelog("%t EXPORT DATA: No new data to export")
-
-
-
-
 
     # Close the table connection ***************************************************
     so_conn.close()

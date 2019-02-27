@@ -58,7 +58,99 @@ funcfile.writelog("%t ATTACH DATABASE: VSS.SQLITE")
 """*****************************************************************************
 *****************************************************************************"""
 
+# EXTRACT PRE DATED TRANSACTIONS ***********************************************
+print("Extract pre dated transactions...")
+sr_file = "X002fa_vss_tran_predate"
+s_sql = "CREATE TABLE "+sr_file+" AS " + """
+SELECT
+  X002ab_vss_transort.STUDENT_VSS,
+  X002ab_vss_transort.CAMPUS_VSS,
+  X002ab_vss_transort.TRANSCODE_VSS,
+  X002ab_vss_transort.MONTH_VSS,
+  X002ab_vss_transort.TRANSDATE_VSS,
+  X002ab_vss_transort.TRANSDATETIME,
+  X002ab_vss_transort.AMOUNT_VSS,
+  X002ab_vss_transort.DESCRIPTION_E,
+  X002ab_vss_transort.POSTDATEDTRANSDATE
+FROM
+  X002ab_vss_transort
+WHERE
+  Strftime('%Y',TRANSDATE_VSS) - Strftime('%Y',X002ab_vss_transort.POSTDATEDTRANSDATE) = 1 AND
+  Strftime('%Y',TRANSDATE_VSS) = '%PYEAR%'
+;"""
+s_sql = s_sql.replace("%PYEAR%",funcdate.prev_year())
+so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+so_curs.execute(s_sql)
+so_conn.commit()
+funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
+# SUMM PRE DATED TRANSACTIONS *************************************************
+print("Summ pre dated transactions...")
+sr_file = "X002fb_vss_tran_predate_summ"
+s_sql = "CREATE TABLE "+sr_file+" AS " + """
+SELECT
+  X002fa_vss_tran_predate.CAMPUS_VSS,
+  X002fa_vss_tran_predate.TRANSCODE_VSS,
+  X002fa_vss_tran_predate.DESCRIPTION_E,
+  Total(X002fa_vss_tran_predate.AMOUNT_VSS) AS Total_AMOUNT_VSS
+FROM
+  X002fa_vss_tran_predate
+GROUP BY
+  X002fa_vss_tran_predate.CAMPUS_VSS,
+  X002fa_vss_tran_predate.TRANSCODE_VSS,
+  X002fa_vss_tran_predate.DESCRIPTION_E
+;"""
+so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+so_curs.execute(s_sql)
+so_conn.commit()
+funcfile.writelog("%t BUILD TABLE: "+sr_file)
+
+# EXTRACT POST DATED TRANSACTIONS **********************************************
+print("Extract post dated transactions...")
+sr_file = "X002ga_vss_tran_postdate"
+s_sql = "CREATE TABLE "+sr_file+" AS " + """
+SELECT
+  X002ab_vss_transort.STUDENT_VSS,
+  X002ab_vss_transort.CAMPUS_VSS,
+  X002ab_vss_transort.TRANSCODE_VSS,
+  X002ab_vss_transort.MONTH_VSS,
+  X002ab_vss_transort.TRANSDATE_VSS,
+  X002ab_vss_transort.TRANSDATETIME,
+  X002ab_vss_transort.AMOUNT_VSS,
+  X002ab_vss_transort.DESCRIPTION_E,
+  X002ab_vss_transort.POSTDATEDTRANSDATE
+FROM
+  X002ab_vss_transort
+WHERE
+  Strftime('%Y',TRANSDATE_VSS) - Strftime('%Y',X002ab_vss_transort.POSTDATEDTRANSDATE) = 1 AND
+  Strftime('%Y',POSTDATEDTRANSDATE) = '%PYEAR%'
+;"""
+s_sql = s_sql.replace("%PYEAR%",funcdate.prev_year())
+so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+so_curs.execute(s_sql)
+so_conn.commit()
+funcfile.writelog("%t BUILD TABLE: "+sr_file)
+
+# SUMM POST DATED TRANSACTIONS *************************************************
+print("Summ post dated transactions...")
+sr_file = "X002gb_vss_tran_postdate_summ"
+s_sql = "CREATE TABLE "+sr_file+" AS " + """
+SELECT
+  X002ga_vss_tran_postdate.CAMPUS_VSS,
+  X002ga_vss_tran_postdate.TRANSCODE_VSS,
+  X002ga_vss_tran_postdate.DESCRIPTION_E,
+  Total(X002ga_vss_tran_postdate.AMOUNT_VSS) AS Total_AMOUNT_VSS
+FROM
+  X002ga_vss_tran_postdate
+GROUP BY
+  X002ga_vss_tran_postdate.CAMPUS_VSS,
+  X002ga_vss_tran_postdate.TRANSCODE_VSS,
+  X002ga_vss_tran_postdate.DESCRIPTION_E
+;"""
+so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+so_curs.execute(s_sql)
+so_conn.commit()
+funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
 """*****************************************************************************
 END

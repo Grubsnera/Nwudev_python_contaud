@@ -249,10 +249,9 @@ so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'&','');")
 so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'ë','E');")
 so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'?','E');")
 so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,' ','');")
-so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'FUNDIBPEL','EDULOANBPEL');")
-so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'FUNDIHANDTRANSACTIONS','EDULOANHANDTRANSACTIONS');")
-so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'FUNDIBOOKALLOWANCE','LEVYFORBOOKSACCOUNT');")
-so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'MISCELANEOUSFEES','MISCELLANEOUSFEES');")
+so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'EDULOANBPEL','FUNDIBPEL');")
+so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'EDULOANHANDTRANSACTIONS','FUNDIHANDTRANSACTIONS');")
+so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'LEVYFORBOOKSACCOUNT','FUNDIBOOKALLOWANCE');")
 funcfile.writelog("%t ADD COLUMNS: Temp description")
 
 # Calc transaction description
@@ -290,6 +289,16 @@ so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
 so_curs.execute(s_sql)
 so_conn.commit()
 funcfile.writelog("%t BUILD TABLE: "+sr_file)
+
+# ALTER SOME COLUMN NAMES TO ALIGNN WITH VSS *******************************
+print("Add column gl temp description column...")
+so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'EDULOANBPEL','FUNDIBPEL');")
+so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'EDULOANHANDTRANSAKSIES','FUNDIHANDTRANSACTIONS');")
+so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'LEVYFORBOOKSACCOUNT','FUNDIBOOKALLOWANCE');")
+so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'HEFFINGVIRBOEKEREKENING','FUNDIBOOKALLOWANCE');")
+so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'NSFASBOEKE','FUNDIBOOKALLOWANCE');")
+so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'NSFASETES','FUNDIMEALALLOWANCE');")
+so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'NSFASMEALS','FUNDIMEALALLOWANCE');")
 
 # Build sort rename column gl transaction file *****************************
 print("Build and sort gl transaction file...")
@@ -776,7 +785,7 @@ SELECT
 FROM
   X002ab_vss_transort
 WHERE
-  Strftime('%Y',X002ab_vss_transort.POSTDATEDTRANSDATE) = Strftime('%Y','%PYEAREND%')
+  Strftime('%Y',X002ab_vss_transort.POSTDATEDTRANSDATE)+1 = Strftime('%Y',TRANSDATE_VSS)
 ;"""
 #s_sql = s_sql.replace("%PYEAREND%",funcdate.prev_yearend())
 s_sql = s_sql.replace("%PYEAREND%",'2017-12-31 00:00:00')
