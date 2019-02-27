@@ -70,8 +70,6 @@ s_sql = "CREATE TABLE "+sr_file+" AS " + """
 SELECT
   X002ab_vss_transort.CAMPUS_VSS AS CAMPUS,
   X002ab_vss_transort.STUDENT_VSS AS STUDENT,  
-  0.00 AS BAL_DT,
-  0.00 AS BAL_CT,
   Round(Total(X002ab_vss_transort.AMOUNT_VSS),2) AS BALANCE
 FROM
   X002ab_vss_transort
@@ -85,50 +83,49 @@ so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
 so_curs.execute(s_sql)
 so_conn.commit()
 funcfile.writelog("%t BUILD TABLE: "+sr_file)
-# Add column vss debit amount
-print("Add column vss dt amount...")
-so_curs.execute("UPDATE X002da_vss_student_balance_open " + """
-                SET BAL_DT = 
-                CASE
-                   WHEN BALANCE > 0 THEN BALANCE
-                   ELSE 0.00
-                END
-                ;""")
+
+# CALCULATE CLOSING BALANCES ***************************************************
+print("Sum vss student closing balances per campus...")
+sr_file = "X002da_vss_student_balance_clos"
+s_sql = "CREATE TABLE "+sr_file+" AS " + """
+SELECT
+  PREV.X002ab_vss_transort.CAMPUS_VSS AS CAMPUS,
+  PREV.X002ab_vss_transort.STUDENT_VSS AS STUDENT,  
+  Round(Total(PREV.X002ab_vss_transort.AMOUNT_VSS),2) AS BALANCE
+FROM
+  PREV.X002ab_vss_transort
+WHERE
+  strftime('%Y',PREV.X002ab_vss_transort.TRANSDATE_VSS)='%PYEAR%'
+GROUP BY
+  PREV.X002ab_vss_transort.STUDENT_VSS,
+  PREV.X002ab_vss_transort.CAMPUS_VSS
+;"""
+so_curs.execute("DROP TABLE IF EXISTS "+sr_file)    
+s_sql = s_sql.replace("%PYEAR%",funcdate.prev_year())
+so_curs.execute(s_sql)
 so_conn.commit()
-funcfile.writelog("%t ADD COLUMN: Vss debit amount")
-# Add column vss credit amount
-print("Add column vss ct amount...")
-so_curs.execute("UPDATE X002da_vss_student_balance_open " + """
-                SET BAL_CT = 
-                CASE
-                   WHEN BALANCE < 0 THEN BALANCE
-                   ELSE 0.00
-                END
-                ;""")
-so_conn.commit()
-funcfile.writelog("%t ADD COLUMN: Vss credit amount")
+funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
 # JOIN PREVIOUS BALANCE AND CURRENT OPENING BALANCE ****************************
 print("Join previous balance and current opening balance...")
 sr_file = "X002dc_vss_prevbal_curopen"
 s_sql = "CREATE TABLE "+sr_file+" AS " + """
-SELECT
-  PREV.X002da_vss_student_balance.CAMPUS,
-  PREV.X002da_vss_student_balance.STUDENT,
-  round(PREV.X002da_vss_student_balance.BALANCE,2) AS BAL_PREV,
-  round(X002da_vss_student_balance_open.BALANCE,2) AS BAL_OPEN,
-  0.00 AS DIFF_BAL
-FROM
-  PREV.X002da_vss_student_balance
-  LEFT JOIN X002da_vss_student_balance_open ON X002da_vss_student_balance_open.CAMPUS =
-  PREV.X002da_vss_student_balance.CAMPUS AND X002da_vss_student_balance_open.STUDENT = PREV.X002da_vss_student_balance.STUDENT
-WHERE
-  PREV.X002da_vss_student_balance.BALANCE <> 0.00
+Select
+    X002da_vss_student_balance_clos.CAMPUS,
+    X002da_vss_student_balance_clos.STUDENT,
+    X002da_vss_student_balance_clos.BALANCE As BAL_CLOS,
+    X002da_vss_student_balance_open.BALANCE As BAL_OPEN,
+    0.00 AS DIFF_BAL
+From
+    X002da_vss_student_balance_clos Left Join
+    X002da_vss_student_balance_open On X002da_vss_student_balance_open.STUDENT = X002da_vss_student_balance_clos.STUDENT
+        And X002da_vss_student_balance_open.CAMPUS = X002da_vss_student_balance_clos.CAMPUS
 ;"""
 so_curs.execute("DROP TABLE IF EXISTS "+sr_file)    
 so_curs.execute(s_sql)
 so_conn.commit()
 funcfile.writelog("%t BUILD TABLE: "+sr_file)
+
 # Add column vss debit amount
 print("Correct the open balance column id null...")
 so_curs.execute("UPDATE X002dc_vss_prevbal_curopen " + """
@@ -142,7 +139,7 @@ so_conn.commit()
 # Add column vss debit amount
 print("Add column vss dt amount...")
 so_curs.execute("UPDATE X002dc_vss_prevbal_curopen " + """
-                SET DIFF_BAL = round(BAL_OPEN - BAL_PREV,2)
+                SET DIFF_BAL = round(BAL_OPEN - BAL_CLOS,2)
                 ;""")
 so_conn.commit()
 
@@ -151,9 +148,9 @@ print("Select students where closing and opening balances differ...")
 sr_file = "X002dd_vss_closing_open_differ"
 s_sql = "CREATE TABLE "+sr_file+" AS " + """
 SELECT
-  X002dc_vss_prevbal_curopen.CAMPUS,
   X002dc_vss_prevbal_curopen.STUDENT,
-  X002dc_vss_prevbal_curopen.BAL_PREV,
+  X002dc_vss_prevbal_curopen.CAMPUS,
+  X002dc_vss_prevbal_curopen.BAL_CLOS,
   X002dc_vss_prevbal_curopen.BAL_OPEN,
   X002dc_vss_prevbal_curopen.DIFF_BAL
 FROM
