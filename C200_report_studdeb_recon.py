@@ -72,12 +72,19 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     funcfile.writelog("%t ATTACH DATABASE: KFS.SQLITE")
     so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss.sqlite' AS 'VSS'")
     funcfile.writelog("%t ATTACH DATABASE: VSS.SQLITE")
+    so_curs.execute("ATTACH DATABASE 'W:/Kfs_vss_studdeb/Kfs_vss_studdeb_prev.sqlite' AS 'PREV'")
+    funcfile.writelog("%t ATTACH DATABASE: KFS_VSS_STUDDEB_PREV.SQLITE")
 
     # Open the MYSQL DESTINATION table
     s_database = "Web_ia_nwu"
     ms_cnxn = funcmysql.mysql_open(s_database)
     ms_curs = ms_cnxn.cursor()
-    funcfile.writelog("%t OPEN MYSQL DATABASE: " + s_database)    
+    funcfile.writelog("%t OPEN MYSQL DATABASE: " + s_database)
+
+    # REMOVE NEXT RUN - DELETE SOME UNUSED FILES
+    so_curs.execute("DROP TABLE IF EXISTS X003aa_gl_vss_join_eng")
+    so_curs.execute("DROP TABLE IF EXISTS X003aa_vss_gl_join_eng")
+    so_curs.execute("DROP TABLE IF EXISTS X003ax_vss_gl_join_eng")
 
     """*************************************************************************
     ***
@@ -148,6 +155,7 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,' ',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,' ','');")
     so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'\t',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'\t','');")
     so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'ë','E'), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'ë','E');")
+    so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'MISCELANEOUSFEES','MISCELLANEOUSFEES');")
     funcfile.writelog("%t CALC COLUMN: Temp descriptions")
 
     # Build a transaction code language list ***************************************
@@ -305,6 +313,7 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'NSFASETES','FUNDIMEALALLOWANCE');")
     so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'NSFASMEALS','FUNDIMEALALLOWANCE');")
     so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'EDULOANBEURSREKENING','FUNDIMEALALLOWANCE');")
+    so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'EDULOANBURSARYACCOUNT','FUNDIMEALALLOWANCE');")
     so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'MISCELANEOUSFEES','MISCELLANEOUSFEES');")
 
     # Build sort rename column gl transaction file *****************************
@@ -767,7 +776,7 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
 
     # Sum vss balances per campus ******************************************
     print("Sum vss balances per campus...")
-    sr_file = "X002db_vss_campus_balance"
+    sr_file = "X002da_vss_campus_balance"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     SELECT
       X002da_vss_student_balance.CAMPUS,
@@ -778,6 +787,106 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
       X002da_vss_student_balance
     GROUP BY
       X002da_vss_student_balance.CAMPUS
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)    
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+
+    # CALCULATE OPENING BALANCES ***************************************************
+    print("Sum vss student opening balances per campus...")
+    sr_file = "X002da_vss_student_balance_open"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    SELECT
+      X002ab_vss_transort.CAMPUS_VSS AS CAMPUS,
+      X002ab_vss_transort.STUDENT_VSS AS STUDENT,  
+      Round(Total(X002ab_vss_transort.AMOUNT_VSS),2) AS BALANCE
+    FROM
+      X002ab_vss_transort
+    WHERE
+      X002ab_vss_transort.MONTH_VSS = '00'
+    GROUP BY
+      X002ab_vss_transort.STUDENT_VSS,
+      X002ab_vss_transort.CAMPUS_VSS
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)    
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+
+    # CALCULATE CLOSING BALANCES ***************************************************
+    print("Sum vss student closing balances per campus...")
+    sr_file = "X002da_vss_student_balance_clos"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    SELECT
+      PREV.X002ab_vss_transort.CAMPUS_VSS AS CAMPUS,
+      PREV.X002ab_vss_transort.STUDENT_VSS AS STUDENT,  
+      Round(Total(PREV.X002ab_vss_transort.AMOUNT_VSS),2) AS BALANCE
+    FROM
+      PREV.X002ab_vss_transort
+    WHERE
+      strftime('%Y',PREV.X002ab_vss_transort.TRANSDATE_VSS)='%PYEAR%'
+    GROUP BY
+      PREV.X002ab_vss_transort.STUDENT_VSS,
+      PREV.X002ab_vss_transort.CAMPUS_VSS
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)    
+    s_sql = s_sql.replace("%PYEAR%",funcdate.prev_year())
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+
+    # JOIN PREVIOUS BALANCE AND CURRENT OPENING BALANCE ****************************
+    print("Join previous balance and current opening balance...")
+    sr_file = "X002dc_vss_prevbal_curopen"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    Select
+        X002da_vss_student_balance_clos.CAMPUS,
+        X002da_vss_student_balance_clos.STUDENT,
+        X002da_vss_student_balance_clos.BALANCE As BAL_CLOS,
+        X002da_vss_student_balance_open.BALANCE As BAL_OPEN,
+        0.00 AS DIFF_BAL
+    From
+        X002da_vss_student_balance_clos Left Join
+        X002da_vss_student_balance_open On X002da_vss_student_balance_open.STUDENT = X002da_vss_student_balance_clos.STUDENT
+            And X002da_vss_student_balance_open.CAMPUS = X002da_vss_student_balance_clos.CAMPUS
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)    
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+
+    # Add column vss debit amount
+    print("Correct the open balance column id null...")
+    so_curs.execute("UPDATE X002dc_vss_prevbal_curopen " + """
+                    SET BAL_OPEN =
+                    CASE
+                      WHEN BAL_OPEN IS NULL THEN 0.00
+                      ELSE BAL_OPEN
+                    END
+                    ;""")
+    so_conn.commit()
+    # Add column vss debit amount
+    print("Add column vss dt amount...")
+    so_curs.execute("UPDATE X002dc_vss_prevbal_curopen " + """
+                    SET DIFF_BAL = round(BAL_OPEN - BAL_CLOS,2)
+                    ;""")
+    so_conn.commit()
+
+    # SELECT STUDENTS WHERE OPENING BALANCE DIFFER FROM CLOSING BALANCE ************
+    print("Select students where closing and opening balances differ...")
+    sr_file = "X002dd_vss_closing_open_differ"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    SELECT
+      X002dc_vss_prevbal_curopen.STUDENT,
+      X002dc_vss_prevbal_curopen.CAMPUS,
+      X002dc_vss_prevbal_curopen.BAL_CLOS,
+      X002dc_vss_prevbal_curopen.BAL_OPEN,
+      X002dc_vss_prevbal_curopen.DIFF_BAL
+    FROM
+      X002dc_vss_prevbal_curopen
+    WHERE
+      X002dc_vss_prevbal_curopen.DIFF_BAL <> 0
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)    
     so_curs.execute(s_sql)
@@ -2483,6 +2592,10 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
         funcfile.writelog("%t EXPORT DATA: No new data to export")
 
     # Close the table connection ***************************************************
+    print("Vacuum the database...")
+    so_conn.execute('VACUUM')
+    funcfile.writelog("%t EXPORT DATA: No new data to export")
+    so_conn.commit()
     so_conn.close()
     ms_cnxn.commit()    
     ms_cnxn.close()    
