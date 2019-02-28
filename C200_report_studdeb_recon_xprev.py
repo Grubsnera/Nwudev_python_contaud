@@ -71,6 +71,10 @@ funcfile.writelog("%t ATTACH DATABASE: KFS.SQLITE")
 so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss.sqlite' AS 'VSS'")
 funcfile.writelog("%t ATTACH DATABASE: VSS.SQLITE")
 
+# REMOVE NEXT RUN - DELETE SOME UNUSED FILES
+so_curs.execute("DROP TABLE IF EXISTS X003aa_gl_vss_join_eng")
+so_curs.execute("DROP TABLE IF EXISTS X003aa_vss_gl_join_eng")
+so_curs.execute("DROP TABLE IF EXISTS X003ax_vss_gl_join_eng")
 
 """*************************************************************************
 
@@ -142,6 +146,7 @@ so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_
 so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,' ',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,' ','');")
 so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'\t',''), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'\t','');")
 so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_A = REPLACE(TEMP_DESC_A,'ë','E'), TEMP_DESC_E = REPLACE(TEMP_DESC_E,'ë','E');")
+so_curs.execute("UPDATE X002aa_vss_tranlist SET TEMP_DESC_E = REPLACE(TEMP_DESC_E,'MISCELANEOUSFEES','MISCELLANEOUSFEES');")
 funcfile.writelog("%t CALC COLUMN: Temp descriptions")
 
 # Build a transaction code language list ***************************************
@@ -298,6 +303,7 @@ so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'N
 so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'NSFASETES','FUNDIMEALALLOWANCE');")
 so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'NSFASMEALS','FUNDIMEALALLOWANCE');")
 so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'EDULOANBEURSREKENING','FUNDIMEALALLOWANCE');")
+so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'EDULOANBURSARYACCOUNT','FUNDIMEALALLOWANCE');")
 so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'MISCELANEOUSFEES','MISCELLANEOUSFEES');")
 
 # Build sort rename column gl transaction file *****************************
@@ -2310,16 +2316,11 @@ else:
     print("No final test burs to diff gl campus results...")
     funcfile.writelog("%t EXPORT DATA: No new data to export")
 
-
-
-
-
-
-
-
-
-
 # Close the table connection ***************************************************
+print("Vacuum the database...")
+so_conn.execute('VACUUM')
+funcfile.writelog("%t EXPORT DATA: No new data to export")
+so_conn.commit()
 so_conn.close()
 
 # Close the log writer *********************************************************
