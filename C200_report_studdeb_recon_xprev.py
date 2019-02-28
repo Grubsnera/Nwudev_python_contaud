@@ -72,9 +72,7 @@ so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss.sqlite' AS 'VSS'")
 funcfile.writelog("%t ATTACH DATABASE: VSS.SQLITE")
 
 # REMOVE NEXT RUN - DELETE SOME UNUSED FILES
-so_curs.execute("DROP TABLE IF EXISTS X003aa_gl_vss_join_eng")
-so_curs.execute("DROP TABLE IF EXISTS X003aa_vss_gl_join_eng")
-so_curs.execute("DROP TABLE IF EXISTS X003ax_vss_gl_join_eng")
+#so_curs.execute("DROP TABLE IF EXISTS X003aa_gl_vss_join_eng")
 
 """*************************************************************************
 
