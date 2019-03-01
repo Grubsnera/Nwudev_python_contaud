@@ -1,34 +1,47 @@
-""" Script to build standard PEOPLE lists
-Created on: 12 Apr 2018
+""" Script to test PEOPLE master file data *************************************
+Created on: 1 Mar 2019
 Author: Albert J v Rensburg (NWU21162395)
-"""
+*****************************************************************************"""
 
-# Import python modules
+""" INDEX **********************************************************************
+ENVIRONMENT
+OPEN THE DATABASES
+BEGIN OF SCRIPT
+END OF SCRIPT
+*****************************************************************************"""
+
+"""*****************************************************************************
+ENVIRONMENT
+*****************************************************************************"""
+
+# IMPORT PYTHON MODULES
+import csv
 import datetime
 import sqlite3
-import csv
 import sys
 
-# Add own module path
+# ADD OWN MODULE PATH
 sys.path.append('S:/_my_modules')
 
-# Import own modules
-import funcdate
+# IMPORT OWN MODULES
 import funccsv
+import funcdate
 import funcfile
-import funcpeople
 import funcmail
+import funcmysql
+import funcpeople
+import funcstr
 
-# Script log file
-funcfile.writelog("Now")
-funcfile.writelog("SCRIPT: B001_PEOPLE_LISTS")
-funcfile.writelog("-------------------------")
+# OPEN THE SCRIPT LOG FILE
 print("-----------------")    
 print("B001_PEOPLE_LISTS")
 print("-----------------")
+funcfile.writelog("Now")
+funcfile.writelog("SCRIPT: B001_PEOPLE_LISTS_DEV")
+funcfile.writelog("-----------------------------")
 ilog_severity = 1
 
-# Declare variables
+# DECLARE VARIABLES
 so_path = "W:/People/" #Source database path
 re_path = "R:/People/"
 so_file = "People.sqlite" #Source database
@@ -36,25 +49,35 @@ s_sql = "" #SQL statements
 l_export = False
 l_mail = True
 
-# Open the SOURCE file
+"""*****************************************************************************
+OPEN THE DATABASES
+*****************************************************************************"""
+print("OPEN THE DATABASES")
+funcfile.writelog("OPEN THE DATABASES")
+
+# OPEN THE WORKING DATABASE
 with sqlite3.connect(so_path+so_file) as so_conn:
     so_curs = so_conn.cursor()
 
 funcfile.writelog("%t OPEN DATABASE: PEOPLE.SQLITE")
 
 """ ****************************************************************************
-BEGIN
+BEGIN OF SCRIPT
 *****************************************************************************"""
+print("BEGIN OF SCRIPT")
+funcfile.writelog("BEGIN OF SCRIPT")
 
 
 
 """ ****************************************************************************
-END
+END OF SCRIPT
 *****************************************************************************"""
+print("END OF SCRIPT")
+funcfile.writelog("END OF SCRIPT")
 
-# Close the connection *********************************************************
+# CLOSE THE DATABASE CONNECTION
 so_conn.close()
 
-# Close the log writer *********************************************************
+# CLOSE THE LOG WRITER
 funcfile.writelog("----------------------------")
 funcfile.writelog("COMPLETED: B001_PEOPLE_LISTS")
