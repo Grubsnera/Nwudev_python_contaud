@@ -121,7 +121,6 @@ def People_lists():
     import funcmail
     import funcmysql
     import funcstr
-    import funcmysql
 
     # Script log file
     funcfile.writelog("Now")
