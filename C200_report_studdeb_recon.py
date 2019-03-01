@@ -109,9 +109,8 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     funcfile.writelog("%t OPEN MYSQL DATABASE: " + s_database)
 
     # REMOVE NEXT RUN - DELETE SOME UNUSED FILES
-    so_curs.execute("DROP TABLE IF EXISTS X003aa_gl_vss_join_eng")
-    so_curs.execute("DROP TABLE IF EXISTS X003aa_vss_gl_join_eng")
-    so_curs.execute("DROP TABLE IF EXISTS X003ax_vss_gl_join_eng")
+    so_curs.execute("DROP TABLE IF EXISTS X002fa_vss_tran_postdate")
+    so_curs.execute("DROP TABLE IF EXISTS X002fb_vss_tran_postdate")
 
     """*************************************************************************
     LIST VSS TRANSACTIONS ROUND 1
