@@ -33,6 +33,7 @@ today_filemonth		Todays date in YYYYMM for filing without "-" ex 201801
 
 #Import the system objects
 import datetime
+from datetime import timedelta
 import calendar
 
 #Function This day in DD format ex 01
@@ -205,6 +206,13 @@ def today_file():
 def today_filemonth():
     s_retu = datetime.date.today().strftime("%Y") #Current year
     s_retu += datetime.date.today().strftime("%m") #Current month
+    return s_retu
+
+#Function Today plus a number of days format ex 2018-01-01
+def today_plusdays(i_days=14):
+    s_retu = (datetime.date.today()+timedelta(days=i_days)).strftime("%Y") #Current year
+    s_retu += "-" + (datetime.date.today()+timedelta(days=i_days)).strftime("%m") #Current month
+    s_retu += "-" + (datetime.date.today()+timedelta(days=i_days)).strftime("%d") #Current day
     return s_retu
 
 """ LOG ***********************************************************************
