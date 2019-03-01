@@ -8,10 +8,15 @@
 *****************************************************************************"""
 
 """ CONTENTS *******************************************************************
+ENVIRONMENT
+OPEN DATABASES
+LIST VSS TRANSACTIONS ROUND 1
 LIST GL TRANSACTIONS
-LIST VSS TRANSACTIONS
+LIST VSS TRANSACTIONS ROUND 2
 JOIN VSS & GL MONTHLY TOTALS
+MYSQL WEB MONTHLY BALANCES
 JOIN VSS & GL TRANSACTIONS
+MYSQL WEB TRANSACTION SUMMARY COMPARISON
 TEST MATCHED TRANSACTION TYPES
 TEST TRANSACTION TYPES IN VSS BUT NOT IN GL
 TEST TRANSACTION TYPES IN GL BUT NOT IN VSS
@@ -19,9 +24,25 @@ BURSARY VSS GL RECON
 TEST BURSARY INGL NOVSS
 TEST BURSARY INVSS NOGL
 TEST BURSARY POST TO DIFF CAMPUS IN GL
+END OF SCRIPT
 *****************************************************************************"""
 
 def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
+
+    """ PARAMETERS *************************************************************
+    dOpenMaf = GL Opening balances for Mafikeng campus
+    dOpenPot = GL Opening balances for Potchefstroom campus
+    dOpenVaa = GL Opening balances for Vaal Triangle campus
+    Notes:
+    1. When new financial year start, GL does not contain opening balances.
+       Opening balances are the inserted manually here, until the are inserted
+       into the GL by journal, usually at the end of March. This was the case
+       for the 2019 financial year
+    *************************************************************************"""
+
+    """*************************************************************************
+    ENVIRONMENT
+    *************************************************************************"""
 
     # Import python modules
     import csv
@@ -40,15 +61,15 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     import funcsys
     import funcmysql
     
-
     # Open the script log file ******************************************************
-
-    funcfile.writelog("Now")
-    funcfile.writelog("SCRIPT: C200_REPORT_STUDDEB_RECON")
-    funcfile.writelog("---------------------------------")
     print("-------------------------")
     print("C200_REPORT_STUDDEB_RECON")
     print("-------------------------")
+    print("ENVIRONMENT")
+    funcfile.writelog("Now")
+    funcfile.writelog("SCRIPT: C200_REPORT_STUDDEB_RECON")
+    funcfile.writelog("---------------------------------")
+    funcfile.writelog("ENVIRONMENT")
     ilog_severity = 1
 
     # Declare variables
@@ -59,6 +80,12 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     s_sql = "" #SQL statements
     l_mail = True
     l_export = True
+
+    """*************************************************************************
+    OPEN DATABASES
+    *************************************************************************"""
+    print("OPEN DATABASES")
+    funcfile.writelog("OPEN DATABASES")
 
     # Open the SOURCE file
     with sqlite3.connect(so_path+so_file) as so_conn:
@@ -87,14 +114,11 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     so_curs.execute("DROP TABLE IF EXISTS X003ax_vss_gl_join_eng")
 
     """*************************************************************************
-    ***
-    *** LIST VSS TRANSACTIONS
-    ***   Do first to obtain list of transaction types
-    ***
+    LIST VSS TRANSACTIONS ROUND 1
+        to obtain a list of transaction types used in the GL setup below
     *************************************************************************"""
-
-    print("--- PREPARE VSS TRANSACTIONS ---")
-    funcfile.writelog("PREPARE VSS TRANSACTIONS")
+    print("LIST VSS TRANSACTION ROUND 1")
+    funcfile.writelog("LIST VSS TRANSACTION ROUND 1")
     
     # Extract vss transactions from VSS.SQLITE *********************************
     print("Import vss transactions from VSS.SQLITE...")
@@ -183,17 +207,10 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
     """*************************************************************************
-    ***
-    *** LIST GL TRANSACTIONS
-    ***
-    ***   Import GL transactions from KFS.SQLITE
-    ***   Add required fields
-    ***   X001da Identify new accounts linked to a campus
-    ***
+    LIST GL TRANSACTIONS
     *************************************************************************"""
-
-    print("--- PREPARE GL TRANSACTIONS ---")
-    funcfile.writelog("PREPARE GL TRANSACTIONS")
+    print("LIST GL TRANSACTIONS")
+    funcfile.writelog("LIST GL TRANSACTIONS")
 
     # Import gl transactions **************************************************
     print("Import gl transactions from KFS.SQLITE...")
@@ -547,13 +564,12 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
         #print(gl_month)
         
     """*************************************************************************
-    ***
-    *** LIST VSS TRANSACTIONS
-    ***
-    ***
+    LIST VSS TRANSACTIONS ROUND 2
     *************************************************************************"""
+    print("LIST VSS TRANSACTION ROUND 2")
+    funcfile.writelog("LIST VSS TRANSACTION ROUND 2")
 
-    # Sort vss transactions **************************************************
+    # Sort vss transactions ****************************************************
     print("Build and sort vss transactions...")
     sr_file = "X002ab_vss_transort"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
@@ -987,16 +1003,11 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
-
     """*************************************************************************
-    ***
-    *** JOIN VSS & GL MONTHLY TOTALS
-    ***
-    ***
-    ***
-    ***
-    ***
+    JOIN VSS & GL MONTHLY TOTALS
     *************************************************************************"""
+    print("JOIN VSS & GL MONTHLY TOTALS")
+    funcfile.writelog("JOIN VSS & GL MONTHLY TOTALS")
     
     # Join vss gl monthly account totals ******************************************
     print("Join vss and gl monthly totals...")
@@ -1163,10 +1174,11 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-
-
-
-    
+    """*************************************************************************
+    MYSQL WEB MONTHLY BALANCES
+    *************************************************************************"""
+    print("MYSQL WEB MONTHLY BALANCES")
+    funcfile.writelog("MYSQL WEB MONTHLY BALANCES")
 
     # Create MYSQL VSS GL MONTHLY BALANCES TO WEB table ****************************
     print("Build mysql vss gl monthly balances...")
@@ -1249,18 +1261,10 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     print("Inserted " + str(i_tota) + " rows...")
     funcfile.writelog("%t POPULATE MYSQL TABLE: ia_finding_5 with " + str(i_tota) + " rows")
 
-
-
-
-
     """*************************************************************************
-    ***
-    *** JOIN VSS & GL TRANSACTIONS
-    ***
-    ***
+    JOIN VSS & GL TRANSACTIONS
     *************************************************************************"""
-
-    print("--- JOIN VSS & GL TRANSACTIONS ---")
+    print("JOIN VSS & GL TRANSACTIONS")
     funcfile.writelog("JOIN VSS & GL TRANSACTIONS")
 
     # Join the VSS and GL transaction summaries on afrikaans description *******
@@ -1440,6 +1444,12 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
     funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 
+    """*************************************************************************
+    MYSQL WEB TRANSACTION SUMMARY COMPARISON
+    *************************************************************************"""
+    print("MYSQL WEB TRANSACTION SUMMARY COMPARISON")
+    funcfile.writelog("MYSQL WEB TRANSACTION SUMMARY COMPARISON")
+
     # Create MYSQL VSS GL COMPARISON PER CAMPUS PER MONTH TO WEB table *************
     print("Build mysql vss gl comparison campus month...")
     ms_curs.execute("DROP TABLE IF EXISTS ia_finding_6")
@@ -1509,16 +1519,11 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     print("Inserted " + str(i_tota) + " rows...")
     funcfile.writelog("%t POPULATE MYSQL TABLE: ia_finding_6 with " + str(i_tota) + " rows")
 
-
-
     """*************************************************************************
-    ***
-    *** TEST MATCHED TRANSACTION TYPES
-    ***
-    *** Only a summary per campus per month
-    *** No detail list of transation types that matched
-    *** 
+    TEST MATCHED TRANSACTION TYPES
     *************************************************************************"""
+    print("TEST MATCHED TRANSACTION TYPES")
+    funcfile.writelog("TEST MATCHED TRANSACTION TYPES")
 
     # Compile a summary of matched transaction types *******************************
     print("Compile a summary of matched transaction types...")
@@ -1546,24 +1551,11 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-
-
-
-
-
-
-
     """*************************************************************************
-    ***
-    *** TEST NON MATCHING TRANSACTION TYPES
-    ***
-    *** Detail list of transaction types matched but with different totals
-    ***   Add rowid campus+month+trantype
-    ***   Add org as nwu
-    *** Import reporting officer name and email address for campus and organization
-    *** Import reporting supervisor name and email address for campus and organization
-    *** 
+    TEST NON MATCHING TRANSACTION TYPES
     *************************************************************************"""
+    print("TEST NON MATCHING TRANSACTION TYPES")
+    funcfile.writelog("TEST NON MATCHING TRANSACTION TYPES")
     
     # Identify transaction types that did not match ********************************
     print("Identify non matching transaction types...")
@@ -1674,26 +1666,11 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-
-
-
-
-
-
-
-
-
     """*************************************************************************
-    ***
-    *** TEST TRANSACTION TYPES IN VSS BUT NOT IN GL
-    ***
-    *** Detail list of transaction types in vss but not in the gl
-    ***   Add rowid campus+month+trantype
-    ***   Add org as nwu
-    *** Import reporting officer name and email address for campus and organization
-    *** Import reporting supervisor name and email address for campus and organization
-    *** 
+    TEST TRANSACTION TYPES IN VSS BUT NOT IN GL
     *************************************************************************"""
+    print("TEST TRANSACTION TYPES IN VSS BUT NOT IN GL")
+    funcfile.writelog("TEST TRANSACTION TYPES IN VSS BUT NOT IN GL")
 
     # Identify transaction types in vss but not in the gl **************************
     print("Identify transaction types in vss but not in gl...")
@@ -1799,23 +1776,11 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-
-
-
-
-
-
     """*************************************************************************
-    ***
-    *** TEST TRANSACTION TYPES IN GL BUT NOT IN VSS
-    ***
-    *** Detail list of transaction types in gl but not in vss
-    ***   Add rowid campus+month+trantype
-    ***   Add org as nwu
-    *** Import reporting officer name and email address for campus and organization
-    *** Import reporting supervisor name and email address for campus and organization
-    *** 
+    TEST TRANSACTION TYPES IN GL BUT NOT IN VSS
     *************************************************************************"""
+    print("TEST TRANSACTION TYPES IN GL BUT NOT IN VSS")
+    funcfile.writelog("TEST TRANSACTION TYPES IN GL BUT NOT IN VSS")
 
     # Identify transaction types in gl but not in vss ******************************
     print("Identify transaction types in gl but not in vss...")
@@ -1917,36 +1882,23 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-
-
-
-
-
-
-
-    
-
     """ ************************************************************************
-    ***
-    *** BURSARY VSS GL RECON
-    ***
-    ***   X010aa Extract vss bursary transactions (codes 042,052,381,382,500)
-    ***   X010ab Summarize vss bursary transactions per campus month
-    ***   X002cd Summarize vss bursary transactions per transaction code
-    ***   X001cd Extract gl bursary transactions
-    ***   X010bb Summarize gl bursary transactions per campus month
-    ***   X010ca Join vss gl bursary summary totals
-    ***   X010cb Join the matched vss and gl bursary transactions
-    ***   X010cc Group matched vss gl transactions on campus & month
-    ***   X011aa Join vss gl bursary summary totals
-    ***   X011ab Join vss gl bursary summary totals
-    ***   X011ac Import reporting supervisors from VSS.SQLITE
-    ***   X011ax Add the reporting officer and supervisor
-    ***   
+    BURSARY VSS GL RECON
+        X010aa Extract vss bursary transactions (codes 042,052,381,382,500)
+        X010ab Summarize vss bursary transactions per campus month
+        X002cd Summarize vss bursary transactions per transaction code
+        X001cd Extract gl bursary transactions
+        X010bb Summarize gl bursary transactions per campus month
+        X010ca Join vss gl bursary summary totals
+        X010cb Join the matched vss and gl bursary transactions
+        X010cc Group matched vss gl transactions on campus & month
+        X011aa Join vss gl bursary summary totals
+        X011ab Join vss gl bursary summary totals
+        X011ac Import reporting supervisors from VSS.SQLITE
+        X011ax Add the reporting officer and supervisor
     *************************************************************************"""
-
-    print("--- PREPARE BURSARY TRANSACTIONS ---")
-    funcfile.writelog("PREPARE BURSARY TRANSACTIONS")
+    print("BURSARY VSS GL RECON")
+    funcfile.writelog("BURSARY VSS GL RECON")
 
     # *** BURSARY VSS GL RECON Extract the vss bursary transactions *****************************************
     print("Extract vss bursary transactions...")
@@ -2321,19 +2273,11 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     #funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
     funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 
-
-
-
     """*************************************************************************
-    ***
-    *** TEST BURSARY INGL NOVSS
-    ***
-    *** X010da Identify bursary transactions in gl but not in vss
-    *** 
-    *** 
+    TEST BURSARY INGL NOVSS
+        X010da Identify bursary transactions in gl but not in vss
     *************************************************************************"""
-
-    print("--- TEST BURSARY INGL NOVSS ---")
+    print("TEST BURSARY INGL NOVSS")
     funcfile.writelog("TEST BURSARY INGL NOVSS")
 
     # *** TEST BURSARY INGL NOVSS Identify bursary transactions in gl but not in vss ***********************
@@ -2371,21 +2315,11 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
     funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 
-
-
-
-
-
     """*************************************************************************
-    ***
-    *** TEST BURSARY INVSS NOGL
-    ***
-    *** X010ea Identify bursary transactions in vss but not in gl
-    *** 
-    *** 
+    TEST BURSARY INVSS NOGL
+        X010ea Identify bursary transactions in vss but not in gl
     *************************************************************************"""
-
-    print("--- TEST BURSARY INVSS NOGL ---")
+    print("TEST BURSARY INVSS NOGL")
     funcfile.writelog("TEST BURSARY INVSS NOGL")
 
     # *** TEST BURSARY INVSS NOGL Identify bursary transactions in vss but not in gl ***************************
@@ -2429,25 +2363,14 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
     funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 
-
-
-
-
-
-
-
     """*************************************************************************
-    ***
-    *** TEST BURSARY POST TO DIFF CAMPUS IN GL
-    ***    
-    ***   X010fa Identify bursary transactions posted to a different campus in gl
-    ***   X010fb Import reporting officers from VSS.SQLITE
-    ***   X010fc Import reporting supervisors from VSS.SQLITE
-    ***   X010fx Final test burs to diff gl campus results
-    *** 
+    TEST BURSARY POST TO DIFF CAMPUS IN GL
+        X010fa Identify bursary transactions posted to a different campus in gl
+        X010fb Import reporting officers from VSS.SQLITE
+        X010fc Import reporting supervisors from VSS.SQLITE
+        X010fx Final test burs to diff gl campus results
     *************************************************************************"""
-
-    print("--- TEST BURSARY VSS DIFF CAMPUS GL ---")
+    print("TEST BURSARY VSS DIFF CAMPUS GL")
     funcfile.writelog("TEST BURSARY VSS DIFF CAMPUS GL")
 
     #*** TEST BURSARY POST TO DIFF CAMPUS IN GL Identify bursary transactions posted to different campus in gl ***************
@@ -2591,10 +2514,14 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
         print("No final test burs to diff gl campus results...")
         funcfile.writelog("%t EXPORT DATA: No new data to export")
 
+    """*************************************************************************
+    END OF SCRIPT
+    *************************************************************************"""
+
     # Close the table connection ***************************************************
     print("Vacuum the database...")
     so_conn.execute('VACUUM')
-    funcfile.writelog("%t EXPORT DATA: No new data to export")
+    funcfile.writelog("%t DATABASE: Vacuum")
     so_conn.commit()
     so_conn.close()
     ms_cnxn.commit()    
