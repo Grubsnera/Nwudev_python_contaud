@@ -1,22 +1,7 @@
 ﻿Select
-    X002ae_impo_mailto.*,
-    CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
-    CAMP_OFF.KNOWN_NAME As CAMP_OFF_NAME,
-    CAMP_OFF.EMAIL_ADDRESS As CAMP_OFF_MAIL,
-    CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
-    CAMP_SUP.KNOWN_NAME As CAMP_SUP_NAME,
-    CAMP_SUP.EMAIL_ADDRESS As CAMP_SUP_MAIL,
-    ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
-    ORG_OFF.KNOWN_NAME As ORG_OFF_NAME,
-    ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL,
-    ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
-    ORG_SUP.KNOWN_NAME As ORG_SUP_NAME,
-    ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL
+    X001_people_id_master.IDNO,
+    Count(X001_people_id_master.EMPLOYEE_NUMBER) As COUNT
 From
-    X002ae_impo_mailto Left Join
-    X002af_impo_report_officer CAMP_OFF On CAMP_OFF.CAMPUS = X002ae_impo_mailto.LOC Left Join
-    X002af_impo_report_officer ORG_OFF On ORG_OFF.CAMPUS = X002ae_impo_mailto.ORG Left Join
-    X002ag_impo_report_supervisor CAMP_SUP On CAMP_SUP.LOOKUP = X002ae_impo_mailto.LOC Inner Join
-    X002ag_impo_report_supervisor ORG_SUP On ORG_SUP.LOOKUP = X002ae_impo_mailto.ORG
-Where
-    X002ae_impo_mailto.PREV_PROCESS Is Null
+    X001_people_id_master
+Group By
+    X001_people_id_master.IDNO
