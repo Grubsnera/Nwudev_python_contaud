@@ -72,12 +72,6 @@ BEGIN OF SCRIPT
 print("BEGIN OF SCRIPT")
 funcfile.writelog("BEGIN OF SCRIPT")
 
-""" ****************************************************************************
-TEST ZA ID INVALID
-*****************************************************************************"""
-print("TEST ZA ID INVALID")
-funcfile.writelog("TEST ZA ID INVALID")
-
 
 
 """ ****************************************************************************
