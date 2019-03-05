@@ -8,6 +8,10 @@ ENVIRONMENT
 OPEN THE DATABASES
 BEGIN OF SCRIPT
 TEST ZA ID EXIST
+TEST ZA ID INVALID (Incomplete - test only - no reporting)
+TEST ZA DATE OF BIRTH INVALID (Incomplete - test only - no reporting)
+TEST ZA GENDER INVALID (Incomplete - test only - no reporting)
+TEST ZA ID DUPLICATE (Incomplete - test only - no reporting)
 END OF SCRIPT
 *****************************************************************************"""
 
@@ -355,6 +359,153 @@ def People_test_masterfile():
     *****************************************************************************"""
     print("TEST ZA ID INVALID")
     funcfile.writelog("TEST ZA ID INVALID")
+
+    # BUILD TABLE WITH NOT EMPTY ID NUMBERS
+    print("Build not empty ID number table...")
+    sr_file = "X002ba_id_invalid"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    Select
+        X001_people_id_master.*,
+        SUBSTR(IDNO,1,1)+SUBSTR(IDNO,3,1)+SUBSTR(IDNO,5,1)+SUBSTR(IDNO,7,1)+SUBSTR(IDNO,9,1)+SUBSTR(IDNO,11,1) AS ODDT,
+        (SUBSTR(IDNO,2,1)||SUBSTR(IDNO,4,1)||SUBSTR(IDNO,6,1)||SUBSTR(IDNO,8,1)||SUBSTR(IDNO,10,1)||SUBSTR(IDNO,12,1))*2 AS EVEC,
+        0 AS EVET,
+        '' AS CONT,
+        '' AS VALID
+    From
+        X001_people_id_master
+    Where
+        X001_people_id_master.IDNO <> ''
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+    # UPDATE COLUMNS
+    print("Update column even totals...")
+    so_curs.execute("UPDATE X002ba_id_invalid SET EVET = SUBSTR(EVEC,1,1)+SUBSTR(EVEC,2,1)+SUBSTR(EVEC,3,1)+SUBSTR(EVEC,4,1)+SUBSTR(EVEC,5,1)+SUBSTR(EVEC,6,1)+SUBSTR(EVEC,7,1);")
+    print("Update column control total...")
+    so_curs.execute("UPDATE X002ba_id_invalid SET CONT = SUBSTR(10-SUBSTR(ODDT+EVET,-1,1),-1,1);")
+    print("Update column valid...")
+    so_curs.execute("UPDATE X002ba_id_invalid " + """
+                     SET VALID =
+                     CASE
+                         WHEN SUBSTR(IDNO,13) = CONT THEN 'T'
+                         ELSE 'F'
+                     END;""")
+    so_conn.commit()
+
+    """ ****************************************************************************
+    TEST ZA DATE OF BIRTH INVALID
+    *****************************************************************************"""
+    print("TEST ZA DATE OF BIRTH INVALID")
+    funcfile.writelog("TEST ZA DATE OF BIRTH INVALID")
+
+    # BUILD TABLE WITH NOT EMPTY ID NUMBERS
+    print("Build not empty ID number table...")
+    sr_file = "X002ca_dateofbirth_invalid"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    Select
+        X001_people_id_master.*,
+        SUBSTR(IDNO,1,2)||'-'||SUBSTR(IDNO,3,2)||'-'||SUBSTR(IDNO,5,2) AS DOBC,
+        '' AS VALID
+    From
+        X001_people_id_master
+    Where
+        X001_people_id_master.IDNO <> ''
+    ;"""
+
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+    # UPDATE COLUMNS
+    print("Update column valid...")
+    so_curs.execute("UPDATE X002ca_dateofbirth_invalid " + """
+                     SET VALID =
+                     CASE
+                         WHEN SUBSTR(DATE_OF_BIRTH,3,8) = DOBC THEN 'T'
+                         ELSE 'F'
+                     END;""")
+    so_conn.commit()
+
+    """ ****************************************************************************
+    TEST ZA GENDER INVALID
+    *****************************************************************************"""
+    print("TEST ZA GENDER INVALID")
+    funcfile.writelog("TEST ZA GENDER INVALID")
+
+    # BUILD TABLE WITH NOT EMPTY ID NUMBERS
+    print("Build not empty ID number table...")
+    sr_file = "X002da_gender_invalid"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    Select
+        X001_people_id_master.*,
+        CASE
+            WHEN CAST(SUBSTR(IDNO,7,1) AS INT) >= 5 THEN 'M'
+            WHEN CAST(SUBSTR(IDNO,7,1) AS INT) >= 0 THEN 'F'
+            ELSE 'U'
+        END AS GENDER,
+        '' AS VALID
+    From
+        X001_people_id_master
+    Where
+        X001_people_id_master.IDNO <> ''
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+    # UPDATE COLUMNS
+    print("Update column valid...")
+    so_curs.execute("UPDATE X002da_gender_invalid " + """
+                     SET VALID =
+                     CASE
+                         WHEN SEX = GENDER THEN 'T'
+                         ELSE 'F'
+                     END;""")
+    so_conn.commit()
+
+    """ ****************************************************************************
+    TEST ZA ID DUPLICATE
+    *****************************************************************************"""
+    print("TEST ZA ID DUPLICATE")
+    funcfile.writelog("TEST ZA ID DUPLICATE")
+
+    # BUILD TABLE COUNTING ID NUMBERS
+    print("Build counting ID number table...")
+    sr_file = "X002ea_id_duplicate_count"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    Select
+        X001_people_id_master.IDNO,
+        Count(X001_people_id_master.EMPLOYEE_NUMBER) As COUNT
+    From
+        X001_people_id_master
+    Where
+        IDNO <> ''
+    Group By
+        X001_people_id_master.IDNO
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+
+    # IDENTIFY DUPLICATES
+    print("Identify duplicates...")
+    sr_file = "X002eb_id_duplicates"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    Select
+        X002ea_id_duplicate_count.IDNO,
+        X002ea_id_duplicate_count.COUNT
+    From
+        X002ea_id_duplicate_count
+    Where
+        X002ea_id_duplicate_count.COUNT > 1
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
     """ ****************************************************************************
     END OF SCRIPT
