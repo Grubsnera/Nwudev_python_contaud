@@ -759,8 +759,7 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     FROM
       X002ab_vss_transort
     GROUP BY
-      X002ab_vss_transort.STUDENT_VSS,
-      X002ab_vss_transort.CAMPUS_VSS
+      X002ab_vss_transort.STUDENT_VSS
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)    
     so_curs.execute(s_sql)
@@ -788,6 +787,15 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
                     ;""")
     so_conn.commit()
     funcfile.writelog("%t ADD COLUMN: Vss credit amount")
+    # Export the data
+    print("Export vss student balances...")
+    sr_filet = sr_file
+    sx_path = re_path + funcdate.cur_year() + "/"
+    sx_file = "Debtor_002_studbal_"
+    #sx_filet = sx_file + funcdate.prev_monthendfile()
+    s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
+    funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)    
 
     # Sum vss balances per campus ******************************************
     print("Sum vss balances per campus...")
@@ -828,6 +836,15 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
+    # Export the data
+    print("Export vss student balances...")
+    sr_filet = sr_file
+    sx_path = re_path + funcdate.cur_year() + "/"
+    sx_file = "Debtor_002_studbal_open_"
+    #sx_filet = sx_file + funcdate.prev_monthendfile()
+    s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
+    funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)    
 
     # CALCULATE CLOSING BALANCES ***************************************************
     print("Sum vss student closing balances per campus...")
