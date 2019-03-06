@@ -18,9 +18,10 @@ funcfile.writelog("--------------------")
 import A001_oracle_to_sqlite
 import B001_people_lists
 import B002_kfs_lists
+import B003_vss_lists
+import C001_people_test_masterfile
 import C200_report_studdeb_recon
 import C300_test_student_general
-import B003_vss_lists
 
 # Environment
 l_mail = True
@@ -46,6 +47,11 @@ except Exception as e:
 # Vss lists
 try:
     B003_vss_lists.Vss_lists()
+except Exception as e:
+    funcsys.ErrMessage(e)
+
+try:
+    C001_people_test_masterfile.People_test_masterfile()
 except Exception as e:
     funcsys.ErrMessage(e)
 
