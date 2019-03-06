@@ -42,11 +42,11 @@ def People_test_masterfile():
 
     # OPEN THE SCRIPT LOG FILE
     print("-----------------")    
-    print("B001_PEOPLE_LISTS")
+    print("C001_PEOPLE_TEST_MASTERFILE")
     print("-----------------")
     funcfile.writelog("Now")
-    funcfile.writelog("SCRIPT: B001_PEOPLE_LISTS_DEV")
-    funcfile.writelog("-----------------------------")
+    funcfile.writelog("SCRIPT: C001_PEOPLE_TEST_MASTERFILE")
+    funcfile.writelog("-----------------------------------")
     ilog_severity = 1
 
     # DECLARE VARIABLES
@@ -310,7 +310,7 @@ def People_test_masterfile():
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-    # ADD CONTACT DETAILS TO FINDINGS
+    # BUILD THE FINAL REPORT
     print("Build the final report...")
     sr_file = "X002ax_id_blank"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
