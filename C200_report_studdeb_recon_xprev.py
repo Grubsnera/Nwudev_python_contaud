@@ -710,7 +710,34 @@ so_curs.execute(s_sql)
 so_conn.commit()
 funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
-# Sum vss student balances per campus ******************************************
+# STUDENT BALANCE AND EXPORT DATA
+print("Sum vss student balances...")
+sr_file = "X002d_vss_student_balance"
+s_sql = "CREATE TABLE "+sr_file+" AS " + """
+SELECT
+  X002ab_vss_transort.CAMPUS_VSS AS CAMPUS,
+  X002ab_vss_transort.STUDENT_VSS AS STUDENT,  
+  Total(X002ab_vss_transort.AMOUNT_VSS) AS BALANCE
+FROM
+  X002ab_vss_transort
+GROUP BY
+  X002ab_vss_transort.STUDENT_VSS
+;"""
+so_curs.execute("DROP TABLE IF EXISTS "+sr_file)    
+so_curs.execute(s_sql)
+so_conn.commit()
+funcfile.writelog("%t BUILD TABLE: "+sr_file)
+# Export the data
+print("Export vss campus balances per transaction type...")
+sr_filet = sr_file
+sx_path = re_path + funcdate.prev_year() + "/"
+sx_file = "Debtor_002_studbal_"
+sx_filet = sx_file + funcdate.prev_monthendfile()
+s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
+funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
+
+# STUDENT BALANCE PER CAMPUS
 print("Sum vss student balances per campus...")
 sr_file = "X002da_vss_student_balance"
 s_sql = "CREATE TABLE "+sr_file+" AS " + """
