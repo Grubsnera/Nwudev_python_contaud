@@ -23,12 +23,12 @@ def Vss_lists():
 
     # Open the script log file ******************************************************
 
-    funcfile.writelog("Now")
-    funcfile.writelog("SCRIPT: B003_VSS_LISTS")
-    funcfile.writelog("----------------------")
     print("--------------")
     print("B003_VSS_LISTS")
     print("--------------")
+    funcfile.writelog("Now")
+    funcfile.writelog("SCRIPT: B003_VSS_LISTS")
+    funcfile.writelog("----------------------")
     ilog_severity = 1
 
     # Declare variables
