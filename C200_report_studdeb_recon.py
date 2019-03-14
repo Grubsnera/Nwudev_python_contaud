@@ -2536,6 +2536,7 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
 
     # Close the table connection ***************************************************
     print("Vacuum the database...")
+    so_conn.commit()
     so_conn.execute('VACUUM')
     funcfile.writelog("%t DATABASE: Vacuum")
     so_conn.commit()
