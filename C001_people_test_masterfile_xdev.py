@@ -48,8 +48,9 @@ re_path = "R:/People/" # Results path
 ed_path = "S:/_external_data/" #external data path
 so_file = "People_test_masterfile.sqlite" # Source database
 s_sql = "" # SQL statements
-l_export = False
+l_export = True
 l_mail = True
+l_record = False
 
 """*****************************************************************************
 OPEN THE DATABASES
