@@ -1,7 +1,8 @@
 ﻿Select
-    X001_people_id_master.IDNO,
-    Count(X001_people_id_master.EMPLOYEE_NUMBER) As COUNT
+    X004aa_people_bank_acc_master.*,
+    X004ab_id_duplicate_count.COUNT
 From
-    X001_people_id_master
-Group By
-    X001_people_id_master.IDNO
+    X004aa_people_bank_acc_master Left Join
+    X004ab_id_duplicate_count On X004ab_id_duplicate_count.ACC_NUMBER = X004aa_people_bank_acc_master.ACC_NUMBER
+Where
+    X004ab_id_duplicate_count.COUNT > 1
