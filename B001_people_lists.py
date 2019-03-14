@@ -656,6 +656,47 @@ def People_lists():
         so_conn.commit()
         funcfile.writelog("%t ADD COLUMNS: DIVISION")
 
+    # BUILD PERSONAL PAY BANK ACCOUNT LIST
+    print("Build personal pay bank account number list...")
+    sr_file = "X000_PAY_ACCOUNTS"
+    s_sql = "CREATE VIEW "+sr_file+" AS " + """
+    Select
+        PAY_PERSONAL_PAYMENT_METHODS_F.ASSIGNMENT_ID,
+        PAY_PERSONAL_PAYMENT_METHODS_F.EFFECTIVE_START_DATE,
+        PAY_PERSONAL_PAYMENT_METHODS_F.EFFECTIVE_END_DATE,
+        PAY_PERSONAL_PAYMENT_METHODS_F.PERSONAL_PAYMENT_METHOD_ID,
+        PAY_PERSONAL_PAYMENT_METHODS_F.BUSINESS_GROUP_ID,
+        PAY_PERSONAL_PAYMENT_METHODS_F.ORG_PAYMENT_METHOD_ID,
+        PAY_PERSONAL_PAYMENT_METHODS_F.PPM_INFORMATION_CATEGORY,
+        PAY_PERSONAL_PAYMENT_METHODS_F.PPM_INFORMATION1,
+        PAY_PERSONAL_PAYMENT_METHODS_F.CREATED_BY,
+        PAY_PERSONAL_PAYMENT_METHODS_F.CREATION_DATE,
+        PAY_PERSONAL_PAYMENT_METHODS_F.LAST_UPDATE_DATE,
+        PAY_PERSONAL_PAYMENT_METHODS_F.LAST_UPDATED_BY,
+        PAY_PERSONAL_PAYMENT_METHODS_F.EXTERNAL_ACCOUNT_ID,
+        PAY_EXTERNAL_ACCOUNTS.TERRITORY_CODE,
+        PAY_EXTERNAL_ACCOUNTS.SEGMENT1 As ACC_BRANCH,
+        PAY_EXTERNAL_ACCOUNTS.SEGMENT2 As ACC_TYPE_CODE,
+        HR_LOOKUP_TYPE.MEANING As ACC_TYPE,
+        PAY_EXTERNAL_ACCOUNTS.SEGMENT3 As ACC_NUMBER,
+        PAY_EXTERNAL_ACCOUNTS.SEGMENT4 As ACC_HOLDER,
+        PAY_EXTERNAL_ACCOUNTS.SEGMENT5 As ACC_UNKNOWN,
+        PAY_EXTERNAL_ACCOUNTS.SEGMENT6 As ACC_RELATION_CODE,
+        HR_LOOKUP_RELATION.MEANING As ACC_RELATION
+    From
+        PAY_PERSONAL_PAYMENT_METHODS_F Inner Join
+        PAY_EXTERNAL_ACCOUNTS On
+            PAY_EXTERNAL_ACCOUNTS.EXTERNAL_ACCOUNT_ID = PAY_PERSONAL_PAYMENT_METHODS_F.EXTERNAL_ACCOUNT_ID Left Join
+        HR_LOOKUPS HR_LOOKUP_TYPE On HR_LOOKUP_TYPE.LOOKUP_TYPE = 'ZA_ACCOUNT_TYPE'
+            And HR_LOOKUP_TYPE.LOOKUP_CODE = PAY_EXTERNAL_ACCOUNTS.SEGMENT2 Left Join
+        HR_LOOKUPS HR_LOOKUP_RELATION On HR_LOOKUP_RELATION.LOOKUP_TYPE = 'ZA_ACCOUNT_HOLDER_RELATION'
+            And HR_LOOKUP_RELATION.LOOKUP_CODE = PAY_EXTERNAL_ACCOUNTS.SEGMENT6
+    ;"""
+    so_curs.execute("DROP VIEW IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD VIEW: "+sr_file)        
+
     # 05 Build PER PERIODS OF SERVICE *************************************************
 
     print("Build per periods of service...")
@@ -1540,6 +1581,10 @@ def People_lists():
     people_mailto VARCHAR(150),
     people_proposed_salary_n VARCHAR(30),
     people_person_type VARCHAR(150),
+    people_acc_type VARCHAR(30),
+    people_acc_branch VARCHAR(30),
+    people_acc_number VARCHAR(30),
+    people_acc_relation VARCHAR(30),
     people_initials VARCHAR(30),
     people_name_list VARCHAR(150),
     people_name_addr VARCHAR(150),
@@ -1954,57 +1999,55 @@ def People_lists():
     if l_mail == True:
         funcmail.Mail("hr_people_organogram")
 
-
-    
-
-    # 31 Build PEOPLE BIRTH DAY ****************************************************
-
+    # BUILD PEOPLE BIRTHDAYS
     print("Build people birthday...")
-
     s_sql = "CREATE TABLE X003_PEOPLE_BIRT AS " + """
     SELECT
-      X002_PEOPLE_CURR.EMPLOYEE_NUMBER,
-      X002_PEOPLE_CURR.DATE_OF_BIRTH,
-      X002_PEOPLE_CURR.NAME_LIST,
-      X002_PEOPLE_CURR.KNOWN_NAME,
-      X002_PEOPLE_CURR.POSITION_FULL,
-      X002_PEOPLE_CURR.OE_CODE
+        X002_PEOPLE_CURR.EMPLOYEE_NUMBER,
+        X002_PEOPLE_CURR.NAME_LIST,
+        X002_PEOPLE_CURR.KNOWN_NAME,
+        X002_PEOPLE_CURR.DATE_OF_BIRTH,
+        X002_PEOPLE_CURR.AGE,
+        X002_PEOPLE_CURR.POSITION_FULL,
+        X002_PEOPLE_CURR.OE_CODE
     FROM
-      X002_PEOPLE_CURR
+        X002_PEOPLE_CURR
     WHERE
-      StrfTime('%m-%d', X002_PEOPLE_CURR.DATE_OF_BIRTH) >= StrfTime('%m-%d', 'now') AND
-      StrfTime('%m-%d', X002_PEOPLE_CURR.DATE_OF_BIRTH) <= StrfTime('%m-%d', 'now', '+7 day')
+        %WHERE%
     ORDER BY
-      StrfTime('%m-%d', X002_PEOPLE_CURR.DATE_OF_BIRTH),
-      X002_PEOPLE_CURR.POSITION_FULL
+        StrfTime('%m-%d', X002_PEOPLE_CURR.DATE_OF_BIRTH),
+        X002_PEOPLE_CURR.AGE DESC,
+        X002_PEOPLE_CURR.NAME_LIST
     """
     so_curs.execute("DROP TABLE IF EXISTS X003_PEOPLE_BIRT")
+    if funcdate.today_dayname() == "Fri":
+        s_sql = s_sql.replace("%WHERE%","StrfTime('%m-%d',X002_PEOPLE_CURR.DATE_OF_BIRTH)>=StrfTime('%m-%d','now') AND StrfTime('%m-%d',X002_PEOPLE_CURR.DATE_OF_BIRTH)<=StrfTime('%m-%d','now','+2 day')")
+    else:
+        s_sql = s_sql.replace("%WHERE%","StrfTime('%m-%d',X002_PEOPLE_CURR.DATE_OF_BIRTH)>=StrfTime('%m-%d','now') AND StrfTime('%m-%d',X002_PEOPLE_CURR.DATE_OF_BIRTH)<=StrfTime('%m-%d','now')")
+    #print(s_sql) # DEBUG
     so_curs.execute(s_sql)
     so_conn.commit()
-
-    funcfile.writelog("%t BUILD TABLE: X003_PEOPLE_BIRT")
-
+    funcfile.writelog("%t BUILD TABLE: X003_PEOPLE_BIRT")        
+    # Export the birthdays
+    """
     if l_export == True:
-        
-        # Data export
         sr_file = "X003_PEOPLE_BIRT"
         sr_filet = sr_file
         sx_path = re_path + funcdate.cur_year() + "/"
         sx_file = "People_003_birthday_"
         sx_filet = sx_file + funcdate.cur_month()
-
         print("Export people birthday..." + sx_path + sx_filet)
-
         # Read the header data
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-
         # Write the data
         funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-
         funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
-
+    """
+    # Mail the birthdays
+    """
     if l_mail == True:
         funcmail.Mail("hr_people_birthday")
+    """
 
     # Delete some unncessary files *************************************************
 
@@ -2146,7 +2189,12 @@ def People_lists():
     funcfile.writelog("%t BUILD TABLE:  X102_PER_ABSENCE_ATTENDANCE_TYPES")
 
     # Close the connection *********************************************************
+    print("Vacuum the database...")
+    so_conn.commit()
+    so_conn.execute('VACUUM')
+    funcfile.writelog("%t DATABASE: Vacuum")
     so_conn.close()
+    ms_cnxn.commit()
     ms_cnxn.close()
 
 
