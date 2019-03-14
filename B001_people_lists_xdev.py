@@ -74,7 +74,7 @@ tb_name = "X000_OWN_HR_LOOKUPS"
 so_curs.execute("DROP TABLE IF EXISTS " + tb_name)
 so_curs.execute("CREATE TABLE " + tb_name + "(LOOKUP TEXT,LOOKUP_CODE TEXT,LOOKUP_DESCRIPTION TEXT)")
 s_cols = ""
-co = open(ed_path + "001_own_hr_lookups.csv", "r")
+co = open(ed_path + "001_own_hr_lookups.csv", "rU")
 co_reader = csv.reader(co)
 for row in co_reader:
     if row[0] == "LOOKUP":
@@ -86,6 +86,8 @@ so_conn.commit()
 # Close the impoted data file
 co.close()
 funcfile.writelog("%t IMPORT TABLE: " + tb_name)
+
+
 
 """ ****************************************************************************
 END OF SCRIPT
