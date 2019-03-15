@@ -44,9 +44,9 @@ def People_test_masterfile():
     import funcsys
 
     # OPEN THE SCRIPT LOG FILE
-    print("-----------------")    
+    print("---------------------------")    
     print("C001_PEOPLE_TEST_MASTERFILE")
-    print("-----------------")
+    print("---------------------------")
     funcfile.writelog("Now")
     funcfile.writelog("SCRIPT: C001_PEOPLE_TEST_MASTERFILE")
     funcfile.writelog("-----------------------------------")
