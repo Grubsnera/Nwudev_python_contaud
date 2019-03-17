@@ -86,14 +86,11 @@ except Exception as e:
 PEOPLE MASTER FILE TESTS
 ****************************************************************************"""
 
-if funcdate.today_dayname() == "Sat":
-elif funcdate.today_dayname() == "Sun":
-else:
-    import C001_people_test_masterfile
-    try:
-        C001_people_test_masterfile.People_test_masterfile()
-    except Exception as e:
-        funcsys.ErrMessage(e)
+import C001_people_test_masterfile
+try:
+    C001_people_test_masterfile.People_test_masterfile()
+except Exception as e:
+    funcsys.ErrMessage(e)
 
 """****************************************************************************
 KFS VSS STUDENT DEBTOR RECONCILIATION AND TESTS
