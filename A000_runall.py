@@ -46,71 +46,99 @@ funcfile.writelog("--------------------")
 ORACLE TO SQLITE
 ****************************************************************************"""
 
-import A001_oracle_to_sqlite
-try:
-    A001_oracle_to_sqlite.Oracle_to_sqlite()
-except Exception as e:
-    funcsys.ErrMessage(e)
+if funcdate.today_dayname() in "TueWedThuFriSat":
+    import A001_oracle_to_sqlite
+    try:
+        A001_oracle_to_sqlite.Oracle_to_sqlite()
+    except Exception as e:
+        funcsys.ErrMessage(e)
+else:
+    print("ORACLE to SQLITE do not run on Sundays and Mondays")
+    funcfile.writelog("SCRIPT: A001_ORACLE_TO_SQLITE: DO NOT RUN ON SUNDAYS AND MONDAYS")
 
 """****************************************************************************
 PEOPLE LISTS
 ****************************************************************************"""
 
-import B001_people_lists
-try:
-    B001_people_lists.People_lists()
-except Exception as e:
-    funcsys.ErrMessage(e)
+if funcdate.today_dayname() in "TueWedThuFriSat":
+    import B001_people_lists
+    try:
+        B001_people_lists.People_lists()
+    except Exception as e:
+        funcsys.ErrMessage(e)
+else:
+    print("PEOPLE lists do not run on Sundays and Mondays")
+    funcfile.writelog("SCRIPT: B001_PEOPLE_LISTS: DO NOT RUN ON SUNDAYS AND MONDAYS")
 
 """****************************************************************************
 KFS LISTS
 ****************************************************************************"""
 
-import B002_kfs_lists
-try:
-    B002_kfs_lists.Kfs_lists()
-except Exception as e:
-    funcsys.ErrMessage(e)
+if funcdate.today_dayname() in "TueWedThuFriSat":
+    import B002_kfs_lists
+    try:
+        B002_kfs_lists.Kfs_lists()
+    except Exception as e:
+        funcsys.ErrMessage(e)
+else:
+    print("KFS lists do not run on Sundays and Mondays")
+    funcfile.writelog("SCRIPT: B002_KFS_LISTS: DO NOT RUN ON SUNDAYS AND MONDAYS")
 
 """****************************************************************************
 VSS LISTS
 ****************************************************************************"""
 
-import B003_vss_lists
-try:
-    B003_vss_lists.Vss_lists()
-except Exception as e:
-    funcsys.ErrMessage(e)
+if funcdate.today_dayname() in "TueWedThuFriSat":
+    import B003_vss_lists
+    try:
+        B003_vss_lists.Vss_lists()
+    except Exception as e:
+        funcsys.ErrMessage(e)
+else:
+    print("VSS lists do not run on Sundays and Mondays")
+    funcfile.writelog("SCRIPT: B003_VSS_LISTS: DO NOT RUN ON SUNDAYS AND MONDAYS")
 
 """****************************************************************************
 PEOPLE MASTER FILE TESTS
 ****************************************************************************"""
 
-import C001_people_test_masterfile
-try:
-    C001_people_test_masterfile.People_test_masterfile()
-except Exception as e:
-    funcsys.ErrMessage(e)
+if funcdate.today_dayname() in "MonTueWedThuFri":
+    import C001_people_test_masterfile
+    try:
+        C001_people_test_masterfile.People_test_masterfile()
+    except Exception as e:
+        funcsys.ErrMessage(e)
+else:
+    print("PEOPLE MASTERFILE TESTS do not run on Saturdays and Sundays")
+    funcfile.writelog("SCRIPT: C001_PEOPLE_TEST_MASTERFILE: DO NOT RUN ON SATURDAYS AND SUNDAYS")
 
 """****************************************************************************
 KFS VSS STUDENT DEBTOR RECONCILIATION AND TESTS
 ****************************************************************************"""
 
-import C200_report_studdeb_recon
-try:
-    C200_report_studdeb_recon.Report_studdeb_recon('66561452.48','-18340951.06','39482933.18')
-except Exception as e:
-    funcsys.ErrMessage(e)
+if funcdate.cur_day() in "01z02z03z04z10":
+    import C200_report_studdeb_recon
+    try:
+        C200_report_studdeb_recon.Report_studdeb_recon('66561452.48','-18340951.06','39482933.18')
+    except Exception as e:
+        funcsys.ErrMessage(e)
+else:
+    print("C200_REPORT_STUDDEB_RECON only run on 1-4 and 10th of the month")
+    funcfile.writelog("SCRIPT: C200_REPORT_STUDDEB_RECON: ONLY RUN ON 1-4 AND 10TH OF THE MONTH")
 
 """****************************************************************************
 VSS STUDENT MASTERFILE TESTS
 ****************************************************************************"""
 
-import C300_test_student_general
-try:
-    C300_test_student_general.Test_student_general()
-except Exception as e:
-    funcsys.ErrMessage(e)
+if funcdate.cur_day() in "01":
+    import C300_test_student_general
+    try:
+        C300_test_student_general.Test_student_general()
+    except Exception as e:
+        funcsys.ErrMessage(e)
+else:
+    print("C300_TEST_STUDENT_GENERAL only run on 1st of the month")
+    funcfile.writelog("SCRIPT: C300_TEST_STUDENT_GENERAL: ONLY RUN ON 1ST OF THE MONTH")
 
 """ ****************************************************************************
 END OF SCRIPT
