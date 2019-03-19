@@ -15,6 +15,7 @@ TEST ZA ID DUPLICATE (Incomplete - test only - no reporting)
 TEST PASSPORT BLANK
 TEST BANK ACC DUPLICATE
 TEST TAX NUMBER BLANK
+TEST TAX NUMBER INVALID
 END OF SCRIPT
 *****************************************************************************"""
 
