@@ -22,11 +22,11 @@ TEST PASSPORT NUMBER BLANK *
 TEST PASSPORT NUMBER DUPLICATE (In development)
 
 BANK NUMBER MASTER FILE
-TEST BANK NUMBER DUPLICATE
+TEST BANK NUMBER DUPLICATE *
 
 PAYE NUMBER MASTER FILE
-TEST PAYE NUMBER BLANK
-TEST PAYE NUMBER INVALID
+TEST PAYE NUMBER BLANK *
+TEST PAYE NUMBER INVALID *
 TEST PAYE NUMBER DUPLICATE (In development)
 
 END OF SCRIPT
@@ -357,8 +357,8 @@ def People_test_masterfile():
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
     sr_file = "X002ax_id_fina"
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    print("Build the final report")
     if i_find > 0 and i_coun > 0:
-        print("Build the final report")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             X002ah_id_cont.ORG AS ORGANIZATION,
@@ -395,6 +395,14 @@ def People_test_masterfile():
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
             funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
+    else:
+        s_sql = "CREATE TABLE " + sr_file + " (" + """
+        BLANK TEXT
+        );"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
    
 
     """ ****************************************************************************
@@ -432,14 +440,12 @@ def People_test_masterfile():
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
-    print("Update calculation columns 1 ...")
+    print("Update calculation columns...")
     # Update columns
     so_curs.execute("UPDATE X002ba_id_calc SET EVET = SUBSTR(EVEC,1,1)+SUBSTR(EVEC,2,1)+SUBSTR(EVEC,3,1)+SUBSTR(EVEC,4,1)+SUBSTR(EVEC,5,1)+SUBSTR(EVEC,6,1)+SUBSTR(EVEC,7,1);")
     so_conn.commit()
-    print("Update calculation columns 2 ...")
     so_curs.execute("UPDATE X002ba_id_calc SET CONT = SUBSTR(10-SUBSTR(ODDT+EVET,-1,1),-1,1);")
     so_conn.commit()
-    print("Update calculation columns 3 ...")
     so_curs.execute("UPDATE X002ba_id_calc " + """
                      SET VAL =
                      CASE
@@ -1811,8 +1817,8 @@ def People_test_masterfile():
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
     sr_file = "X003ax_pass_fina"
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    print("Build the final report")
     if i_find > 0 and i_coun > 0:
-        print("Build the final report")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             X003ah_pass_cont.ORG AS ORGANIZATION,
@@ -1850,6 +1856,14 @@ def People_test_masterfile():
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
             funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
+    else:
+        s_sql = "CREATE TABLE " + sr_file + " (" + """
+        BLANK TEXT
+        );"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """ ****************************************************************************
     BANK NUMBER MASTER FILE
@@ -1888,7 +1902,7 @@ def People_test_masterfile():
     funcfile.writelog("TEST BANK NUMBER DUPLICATE")
 
     # DECLARE TEST VARIABLES
-    l_record = False # Record the findings in the previous reported findings file
+    l_record = True # Record the findings in the previous reported findings file
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
@@ -2122,8 +2136,8 @@ def People_test_masterfile():
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
     sr_file = "X004ax_bank_fina"
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    print("Build the final report")
     if i_find > 0 and i_coun > 0:
-        print("Build the final report")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             X004ah_bank_cont.ORG AS ORGANIZATION,
@@ -2134,7 +2148,7 @@ def People_test_masterfile():
             X004ah_bank_cont.ACC_BRANCH,
             X004ah_bank_cont.ACC_NUMBER,
             X004ah_bank_cont.ACC_RELATION,
-            X004ah_bank_cont.COUNT,
+            X004ah_bank_cont.COUNT AS OCCURANCES,
             X004ah_bank_cont.CAMP_OFF_NAME AS RESPONSIBLE_OFFICER,
             X004ah_bank_cont.CAMP_OFF_NUMB AS RESPONSIBLE_OFFICER_NUMB,
             X004ah_bank_cont.CAMP_OFF_MAIL AS RESPONSIBLE_OFFICER_MAIL,
@@ -2164,7 +2178,15 @@ def People_test_masterfile():
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
-            funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)   
+            funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
+    else:
+        s_sql = "CREATE TABLE " + sr_file + " (" + """
+        BLANK TEXT
+        );"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """ ****************************************************************************
     PAYE NUMBER MASTER FILE
@@ -2436,8 +2458,8 @@ def People_test_masterfile():
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
     sr_file = "X005ax_paye_fina"
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    print("Build the final report")
     if i_find > 0 and i_coun > 0:
-        print("Build the final report")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             X005ah_paye_cont.ORG AS ORGANIZATION,
@@ -2474,6 +2496,14 @@ def People_test_masterfile():
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
             funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
+    else:
+        s_sql = "CREATE TABLE " + sr_file + " (" + """
+        BLANK TEXT
+        );"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """ ****************************************************************************
     TEST PAYE NUMBER INVALID
@@ -2483,7 +2513,7 @@ def People_test_masterfile():
     funcfile.writelog("TEST PAYE NUMBER INVALID")
 
     # DECLARE TEST VARIABLES
-    l_record = False # Record the findings in the previous reported findings file
+    l_record = True # Record the findings in the previous reported findings file
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
@@ -2623,7 +2653,7 @@ def People_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(30))
+        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(10))
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -2797,6 +2827,14 @@ def People_test_masterfile():
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
             funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)        
+    else:
+        s_sql = "CREATE TABLE " + sr_file + " (" + """
+        BLANK TEXT
+        );"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """ ****************************************************************************
     END OF SCRIPT
