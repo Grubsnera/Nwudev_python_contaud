@@ -9,7 +9,7 @@ OPEN THE DATABASES
 BEGIN OF SCRIPT
 
 ID NUMBER MASTER FILE
-TEST ID NUMBER BLANK
+TEST ID NUMBER BLANK *
 TEST ID NUMBER INVALID
 TEST ZA DATE OF BIRTH INVALID
 TEST ZA GENDER INVALID
@@ -18,7 +18,7 @@ TEST NAME DUPLICATE (In development)
 TEST ADDRESS DUPLICATE (In development)
 
 PASSPORT NUMBER MASTER FILE
-TEST PASSPORT NUMBER BLANK
+TEST PASSPORT NUMBER BLANK *
 TEST PASSPORT NUMBER DUPLICATE (In development)
 
 BANK NUMBER MASTER FILE
@@ -134,7 +134,7 @@ def People_test_masterfile():
     funcfile.writelog("TEST ID NUMBER BLANK")
 
     # DECLARE TEST VARIABLES
-    #l_record = True # Record the findings in the previous reported findings file
+    l_record = True # Record the findings in the previous reported findings file
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
@@ -224,7 +224,7 @@ def People_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(30))
+        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(10))
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -405,7 +405,7 @@ def People_test_masterfile():
     funcfile.writelog("TEST ID NUMBER INVALID")
 
     # DECLARE TEST VARIABLES
-    #l_record = True # Record the findings in the previous reported findings file
+    l_record = False # Record the findings in the previous reported findings file
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
@@ -1278,7 +1278,7 @@ def People_test_masterfile():
     funcfile.writelog("TEST ID NUMBER DUPLICATE")
 
     # DECLARE TEST VARIABLES
-    #l_record = True # Record the findings in the previous reported findings file
+    l_record = False # Record the findings in the previous reported findings file
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
@@ -1587,7 +1587,7 @@ def People_test_masterfile():
     funcfile.writelog("TEST PASSPORT NUMBER BLANK")
 
     # DECLARE TEST VARIABLES
-    #l_record = True # Record the findings in the previous reported findings file
+    l_record = True # Record the findings in the previous reported findings file
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
@@ -1677,7 +1677,7 @@ def People_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(30))
+        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(10))
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -1888,7 +1888,7 @@ def People_test_masterfile():
     funcfile.writelog("TEST BANK NUMBER DUPLICATE")
 
     # DECLARE TEST VARIABLES
-    #l_record = True # Record the findings in the previous reported findings file
+    l_record = False # Record the findings in the previous reported findings file
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
@@ -2211,7 +2211,7 @@ def People_test_masterfile():
     funcfile.writelog("TEST PAYE NUMBER BLANK")
 
     # DECLARE TEST VARIABLES
-    #l_record = True # Record the findings in the previous reported findings file
+    l_record = True # Record the findings in the previous reported findings file
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
@@ -2483,7 +2483,7 @@ def People_test_masterfile():
     funcfile.writelog("TEST PAYE NUMBER INVALID")
 
     # DECLARE TEST VARIABLES
-    #l_record = True # Record the findings in the previous reported findings file
+    l_record = False # Record the findings in the previous reported findings file
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
