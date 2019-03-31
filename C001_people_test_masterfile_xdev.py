@@ -67,6 +67,12 @@ funcfile.writelog("%t OPEN DATABASE: PEOPLE_TEST_MASTERFILE.SQLITE")
 so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
 funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
 
+# OPEN THE MYSQL DESTINATION TABLE
+s_database = "Web_ia_nwu"
+ms_cnxn = funcmysql.mysql_open(s_database)
+ms_curs = ms_cnxn.cursor()
+funcfile.writelog("%t OPEN MYSQL DATABASE: " + s_database)
+
 """ ****************************************************************************
 BEGIN OF SCRIPT
 *****************************************************************************"""
