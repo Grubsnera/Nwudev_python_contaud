@@ -8,6 +8,9 @@ ENVIRONMENT
 OPEN THE DATABASES
 BEGIN OF SCRIPT
 
+MASTER FILE LISTS
+PEOPLE BIRTHDAYS
+
 ID NUMBER MASTER FILE
 TEST ID NUMBER BLANK *
 TEST ID NUMBER INVALID
@@ -91,11 +94,77 @@ def People_test_masterfile():
     so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
     funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
 
+    # OPEN THE MYSQL DESTINATION TABLE
+    s_database = "Web_ia_nwu"
+    ms_cnxn = funcmysql.mysql_open(s_database)
+    ms_curs = ms_cnxn.cursor()
+    funcfile.writelog("%t OPEN MYSQL DATABASE: " + s_database)    
+
     """ ****************************************************************************
     BEGIN OF SCRIPT
     *****************************************************************************"""
     print("BEGIN OF SCRIPT")
     funcfile.writelog("BEGIN OF SCRIPT")
+
+    """ ****************************************************************************
+    MASTER FILE LISTS
+    *****************************************************************************"""
+
+    """*****************************************************************************
+    PEOPLE BIRTHDAYS
+    *****************************************************************************"""
+    print("PEOPLE BIRTHDAYS")
+    funcfile.writelog("PEOPLE BIRTHDAYS")
+
+    # BUILD PEOPLE BIRTHDAYS
+    so_curs.execute("DROP TABLE IF EXISTS X001_People_birthdays")
+    sr_file = "X001_People_birthday"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    SELECT
+        PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER,
+        PEOPLE.X002_PEOPLE_CURR.NAME_LIST,
+        PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
+        PEOPLE.X002_PEOPLE_CURR.DATE_OF_BIRTH,
+        PEOPLE.X002_PEOPLE_CURR.AGE,
+        PEOPLE.X002_PEOPLE_CURR.POSITION_FULL,
+        PEOPLE.X002_PEOPLE_CURR.OE_CODE
+    FROM
+        PEOPLE.X002_PEOPLE_CURR
+    WHERE
+        %WHERE%
+    ORDER BY
+        StrfTime('%m-%d', PEOPLE.X002_PEOPLE_CURR.DATE_OF_BIRTH),
+        PEOPLE.X002_PEOPLE_CURR.AGE DESC,
+        PEOPLE.X002_PEOPLE_CURR.NAME_LIST
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if funcdate.today_dayname() == "Fri":
+        s_sql = s_sql.replace("%WHERE%","StrfTime('%m-%d',PEOPLE.X002_PEOPLE_CURR.DATE_OF_BIRTH)>=StrfTime('%m-%d','now') AND StrfTime('%m-%d',PEOPLE.X002_PEOPLE_CURR.DATE_OF_BIRTH)<=StrfTime('%m-%d','now','+2 day')")
+    else:
+        s_sql = s_sql.replace("%WHERE%","StrfTime('%m-%d',PEOPLE.X002_PEOPLE_CURR.DATE_OF_BIRTH)>=StrfTime('%m-%d','now') AND StrfTime('%m-%d',PEOPLE.X002_PEOPLE_CURR.DATE_OF_BIRTH)<=StrfTime('%m-%d','now')")
+    #print(s_sql) # DEBUG
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)        
+    # Export the birthdays
+    """
+    if l_export == True:
+        sr_filet = sr_file
+        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_file = "People_003_birthday_"
+        sx_filet = sx_file + funcdate.cur_month()
+        print("Export people birthday..." + sx_path + sx_filet)
+        # Read the header data
+        s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+        # Write the data
+        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
+        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
+    """
+    # Mail the birthdays
+    """
+    if l_mail == True:
+        funcmail.Mail("hr_people_birthday")
+    """
 
     """ ****************************************************************************
     ID NUMBER MASTER FILE
@@ -348,6 +417,8 @@ def People_test_masterfile():
             Left Join X002af_offi ORG_OFF On ORG_OFF.CAMPUS = X002ad_id_addprev.ORG
             Left Join X002ag_supe CAMP_SUP On CAMP_SUP.CAMPUS = X002ad_id_addprev.LOC
             Left Join X002ag_supe ORG_SUP On ORG_SUP.CAMPUS = X002ad_id_addprev.ORG
+        WHERE
+          X002ad_id_addprev.PREV_PROCESS IS NULL
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -355,7 +426,8 @@ def People_test_masterfile():
         funcfile.writelog("%t BUILD TABLE: " + sr_file)    
 
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
-    sr_file = "X002ax_id_fina"
+    so_curs.execute("DROP TABLE IF EXISTS X002ax_id_fina")    
+    sr_file = "X002ax_id_blank"
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     print("Build the final report")
     if i_find > 0 and i_coun > 0:
@@ -649,6 +721,8 @@ def People_test_masterfile():
             Left Join X002bf_offi ORG_OFF On ORG_OFF.CAMPUS = X002bd_id_addprev.ORG
             Left Join X002bg_supe CAMP_SUP On CAMP_SUP.CAMPUS = X002bd_id_addprev.LOC
             Left Join X002bg_supe ORG_SUP On ORG_SUP.CAMPUS = X002bd_id_addprev.ORG
+        WHERE
+          X002bd_id_addprev.PREV_PROCESS IS NULL
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -656,7 +730,8 @@ def People_test_masterfile():
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
-    sr_file = "X002bx_id_fina"
+    so_curs.execute("DROP TABLE IF EXISTS X002bx_id_fina")
+    sr_file = "X002bx_id_invalid"
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0 and i_coun > 0:
         print("Build the final report")
@@ -934,6 +1009,8 @@ def People_test_masterfile():
             Left Join X002cf_offi ORG_OFF On ORG_OFF.CAMPUS = X002cd_dob_addprev.ORG
             Left Join X002cg_supe CAMP_SUP On CAMP_SUP.CAMPUS = X002cd_dob_addprev.LOC
             Left Join X002cg_supe ORG_SUP On ORG_SUP.CAMPUS = X002cd_dob_addprev.ORG
+        WHERE
+          X002cd_dob_addprev.PREV_PROCESS IS NULL
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -941,7 +1018,8 @@ def People_test_masterfile():
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
-    sr_file = "X002cx_dob_fina"
+    so_curs.execute("DROP TABLE IF EXISTS X002cx_dob_fina")
+    sr_file = "X002cx_dob_invalid"
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0 and i_coun > 0:
         print("Build the final report")
@@ -1225,6 +1303,8 @@ def People_test_masterfile():
             Left Join X002df_offi ORG_OFF On ORG_OFF.CAMPUS = X002dd_sex_addprev.ORG
             Left Join X002dg_supe CAMP_SUP On CAMP_SUP.CAMPUS = X002dd_sex_addprev.LOC
             Left Join X002dg_supe ORG_SUP On ORG_SUP.CAMPUS = X002dd_sex_addprev.ORG
+        WHERE
+          X002dd_sex_addprev.PREV_PROCESS IS NULL
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -1232,7 +1312,8 @@ def People_test_masterfile():
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
-    sr_file = "X002dx_sex_fina"
+    so_curs.execute("DROP TABLE IF EXISTS X002dx_sex_fina")
+    sr_file = "X002dx_sex_invalid"
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0 and i_coun > 0:
         print("Build the final report")
@@ -1509,6 +1590,8 @@ def People_test_masterfile():
             Left Join X002ef_offi ORG_OFF On ORG_OFF.CAMPUS = X002ed_id_addprev.ORG
             Left Join X002eg_supe CAMP_SUP On CAMP_SUP.CAMPUS = X002ed_id_addprev.LOC
             Left Join X002eg_supe ORG_SUP On ORG_SUP.CAMPUS = X002ed_id_addprev.ORG
+        WHERE
+          X002ed_id_addprev.PREV_PROCESS IS NULL
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -1516,7 +1599,8 @@ def People_test_masterfile():
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
-    sr_file = "X002ex_id_fina"
+    so_curs.execute("DROP TABLE IF EXISTS X002ex_id_fina")
+    sr_file = "X002ex_id_duplicate"
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0 and i_coun > 0:
         print("Build the final report")
@@ -1808,6 +1892,8 @@ def People_test_masterfile():
             Left Join X003af_offi ORG_OFF On ORG_OFF.CAMPUS = X003ad_pass_addprev.ORG
             Left Join X003ag_supe CAMP_SUP On CAMP_SUP.CAMPUS = X003ad_pass_addprev.LOC
             Left Join X003ag_supe ORG_SUP On ORG_SUP.CAMPUS = X003ad_pass_addprev.ORG
+        WHERE
+          X003ad_pass_addprev.PREV_PROCESS IS NULL
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -1815,7 +1901,8 @@ def People_test_masterfile():
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
-    sr_file = "X003ax_pass_fina"
+    so_curs.execute("DROP TABLE IF EXISTS X003ax_pass_fina")
+    sr_file = "X003ax_pass_blank"
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     print("Build the final report")
     if i_find > 0 and i_coun > 0:
@@ -2127,6 +2214,8 @@ def People_test_masterfile():
             Left Join X004af_offi ORG_OFF On ORG_OFF.CAMPUS = X004ad_bank_addprev.ORG
             Left Join X004ag_supe CAMP_SUP On CAMP_SUP.CAMPUS = X004ad_bank_addprev.LOC
             Left Join X004ag_supe ORG_SUP On ORG_SUP.CAMPUS = X004ad_bank_addprev.ORG
+        WHERE
+          X004ad_bank_addprev.PREV_PROCESS IS NULL
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -2134,7 +2223,8 @@ def People_test_masterfile():
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
-    sr_file = "X004ax_bank_fina"
+    so_curs.execute("DROP TABLE IF EXISTS X004ax_bank_fina")
+    sr_file = "X004ax_bank_duplicate"
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     print("Build the final report")
     if i_find > 0 and i_coun > 0:
@@ -2449,6 +2539,8 @@ def People_test_masterfile():
             Left Join X005af_offi ORG_OFF On ORG_OFF.CAMPUS = X005ad_paye_addprev.ORG
             Left Join X005ag_supe CAMP_SUP On CAMP_SUP.CAMPUS = X005ad_paye_addprev.LOC
             Left Join X005ag_supe ORG_SUP On ORG_SUP.CAMPUS = X005ad_paye_addprev.ORG
+        WHERE
+          X005ad_paye_addprev.PREV_PROCESS IS NULL
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -2456,7 +2548,8 @@ def People_test_masterfile():
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
-    sr_file = "X005ax_paye_fina"
+    so_curs.execute("DROP TABLE IF EXISTS X005ax_paye_fina")
+    sr_file = "X005ax_paye_blank"
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     print("Build the final report")
     if i_find > 0 and i_coun > 0:
@@ -2778,6 +2871,8 @@ def People_test_masterfile():
             Left Join X005bf_offi ORG_OFF On ORG_OFF.CAMPUS = X005bd_paye_addprev.ORG
             Left Join X005bg_supe CAMP_SUP On CAMP_SUP.CAMPUS = X005bd_paye_addprev.LOC
             Left Join X005bg_supe ORG_SUP On ORG_SUP.CAMPUS = X005bd_paye_addprev.ORG
+        WHERE
+          X005bd_paye_addprev.PREV_PROCESS IS NULL
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -2785,7 +2880,8 @@ def People_test_masterfile():
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
-    sr_file = "X005bx_paye_fina"
+    so_curs.execute("DROP TABLE IF EXISTS X005bx_paye_fina")
+    sr_file = "X005bx_paye_invalid"
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     so_curs.execute("DROP TABLE IF EXISTS X005bx_paye_cont")
     if i_find > 0 and i_coun > 0:
