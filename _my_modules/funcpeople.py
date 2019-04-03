@@ -270,6 +270,7 @@ def People01(so_conn,s_table,s_source,s_peri,s_mess,s_acti):
       %SOURCET%.ASS_ID,
       %SOURCET%.PERSON_ID,
       %SOURCET%.ASS_NUMB,
+      X000_PER_ALL_PEOPLE.PARTY_ID,
       %SOURCET%.FULL_NAME,
       %SOURCET%.KNOWN_NAME,
       %SOURCET%.DATE_OF_BIRTH,
