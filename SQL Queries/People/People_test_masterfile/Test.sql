@@ -1,11 +1,7 @@
 ﻿Select
-    X005bd_paye_addprev.ORG,
-    X005bd_paye_addprev.LOC,
-    X005bd_paye_addprev.EMP,
-    X005bd_paye_addprev.NUMB
+    X005_paye_master.NUMB,
+    Count(X005_paye_master.NAT) As Count_NAT
 From
-    X005bd_paye_addprev Left Join
-    X005bf_offi On X005bf_offi.EMPLOYEE_NUMBER = X005bd_paye_addprev.NUMB
-        And X005bf_offi.CAMPUS = X005bd_paye_addprev.LOC
-Where
-    X005bf_offi.LOOKUP = 'TEST_PAYE_INVALID_OFFICER'
+    X005_paye_master
+Group By
+    X005_paye_master.NUMB
