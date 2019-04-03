@@ -1512,6 +1512,7 @@ def People_lists():
     people_ass_id INT(11),
     people_person_id INT(11),
     people_ass_numb VARCHAR(30),
+    people_party_id INT(11),
     people_full_name VARCHAR(150),
     people_known_name VARCHAR(150),
     people_date_of_birth DATETIME,
@@ -1995,6 +1996,26 @@ def People_lists():
 
     if l_mail == True:
         funcmail.Mail("hr_people_organogram")
+
+    # BUILD CURRENT USERS
+    print("Build current users...")
+    sr_file = "X000_USER_CURR"
+    s_sql = "CREATE VIEW "+sr_file+" AS " + """
+    Select
+        FND_USER.USER_ID,
+        FND_USER.USER_NAME,
+        X002_PEOPLE_CURR.EMPLOYEE_NUMBER,
+        X002_PEOPLE_CURR.KNOWN_NAME,
+        X002_PEOPLE_CURR.NAME_ADDR,
+        X002_PEOPLE_CURR.EMAIL_ADDRESS
+    From
+        FND_USER Inner Join
+        X002_PEOPLE_CURR On X002_PEOPLE_CURR.PARTY_ID = FND_USER.PERSON_PARTY_ID
+    ;"""
+    so_curs.execute("DROP VIEW IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD VIEW: "+sr_file)        
 
     # Delete some unncessary files *************************************************
 
