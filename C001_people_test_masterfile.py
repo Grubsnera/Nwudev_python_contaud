@@ -488,7 +488,7 @@ def People_test_masterfile():
     funcfile.writelog("TEST ID NUMBER INVALID")
 
     # DECLARE TEST VARIABLES
-    l_record = False # Record the findings in the previous reported findings file
+    l_record = True # Record the findings in the previous reported findings file
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
@@ -1389,7 +1389,7 @@ def People_test_masterfile():
     funcfile.writelog("TEST ID NUMBER DUPLICATE")
 
     # DECLARE TEST VARIABLES
-    l_record = False # Record the findings in the previous reported findings file
+    l_record = True # Record the findings in the previous reported findings file
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
