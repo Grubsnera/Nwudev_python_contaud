@@ -4,6 +4,15 @@ Created on: 11 Mar 2018
 Copyright: Albert J v Rensburg
 """
 
+""" INDEX **********************************************************************
+ENVIRONMENT
+OPEN THE DATABASES
+BEGIN OF SCRIPT
+VENDOR MASTER LIST
+DOCUMENTS MASTER LIST
+END OF SCRIPT
+*****************************************************************************"""
+
 def Kfs_lists():
 
     # Import python modules
@@ -384,6 +393,79 @@ def Kfs_lists():
     so_conn.commit()
 
     funcfile.writelog("%t BUILD VIEW: Previous yr transaction list")
+
+    """ ****************************************************************************
+    VENDOR MASTER LIST
+    *****************************************************************************"""
+    print("VENDOR MASTER LIST")
+    funcfile.writelog("VENDOR MASTER LIST")
+
+    # BUILD VENDOR MASTER LIST
+    print("Build vendor master list...")
+    sr_file = "X000_Vendor"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        PDP_PAYEE_ACH_ACCT_T.ACH_ACCT_GNRTD_ID,
+        PUR_VNDR_DTL_T.VNDR_DTL_ASND_ID,    
+        PDP_PAYEE_ACH_ACCT_T.PAYEE_ID_NBR,
+        PDP_PAYEE_ACH_ACCT_T.BNK_ACCT_NBR,
+        PUR_VNDR_HDR_T.VNDR_TAX_NBR,
+        PDP_PAYEE_ACH_ACCT_T.ROW_ACTV_IND,
+        PDP_PAYEE_ACH_ACCT_T.PAYEE_NM,
+        PDP_PAYEE_ACH_ACCT_T.PAYEE_EMAIL_ADDR,
+        PDP_PAYEE_ACH_ACCT_T.PAYEE_ID_TYP_CD,
+        PDP_PAYEE_TYP_T.PAYEE_TYP_DESC,
+        PDP_PAYEE_TYP_T.ACH_ELGBL_IND,
+        PDP_PAYEE_ACH_ACCT_T.ACH_TRANS_TYP,
+        PDP_PAYEE_ACH_ACCT_T.BNK_ACCT_TYP_CD,
+        PUR_VNDR_HDR_T.VNDR_HDR_GNRTD_ID,
+        PUR_VNDR_HDR_T.VNDR_TYP_CD,
+        PUR_VNDR_HDR_T.VNDR_TAX_TYP_CD,
+        PUR_VNDR_HDR_T.VNDR_OWNR_CD,
+        PUR_VNDR_HDR_T.VNDR_FRGN_IND,
+        PUR_VNDR_DTL_T.VNDR_NM,
+        PUR_VNDR_DTL_T.DOBJ_MAINT_CD_ACTV_IND,
+        PUR_VNDR_DTL_T.VNDR_INACTV_REAS_CD,
+        PUR_VNDR_DTL_T.VNDR_PMT_TERM_CD,
+        PUR_VNDR_DTL_T.VNDR_SHP_TTL_CD,
+        PUR_VNDR_DTL_T.VNDR_URL_ADDR,
+        PUR_VNDR_DTL_T.VNDR_1ST_LST_NM_IND,
+        PUR_VNDR_DTL_T.COLLECT_TAX_IND,
+        PUR_VNDR_DTL_T.VNDR_PARENT_IND
+    From
+        PDP_PAYEE_ACH_ACCT_T Left Join
+        PDP_PAYEE_TYP_T On PDP_PAYEE_TYP_T.PAYEE_TYP_CD = PDP_PAYEE_ACH_ACCT_T.PAYEE_ID_TYP_CD Left Join
+        PUR_VNDR_HDR_T On PUR_VNDR_HDR_T.VNDR_HDR_GNRTD_ID = SubStr(PDP_PAYEE_ACH_ACCT_T.PAYEE_ID_NBR, 1, 8) Left Join
+        PUR_VNDR_DTL_T On PUR_VNDR_DTL_T.VNDR_ID = trim(PDP_PAYEE_ACH_ACCT_T.PAYEE_ID_NBR)
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    """ ****************************************************************************
+    DOCUMENTS MASTER LIST
+    *****************************************************************************"""
+    print("DOCUMENTS MASTER LIST")
+    funcfile.writelog("DOCUMENTS MASTER LIST")
+
+    # BUILD DOCS MASTER LIST
+    print("Build docs master list...")
+    sr_file = "X000_Documents"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        KREW_DOC_HDR_T.DOC_HDR_ID,
+        KREW_DOC_HDR_T.DOC_TYP_ID,
+        KREW_DOC_TYP_T.DOC_TYP_NM,
+        KREW_DOC_TYP_T.LBL
+    From
+        KREW_DOC_HDR_T Inner Join
+        KREW_DOC_TYP_T On KREW_DOC_TYP_T.DOC_TYP_ID = KREW_DOC_HDR_T.DOC_TYP_ID
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)    
 
     # Close the table connection ***************************************************
     so_conn.close()
