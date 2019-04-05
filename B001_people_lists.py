@@ -8,6 +8,7 @@ MYSQL PEOPLE TO WEB (Insert all current people to web)
 MYSQL PEOPLE STRUCT TO WEB (Insert all current people structure to web)
 PEOPLE ORGANIZATION STRUCTURE REF (Employee numbers of structure)
 MYSQL PEOPLE STRUCT TO WEB (Insert all current people structure to web)
+BUILD CURRENT SYSTEM USERS (X000_USER_CURR)
 ********************************************************************************
 """
 
@@ -163,7 +164,7 @@ def People_lists():
     so_curs.execute("DROP TABLE IF EXISTS " + tb_name)
     so_curs.execute("CREATE TABLE " + tb_name + "(LOOKUP TEXT,LOOKUP_CODE TEXT,LOOKUP_DESCRIPTION TEXT)")
     s_cols = ""
-    co = open(ed_path + "001_own_hr_lookups.csv", "rU")
+    co = open(ed_path + "001_own_hr_lookups.csv", newline=None)
     co_reader = csv.reader(co)
     for row in co_reader:
         if row[0] == "LOOKUP":
@@ -1997,22 +1998,78 @@ def People_lists():
     if l_mail == True:
         funcmail.Mail("hr_people_organogram")
 
-    # BUILD CURRENT USERS
-    print("Build current users...")
-    sr_file = "X000_USER_CURR"
+    """ ****************************************************************************
+    BUILD CURRENT SYSTEM USERS
+    *****************************************************************************"""
+    print("SYSTEM USERS")
+    funcfile.writelog("SYSTEM USERS")
+
+    # LOOKUP PARTY ID FOR USERS
+    print("Lookup party id for users...")
+    sr_file = "X000_USER_CURR_PARTY"
     s_sql = "CREATE VIEW "+sr_file+" AS " + """
     Select
         FND_USER.USER_ID,
         FND_USER.USER_NAME,
+        FND_USER.PERSON_PARTY_ID,
+        X002_PEOPLE_CURR.PARTY_ID
+    From
+        FND_USER Inner Join
+        X002_PEOPLE_CURR On X002_PEOPLE_CURR.EMPLOYEE_NUMBER = FND_USER.USER_NAME
+    Where
+        FND_USER.PERSON_PARTY_ID = 0 And
+        Cast(FND_USER.USER_NAME As Integer) > 0
+    ;"""
+    so_curs.execute("DROP VIEW IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD VIEW: "+sr_file)
+
+    # LOOKUP PARTY ID FOR USERS
+    print("Add party id for users...")
+    sr_file = "FND_USER_PARTY"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    Select
+        FND_USER.*,
+        X000_USER_CURR_PARTY.PARTY_ID As PEOPLE_PARTY_ID
+    From
+        FND_USER Left Join
+        X000_USER_CURR_PARTY On X000_USER_CURR_PARTY.USER_ID = FND_USER.USER_ID
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: "+sr_file) 
+
+    # CALCULATE USER FIELD
+    print("Calculate party column...")
+    so_curs.execute("UPDATE FND_USER_PARTY " + """
+                    SET CALC_PARTY_ID =
+                    CASE
+                        WHEN PEOPLE_PARTY_ID <> '' THEN PEOPLE_PARTY_ID
+                    ELSE
+                        PERSON_PARTY_ID
+                    END
+                    ;""")
+    so_conn.commit()
+    funcfile.writelog("%t CALC COLUMNS: CALC_PARTY_ID")
+
+    # BUILD CURRENT USERS
+    print("Build current users...")
+    sr_file = "X000_USER_CURR"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    Select
+        FND_USER_PARTY.USER_ID,
+        FND_USER_PARTY.USER_NAME,
         X002_PEOPLE_CURR.EMPLOYEE_NUMBER,
         X002_PEOPLE_CURR.KNOWN_NAME,
         X002_PEOPLE_CURR.NAME_ADDR,
         X002_PEOPLE_CURR.EMAIL_ADDRESS
     From
-        FND_USER Inner Join
-        X002_PEOPLE_CURR On X002_PEOPLE_CURR.PARTY_ID = FND_USER.PERSON_PARTY_ID
+        FND_USER_PARTY Inner Join
+        X002_PEOPLE_CURR On X002_PEOPLE_CURR.PARTY_ID = FND_USER_PARTY.CALC_PARTY_ID
     ;"""
-    so_curs.execute("DROP VIEW IF EXISTS "+sr_file)
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD VIEW: "+sr_file)        
