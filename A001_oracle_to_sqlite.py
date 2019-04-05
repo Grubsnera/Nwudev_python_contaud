@@ -331,6 +331,8 @@ def Oracle_to_sqlite():
                         else:
                             c_test = str(item)
                             c_test = c_test[0:10]
+                        c_data += "'" + c_test + "',"
+                        
                     elif lty_lst[i] == "DATETIME":
                         if str(item) == "None" or str(item) == "":
                             if lma_lst[i] == "B":
@@ -339,15 +341,24 @@ def Oracle_to_sqlite():
                                 c_test = "4712-12-31 23:59:59"
                         else:
                             c_test = str(item)
+                        c_data += "'" + c_test + "',"
+                        
+                    elif lty_lst[i] == "NUMBER":
+                        c_test = str(item)
+                        c_test = c_test.replace("None","0")
+                        c_test = c_test.replace(".0","")                        
+                        c_data += "'" + c_test + "',"
+                        
                     else:
                         c_test = str(item)
                         c_test = c_test.replace(",","")
                         c_test = c_test.replace("'","")
                         c_test = c_test.replace('"','')
                         c_test = c_test.replace("None","")
-                    
-                    c_data += "'" + c_test + "',"
+                        c_data += "'" + c_test + "',"
+                        
                     i += 1
+                    
                 c_data += ")"
                 c_data = c_data.replace(",)",")",1)
                 
