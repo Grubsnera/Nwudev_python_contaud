@@ -2064,7 +2064,8 @@ def People_lists():
         X002_PEOPLE_CURR.EMPLOYEE_NUMBER,
         X002_PEOPLE_CURR.KNOWN_NAME,
         X002_PEOPLE_CURR.NAME_ADDR,
-        X002_PEOPLE_CURR.EMAIL_ADDRESS
+        X002_PEOPLE_CURR.EMAIL_ADDRESS,
+        FND_USER_PARTY.LAST_LOGON_DATE
     From
         FND_USER_PARTY Inner Join
         X002_PEOPLE_CURR On X002_PEOPLE_CURR.PARTY_ID = FND_USER_PARTY.CALC_PARTY_ID
@@ -2072,7 +2073,7 @@ def People_lists():
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD VIEW: "+sr_file)        
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)        
 
     # Delete some unncessary files *************************************************
 
