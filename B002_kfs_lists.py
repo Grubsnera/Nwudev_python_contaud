@@ -402,7 +402,7 @@ def Kfs_lists():
 
     # BUILD VENDOR MASTER LIST
     print("Build vendor master list...")
-    sr_file = "X000_Vendor"
+    sr_file = "X000_VENDOR"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         PDP_PAYEE_ACH_ACCT_T.ACH_ACCT_GNRTD_ID,
@@ -465,9 +465,19 @@ def Kfs_lists():
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)    
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-    # Close the table connection ***************************************************
+    """ ****************************************************************************
+    END OF SCRIPT
+    *****************************************************************************"""
+    print("END OF SCRIPT")
+    funcfile.writelog("END OF SCRIPT")
+
+    # CLOSE THE DATABASE CONNECTION
+    print("Vacuum the database...")
+    so_conn.commit()
+    so_conn.execute('VACUUM')
+    funcfile.writelog("%t DATABASE: Vacuum")    
     so_conn.close()
 
     # Close the log writer *********************************************************
