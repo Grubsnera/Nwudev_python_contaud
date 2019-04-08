@@ -400,48 +400,189 @@ def Kfs_lists():
     print("VENDOR MASTER LIST")
     funcfile.writelog("VENDOR MASTER LIST")
 
-    # BUILD VENDOR MASTER LIST
-    print("Build vendor master list...")
+    # BUILD VENDOR MASTER LIST (DELETE)
     sr_file = "X000_VENDOR"
-    s_sql = "CREATE TABLE " + sr_file + " AS " + """
-    Select
-        PDP_PAYEE_ACH_ACCT_T.ACH_ACCT_GNRTD_ID,
-        PUR_VNDR_DTL_T.VNDR_DTL_ASND_ID,    
-        PDP_PAYEE_ACH_ACCT_T.PAYEE_ID_NBR,
-        PDP_PAYEE_ACH_ACCT_T.BNK_ACCT_NBR,
-        PUR_VNDR_HDR_T.VNDR_TAX_NBR,
-        PDP_PAYEE_ACH_ACCT_T.ROW_ACTV_IND,
-        PDP_PAYEE_ACH_ACCT_T.PAYEE_NM,
-        PDP_PAYEE_ACH_ACCT_T.PAYEE_EMAIL_ADDR,
-        PDP_PAYEE_ACH_ACCT_T.PAYEE_ID_TYP_CD,
-        PDP_PAYEE_TYP_T.PAYEE_TYP_DESC,
-        PDP_PAYEE_TYP_T.ACH_ELGBL_IND,
-        PDP_PAYEE_ACH_ACCT_T.ACH_TRANS_TYP,
-        PDP_PAYEE_ACH_ACCT_T.BNK_ACCT_TYP_CD,
-        PUR_VNDR_HDR_T.VNDR_HDR_GNRTD_ID,
-        PUR_VNDR_HDR_T.VNDR_TYP_CD,
-        PUR_VNDR_HDR_T.VNDR_TAX_TYP_CD,
-        PUR_VNDR_HDR_T.VNDR_OWNR_CD,
-        PUR_VNDR_HDR_T.VNDR_FRGN_IND,
-        PUR_VNDR_DTL_T.VNDR_NM,
-        PUR_VNDR_DTL_T.DOBJ_MAINT_CD_ACTV_IND,
-        PUR_VNDR_DTL_T.VNDR_INACTV_REAS_CD,
-        PUR_VNDR_DTL_T.VNDR_PMT_TERM_CD,
-        PUR_VNDR_DTL_T.VNDR_SHP_TTL_CD,
-        PUR_VNDR_DTL_T.VNDR_URL_ADDR,
-        PUR_VNDR_DTL_T.VNDR_1ST_LST_NM_IND,
-        PUR_VNDR_DTL_T.COLLECT_TAX_IND,
-        PUR_VNDR_DTL_T.VNDR_PARENT_IND
-    From
-        PDP_PAYEE_ACH_ACCT_T Left Join
-        PDP_PAYEE_TYP_T On PDP_PAYEE_TYP_T.PAYEE_TYP_CD = PDP_PAYEE_ACH_ACCT_T.PAYEE_ID_TYP_CD Left Join
-        PUR_VNDR_HDR_T On PUR_VNDR_HDR_T.VNDR_HDR_GNRTD_ID = SubStr(PDP_PAYEE_ACH_ACCT_T.PAYEE_ID_NBR, 1, 8) Left Join
-        PUR_VNDR_DTL_T On PUR_VNDR_DTL_T.VNDR_ID = trim(PDP_PAYEE_ACH_ACCT_T.PAYEE_ID_NBR)
-    """
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+
+    # BUILD TABLE WITH VENDOR REMITTANCE ADDRESSES
+    print("Build vendor remittance addresses...")
+    sr_file = "X001aa_vendor_rm_address"
+    s_sql = "CREATE VIEW "+sr_file+" AS " + """
+    Select
+        CAST(TRIM(UPPER(PUR_VNDR_ADDR_T.VNDR_HDR_GNRTD_ID))||'-'||TRIM(UPPER(PUR_VNDR_ADDR_T.VNDR_DTL_ASND_ID)) AS TEXT) VENDOR_ID,
+        PUR_VNDR_ADDR_T.VNDR_ST_CD,
+        PUR_VNDR_ADDR_T.VNDR_CNTRY_CD,
+        PUR_VNDR_ADDR_T.VNDR_ADDR_EMAIL_ADDR,
+        PUR_VNDR_ADDR_T.VNDR_B2B_URL_ADDR,
+        PUR_VNDR_ADDR_T.VNDR_FAX_NBR,
+        TRIM(UPPER(PUR_VNDR_ADDR_T.VNDR_DFLT_ADDR_IND))||'~'||
+        TRIM(UPPER(PUR_VNDR_ADDR_T.VNDR_ATTN_NM))||'~'||
+        TRIM(UPPER(PUR_VNDR_ADDR_T.VNDR_LN1_ADDR))||'~'||
+        TRIM(UPPER(PUR_VNDR_ADDR_T.VNDR_LN2_ADDR))||'~'||
+        TRIM(UPPER(PUR_VNDR_ADDR_T.VNDR_CTY_NM))||'~'||
+        TRIM(UPPER(PUR_VNDR_ADDR_T.VNDR_ZIP_CD))||'~'||
+        TRIM(UPPER(PUR_VNDR_ADDR_T.VNDR_CNTRY_CD))
+        ADDRESS_RM
+    From
+        PUR_VNDR_ADDR_T
+    Where
+        PUR_VNDR_ADDR_T.VNDR_ADDR_TYP_CD = 'RM' And
+        PUR_VNDR_ADDR_T.VNDR_DFLT_ADDR_IND = 'Y'
+    Group By
+        PUR_VNDR_ADDR_T.VNDR_HDR_GNRTD_ID,
+        PUR_VNDR_ADDR_T.VNDR_DTL_ASND_ID    
+    """
+    so_curs.execute("DROP VIEW IF EXISTS "+sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    funcfile.writelog("%t BUILD VIEW: "+sr_file)
+
+    # BUILD TABLE WITH VENDOR PURCHASE ORDER ADDRESSES
+    print("Build vendor purchase order addresses...")
+    sr_file = "X001ab_vendor_po_address"
+    s_sql = "CREATE VIEW "+sr_file+" AS " + """
+    Select
+        CAST(TRIM(UPPER(PUR_VNDR_ADDR_T.VNDR_HDR_GNRTD_ID))||'-'||TRIM(UPPER(PUR_VNDR_ADDR_T.VNDR_DTL_ASND_ID)) AS TEXT) VENDOR_ID,
+        PUR_VNDR_ADDR_T.VNDR_ST_CD,
+        PUR_VNDR_ADDR_T.VNDR_CNTRY_CD,
+        PUR_VNDR_ADDR_T.VNDR_ADDR_EMAIL_ADDR,
+        PUR_VNDR_ADDR_T.VNDR_B2B_URL_ADDR,
+        PUR_VNDR_ADDR_T.VNDR_FAX_NBR,
+        TRIM(UPPER(PUR_VNDR_ADDR_T.VNDR_DFLT_ADDR_IND))||'~'||
+        TRIM(UPPER(PUR_VNDR_ADDR_T.VNDR_ATTN_NM))||'~'||
+        TRIM(UPPER(PUR_VNDR_ADDR_T.VNDR_LN1_ADDR))||'~'||
+        TRIM(UPPER(PUR_VNDR_ADDR_T.VNDR_LN2_ADDR))||'~'||
+        TRIM(UPPER(PUR_VNDR_ADDR_T.VNDR_CTY_NM))||'~'||
+        TRIM(UPPER(PUR_VNDR_ADDR_T.VNDR_ZIP_CD))||'~'||
+        TRIM(UPPER(PUR_VNDR_ADDR_T.VNDR_CNTRY_CD))
+        ADDRESS_PO
+    From
+        PUR_VNDR_ADDR_T
+    Where
+        PUR_VNDR_ADDR_T.VNDR_ADDR_TYP_CD = 'PO' And
+        PUR_VNDR_ADDR_T.VNDR_DFLT_ADDR_IND = 'Y'
+    Group By
+        PUR_VNDR_ADDR_T.VNDR_HDR_GNRTD_ID,
+        PUR_VNDR_ADDR_T.VNDR_DTL_ASND_ID    
+    """
+    so_curs.execute("DROP VIEW IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD VIEW: "+sr_file)
+
+    # JOIN VENDOR RM AND PO ADDRESSES
+    print("Build vendor address master file...")
+    sr_file = "X001ac_vendor_address_comb"
+    s_sql = "CREATE VIEW "+sr_file+" AS " + """
+    Select
+        PUR_VNDR_DTL_T.VNDR_ID As VENDOR_ID,
+        Case
+            When X001aa_vendor_rm_address.VNDR_ST_CD <> '' Then X001aa_vendor_rm_address.VNDR_ST_CD
+            Else X001ab_vendor_po_address.VNDR_ST_CD
+        End as STATE_CD,
+        Case
+            When X001aa_vendor_rm_address.VNDR_CNTRY_CD <> '' Then X001aa_vendor_rm_address.VNDR_CNTRY_CD
+            Else X001ab_vendor_po_address.VNDR_CNTRY_CD
+        End as COUNTRY_CD,
+        Case
+            When X001aa_vendor_rm_address.VNDR_ADDR_EMAIL_ADDR <> '' Then Lower(X001aa_vendor_rm_address.VNDR_ADDR_EMAIL_ADDR)
+            Else Lower(X001ab_vendor_po_address.VNDR_ADDR_EMAIL_ADDR)
+        End as EMAIL,
+        Case
+            When X001aa_vendor_rm_address.VNDR_B2B_URL_ADDR <> '' Then Lower(X001aa_vendor_rm_address.VNDR_B2B_URL_ADDR)
+            Else Lower(X001ab_vendor_po_address.VNDR_B2B_URL_ADDR)
+        End as URL,
+        Case
+            When X001aa_vendor_rm_address.VNDR_FAX_NBR <> '' Then X001aa_vendor_rm_address.VNDR_FAX_NBR
+            Else X001ab_vendor_po_address.VNDR_FAX_NBR
+        End as FAX,
+        Case
+            When X001aa_vendor_rm_address.ADDRESS_RM <> '' Then Upper(X001aa_vendor_rm_address.ADDRESS_RM)
+            Else Upper(X001ab_vendor_po_address.ADDRESS_PO)
+        End as ADDRESS
+    From
+        PUR_VNDR_DTL_T Left Join
+        X001aa_vendor_rm_address On X001aa_vendor_rm_address.VENDOR_ID = PUR_VNDR_DTL_T.VNDR_ID Left Join
+        X001ab_vendor_po_address On X001ab_vendor_po_address.VENDOR_ID = PUR_VNDR_DTL_T.VNDR_ID
+    """
+    so_curs.execute("DROP VIEW IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD VIEW: "+sr_file)
+
+    # BUILD VENDOR BANK ACCOUNT TABLE
+    print("Build vendor bank account table...")
+    sr_file = "X001ad_vendor_bankacc"
+    s_sql = "CREATE VIEW "+sr_file+" AS " + """
+    Select Distinct
+        PDP_PAYEE_ACH_ACCT_T.PAYEE_ID_NBR As VENDOR_ID,
+        STUD.BNK_ACCT_NBR As STUD_BANK,
+        STUD.PAYEE_ID_TYP_CD As STUD_TYPE,
+        STUD.PAYEE_EMAIL_ADDR As STUD_MAIL,
+        VEND.BNK_ACCT_NBR As VEND_BANK,
+        VEND.PAYEE_ID_TYP_CD As VEND_TYPE,
+        VEND.PAYEE_EMAIL_ADDR As VEND_MAIL,
+        EMPL.BNK_ACCT_NBR As EMPL_BANK,
+        EMPL.PAYEE_ID_TYP_CD As EMPL_TYPE,
+        EMPL.PAYEE_EMAIL_ADDR As EMPL_MAIL
+    From
+        PDP_PAYEE_ACH_ACCT_T
+        Left Join PDP_PAYEE_ACH_ACCT_T STUD On STUD.PAYEE_ID_NBR = PDP_PAYEE_ACH_ACCT_T.PAYEE_ID_NBR And STUD.PAYEE_ID_TYP_CD = 'S' And STUD.ROW_ACTV_IND = 'Y'
+        Left Join PDP_PAYEE_ACH_ACCT_T VEND On VEND.PAYEE_ID_NBR = PDP_PAYEE_ACH_ACCT_T.PAYEE_ID_NBR And VEND.PAYEE_ID_TYP_CD = 'V' And VEND.ROW_ACTV_IND = 'Y'
+        Left Join PDP_PAYEE_ACH_ACCT_T EMPL On EMPL.PAYEE_ID_NBR = PDP_PAYEE_ACH_ACCT_T.PAYEE_ID_NBR And EMPL.PAYEE_ID_TYP_CD = 'E' And EMPL.ROW_ACTV_IND = 'Y'
+    Where
+        PDP_PAYEE_ACH_ACCT_T.ROW_ACTV_IND = 'Y'
+    """
+    so_curs.execute("DROP VIEW IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD VIEW: "+sr_file)
+
+    # BUILD VENDOR TABLE
+    print("Build vendor master file...")
+    sr_file = "X000_VENDOR_MASTER"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    Select
+        PUR_VNDR_DTL_T.VNDR_ID As VENDOR_ID,
+        PUR_VNDR_DTL_T.VNDR_NM,
+        PUR_VNDR_DTL_T.VNDR_URL_ADDR,
+        PUR_VNDR_HDR_T.VNDR_TAX_NBR,
+        X001ad_vendor_bankacc.VEND_BANK,
+        X001ad_vendor_bankacc.VEND_MAIL,
+        X001ad_vendor_bankacc.EMPL_BANK,
+        X001ad_vendor_bankacc.STUD_BANK,
+        X001ac_vendor_address_comb.FAX,
+        X001ac_vendor_address_comb.EMAIL,
+        X001ac_vendor_address_comb.ADDRESS,
+        X001ac_vendor_address_comb.URL,
+        X001ac_vendor_address_comb.STATE_CD,
+        X001ac_vendor_address_comb.COUNTRY_CD,
+        PUR_VNDR_HDR_T.VNDR_TAX_TYP_CD,
+        PUR_VNDR_HDR_T.VNDR_TYP_CD,
+        PUR_VNDR_DTL_T.VNDR_PMT_TERM_CD,
+        PUR_VNDR_DTL_T.VNDR_SHP_TTL_CD,
+        PUR_VNDR_DTL_T.VNDR_PARENT_IND,
+        PUR_VNDR_DTL_T.VNDR_1ST_LST_NM_IND,
+        PUR_VNDR_DTL_T.COLLECT_TAX_IND,
+        PUR_VNDR_HDR_T.VNDR_FRGN_IND,
+        PUR_VNDR_DTL_T.VNDR_CNFM_IND,
+        PUR_VNDR_DTL_T.VNDR_PRPYMT_IND,
+        PUR_VNDR_DTL_T.VNDR_CCRD_IND,
+        PUR_VNDR_DTL_T.DOBJ_MAINT_CD_ACTV_IND,
+        PUR_VNDR_DTL_T.VNDR_INACTV_REAS_CD
+    From
+        PUR_VNDR_DTL_T Left Join
+        PUR_VNDR_HDR_T On PUR_VNDR_HDR_T.VNDR_HDR_GNRTD_ID = PUR_VNDR_DTL_T.VNDR_HDR_GNRTD_ID Left Join
+        X001ac_vendor_address_comb On X001ac_vendor_address_comb.VENDOR_ID = PUR_VNDR_DTL_T.VNDR_ID Left Join
+        X001ad_vendor_bankacc On X001ad_vendor_bankacc.VENDOR_ID = PUR_VNDR_DTL_T.VNDR_ID
+    Order by
+        VNDR_NM,
+        VENDOR_ID
+    """
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
     """ ****************************************************************************
     DOCUMENTS MASTER LIST
