@@ -8,6 +8,7 @@ MYSQL PEOPLE TO WEB (Insert all current people to web)
 MYSQL PEOPLE STRUCT TO WEB (Insert all current people structure to web)
 PEOPLE ORGANIZATION STRUCTURE REF (Employee numbers of structure)
 MYSQL PEOPLE STRUCT TO WEB (Insert all current people structure to web)
+BUILD ASSIGNMENTS AND PEOPLE
 BUILD CURRENT SYSTEM USERS (X000_USER_CURR)
 ********************************************************************************
 """
@@ -1398,108 +1399,56 @@ def People_lists():
 
     funcfile.writelog("%t BUILD VIEW: X000_PHONE_HOME_CURR_LIST")
 
-    # 23 Build current assignment round 1 ******************************************
+    """ ****************************************************************************
+    BUILD ASSIGNMENTS AND PEOPLE
+    *****************************************************************************"""
+    print("BUILD ASSIGNMENTS AND PEOPLE")
+    funcfile.writelog("BUILD ASSIGNMENTS AND PEOPLE")    
 
+    # Build current year assignment round 1 ******************************************
     funcpeople.Assign01(so_conn,"X001_ASSIGNMENT_CURR_01",funcdate.cur_yearbegin(),funcdate.cur_yearend(),funcdate.today(),"Build current year assignments 1...")
-
-    # 24 Build current assignment round 2 ******************************************
-
+    # Build current year assignment round 2 ******************************************
     funcpeople.Assign02(so_conn,"X001_ASSIGNMENT_CURR","X001_ASSIGNMENT_CURR_01","Build current year assignments 2...")
-
     if l_export == True:
-
         # Data export
         sr_file = "X001_ASSIGNMENT_CURR"
         sr_filet = sr_file
         sx_path = re_path + funcdate.cur_year() + "/"
         sx_file = "Assignment_001_all_"
         sx_filet = sx_file + funcdate.cur_year()
-
         print("Export current year assignments..." + sx_path + sx_filet)
-
         # Read the header data
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-
         # Write the data
         funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
-
         funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_filet)
 
-    # 25 Build previous mont assignment round 1 ******************************************
+    # Build previous year assignment round 1 ******************************************
+    funcpeople.Assign01(so_conn,"X001_ASSIGNMENT_PREV_01",funcdate.prev_yearbegin(),funcdate.prev_yearend(),funcdate.prev_yearend(),"Build previous year assignments 1...")
+    # Build previous year assignment round 2 ******************************************
+    funcpeople.Assign02(so_conn,"X001_ASSIGNMENT_PREV","X001_ASSIGNMENT_PREV_01","Build previous year assignments 2...")
 
-    funcpeople.Assign01(so_conn,"X001_ASSIGNMENT_MONT_01",funcdate.prev_monthbegin(),funcdate.prev_monthend(),funcdate.prev_monthend(),"Build previous month assignments 1...")
-
-    # 26 Build previous mont assignment round 2 ******************************************
-
-    funcpeople.Assign02(so_conn,"X001_ASSIGNMENT_MONT","X001_ASSIGNMENT_MONT_01","Build previous month assignments 2...")
-
-    if l_export == True:
-        
-        # Data export
-        sr_file = "X001_ASSIGNMENT_MONT"
-        sr_filet = sr_file
-        sx_path = re_path + funcdate.cur_year() + "/"
-        sx_file = "Assignment_001_month_"
-        sx_filet = sx_file + funcdate.prev_month()
-
-        print("Export previous month assignments..." + sx_path + sx_filet)
-
-        # Read the header data
-        s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-
-        # Write the data
-        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
-
-        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_filet)
-
-    # 27 Build PEOPLE CURRENT ******************************************************
-
+    # Build PEOPLE CURRENT ******************************************************
     funcpeople.People01(so_conn,"X002_PEOPLE_CURR","X001_ASSIGNMENT_CURR","CURR","Build current people...","Y")
-
     if l_export == True:
-        
         # Data export
         sr_file = "X002_PEOPLE_CURR"
         sr_filet = sr_file
         sx_path = re_path + funcdate.cur_year() + "/"
         sx_file = "People_002_all_"
         sx_filet = sx_file + funcdate.cur_year()
-
         print("Export current year people..." + sx_path + sx_filet)
-
         # Read the header data
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-
         # Write the data
         funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
-
         funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_filet)
 
-    # 28 Build PEOPLE PREVIOUS MONT ************************************************
+    # Build PEOPLE CURRENT ******************************************************
+    funcpeople.People01(so_conn,"X002_PEOPLE_CURR_YEAR","X001_ASSIGNMENT_CURR","CURR","Build current year people ...","N")
 
-    funcpeople.People01(so_conn,"X002_PEOPLE_MONT","X001_ASSIGNMENT_MONT","CURR","Build previous month people...","N")
-
-    if l_export == True:
-        
-        # Data export
-        sr_file = "X002_PEOPLE_MONT"
-        sr_filet = sr_file
-        sx_path = re_path + funcdate.cur_year() + "/"
-        sx_file = "People_002_month_"
-        sx_filet = sx_file + funcdate.prev_month()
-
-        print("Export previous month people..." + sx_path + sx_filet)
-
-        # Read the header data
-        s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-
-        # Write the data
-        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
-
-        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_filet)
-
+    # Build PEOPLE PREVIOUS YEAR ************************************************
+    funcpeople.People01(so_conn,"X002_PEOPLE_PREV_YEAR","X001_ASSIGNMENT_PREV","CURR","Build previous year people...","N")
 
     # Create MYSQL PEOPLE TO WEB table *****************************************
     print("Build mysql current people...")
