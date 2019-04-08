@@ -106,9 +106,9 @@ def Assign01(so_conn,s_table,s_from,s_to,s_on,s_mess):
                         SET ASS_ACTIVE = 
                         CASE
                            WHEN ORG_TYPE_DESC = 'Parent Organisation' THEN 'O'
-                           WHEN INSTR(POSITION_NAME,'Pensioner') > 0 THEN 'P'
                            WHEN EMP_START = EMP_END AND LEAVING_REASON = '' THEN 'Y'
-                           WHEN EMP_END >= Date('%FR%') THEN 'Y'                           
+                           WHEN EMP_END >= Date('%FR%') THEN 'Y'
+                           WHEN INSTR(POSITION_NAME,'Pensioner') > 0 THEN 'P'                           
                            ELSE 'N'
                         END
                         ;"""
@@ -221,10 +221,9 @@ def Assign02(so_conn,s_table,s_source,s_mess):
       LEFT JOIN X000_PER_ALL_PEOPLE ON X000_PER_ALL_PEOPLE.PERSON_ID = %SOURCET%.PERSON_ID AND
         X000_PER_ALL_PEOPLE.EFFECTIVE_START_DATE <= %SOURCET%.DATE_ASS_LOOKUP AND
         X000_PER_ALL_PEOPLE.EFFECTIVE_END_DATE >= %SOURCET%.DATE_ASS_LOOKUP
-      LEFT JOIN X000_PER_ALL_PEOPLE X000_PER_ALL_PEOPLE1 ON X000_PER_ALL_PEOPLE1.PERSON_ID =
-        %SOURCET%.SUPERVISOR_ID AND X000_PER_ALL_PEOPLE1.EFFECTIVE_START_DATE <=
-        %SOURCET%.DATE_ASS_LOOKUP AND X000_PER_ALL_PEOPLE1.EFFECTIVE_END_DATE >=
-        %SOURCET%.DATE_ASS_LOOKUP
+      LEFT JOIN X000_PER_ALL_PEOPLE X000_PER_ALL_PEOPLE1 ON X000_PER_ALL_PEOPLE1.PERSON_ID = %SOURCET%.SUPERVISOR_ID AND
+        X000_PER_ALL_PEOPLE1.EFFECTIVE_START_DATE <= %SOURCET%.DATE_ASS_LOOKUP AND
+        X000_PER_ALL_PEOPLE1.EFFECTIVE_END_DATE >= %SOURCET%.DATE_ASS_LOOKUP
       LEFT JOIN X000_COUNTS ON X000_COUNTS.PERSON_ID = %SOURCET%.PERSON_ID
       LEFT JOIN X000_PAY_ACCOUNTS ON X000_PAY_ACCOUNTS.ASSIGNMENT_ID = %SOURCET%.ASS_ID AND
         X000_PAY_ACCOUNTS.EFFECTIVE_START_DATE <= %SOURCET%.DATE_ASS_LOOKUP AND
@@ -237,11 +236,8 @@ def Assign02(so_conn,s_table,s_source,s_mess):
     s_sql = s_sql.replace("%SOURCET%",s_source)
     so_curs.execute(s_sql)
     so_conn.commit()
-    
     so_curs.execute("DROP TABLE IF EXISTS " + s_source )
-
     funcfile.writelog("%t BUILD TABLE: " + s_table)
-
     return;
 
 # 19 Build PEOPLE CURRENT ******************************************************
