@@ -87,7 +87,12 @@ so_conn.commit()
 co.close()
 funcfile.writelog("%t IMPORT TABLE: " + tb_name)
 
-
+# Build current assignment round 1 ******************************************
+funcpeople.Assign01(so_conn,"X001_ASSIGNMENT_PREV_01",funcdate.prev_yearbegin(),funcdate.prev_yearend(),funcdate.prev_yearend(),"Build previous year assignments 1...")
+# Build current assignment round 2 ******************************************
+funcpeople.Assign02(so_conn,"X001_ASSIGNMENT_PREV","X001_ASSIGNMENT_PREV_01","Build previous year assignments 2...")
+# Build PEOPLE CURRENT ******************************************************
+funcpeople.People01(so_conn,"X002_PEOPLE_PREV_YEAR","X001_ASSIGNMENT_PREV","CURR","Build previous year people ...","N")
 
 """ ****************************************************************************
 END OF SCRIPT
