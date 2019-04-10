@@ -140,6 +140,7 @@ def People_lists():
     s_sql = "" #SQL statements
     l_export = True
     l_mail = True
+    l_vacuum = False
 
     # Open the SQLITE SOURCE file
     with sqlite3.connect(so_path+so_file) as so_conn:
@@ -2164,14 +2165,15 @@ def People_lists():
     funcfile.writelog("%t BUILD TABLE:  X102_PER_ABSENCE_ATTENDANCE_TYPES")
 
     # Close the connection *********************************************************
-    print("Vacuum the database...")
+    if l_vacuum == True:
+        print("Vacuum the database...")
+        so_conn.commit()
+        so_conn.execute('VACUUM')
+        funcfile.writelog("%t DATABASE: Vacuum people")
     so_conn.commit()
-    so_conn.execute('VACUUM')
-    funcfile.writelog("%t DATABASE: Vacuum")
     so_conn.close()
     ms_cnxn.commit()
     ms_cnxn.close()
-
 
     # Close the log writer *********************************************************
     funcfile.writelog("----------------------------")
