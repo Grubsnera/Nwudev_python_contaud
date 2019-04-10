@@ -544,7 +544,7 @@ def Kfs_lists():
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     Select
         PUR_VNDR_DTL_T.VNDR_ID As VENDOR_ID,
-        PUR_VNDR_DTL_T.VNDR_NM,
+        UPPER(PUR_VNDR_DTL_T.VNDR_NM) AS VNDR_NM,
         PUR_VNDR_DTL_T.VNDR_URL_ADDR,
         PUR_VNDR_HDR_T.VNDR_TAX_NBR,
         X001ad_vendor_bankacc.VEND_BANK,
