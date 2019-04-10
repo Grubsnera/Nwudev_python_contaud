@@ -15,7 +15,7 @@ ENVIRONMENT
 *****************************************************************************"""
 
 # IMPORT PYTHON MODULES
-#import csv
+import csv
 #import datetime
 import sqlite3
 import sys
@@ -24,14 +24,14 @@ import sys
 sys.path.append('S:/_my_modules')
 
 # IMPORT OWN MODULES
-#import funccsv
+import funccsv
 import funcdate
 import funcfile
 #import funcmail
 #import funcmysql
 #import funcpeople
 #import funcstr
-#import funcsys
+import funcsys
 
 # OPEN THE SCRIPT LOG FILE
 print("-----------------------------")    
@@ -48,7 +48,7 @@ re_path = "R:/People/" # Results path
 ed_path = "S:/_external_data/" #external data path
 so_file = "People_conflict.sqlite" # Source database
 s_sql = "" # SQL statements
-l_export = False
+l_export = True
 l_mail = False
 l_record = False
 
