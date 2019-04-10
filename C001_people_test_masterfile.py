@@ -2277,7 +2277,7 @@ def People_test_masterfile():
     BANK NUMBER MASTER FILE
     *****************************************************************************"""
 
-    # BUILD TABLE WITH EMPLOYEE PAYE NUMBERS
+    # BUILD TABLE WITH EMPLOYEE BANK ACCOUNT NUMBERS
     print("Obtain master list of all employees...")
     sr_file = "X004_bank_master"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
@@ -2384,7 +2384,6 @@ def People_test_masterfile():
         funcfile.writelog("%t IMPORT TABLE: " + ed_path + "001_reported.txt (" + sr_file + ")")
 
     # ADD PREVIOUS FINDINGS
-    # NOTE ADD CODE
     sr_file = "X004ad_bank_addprev"
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0:
