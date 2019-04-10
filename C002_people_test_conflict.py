@@ -9,6 +9,8 @@ OPEN THE DATABASES
 BEGIN OF SCRIPT
 BUILD CONFLICT MASTER TABLES
 BUILD ANNUAL TABLES
+BANK NUMBER MASTER FILES
+TEST EMPLOYEE VENDOR SHARE BANK ACCOUNT
 END OF SCRIPT
 *****************************************************************************"""
 
@@ -19,7 +21,7 @@ def People_test_conflict():
     *****************************************************************************"""
 
     # IMPORT PYTHON MODULES
-    #import csv
+    import csv
     #import datetime
     import sqlite3
     import sys
@@ -28,14 +30,14 @@ def People_test_conflict():
     sys.path.append('S:/_my_modules')
 
     # IMPORT OWN MODULES
-    #import funccsv
+    import funccsv
     import funcdate
     import funcfile
     #import funcmail
     #import funcmysql
     #import funcpeople
     #import funcstr
-    #import funcsys
+    import funcsys
 
     # OPEN THE SCRIPT LOG FILE
     print("-----------------------------")    
@@ -334,6 +336,359 @@ def People_test_conflict():
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
+
+    """ ****************************************************************************
+    BANK NUMBER MASTER FILES
+    *****************************************************************************"""
+
+    # BUILD TABLE WITH EMPLOYEE BANK ACCOUNT NUMBERS
+    print("Obtain master list of all employees...")
+    sr_file = "X100_bank_emp"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    Select
+        'NWU' AS ORG,
+        CASE LOCATION_DESCRIPTION
+            WHEN 'Mafikeng Campus' THEN 'MAF'
+            WHEN 'Potchefstroom Campus' THEN 'POT'
+            WHEN 'Vaal Triangle Campus' THEN 'VAA'
+            ELSE 'NWU'
+        END AS LOC,
+        PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER AS EMP,
+        PEOPLE.X002_PEOPLE_CURR.ACC_NUMBER AS EMP_BANK
+    From
+        PEOPLE.X002_PEOPLE_CURR
+    Where
+        PEOPLE.X002_PEOPLE_CURR.ACC_NUMBER <> ''
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+
+    # BUILD TABLE WITH VENDOR BANK ACCOUNT NUMBERS
+    print("Obtain master list of all vendors...")
+    sr_file = "X100_bank_ven"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    Select
+        KFS.X000_VENDOR_MASTER.VENDOR_ID,
+        KFS.X000_VENDOR_MASTER.VEND_BANK AS VENDOR_BANK
+    From
+        KFS.X000_VENDOR_MASTER
+    Where
+        KFS.X000_VENDOR_MASTER.VEND_BANK <> '' AND
+        KFS.X000_VENDOR_MASTER.DOBJ_MAINT_CD_ACTV_IND = 'Y'
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+
+    """ ****************************************************************************
+    TEST EMPLOYEE VENDOR SHARE BANK ACCOUNT
+    *****************************************************************************"""
+    print("TEST EMPLOYEE VENDOR COMMON BANK")
+    funcfile.writelog("TEST EMPLOYEE VENDOR COMMON BANK")
+
+    # DECLARE TEST VARIABLES
+    l_record = True # Record the findings in the previous reported findings file
+    i_find = 0 # Number of findings before previous reported findings
+    i_coun = 0 # Number of new findings to report
+
+    # BUILD TABLE WITH VENDOR BANK ACCOUNT NUMBERS
+    print("Merge employees and vendors on bank account...")
+    sr_file = "X100aa_bank_empven"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    Select
+        X100_bank_emp.*,
+        X100_bank_ven.*   
+    From
+        X100_bank_emp Inner Join
+        X100_bank_ven On X100_bank_ven.VENDOR_BANK = X100_bank_emp.EMP_BANK
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+
+    # BUILD TABLE WITH VENDOR BANK ACCOUNT NUMBERS
+    print("Compile list of shared bank accounts...")
+    sr_file = "X100ab_bank_empven"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    Select
+        FINDING.ORG,
+        FINDING.LOC,
+        FINDING.EMP,
+        FINDING.EMP_BANK,
+        FINDING.VENDOR_ID,
+        FINDING.VENDOR_BANK
+    From
+        X100aa_bank_empven FINDING
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+
+    # COUNT THE NUMBER OF FINDINGS
+    i_find = funcsys.tablerowcount(so_curs,sr_file)
+    print("*** Found "+str(i_find)+" exceptions ***")
+    funcfile.writelog("%t FINDING: "+str(i_find)+" SHARED BANK ACCOUNT finding(s)")
+
+    # GET PREVIOUS FINDINGS
+    # NOTE ADD CODE
+    sr_file = "X100ac_bank_getprev"
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    if i_find > 0:
+        print("Import previously reported findings...")
+        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,DATE_MAILED TEXT)")
+        s_cols = ""
+        co = open(ed_path + "002_reported.txt", "r")
+        co_reader = csv.reader(co)
+        # Read the COLUMN database data
+        for row in co_reader:
+            # Populate the column variables
+            if row[0] == "PROCESS":
+                continue
+            elif row[0] != "bank_share_emp_ven":
+                continue
+            else:
+                s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "','" + row[3] + "','" + row[4] + "','" + row[5] + "','" + row[6] + "','" + row[7] + "','" + row[8] + "')"
+                so_curs.execute(s_cols)
+        so_conn.commit()
+        # Close the impoted data file
+        co.close()
+        funcfile.writelog("%t IMPORT TABLE: " + ed_path + "001_reported.txt (" + sr_file + ")")
+
+        # ADD PREVIOUS FINDINGS
+        sr_file = "X100ad_bank_addprev"
+        so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+        if i_find > 0:
+            print("Join previously reported to current findings...")
+            s_sql = "CREATE TABLE " + sr_file + " AS" + """
+            SELECT
+              FINDING.*,
+              'bank_share_emp_ven' AS PROCESS,
+              '%TODAY%' AS DATE_REPORTED,
+              '%TODAYPLUS%' AS DATE_RETEST,
+              PREVIOUS.PROCESS AS PREV_PROCESS,
+              PREVIOUS.DATE_REPORTED AS PREV_DATE_REPORTED,
+              PREVIOUS.DATE_RETEST AS PREV_DATE_RETEST,
+              PREVIOUS.DATE_MAILED
+            FROM
+              X100ab_bank_empven FINDING
+              LEFT JOIN X100ac_bank_getprev PREVIOUS ON PREVIOUS.FIELD1 = FINDING.EMP AND
+                  PREVIOUS.DATE_RETEST >= Date('%TODAY%') AND
+                  PREVIOUS.FIELD2 = FINDING.EMP_BANK
+            ;"""
+            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+            s_sql = s_sql.replace("%TODAY%",funcdate.today())
+            s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(10))
+            so_curs.execute(s_sql)
+            so_conn.commit()
+            funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD LIST TO UPDATE FINDINGS
+    # NOTE ADD CODE
+    sr_file = "X100ae_bank_newprev"
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    if i_find > 0:
+        s_sql = "CREATE TABLE "+sr_file+" AS " + """
+        SELECT
+          PREVIOUS.PROCESS,
+          PREVIOUS.EMP AS FIELD1,
+          PREVIOUS.EMP_BANK AS FIELD2,
+          '' AS FIELD3,
+          '' AS FIELD4,
+          '' AS FIELD5,
+          PREVIOUS.DATE_REPORTED,
+          PREVIOUS.DATE_RETEST,
+          PREVIOUS.DATE_MAILED
+        FROM
+          X100ad_bank_addprev PREVIOUS
+        WHERE
+          PREVIOUS.PREV_PROCESS IS NULL
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: "+sr_file)
+        # Export findings to previous reported file
+        i_coun = funcsys.tablerowcount(so_curs,sr_file)
+        if i_coun > 0:
+            print("*** " +str(i_coun)+ " Finding(s) to report ***")    
+            sr_filet = sr_file
+            sx_path = ed_path
+            sx_file = "002_reported"
+            # Read the header data
+            s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+            # Write the data
+            if l_record == True:
+                funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head,"a",".txt")
+                funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
+                funcfile.writelog("%t EXPORT DATA: "+sr_file)
+        else:
+            print("*** No new findings to report ***")
+            funcfile.writelog("%t FINDING: No new findings to export")
+
+    # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
+    sr_file = "X100af_bank_offi"
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    if i_find > 0 and i_coun > 0:
+        print("Import reporting officers for mail purposes...")
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        SELECT
+          LOOKUP.LOOKUP,
+          LOOKUP.LOOKUP_CODE AS CAMPUS,
+          LOOKUP.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
+          PEOPLE.NAME_ADDR,
+          PEOPLE.EMAIL_ADDRESS
+        FROM
+          PEOPLE.X000_OWN_HR_LOOKUPS LOOKUP
+          LEFT JOIN PEOPLE.X002_PEOPLE_CURR PEOPLE ON PEOPLE.EMPLOYEE_NUMBER = LOOKUP.LOOKUP_DESCRIPTION
+        WHERE
+          LOOKUP.LOOKUP = 'TEST_BANKACC_CONFLICT_VENDOR_OFFICER'
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
+    sr_file = "X100ag_bank_supe"
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    if i_find > 0 and i_coun > 0:
+        print("Import reporting supervisors for mail purposes...")
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        SELECT
+          LOOKUP.LOOKUP,
+          LOOKUP.LOOKUP_CODE AS CAMPUS,
+          LOOKUP.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
+          PEOPLE.NAME_ADDR,
+          PEOPLE.EMAIL_ADDRESS
+        FROM
+          PEOPLE.X000_OWN_HR_LOOKUPS LOOKUP
+          LEFT JOIN PEOPLE.X002_PEOPLE_CURR PEOPLE ON PEOPLE.EMPLOYEE_NUMBER = LOOKUP.LOOKUP_DESCRIPTION
+        WHERE
+          LOOKUP.LOOKUP = 'TEST_BANKACC_CONFLICT_VENDOR_SUPERVISOR'
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+        # ADD CONTACT DETAILS TO FINDINGS
+        sr_file = "X100ah_bank_addempven"
+        so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+        if i_find > 0 and i_coun > 0:
+            print("Add details to findings...")
+            s_sql = "CREATE TABLE " + sr_file + " AS " + """
+            Select
+                FINDING.*,
+                PERSON.NAME_ADDR AS EMP_NAME,
+                PERSON.ACC_TYPE AS BANKACC_TYPE,
+                PERSON.ACC_BRANCH AS BANKACC_BRANCH,
+                PERSON.ACC_RELATION AS BANKACC_RELATION,
+                PERSON.POSITION_FULL,
+                VENDOR.VNDR_NM AS VENDOR_NAME,
+                DECLARE.DECLARATION_DATE AS DECLARE_DATE,
+                DECLARE.STATUS AS DECLARE_STATUS,
+                DECLARE.INTEREST_TO_DECLARE_FLAG AS DECLARE_INTEREST,
+                PAYMENTS.Max_PMT_DT AS PAY_DATE_LAST,
+                PAYMENTS.Count_TRAN AS PAY_NO_TRAN,
+                PAYMENTS.Sum_NET_PMT_AMT AS PAY_TOTAL_AMOUNT,
+                CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
+                CAMP_OFF.NAME_ADDR As CAMP_OFF_NAME,
+                CAMP_OFF.EMAIL_ADDRESS As CAMP_OFF_MAIL,
+                CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
+                CAMP_SUP.NAME_ADDR As CAMP_SUP_NAME,
+                CAMP_SUP.EMAIL_ADDRESS As CAMP_SUP_MAIL,
+                ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
+                ORG_OFF.NAME_ADDR As ORG_OFF_NAME,
+                ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL,
+                ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
+                ORG_SUP.NAME_ADDR As ORG_SUP_NAME,
+                ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL
+            From
+                X100ad_bank_addprev FINDING
+                Left Join PEOPLE.X002_PEOPLE_CURR PERSON On PERSON.EMPLOYEE_NUMBER = FINDING.EMP
+                Left Join KFS.X000_VENDOR_MASTER VENDOR On VENDOR.VENDOR_ID = FINDING.VENDOR_ID
+                Left Join KFS.X001ab_Report_payments_curr_summ PAYMENTS On PAYMENTS.VENDOR_ID = FINDING.VENDOR_ID
+                Left Join X001_declarations_curr DECLARE On DECLARE.EMPLOYEE = FINDING.EMP
+                Left Join X100af_bank_offi CAMP_OFF On CAMP_OFF.CAMPUS = FINDING.LOC
+                Left Join X100af_bank_offi ORG_OFF On ORG_OFF.CAMPUS = FINDING.ORG
+                Left Join X100ag_bank_supe CAMP_SUP On CAMP_SUP.CAMPUS = FINDING.LOC
+                Left Join X100ag_bank_supe ORG_SUP On ORG_SUP.CAMPUS = FINDING.ORG
+            WHERE
+              FINDING.PREV_PROCESS IS NULL
+            ;"""
+            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+            so_curs.execute(s_sql)
+            so_conn.commit()
+            funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
+    sr_file = "X100ax_bank_emp_vend"
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    print("Build the final report")
+    if i_find > 0 and i_coun > 0:
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            FINDING.ORG AS ORGANIZATION,
+            FINDING.LOC AS LOCATION,
+            FINDING.EMP AS EMPLOYEE_NUMBER,
+            FINDING.EMP_NAME AS EMPLOYEE_NAME,
+            FINDING.POSITION_FULL,
+            FINDING.EMP_BANK AS EMPLOYEE_BANK,
+            FINDING.BANKACC_TYPE,
+            FINDING.BANKACC_BRANCH,
+            FINDING.BANKACC_RELATION,
+            FINDING.DECLARE_DATE,
+            FINDING.DECLARE_STATUS,
+            FINDING.DECLARE_INTEREST,
+            FINDING.VENDOR_ID,
+            FINDING.VENDOR_NAME,
+            FINDING.VENDOR_BANK,
+            FINDING.PAY_DATE_LAST,
+            FINDING.PAY_NO_TRAN,
+            FINDING.PAY_TOTAL_AMOUNT,
+            FINDING.CAMP_OFF_NAME AS RESPONSIBLE_OFFICER,
+            FINDING.CAMP_OFF_NUMB AS RESPONSIBLE_OFFICER_NUMB,
+            FINDING.CAMP_OFF_MAIL AS RESPONSIBLE_OFFICER_MAIL,
+            FINDING.CAMP_SUP_NAME AS SUPERVISOR,
+            FINDING.CAMP_SUP_NUMB AS SUPERVISOR_NUMB,
+            FINDING.CAMP_SUP_MAIL AS SUPERVISOR_MAIL,
+            FINDING.ORG_OFF_NAME AS ORG_OFFICER,
+            FINDING.ORG_OFF_NUMB AS ORG_OFFICER_NUMB,
+            FINDING.ORG_OFF_MAIL AS ORG_OFFICER_MAIL,
+            FINDING.ORG_SUP_NAME AS ORG_SUPERVISOR,
+            FINDING.ORG_SUP_NUMB AS ORG_SUPERVISOR_NUMB,
+            FINDING.ORG_SUP_MAIL AS ORG_SUPERVISOR_MAIL
+        From
+            X100ah_bank_addempven FINDING
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+        # Export findings
+        if l_export == True and funcsys.tablerowcount(so_curs,sr_file) > 0:
+            print("Export findings...")
+            sr_filet = sr_file
+            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_file = "People_test_100ax_bank_emp_vend_"
+            sx_filet = sx_file + funcdate.today_file()
+            s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+            funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
+            funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
+            funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
+    else:
+        s_sql = "CREATE TABLE " + sr_file + " (" + """
+        BLANK TEXT
+        );"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """ ****************************************************************************
     END OF SCRIPT
