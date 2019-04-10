@@ -5,11 +5,12 @@ Author: Albert J van Rensburg (NWU21162395)
 
 """ INDEX *********************************************************************
 ENVIRONMENT
-ORACLE TO SQLITE (Extract data from Oracle system databases to local SQLite)
-PEOPLE LISTS
-KFS LISTS
-VSS LISTS
+ORACLE TO SQLITE (Extract data from Oracle system databases to local SQLite)(Run tuesdays to saturdays)
+PEOPLE LISTS (Run tuesdays to saturdays)
+KFS LISTS (Run tuesdays to saturdays)
+VSS LISTS (Run tuesdays to saturdays)
 PEOPLE MASTER FILE TESTS (Run only on weekdays)
+PEOPLE CONFLICT TESTS (Run only on weekdays)
 KFS VSS STUDENT DEBTOR RECONCILIATION AND TESTS
 VSS STUDENT MASTERFILE TESTS
 ****************************************************************************"""
@@ -106,6 +107,20 @@ if funcdate.today_dayname() in "MonTueWedThuFri":
     import C001_people_test_masterfile
     try:
         C001_people_test_masterfile.People_test_masterfile()
+    except Exception as e:
+        funcsys.ErrMessage(e)
+else:
+    print("PEOPLE MASTERFILE TESTS do not run on Saturdays and Sundays")
+    funcfile.writelog("SCRIPT: C001_PEOPLE_TEST_MASTERFILE: DO NOT RUN ON SATURDAYS AND SUNDAYS")
+
+"""****************************************************************************
+PEOPLE CONFLICT TESTS
+****************************************************************************"""
+
+if funcdate.today_dayname() in "MonTueWedThuFri":
+    import C002_people_test_conflict
+    try:
+        C002_people_test_conflict.People_test_conflict()
     except Exception as e:
         funcsys.ErrMessage(e)
 else:
