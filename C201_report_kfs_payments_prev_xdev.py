@@ -69,71 +69,137 @@ BEGIN OF SCRIPT
 print("BEGIN OF SCRIPT")
 funcfile.writelog("BEGIN OF SCRIPT")
 
+""" ****************************************************************************
+BUILD CURRENT YEAR PAYMENTS
+*****************************************************************************"""
+print("BUILD CURRENT YEAR PAYMENTS")
+funcfile.writelog("BUILD CURRENT YEAR PAYMENTS")
+
+# BUILD PAYMENTS
+print("Build current year payments...")
+sr_file = "X001aa_Report_payments_curr"
+s_sql = "CREATE TABLE " + sr_file + " AS " + """
+Select
+    PAYMENT.PMT_GRP_ID,
+    PAYMENT.PAYEE_ID AS VENDOR_ID,
+    PAYMENT.PMT_PAYEE_NM AS PAYEE_NAME,
+    VENDOR.VNDR_NM AS VENDOR_NAME,
+    VENDOR.VNDR_URL_ADDR AS VENDOR_REG_NR,
+    VENDOR.VNDR_TAX_NBR AS VENDOR_TAX_NR,
+    PAYEE.BNK_ACCT_NBR AS VENDOR_BANK_NR,
+    PAYMENT.PAYEE_ID_TYP_CD AS VENDOR_TYPE,
+    TYPE.PAYEE_TYP_DESC,
+    PAYMENT.DISB_NBR,
+    PAYMENT.DISB_TS,
+    PAYMENT.PMT_DT,
+    PAYMENT.PMT_STAT_CD,
+    STATUS.PMT_STAT_CD_DESC AS PAYMENT_STATUS,
+    DETAIL.CUST_PMT_DOC_NBR,
+    DETAIL.INV_NBR,
+    DETAIL.REQS_NBR,
+    DETAIL.PO_NBR,
+    DETAIL.INV_DT,
+    DETAIL.ORIG_INV_AMT,
+    DETAIL.NET_PMT_AMT
+From
+    PDP_PMT_GRP_T_CURR PAYMENT
+    Left Join X000_VENDOR_MASTER VENDOR On VENDOR.VENDOR_ID = PAYMENT.PAYEE_ID
+    Left Join PDP_PAYEE_ACH_ACCT_T PAYEE On PAYEE.PAYEE_ID_NBR = PAYMENT.PAYEE_ID And
+        PAYEE.PAYEE_ID_TYP_CD = PAYMENT.PAYEE_ID_TYP_CD
+    Left Join PDP_PAYEE_TYP_T TYPE ON TYPE.PAYEE_TYP_CD = PAYMENT.PAYEE_ID_TYP_CD
+    Left Join PDP_PMT_STAT_CD_T STATUS On STATUS.PMT_STAT_CD = PAYMENT.PMT_STAT_CD
+    Left Join PDP_PMT_DTL_T DETAIL On DETAIL.PMT_GRP_ID = PAYMENT.PMT_GRP_ID
+"""
+so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+so_curs.execute(s_sql)
+so_conn.commit()
+funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+# BUILD PAYMENTS SUMMARY
+print("Build current year payments summary...")
+sr_file = "X001ab_Report_payments_curr_summ"
+s_sql = "CREATE TABLE " + sr_file + " AS " + """
+Select
+    X001aa_Report_payments_curr.VENDOR_ID,
+    Max(X001aa_Report_payments_curr.PMT_DT) As Max_PMT_DT,
+    Sum(X001aa_Report_payments_curr.NET_PMT_AMT) As Sum_NET_PMT_AMT,
+    Count(X001aa_Report_payments_curr.VENDOR_ID) As Count_TRAN
+From
+    X001aa_Report_payments_curr
+Group By
+    X001aa_Report_payments_curr.VENDOR_ID
+"""
+so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+so_curs.execute(s_sql)
+so_conn.commit()
+funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+""" ****************************************************************************
+BUILD PREVIOUS YEAR PAYMENTS
+*****************************************************************************"""
+print("BUILD PREVIOUS YEAR PAYMENTS")
+funcfile.writelog("BUILD PREVIOUS YEAR PAYMENTS")
+
 # BUILD PAYMENTS
 print("Build previous year payments...")
 sr_file = "X001aa_Report_payments_prev"
 s_sql = "CREATE TABLE " + sr_file + " AS " + """
 Select
-    PDP_PMT_GRP_T_PREV.PMT_GRP_ID,
-    PDP_PMT_GRP_T_PREV.PAYEE_ID,
-    PDP_PMT_GRP_T_PREV.PMT_PAYEE_NM,
-    X000_VENDOR_MASTER.VNDR_NM,
-    X000_VENDOR_MASTER.VNDR_URL_ADDR,
-    X000_VENDOR_MASTER.VNDR_TAX_NBR,
-    X000_VENDOR_MASTER.VEND_BANK,
-    PDP_PMT_GRP_T_PREV.PAYEE_ID_TYP_CD,
-    X000_VENDOR_MASTER.PAYEE_TYP_DESC,
-    PDP_PMT_GRP_T_PREV.DISB_NBR,
-    PDP_PMT_GRP_T_PREV.DISB_TS,
-    PDP_PMT_GRP_T_PREV.PMT_DT,
-    PDP_PMT_GRP_T_PREV.PMT_STAT_CD,
-    PDP_PMT_STAT_CD_T.PMT_STAT_CD_DESC,
-    PDP_PMT_DTL_T.CUST_PMT_DOC_NBR,
-    PDP_PMT_DTL_T.INV_NBR,
-    PDP_PMT_DTL_T.REQS_NBR,
-    PDP_PMT_DTL_T.PO_NBR,
-    PDP_PMT_DTL_T.INV_DT,
-    PDP_PMT_DTL_T.ORIG_INV_AMT,
-    PDP_PMT_DTL_T.NET_PMT_AMT
+    PAYMENT.PMT_GRP_ID,
+    PAYMENT.PAYEE_ID AS VENDOR_ID,
+    PAYMENT.PMT_PAYEE_NM AS PAYEE_NAME,
+    VENDOR.VNDR_NM AS VENDOR_NAME,
+    VENDOR.VNDR_URL_ADDR AS VENDOR_REG_NR,
+    VENDOR.VNDR_TAX_NBR AS VENDOR_TAX_NR,
+    PAYEE.BNK_ACCT_NBR AS VENDOR_BANK_NR,
+    PAYMENT.PAYEE_ID_TYP_CD AS VENDOR_TYPE,
+    TYPE.PAYEE_TYP_DESC,
+    PAYMENT.DISB_NBR,
+    PAYMENT.DISB_TS,
+    PAYMENT.PMT_DT,
+    PAYMENT.PMT_STAT_CD,
+    STATUS.PMT_STAT_CD_DESC AS PAYMENT_STATUS,
+    DETAIL.CUST_PMT_DOC_NBR,
+    DETAIL.INV_NBR,
+    DETAIL.REQS_NBR,
+    DETAIL.PO_NBR,
+    DETAIL.INV_DT,
+    DETAIL.ORIG_INV_AMT,
+    DETAIL.NET_PMT_AMT
 From
-    PDP_PMT_GRP_T_PREV
-    Left Join X000_VENDOR_MASTER On X000_VENDOR_MASTER.PAYEE_ID_NBR = PDP_PMT_GRP_T_PREV.PAYEE_ID
-        And X000_VENDOR_MASTER.PAYEE_ID_TYP_CD = PDP_PMT_GRP_T_PREV.PAYEE_ID_TYP_CD
-    Left Join PDP_PMT_STAT_CD_T On PDP_PMT_STAT_CD_T.PMT_STAT_CD = PDP_PMT_GRP_T_PREV.PMT_STAT_CD
-    Left Join PDP_PMT_DTL_T On PDP_PMT_DTL_T.PMT_GRP_ID = PDP_PMT_GRP_T_PREV.PMT_GRP_ID
+    PDP_PMT_GRP_T_PREV PAYMENT
+    Left Join X000_VENDOR_MASTER VENDOR On VENDOR.VENDOR_ID = PAYMENT.PAYEE_ID
+    Left Join PDP_PAYEE_ACH_ACCT_T PAYEE On PAYEE.PAYEE_ID_NBR = PAYMENT.PAYEE_ID And
+        PAYEE.PAYEE_ID_TYP_CD = PAYMENT.PAYEE_ID_TYP_CD
+    Left Join PDP_PAYEE_TYP_T TYPE ON TYPE.PAYEE_TYP_CD = PAYMENT.PAYEE_ID_TYP_CD
+    Left Join PDP_PMT_STAT_CD_T STATUS On STATUS.PMT_STAT_CD = PAYMENT.PMT_STAT_CD
+    Left Join PDP_PMT_DTL_T DETAIL On DETAIL.PMT_GRP_ID = PAYMENT.PMT_GRP_ID
 """
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 so_curs.execute(s_sql)
 so_conn.commit()
 funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-# ADD DOCUMENT TYPE
-print("Add document type...")
-sr_file = "X001ab_Report_payments_prev_docs"
+# BUILD PAYMENTS SUMMARY
+print("Build previous year payments summary...")
+sr_file = "X001ab_Report_payments_prev_summ"
 s_sql = "CREATE TABLE " + sr_file + " AS " + """
 Select
-    X001_Report_payments_prev.*,
-    X000_Documents.DOC_TYP_NM,
-    X000_Documents.LBL
+    X001aa_Report_payments_prev.VENDOR_ID,
+    Max(X001aa_Report_payments_prev.PMT_DT) As Max_PMT_DT,
+    Sum(X001aa_Report_payments_prev.NET_PMT_AMT) As Sum_NET_PMT_AMT,
+    Count(X001aa_Report_payments_prev.VENDOR_ID) As Count_TRAN    
 From
-    X001_Report_payments_prev Left Join
-    X000_Documents On X000_Documents.DOC_HDR_ID = X001_Report_payments_prev.CUST_PMT_DOC_NBR
+    X001aa_Report_payments_prev
+Group By
+    X001aa_Report_payments_prev.VENDOR_ID
 """
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 so_curs.execute(s_sql)
 so_conn.commit()
 funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-"""
-    PDP_PMT_STAT_CD_T.PMT_STAT_CD_DESC,
-    PDP_PMT_DTL_T.CUST_PMT_DOC_NBR,
-    PDP_PMT_DTL_T.INV_NBR,
-    PDP_PMT_DTL_T.REQS_NBR,
-    PDP_PMT_DTL_T.PO_NBR,
-    PDP_PMT_DTL_T.INV_DT,
-    PDP_PMT_DTL_T.ORIG_INV_AMT,
-    PDP_PMT_DTL_T.NET_PMT_AMT
-"""
+
 
 
 """
