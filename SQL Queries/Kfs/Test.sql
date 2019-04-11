@@ -1,7 +1,7 @@
 ﻿Select
-    X001aa_Report_payments_curr.PAYEE_TYP_DESC,
-    Count(X001aa_Report_payments_curr.DISB_NBR) As Count_DISB_NBR
+    X002aa_approver_last.DOC_HDR_ID,
+    Count(X002aa_approver_last.PRNCPL_ID) As Count_PRNCPL_ID
 From
-    X001aa_Report_payments_curr
+    X002aa_approver_last
 Group By
-    X001aa_Report_payments_curr.PAYEE_TYP_DESC
+    X002aa_approver_last.DOC_HDR_ID
