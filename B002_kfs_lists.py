@@ -543,7 +543,7 @@ def Kfs_lists():
 
     # BUILD VENDOR TABLE
     print("Build vendor master file...")
-    sr_file = "X000_VENDOR_MASTER"
+    sr_file = "X000_Vendor_master"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     Select
         PUR_VNDR_DTL_T.VNDR_ID As VENDOR_ID,
