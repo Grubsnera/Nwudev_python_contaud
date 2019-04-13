@@ -24,7 +24,7 @@ print("-------------------")
 ilog_severity = 1
 
 # Declare variables
-so_path = "W:/" #Source database path
+so_path = "W:/Vss/" #Source database path
 re_path = "R:/Vss/" #Results
 so_file = "Vss.sqlite" #Source database
 ed_path = "S:/_external_data/"
