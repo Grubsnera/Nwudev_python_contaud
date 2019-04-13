@@ -124,14 +124,14 @@ if funcdate.today_dayname() in "MonTueWedThuFri":
     except Exception as e:
         funcsys.ErrMessage(e)
 else:
-    print("PEOPLE MASTERFILE TESTS do not run on Saturdays and Sundays")
-    funcfile.writelog("SCRIPT: C001_PEOPLE_TEST_MASTERFILE: DO NOT RUN ON SATURDAYS AND SUNDAYS")
+    print("PEOPLE CONFLICT TESTS do not run on Saturdays and Sundays")
+    funcfile.writelog("SCRIPT: C001_PEOPLE_TEST_CONFLICT: DO NOT RUN ON SATURDAYS AND SUNDAYS")
 
 """****************************************************************************
 KFS VSS STUDENT DEBTOR RECONCILIATION AND TESTS
 ****************************************************************************"""
 
-if funcdate.cur_day() in "01z02z03z04z10":
+if funcdate.cur_day() in "01z02z03z04z10z13":
     import C200_report_studdeb_recon
     try:
         C200_report_studdeb_recon.Report_studdeb_recon('66561452.48','-18340951.06','39482933.18')
@@ -145,7 +145,7 @@ else:
 VSS STUDENT MASTERFILE TESTS
 ****************************************************************************"""
 
-if funcdate.cur_day() in "01":
+if funcdate.cur_day() in "01z13":
     import C300_test_student_general
     try:
         C300_test_student_general.Test_student_general()
