@@ -1097,9 +1097,9 @@ def People_test_masterfile():
         X002_id_master.NUMB,
         X002_id_master.SEX,
         CASE
-            WHEN CAST(SUBSTR(NUMB,7,1) AS INT) >= 5 THEN 'M'
-            WHEN CAST(SUBSTR(NUMB,7,1) AS INT) >= 0 THEN 'F'
-            ELSE 'U'
+            WHEN CAST(SUBSTR(NUMB,7,1) AS INT) >= 5 THEN 'MALE'
+            WHEN CAST(SUBSTR(NUMB,7,1) AS INT) >= 0 THEN 'FEMALE'
+            ELSE 'OTHER'
         END AS GEND,    
         '' AS VAL
     From
