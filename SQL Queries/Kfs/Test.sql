@@ -1,7 +1,7 @@
 ﻿Select
-    X002aa_approver_last.DOC_HDR_ID,
-    Count(X002aa_approver_last.PRNCPL_ID) As Count_PRNCPL_ID
+    X001aa_Report_payments_prev.CUST_PMT_DOC_NBR,
+    Count(X001aa_Report_payments_prev.REQS_NBR) As Count_REQS_NBR
 From
-    X002aa_approver_last
+    X001aa_Report_payments_prev
 Group By
-    X002aa_approver_last.DOC_HDR_ID
+    X001aa_Report_payments_prev.CUST_PMT_DOC_NBR
