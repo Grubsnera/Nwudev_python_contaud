@@ -1120,7 +1120,7 @@ def Vss_lists():
     so_conn.commit()
     funcfile.writelog("%t BUILD VIEW: "+sr_file)
 
-    # Build current student party external reference file **************************
+    # BUILD CURRENT STUDENT ID NUMBER TABLE
     print("Build current student party id numbers...")
     sr_file = "X005ab_Party_idno_curr"
     s_sql = "CREATE VIEW "+sr_file+" AS " + """
@@ -1142,7 +1142,51 @@ def Vss_lists():
     so_conn.commit()
     funcfile.writelog("%t BUILD VIEW: "+sr_file)
 
-    # Build student party file *****************************************************
+    # BUILD CURRENT STUDENT PASSPORT TABLE
+    print("Build current student passport table...")
+    sr_file = "X005ac_Party_pass_curr"
+    s_sql = "CREATE VIEW "+sr_file+" AS " + """
+    SELECT DISTINCT
+      X005aa_Party_extref.KBUSINESSENTITYID,
+      X005aa_Party_extref.KEXTERNALREFERENCECODEID,
+      X005aa_Party_extref.LONG,
+      X005aa_Party_extref.LANK,
+      X005aa_Party_extref.EXTERNALREFERENCENUMBER
+    FROM
+      X005aa_Party_extref
+    WHERE
+      X005aa_Party_extref.STARTDATE <= Date('%TODAY%') AND X005aa_Party_extref.ENDDATE >= Date('%TODAY%') AND
+      X005aa_Party_extref.KEXTERNALREFERENCECODEID = '6526'
+    ;"""
+    so_curs.execute("DROP VIEW IF EXISTS "+sr_file)
+    s_sql = s_sql.replace("%TODAY%",funcdate.today())
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD VIEW: "+sr_file)
+
+    # BUILD CURRENT STUDENT PASSPORT FILE
+    print("Build current student study permit table...")
+    sr_file = "X005ad_Party_perm_curr"
+    s_sql = "CREATE VIEW "+sr_file+" AS " + """
+    SELECT DISTINCT
+      X005aa_Party_extref.KBUSINESSENTITYID,
+      X005aa_Party_extref.KEXTERNALREFERENCECODEID,
+      X005aa_Party_extref.LONG,
+      X005aa_Party_extref.LANK,
+      X005aa_Party_extref.EXTERNALREFERENCENUMBER
+    FROM
+      X005aa_Party_extref
+    WHERE
+      X005aa_Party_extref.STARTDATE <= Date('%TODAY%') AND X005aa_Party_extref.ENDDATE >= Date('%TODAY%') AND
+      X005aa_Party_extref.KEXTERNALREFERENCECODEID = '9690'
+    ;"""
+    so_curs.execute("DROP VIEW IF EXISTS "+sr_file)
+    s_sql = s_sql.replace("%TODAY%",funcdate.today())
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD VIEW: "+sr_file)    
+
+    # BUILD STUDENT PARTY FILE
     print("Build student party file...")
     sr_file = "X000_Party"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
@@ -1156,7 +1200,9 @@ def Vss_lists():
       PARTY.NICKNAME,
       PARTY.MAIDENNAME,
       PARTY.DATEOFBIRTH,
-      X005ab_Party_idno_curr.EXTERNALREFERENCENUMBER AS IDNO,
+      ID.EXTERNALREFERENCENUMBER AS IDNO,
+      Upper(PASSPORT.EXTERNALREFERENCENUMBER) As PASSPORT,
+      Upper(SPERMIT.EXTERNALREFERENCENUMBER) AS STUDYPERMIT,
       PARTY.FTITLECODEID,
       X000_Codedesc_title.LONG AS TITLE,
       X000_Codedesc_title.LANK AS TITEL,
@@ -1181,7 +1227,9 @@ def Vss_lists():
       PARTY.LOCKSTAMP,
       PARTY.AUDITDATETIME,
       PARTY.FAUDITSYSTEMFUNCTIONID,
-      PARTY.FAUDITUSERCODE  
+      PARTY.FAUDITUSERCODE,
+      Upper(Trim(SURNAME))||' '||Replace(Upper(Trim(INITIALS)),' ','') As SURN_INIT,
+      Upper(Trim(SURNAME))||' ('||Replace(Upper(Trim(INITIALS)),' ','')||') '||Upper(Trim(FIRSTNAMES)) As FULL_NAME
     FROM
       PARTY
       LEFT JOIN X000_Codedescription X000_Codedesc_title ON X000_Codedesc_title.KCODEDESCID = PARTY.FTITLECODEID
@@ -1191,7 +1239,9 @@ def Vss_lists():
       LEFT JOIN X000_Codedescription X000_Codedesc_population ON X000_Codedesc_population.KCODEDESCID =
         PARTY.FPOPULATIONGROUPCODEID
       LEFT JOIN X000_Codedescription X000_Codedesc_race ON X000_Codedesc_race.KCODEDESCID = PARTY.FRACECODEID
-      LEFT JOIN X005ab_Party_idno_curr ON X005ab_Party_idno_curr.KBUSINESSENTITYID = PARTY.KBUSINESSENTITYID
+      LEFT JOIN X005ab_Party_idno_curr ID ON ID.KBUSINESSENTITYID = PARTY.KBUSINESSENTITYID
+      LEFT JOIN X005ac_Party_pass_curr PASSPORT ON PASSPORT.KBUSINESSENTITYID = PARTY.KBUSINESSENTITYID
+      LEFT JOIN X005ad_Party_perm_curr SPERMIT ON SPERMIT.KBUSINESSENTITYID = PARTY.KBUSINESSENTITYID
     WHERE
       PARTY.PARTYTYPE = '1'
     ORDER BY
@@ -1200,15 +1250,6 @@ def Vss_lists():
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: "+sr_file)
-    print("Add column surname initials...")
-    so_curs.execute("ALTER TABLE "+sr_file+" ADD COLUMN SURN_INIT TEXT;")
-    so_curs.execute("UPDATE "+sr_file+" SET SURN_INIT = UPPER(TRIM(SURNAME)) ||' '|| REPLACE(UPPER(TRIM(INITIALS)),' ','')")
-    print("Add column full name...")
-    so_curs.execute("ALTER TABLE "+sr_file+" ADD COLUMN FULL_NAME TEXT;")
-    so_curs.execute("UPDATE "+sr_file+" SET FULL_NAME = UPPER(TRIM(SURNAME)) ||' ('|| REPLACE(UPPER(TRIM(INITIALS)),' ','') ||') '|| UPPER(TRIM(FIRSTNAMES))")
-    so_conn.commit()
-
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
     """ STUDENT ACCOUNT TRANSACTIONS *******************************************
