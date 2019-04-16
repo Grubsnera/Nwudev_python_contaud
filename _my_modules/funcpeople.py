@@ -36,11 +36,11 @@ def Assign01(so_conn,s_table,s_from,s_to,s_on,s_mess):
     SELECT
       X000_PER_ALL_ASSIGNMENTS.ASS_ID,
       X000_PER_ALL_ASSIGNMENTS.PERSON_ID,
-      X000_PER_ALL_ASSIGNMENTS.ASSIGNMENT_NUMBER AS ASS_NUMB,
-      X000_PER_ALL_ASSIGNMENTS.SERVICE_DATE_START AS EMP_START,
-      X000_PER_ALL_ASSIGNMENTS.EFFECTIVE_START_DATE AS ASS_START,
-      X000_PER_ALL_ASSIGNMENTS.EFFECTIVE_END_DATE AS ASS_END,
-      X000_PER_ALL_ASSIGNMENTS.SERVICE_DATE_ACTUAL_TERMINATION AS EMP_END,
+      X000_PER_ALL_ASSIGNMENTS.ASSIGNMENT_NUMBER As ASS_NUMB,
+      X000_PER_ALL_ASSIGNMENTS.SERVICE_DATE_START As EMP_START,
+      X000_PER_ALL_ASSIGNMENTS.EFFECTIVE_START_DATE As ASS_START,
+      X000_PER_ALL_ASSIGNMENTS.EFFECTIVE_END_DATE As ASS_END,
+      X000_PER_ALL_ASSIGNMENTS.SERVICE_DATE_ACTUAL_TERMINATION As EMP_END,
       X000_PER_ALL_ASSIGNMENTS.LEAVING_REASON,
       X000_PER_ALL_ASSIGNMENTS.LEAVE_REASON_DESCRIP,
       X000_PER_ALL_ASSIGNMENTS.LOCATION_DESCRIPTION,  
@@ -196,7 +196,7 @@ def Assign02(so_conn,s_table,s_source,s_mess):
       %SOURCET%.EMPLOYMENT_CATEGORY,
       %SOURCET%.LEAVE_CODE,
       %SOURCET%.SUPERVISOR_ID,
-      X000_PER_ALL_PEOPLE1.EMPLOYEE_NUMBER AS SUPERVISOR,
+      X000_PER_ALL_PEOPLE1.EMPLOYEE_NUMBER As SUPERVISOR,
       %SOURCET%.ASS_WEEK_LEN,
       %SOURCET%.ASS_ATTRIBUTE2,
       X000_PER_ALL_PEOPLE.NATIONALITY,
@@ -260,57 +260,71 @@ def People01(so_conn,s_table,s_source,s_peri,s_mess,s_acti):
     else:
        s_wher = "%SOURCET%.ASS_ACTIVE = 'Y'"
     
-    s_sql = "CREATE TABLE " + s_table + " AS" + """
-    SELECT
+    s_sql = "CREATE TABLE " + s_table + " As " + """
+    Select
       %SOURCET%.EMPLOYEE_NUMBER,
       %SOURCET%.ASS_ID,
       %SOURCET%.PERSON_ID,
       %SOURCET%.ASS_NUMB,
       X000_PER_ALL_PEOPLE.PARTY_ID,
-      %SOURCET%.FULL_NAME,
-      %SOURCET%.KNOWN_NAME,
+      Upper(%SOURCET%.FULL_NAME) As FULL_NAME,
+      '' As NAME_LIST,
+      '' As NAME_ADDR,
+      Upper(%SOURCET%.KNOWN_NAME) As KNOWN_NAME,
+      CASE
+         WHEN ORG_NAME IS NULL THEN OE_CODE||': '||POSITION_NAME
+         ELSE ORG_NAME||': '||POSITION_NAME
+      END AS POSITION_FULL,
       %SOURCET%.DATE_OF_BIRTH,
-      X000_PER_ALL_PEOPLE.NATIONALITY,
-      X000_PER_ALL_PEOPLE.NATIONALITY_NAME,
-      X000_PER_ALL_PEOPLE.NATIONAL_IDENTIFIER AS IDNO,
-      X000_PER_ALL_PEOPLE.PER_INFORMATION2 AS PASSPORT,
-      X000_PER_ALL_PEOPLE.PER_INFORMATION3 AS PERMIT,
+      Upper(X000_PER_ALL_PEOPLE.NATIONALITY) As NATIONALITY,
+      Upper(X000_PER_ALL_PEOPLE.NATIONALITY_NAME) As NATIONALITY_NAME,
+      X000_PER_ALL_PEOPLE.NATIONAL_IDENTIFIER As IDNO,
+      X000_PER_ALL_PEOPLE.PER_INFORMATION2 As PASSPORT,
+      X000_PER_ALL_PEOPLE.PER_INFORMATION3 As PERMIT,
       X000_PER_ALL_PEOPLE.TAX_NUMBER,
-      X000_PER_ALL_PEOPLE.SEX,
+      Case
+          When X000_PER_ALL_PEOPLE.SEX = 'F' Then 'FEMALE'
+          When X000_PER_ALL_PEOPLE.SEX = 'M' Then 'MALE'
+          Else 'OTHER'
+      End As SEX,
       X000_PER_ALL_PEOPLE.MARITAL_STATUS,
-      X000_PER_ALL_PEOPLE.REGISTERED_DISABLED_FLAG AS DISABLED,
+      X000_PER_ALL_PEOPLE.REGISTERED_DISABLED_FLAG As DISABLED,
       X000_PER_ALL_PEOPLE.RACE_CODE,
-      X000_PER_ALL_PEOPLE.RACE_DESC,
+      Upper(X000_PER_ALL_PEOPLE.RACE_DESC) As RACE_DESC,
       X000_PER_ALL_PEOPLE.LANG_CODE,
-      X000_PER_ALL_PEOPLE.LANG_DESC,
+      Upper(X000_PER_ALL_PEOPLE.LANG_DESC) As LANG_DESC,
       X000_PER_ALL_PEOPLE.INT_MAIL,
-      X000_PER_ALL_PEOPLE.EMAIL_ADDRESS,
-      X000_PER_ALL_PEOPLE.CURRENT_EMPLOYEE_FLAG AS CURR_EMPL_FLAG,
+      Lower(X000_PER_ALL_PEOPLE.EMAIL_ADDRESS) As EMAIL_ADDRESS,
+      X000_PER_ALL_PEOPLE.CURRENT_EMPLOYEE_FLAG As CURR_EMPL_FLAG,
       X000_PER_ALL_PEOPLE.USER_PERSON_TYPE,
       %SOURCET%.ASS_START,
       %SOURCET%.ASS_END,
       %SOURCET%.EMP_START,
       %SOURCET%.EMP_END,
       %SOURCET%.LEAVING_REASON,
-      %SOURCET%.LEAVE_REASON_DESCRIP,
-      %SOURCET%.LOCATION_DESCRIPTION,
-      %SOURCET%.ORG_TYPE_DESC,
-      %SOURCET%.OE_CODE,
-      %SOURCET%.ORG_NAME,
+      Upper(%SOURCET%.LEAVE_REASON_DESCRIP) As LEAVE_REASON_DESCRIP,
+      Upper(%SOURCET%.LOCATION_DESCRIPTION) As LOCATION_DESCRIPTION,
+      Upper(%SOURCET%.ORG_TYPE_DESC) As ORG_TYPE_DESC,
+      Upper(%SOURCET%.OE_CODE) As OE_CODE,
+      Upper(%SOURCET%.ORG_NAME) As ORG_NAME,
       %SOURCET%.PRIMARY_FLAG,
-      %SOURCET%.ACAD_SUPP,
-      %SOURCET%.FACULTY,
-      %SOURCET%.DIVISION,      
-      %SOURCET%.EMPLOYMENT_CATEGORY,
+      Upper(%SOURCET%.ACAD_SUPP) As ACAD_SUPP,
+      Upper(%SOURCET%.FACULTY) As FACULTY,
+      Upper(%SOURCET%.DIVISION) As DIVISION,
+      Case
+          When EMPLOYMENT_CATEGORY = 'P' Then 'PERMANENT'
+          When EMPLOYMENT_CATEGORY = 'T' Then 'TEMPORARY'
+          Else 'OTHER'
+      End As EMPLOYMENT_CATEGORY,
       %SOURCET%.ASS_WEEK_LEN,
       %SOURCET%.LEAVE_CODE,
       %SOURCET%.GRADE,
-      %SOURCET%.GRADE_NAME,
+      Upper(%SOURCET%.GRADE_NAME) As GRADE_NAME,
       %SOURCET%.GRADE_CALC,
       %SOURCET%.POSITION,
-      %SOURCET%.POSITION_NAME,
-      %SOURCET%.JOB_NAME,
-      %SOURCET%.JOB_SEGMENT_NAME,
+      Upper(%SOURCET%.POSITION_NAME) As POSITION_NAME,
+      Upper(%SOURCET%.JOB_NAME) As JOB_NAME,
+      Upper(%SOURCET%.JOB_SEGMENT_NAME) As JOB_SEGMENT_NAME,
       %SOURCET%.SUPERVISOR,
       X000_PER_ALL_PEOPLE.TITLE_FULL,
       X000_PER_ALL_PEOPLE.FIRST_NAME,
@@ -332,11 +346,11 @@ def People01(so_conn,s_table,s_source,s_peri,s_mess,s_acti):
       %SOURCET%.EMP_ACTIVE,      
       %SOURCET%.MAILTO,
       PER_PAY_PROPOSALS.PROPOSED_SALARY_N,
-      X000_PER_PEOPLE_TYPES.USER_PERSON_TYPE AS PERSON_TYPE,
-      %SOURCET%.ACC_TYPE,
-      %SOURCET%.ACC_BRANCH,
+      Upper(X000_PER_PEOPLE_TYPES.USER_PERSON_TYPE) As PERSON_TYPE,
+      Upper(%SOURCET%.ACC_TYPE) As ACC_TYPE,
+      Upper(%SOURCET%.ACC_BRANCH) As ACC_BRANCH,
       %SOURCET%.ACC_NUMBER,
-      %SOURCET%.ACC_RELATION
+      Upper(%SOURCET%.ACC_RELATION) As ACC_RELATION
     FROM
       %SOURCET%
       LEFT JOIN X000_PER_ALL_PEOPLE ON X000_PER_ALL_PEOPLE.PERSON_ID = %SOURCET%.PERSON_ID AND
@@ -388,43 +402,17 @@ def People01(so_conn,s_table,s_source,s_peri,s_mess,s_acti):
                         ;"""
         so_curs.execute(s_sql)
         so_conn.commit()
-        funcfile.writelog("%t ADD COLUMN: INITIALS")     
+        funcfile.writelog("%t ADD COLUMN: INITIALS")
 
-    if "NAME_LIST" not in funccsv.get_colnames_sqlite(so_curs,s_table):
-        so_curs.execute("ALTER TABLE " + s_table + " ADD COLUMN NAME_LIST TEXT;")
-        s_sql = "UPDATE " + s_table + """
-                        SET NAME_LIST = LAST_NAME||' '||TITLE_FULL||' '||INITIALS
-                        ;"""
-        so_curs.execute(s_sql)
-        so_conn.commit()
-        funcfile.writelog("%t ADD COLUMN: NAME_LIST")     
-
-    if "NAME_ADDR" not in funccsv.get_colnames_sqlite(so_curs,s_table):
-        so_curs.execute("ALTER TABLE " + s_table + " ADD COLUMN NAME_ADDR TEXT;")
-        s_sql = "UPDATE " + s_table + """
-                        SET NAME_ADDR = TITLE_FULL||' '||INITIALS||' '||LAST_NAME
-                        ;"""
-        so_curs.execute(s_sql)
-        so_conn.commit()
-        funcfile.writelog("%t ADD COLUMN: NAME_ADDR")    
-
-    if "POSITION_FULL" not in funccsv.get_colnames_sqlite(so_curs,s_table):
-        so_curs.execute("ALTER TABLE " + s_table + " ADD COLUMN POSITION_FULL TEXT;")
-        s_sql = "UPDATE " + s_table + """
-                        SET POSITION_FULL =
-                        CASE
-                           WHEN TYPEOF(ORG_NAME) = 'null' THEN OE_CODE||': '||POSITION_NAME
-                           ELSE ORG_NAME||': '||POSITION_NAME
-                        END
-                        ;"""
-        so_curs.execute(s_sql)
-        so_conn.commit()
-        funcfile.writelog("%t ADD COLUMN: POSITION_NAME")
+    so_curs.execute("UPDATE "+s_table+" SET NAME_LIST = LAST_NAME||' '||TITLE_FULL||' '||INITIALS;")
+    so_conn.commit()
+    so_curs.execute("UPDATE "+s_table+" SET NAME_ADDR = TITLE_FULL||' '||INITIALS||' '||LAST_NAME;")
+    so_conn.commit()
 
     if "AGE" not in funccsv.get_colnames_sqlite(so_curs,s_table):
         so_curs.execute("ALTER TABLE " + s_table + " ADD COLUMN AGE INT;")
         s_sql = "UPDATE " + s_table + """
-                        SET AGE = cast( (strftime('%Y', 'now') - strftime('%Y', DATE_OF_BIRTH)) - (strftime('%m-%d', 'now') < strftime('%m-%d', DATE_OF_BIRTH)) as int)
+                        SET AGE = cast( (strftime('%Y', 'now') - strftime('%Y', DATE_OF_BIRTH)) - (strftime('%m-%d', 'now') < strftime('%m-%d', DATE_OF_BIRTH)) As int)
                         ;"""
         so_curs.execute(s_sql)
         so_conn.commit()
@@ -433,7 +421,7 @@ def People01(so_conn,s_table,s_source,s_peri,s_mess,s_acti):
     if "MONTH" not in funccsv.get_colnames_sqlite(so_curs,s_table):
         so_curs.execute("ALTER TABLE " + s_table + " ADD COLUMN MONTH INT;")
         s_sql = "UPDATE " + s_table + """
-                        SET MONTH = cast(strftime('%m', DATE_OF_BIRTH) as int)
+                        SET MONTH = cast(strftime('%m', DATE_OF_BIRTH) As int)
                         ;"""
         so_curs.execute(s_sql)
         so_conn.commit()
@@ -442,7 +430,7 @@ def People01(so_conn,s_table,s_source,s_peri,s_mess,s_acti):
     if "DAY" not in funccsv.get_colnames_sqlite(so_curs,s_table):
         so_curs.execute("ALTER TABLE " + s_table + " ADD COLUMN DAY INT;")
         s_sql = "UPDATE " + s_table + """
-                        SET DAY = cast(strftime('%d', DATE_OF_BIRTH) as int)
+                        SET DAY = cast(strftime('%d', DATE_OF_BIRTH) As int)
                         ;"""
         so_curs.execute(s_sql)
         so_conn.commit()
