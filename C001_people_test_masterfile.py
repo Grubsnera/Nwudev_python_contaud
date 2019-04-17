@@ -182,9 +182,9 @@ def People_test_masterfile():
     Select
         'NWU' AS ORG,
         CASE LOCATION_DESCRIPTION
-            WHEN 'Mafikeng Campus' THEN 'MAF'
-            WHEN 'Potchefstroom Campus' THEN 'POT'
-            WHEN 'Vaal Triangle Campus' THEN 'VAA'
+            WHEN 'MAFIKENG CAMPUS' THEN 'MAF'
+            WHEN 'POTCHEFSTROOM CAMPUS' THEN 'POT'
+            WHEN 'VAAL TRIANGLE CAMPUS' THEN 'VAA'
             ELSE 'NWU'
         END AS LOC,
         PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER AS EMP,
@@ -1685,9 +1685,9 @@ def People_test_masterfile():
     Select
         'NWU' AS ORG,
         CASE LOCATION_DESCRIPTION
-            WHEN 'Mafikeng Campus' THEN 'MAF'
-            WHEN 'Potchefstroom Campus' THEN 'POT'
-            WHEN 'Vaal Triangle Campus' THEN 'VAA'
+            WHEN 'MAFIKENG CAMPUS' THEN 'MAF'
+            WHEN 'POTCHEFSTROOM CAMPUS' THEN 'POT'
+            WHEN 'VAAL TRIANGLE CAMPUS' THEN 'VAA'
             ELSE 'NWU'
         END AS LOC,
         PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER AS EMP,
@@ -2284,9 +2284,9 @@ def People_test_masterfile():
     Select
         'NWU' AS ORG,
         CASE LOCATION_DESCRIPTION
-            WHEN 'Mafikeng Campus' THEN 'MAF'
-            WHEN 'Potchefstroom Campus' THEN 'POT'
-            WHEN 'Vaal Triangle Campus' THEN 'VAA'
+            WHEN 'MAFIKENG CAMPUS' THEN 'MAF'
+            WHEN 'POTCHEFSTROOM CAMPUS' THEN 'POT'
+            WHEN 'VAAL TRIANGLE CAMPUS' THEN 'VAA'
             ELSE 'NWU'
         END AS LOC,
         PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER AS EMP,
@@ -2668,9 +2668,9 @@ def People_test_masterfile():
     Select
         'NWU' AS ORG,
         CASE PEOPLE.X002_PEOPLE_CURR.LOCATION_DESCRIPTION
-            WHEN 'Mafikeng Campus' THEN 'MAF'
-            WHEN 'Potchefstroom Campus' THEN 'POT'
-            WHEN 'Vaal Triangle Campus' THEN 'VAA'
+            WHEN 'MAFIKENG CAMPUS' THEN 'MAF'
+            WHEN 'POTCHEFSTROOM CAMPUS' THEN 'POT'
+            WHEN 'VAAL TRIANGLE CAMPUS' THEN 'VAA'
             ELSE 'NWU'
         END AS LOC,
         X004_bank_change.EMPLOYEE_NUMBER AS EMP,
@@ -2980,9 +2980,9 @@ def People_test_masterfile():
     Select
         'NWU' AS ORG,
         CASE LOCATION_DESCRIPTION
-            WHEN 'Mafikeng Campus' THEN 'MAF'
-            WHEN 'Potchefstroom Campus' THEN 'POT'
-            WHEN 'Vaal Triangle Campus' THEN 'VAA'
+            WHEN 'MAFIKENG CAMPUS' THEN 'MAF'
+            WHEN 'POTCHEFSTROOM CAMPUS' THEN 'POT'
+            WHEN 'VAAL TRIANGLE CAMPUS' THEN 'VAA'
             ELSE 'NWU'
         END AS LOC,
         PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER AS EMP,
@@ -3921,9 +3921,9 @@ def People_test_masterfile():
     Select
         'NWU' AS ORG,
         CASE LOCATION_DESCRIPTION
-            WHEN 'Mafikeng Campus' THEN 'MAF'
-            WHEN 'Potchefstroom Campus' THEN 'POT'
-            WHEN 'Vaal Triangle Campus' THEN 'VAA'
+            WHEN 'MAFIKENG CAMPUS' THEN 'MAF'
+            WHEN 'POTCHEFSTROOM CAMPUS' THEN 'POT'
+            WHEN 'VAAL TRIANGLE CAMPUS' THEN 'VAA'
             ELSE 'NWU'
         END AS LOC,
         PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER AS EMP,
