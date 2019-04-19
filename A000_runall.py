@@ -134,7 +134,9 @@ KFS VSS STUDENT DEBTOR RECONCILIATION AND TESTS
 if funcdate.cur_day() in "01z02z03z04z10z13":
     import C200_report_studdeb_recon
     try:
-        C200_report_studdeb_recon.Report_studdeb_recon('66561452.48','-18340951.06','39482933.18')
+        C200_report_studdeb_recon.Report_studdeb_recon()
+        # 2019 balances
+        #C200_report_studdeb_recon.Report_studdeb_recon('66561452.48','-18340951.06','39482933.18')
     except Exception as e:
         funcsys.ErrMessage(e)
 else:
