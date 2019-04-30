@@ -44,30 +44,6 @@ funcfile.writelog("%t OPEN DATABASE: Kfs_vss_studdeb")
 so_curs.execute("ATTACH DATABASE 'W:/Kfs_vss_studdeb/Kfs_vss_studdeb.sqlite' AS 'TRAN'")
 funcfile.writelog("%t ATTACH DATABASE: Kfs_vss_studdeb.sqlite")
 
-# ADD THE BALANCES TO THE LIST OF REGISTERED STUDENTS **************************
-
-
-# Calc indicator for non-entering and first-time students
-print("Add column bal_reg_calc...")
-so_curs.execute("UPDATE " + sr_file + """
-                SET BAL_REG_CALC =
-                CASE
-                    WHEN TYPEOF(BAL_OPEN) = "null" AND TYPEOF(CRE_REG_BEFORE) = "null" THEN 0
-                    WHEN TYPEOF(BAL_OPEN) = "null" THEN CRE_REG_BEFORE
-                    WHEN TYPEOF(CRE_REG_BEFORE) = "null"  THEN BAL_OPEN
-                    ELSE BAL_OPEN + CRE_REG_BEFORE
-                END
-                ;""")
-so_conn.commit()
-funcfile.writelog("%t ADD COLUMN: entry_level_calc")
-
-
-
-
-
-
-
-
 
 
 # CLOSE THE DATABASE CONNECTION ************************************************
