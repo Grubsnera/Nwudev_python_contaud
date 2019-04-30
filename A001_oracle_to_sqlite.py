@@ -233,8 +233,10 @@ def Oracle_to_sqlite():
                             # Populate column string with alternate names
                             if co_typ == "NUMBER" and co_dec != "0":
                                 sco_ana = sco_ana + ''.join(row[8]) + " REAL,"
-                            elif co_typ == "NUMBER"                        :
+                            elif co_typ == "NUMBER":
                                 sco_ana = sco_ana + ''.join(row[8]) + " INTEGER,"
+                            elif co_typ == "REAL":
+                                sco_ana = sco_ana + ''.join(row[8]) + " REAL,"
                             else:
                                 sco_ana = sco_ana + ''.join(row[8]) + " TEXT,"
                                 
