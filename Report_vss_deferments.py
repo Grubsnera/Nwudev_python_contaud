@@ -226,9 +226,9 @@ SELECT
 FROM
   VSS.X001cx_Stud_qual_curr
 WHERE
-  VSS.X001cx_Stud_qual_curr.QUAL_TYPE Not Like '%Short Course%' AND
+  UPPER(VSS.X001cx_Stud_qual_curr.QUAL_TYPE) Not Like '%SHORT COURSE%' AND
   VSS.X001cx_Stud_qual_curr.ISMAINQUALLEVEL = 1 AND
-  VSS.X001cx_Stud_qual_curr.ACTIVE_IND = 'Active'
+  UPPER(VSS.X001cx_Stud_qual_curr.ACTIVE_IND) = 'ACTIVE'
 """
 # VSS.X001cx_Stud_qual_curr.PRESENT_CAT = 'Contact' AND
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -343,7 +343,8 @@ SELECT
 FROM
   X000_Transaction_curr
 WHERE
-  X000_Transaction_curr.TRANSCODE_VSS = "002"
+  X000_Transaction_curr.TRANSCODE_VSS = "002" Or
+  X000_Transaction_curr.TRANSCODE_VSS = "095"
 GROUP BY
   X000_Transaction_curr.STUDENT_VSS
 """
@@ -445,6 +446,48 @@ so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
 so_curs.execute(s_sql)
 funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
+# CALCULATE THE DEFERMENT DATE
+
+print("Calculate the deferment date per student...")
+sr_file = "X002aa_Defer_date"
+s_sql = "CREATE VIEW " + sr_file+ " AS" + """
+Select
+    DEFER.STUDENT,
+    DEFER.DATEEND
+From
+    X000_Deferments_curr DEFER
+Group By
+    DEFER.STUDENT
+Order By
+    DEFER.DATEEND
+"""
+so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
+so_curs.execute(s_sql)
+funcfile.writelog("%t BUILD VIEW: " + sr_file)
+
+# CALCULATE THE STUDENT ACCOUNT CREDIT TRANSACTIONS BEFORE DEFERMENT DATE *********
+
+print("Calculate the credits up to deferment date...")
+sr_file = "X002ab_Trans_crebefdef"
+s_sql = "CREATE VIEW " + sr_file+ " AS" + """
+Select
+    TRAN.STUDENT_VSS,
+    Sum(TRAN.AMOUNT_VSS) As Sum_AMOUNT_VSS
+From
+    X000_Transaction_curr TRAN Inner Join
+    X002aa_Defer_date DDATE On DDATE.STUDENT = TRAN.STUDENT_VSS
+Where
+    TRAN.IS_OPEN_BAL = 0 And
+    TRAN.AMOUNT_VSS <= 0 And
+    TRAN.TRANSDATE_VSS <= DDATE.DATEEND
+Group By
+    TRAN.STUDENT_VSS
+"""
+so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
+so_curs.execute("DROP VIEW IF EXISTS X001ae_Trans_crereg")
+so_curs.execute(s_sql)
+funcfile.writelog("%t BUILD VIEW: " + sr_file)
+
 # ADD THE BALANCES TO THE LIST OF REGISTERED STUDENTS **************************
 
 print("Add the calculated balances to the students list...")
@@ -459,7 +502,9 @@ SELECT
   X001af_Trans_creaftreg.CRE_REG_AFTER,
   CAST(0 AS REAL) AS BAL_CRE_CALC,
   X001ag_Trans_balance.BAL_CUR,
-  X001ab_Trans_feereg.FEE_REG
+  X001ab_Trans_feereg.FEE_REG,
+  X002ab_Trans_crebefdef.Sum_Amount_VSS As CRE_DEF_BEFORE,
+  CAST(0 AS REAL) AS BAL_DEF_CALC
 FROM
   X000_Students_curr
   LEFT JOIN X001ad_Trans_balreg ON X001ad_Trans_balreg.STUDENT_VSS = X000_Students_curr.KSTUDBUSENTID
@@ -468,6 +513,7 @@ FROM
   LEFT JOIN X001af_Trans_creaftreg ON X001af_Trans_creaftreg.STUDENT_VSS = X000_Students_curr.KSTUDBUSENTID
   LEFT JOIN X001ab_Trans_feereg ON X001ab_Trans_feereg.STUDENT_VSS = X000_Students_curr.KSTUDBUSENTID
   LEFT JOIN X001ag_Trans_balance ON X001ag_Trans_balance.STUDENT_VSS = X000_Students_curr.KSTUDBUSENTID
+  LEFT JOIN X002ab_Trans_crebefdef ON X002ab_Trans_crebefdef.STUDENT_VSS = X000_Students_curr.KSTUDBUSENTID  
 """
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 so_curs.execute(s_sql)
@@ -496,10 +542,98 @@ so_curs.execute("UPDATE " + sr_file + """
                 ;""")
 so_conn.commit()
 funcfile.writelog("%t ADD COLUMN: bal_cre_calc")
+# Calc balance after credits up to registration
+print("Add column bal_def_calc...")
+so_curs.execute("UPDATE " + sr_file + """
+                SET BAL_DEF_CALC =
+                CASE
+                    WHEN TYPEOF(BAL_OPEN) = "null" AND TYPEOF(CRE_DEF_BEFORE) = "null" THEN 0
+                    WHEN TYPEOF(BAL_OPEN) = "null" THEN CRE_DEF_BEFORE
+                    WHEN TYPEOF(CRE_DEF_BEFORE) = "null"  THEN BAL_OPEN
+                    ELSE BAL_OPEN + CRE_DEF_BEFORE
+                END
+                ;""")
+so_conn.commit()
+funcfile.writelog("%t ADD COLUMN: bal_def_calc")
 
+# CALCULATE THE STUDENT ACCOUNT CREDIT TRANSACTIONS BEFORE REGISTRATION *********
+print("Join students and deferments...")
+sr_file = "X001ab_Students_deferment"
+s_sql = "CREATE TABLE " + sr_file+ " AS" + """
+Select
+    X001aa_Students.*,
+    X000_Deferments_curr.*
+From
+    X001aa_Students Left Join
+    X000_Deferments_curr On X000_Deferments_curr.STUDENT = X001aa_Students.KSTUDBUSENTID
+"""
+so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+so_curs.execute(s_sql)
+funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
+# CALCULATE THE DEFERMENT TYPE
+print("Calculate the deferment type...")
+so_curs.execute("ALTER TABLE "+sr_file+" ADD COLUMN DEFER_TYPE INT;")
+so_curs.execute("UPDATE " + sr_file + """
+                SET DEFER_TYPE = 
+                CASE
+                   WHEN BAL_REG_CALC <= 0 THEN 0
+                   WHEN BAL_REG_CALC > 0 And BAL_REG_CALC <= 1000 THEN 1
+                   WHEN BAL_REG_CALC > 1000 And STUDENT IS NULL THEN 3
+                   WHEN BAL_REG_CALC > 1000 And DATEEND = '2019-12-31' THEN 6
+                   WHEN BAL_REG_CALC > 1000 And DATEEND >= '2019-04-30' THEN 5
+                   WHEN BAL_REG_CALC > 1000 And BAL_DEF_CALC > 0 THEN 4
+                   WHEN BAL_REG_CALC > 1000 THEN 2
+                   ELSE 7
+                END
+                ;""")
+so_conn.commit()
+funcfile.writelog("%t ADD COLUMN: DEFER_TYPE")
 
+# CALCULATE THE DEFERMENT TYPE
+print("Calculate the deferment type description...")
+so_curs.execute("ALTER TABLE "+sr_file+" ADD COLUMN DEFER_TYPE_DESC TEXT;")
+so_curs.execute("UPDATE " + sr_file + """
+                SET DEFER_TYPE_DESC = 
+                CASE
+                   WHEN DEFER_TYPE = 0 THEN "CREDIT ACCOUNT WITH REGISTRATION"
+                   WHEN DEFER_TYPE = 1 THEN "ACCOUNT LESS THAN R1000 WITH REGISTRATION"
+                   WHEN DEFER_TYPE = 2 THEN "ACCOUNT SETTLED ON DEFERMENT DATE"
+                   WHEN DEFER_TYPE = 3 THEN "REGISTERED WITHOUT AGREEMENT"
+                   WHEN DEFER_TYPE = 4 THEN "ACCOUNT IN ARREAR ON AGREEMENT DATE"
+                   WHEN DEFER_TYPE = 5 THEN "FUTURE AGREEMENT DATE"
+                   WHEN DEFER_TYPE = 6 THEN "FULL YEAR DEFERMENT"
+                   ELSE "OTHER"
+                END
+                ;""")
+so_conn.commit()
+funcfile.writelog("%t ADD COLUMN: DEFER_TYPE_DESC")
 
+# CALCULATE THE STUDENT ACCOUNT CREDIT TRANSACTIONS BEFORE REGISTRATION *********
+print("Summarize registrations with accounts...")
+sr_file = "X001ac_Students_deferment_summ"
+s_sql = "CREATE TABLE " + sr_file+ " AS" + """
+Select
+    X001ab_Students_deferment.DEFER_TYPE,
+    X001ab_Students_deferment.DEFER_TYPE_DESC,
+    X001ab_Students_deferment.FSITEORGUNITNUMBER,
+    Count(X001ab_Students_deferment.KSTUDBUSENTID) As STUD_COUNT,
+    Sum(X001ab_Students_deferment.BAL_REG_CALC) As BAL_REG_DATE,
+    Sum(X001ab_Students_deferment.BAL_DEF_CALC) As BAL_DEF_DATE,
+    Sum(X001ab_Students_deferment.BAL_CUR) As Sum_BAL_CUR
+From
+    X001ab_Students_deferment
+Group By
+    X001ab_Students_deferment.DEFER_TYPE,
+    X001ab_Students_deferment.DEFER_TYPE_DESC,
+    X001ab_Students_deferment.FSITEORGUNITNUMBER
+Order By
+    X001ab_Students_deferment.FSITEORGUNITNUMBER,
+    X001ab_Students_deferment.DEFER_TYPE
+"""
+so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+so_curs.execute(s_sql)
+funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
 
 
