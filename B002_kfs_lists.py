@@ -10,8 +10,12 @@ OPEN THE DATABASES
 BEGIN OF SCRIPT
 VENDOR MASTER LIST
 DOCUMENTS MASTER LIST
+BUILD ACCOUNTING LINES
+PAYMENT COMPLETED LISTS
+PAYMENT APPROVERS LISTS
 BUILD CURRENT YEAR PAYMENTS
 BUILD PREVIOUS YEAR PAYMENTS
+BUILD PAYMENT TYPE SUMMARY PER MONTH
 END OF SCRIPT
 *****************************************************************************"""
 
@@ -631,10 +635,205 @@ def Kfs_lists():
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """ ****************************************************************************
-    BUILD CURRENT YEAR PAYMENTS
+    BUILD ACCOUNTING LINES
     *****************************************************************************"""
-    print("BUILD CURRENT YEAR PAYMENTS")
-    funcfile.writelog("BUILD CURRENT YEAR PAYMENTS")
+    print("BUILD ACCOUNTING LINES")
+    funcfile.writelog("BUILD ACCOUNTING LINES")
+
+    # BUILD ACCOUNTING LINES
+    print("Build account lines...")
+    sr_file = "X000_Account_line"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        LINE.FDOC_NBR,
+        LINE.FDOC_LINE_NBR,
+        LINE.FDOC_POST_YR,
+        Trim(LINE.FIN_COA_CD)||'.'||Trim(LINE.ACCOUNT_NBR)||'.'||Trim(LINE.FIN_OBJECT_CD) As COST_STRING,
+        Case
+            When LINE.FDOC_LINE_DBCR_CD = "C" Then LINE.FDOC_LINE_AMT * -1
+            Else LINE.FDOC_LINE_AMT
+        End As AMOUNT,
+        LINE.VATABLE,
+        LINE.FDOC_LINE_DESC
+    From
+        FP_ACCT_LINES_T LINE
+    Where
+        LINE.FDOC_POST_YR >= %PYEAR%
+    Order By
+        LINE.FDOC_NBR,
+        LINE.FDOC_LINE_AMT
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = s_sql.replace("%PYEAR%",funcdate.prev_year())
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD ACCOUNTING LINES
+    print("Build unique account lines...")
+    sr_file = "X000_Account_line_unique"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        FIND.FDOC_NBR,
+        FIND.FDOC_POST_YR,
+        FIND.COST_STRING,
+        FIND.AMOUNT,
+        FIND.FDOC_LINE_DESC,
+        Count(FIND.VATABLE) As COUNT_LINES
+    From
+        X000_Account_line FIND
+    Group By
+        FIND.FDOC_NBR
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    """ ****************************************************************************
+    PAYMENT COMPLETED LISTS
+    *****************************************************************************"""
+    print("BUILD PAYMENT COMPLETED LISTS")
+    funcfile.writelog("BUILD PAYMENT COMPLETED LISTS")
+
+    # BUILD CURR UNIQUE LIST OF LAST COMPLETED
+    print("Build current unique completed list...")
+    sr_file = "X000_Completed_curr_last"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select Distinct
+        ROUTE.ACTN_TKN_ID,
+        ROUTE.DOC_HDR_ID,
+        ROUTE.ACTN_DT,
+        ROUTE.PRNCPL_ID,
+        CASE
+            WHEN ROUTE.PRNCPL_ID = '26807815' THEN 'KFS WORKFLOW SYSTEM USER'
+            WHEN PERSON.NAME_ADDR IS NULL THEN 'UNKNOWN'
+            ELSE PERSON.NAME_ADDR
+        END AS NAME_ADDR,
+        ROUTE.ACTN_CD,
+        CASE
+            WHEN ROUTE.ACTN_CD = 'C' THEN 'COMPLETED'
+            ELSE 'OTHER'
+        END AS ACTN,
+        ROUTE.ANNOTN,
+        Count(ROUTE.DOC_VER_NBR) As APP_COUNT
+    From
+        KREW_ACTN_TKN_T_COM ROUTE Left Join
+        PEOPLE.X002_PEOPLE_CURR_YEAR PERSON On PERSON.EMPLOYEE_NUMBER = ROUTE.PRNCPL_ID
+    Group By
+        ROUTE.DOC_HDR_ID
+    Order By
+        ROUTE.ACTN_DT,
+        ROUTE.ACTN_TKN_ID
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD CURR APPROVALS ALL APPROVERS
+    print("Build current completed list...")
+    sr_file = "X000_Completed_curr"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select Distinct
+        ROUTE.ACTN_TKN_ID,
+        ROUTE.DOC_HDR_ID,
+        ROUTE.ACTN_DT,
+        ROUTE.PRNCPL_ID,
+        CASE
+            WHEN ROUTE.PRNCPL_ID = '26807815' THEN 'KFS WORKFLOW SYSTEM USER'
+            WHEN PERSON.NAME_ADDR IS NULL THEN 'UNKNOWN'
+            ELSE PERSON.NAME_ADDR
+        END AS NAME_ADDR,
+        ROUTE.ACTN_CD,
+        CASE
+            WHEN ROUTE.ACTN_CD = 'C' THEN 'COMPLETED'
+            ELSE 'OTHER'
+        END AS ACTN,
+        ROUTE.ANNOTN
+    From
+        KREW_ACTN_TKN_T_COM ROUTE Left Join
+        PEOPLE.X002_PEOPLE_CURR_YEAR PERSON On PERSON.EMPLOYEE_NUMBER = ROUTE.PRNCPL_ID
+    Order By
+        ROUTE.ACTN_DT,
+        ROUTE.ACTN_TKN_ID
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD PREV UNIQUE LIST OF LAST COMPLETED
+    print("Build previous unique completed list...")
+    sr_file = "X000_Completed_prev_last"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select Distinct
+        ROUTE.ACTN_TKN_ID,
+        ROUTE.DOC_HDR_ID,
+        ROUTE.ACTN_DT,
+        ROUTE.PRNCPL_ID,
+        CASE
+            WHEN PERSON.NAME_ADDR IS NULL THEN 'UNKNOWN'
+            ELSE PERSON.NAME_ADDR
+        END AS NAME_ADDR,
+        ROUTE.ACTN_CD,
+        CASE
+            WHEN ROUTE.ACTN_CD = 'C' THEN 'COMPLETED'
+            ELSE 'OTHER'
+        END AS ACTN,
+        ROUTE.ANNOTN,
+        Count(ROUTE.DOC_VER_NBR) As APP_COUNT
+    From
+        KREW_ACTN_TKN_T_COM ROUTE Left Join
+        PEOPLE.X002_PEOPLE_PREV_YEAR PERSON On PERSON.EMPLOYEE_NUMBER = ROUTE.PRNCPL_ID
+    Group By
+        ROUTE.DOC_HDR_ID
+    Order By
+        ROUTE.ACTN_DT,
+        ROUTE.ACTN_TKN_ID
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD PREV LIST WITH ALL COMPLETED
+    print("Build previous completed list...")
+    sr_file = "X000_Completed_prev"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select Distinct
+        ROUTE.ACTN_TKN_ID,
+        ROUTE.DOC_HDR_ID,
+        ROUTE.ACTN_DT,
+        ROUTE.PRNCPL_ID,
+        CASE
+            WHEN ROUTE.PRNCPL_ID = '26807815' THEN 'KFS WORKFLOW SYSTEM USER'
+            WHEN PERSON.NAME_ADDR IS NULL THEN 'UNKNOWN'
+            ELSE PERSON.NAME_ADDR
+        END AS NAME_ADDR,
+        ROUTE.ACTN_CD,
+        CASE
+            WHEN ROUTE.ACTN_CD = 'C' THEN 'COMPLETED'
+            ELSE 'OTHER'
+        END AS ACTN,
+        ROUTE.ANNOTN
+    From
+        KREW_ACTN_TKN_T_COM ROUTE Left Join
+        PEOPLE.X002_PEOPLE_PREV_YEAR PERSON On PERSON.EMPLOYEE_NUMBER = ROUTE.PRNCPL_ID
+    Order By
+        ROUTE.ACTN_DT,
+        ROUTE.ACTN_TKN_ID
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    """ ****************************************************************************
+    PAYMENT APPROVED LISTS
+    *****************************************************************************"""
+    print("BUILD PAYMENT APPROVED LISTS")
+    funcfile.writelog("BUILD PAYMENT APPROVED LISTS")
 
     # BUILD CURR APPROVALS UNIQUE LIST OF LAST APPROVER
     print("Build current unique approvers list...")
@@ -670,84 +869,6 @@ def Kfs_lists():
     Order By
         ROUTE.ACTN_DT,
         ROUTE.ACTN_TKN_ID
-    """
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
-    # BUILD PAYMENTS WITH LAST APPROVER
-    print("Build current year payments...")
-    sr_file = "X001aa_Report_payments_curr"
-    s_sql = "CREATE TABLE " + sr_file + " AS " + """
-    Select
-        PAYMENT.PMT_GRP_ID,
-        PAYMENT.PAYEE_ID AS VENDOR_ID,
-        PAYMENT.PMT_PAYEE_NM AS PAYEE_NAME,
-        VENDOR.VNDR_NM AS VENDOR_NAME,
-        VENDOR.VNDR_URL_ADDR AS VENDOR_REG_NR,
-        VENDOR.VNDR_TAX_NBR AS VENDOR_TAX_NR,
-        PAYEE.BNK_ACCT_NBR AS VENDOR_BANK_NR,
-        PAYMENT.PAYEE_ID_TYP_CD AS VENDOR_TYPE,
-        TYPE.PAYEE_TYP_DESC,
-        PAYMENT.DISB_NBR,
-        PAYMENT.DISB_TS,
-        PAYMENT.PMT_DT,
-        PAYMENT.PMT_STAT_CD,
-        STATUS.PMT_STAT_CD_DESC AS PAYMENT_STATUS,
-        DETAIL.CUST_PMT_DOC_NBR,
-        DETAIL.INV_NBR,
-        DETAIL.REQS_NBR,
-        DETAIL.PO_NBR,
-        DETAIL.INV_DT,
-        DETAIL.ORIG_INV_AMT,
-        DETAIL.NET_PMT_AMT,
-        APPROVE.PRNCPL_ID AS APPROVE_EMP_NO,
-        APPROVE.NAME_ADDR AS APPROVE_EMP_NAME,
-        APPROVE.ACTN_DT AS APPROVE_DATE,
-        APPROVE.ACTN AS APPROVE_STATUS,
-        APPROVE.ANNOTN AS NOTE
-    From
-        PDP_PMT_GRP_T_CURR PAYMENT
-        Left Join X000_Vendor_master VENDOR On VENDOR.VENDOR_ID = PAYMENT.PAYEE_ID
-        Left Join PDP_PAYEE_ACH_ACCT_T PAYEE On PAYEE.PAYEE_ID_NBR = PAYMENT.PAYEE_ID And
-            PAYEE.PAYEE_ID_TYP_CD = PAYMENT.PAYEE_ID_TYP_CD
-        Left Join PDP_PAYEE_TYP_T TYPE ON TYPE.PAYEE_TYP_CD = PAYMENT.PAYEE_ID_TYP_CD
-        Left Join PDP_PMT_STAT_CD_T STATUS On STATUS.PMT_STAT_CD = PAYMENT.PMT_STAT_CD
-        Left Join PDP_PMT_DTL_T DETAIL On DETAIL.PMT_GRP_ID = PAYMENT.PMT_GRP_ID
-        Left Join X000_Approvers_curr_last APPROVE On APPROVE.DOC_HDR_ID = DETAIL.CUST_PMT_DOC_NBR
-    """
-    """
-        ROUTE.PRNCPL_ID AS APPROVER,
-        CASE
-            WHEN ACTN_CD = 'a' THEN 'APPROVED'
-            WHEN ACTN_CD = 'A' THEN 'SUPER USED APPROVED'
-            WHEN ACTN_CD = 'B' THEN 'BLANKET APPROVED'
-            WHEN ACTN_CD = 'R' THEN 'SUPER USER ROUTE LEVEL APPROVED'
-            ELSE 'OTHER'
-        END AS APPROVE_STATUS,
-        ROUTE.ACTN_DT AS APPROVE_DATE
-
-        Left Join KREW_ACTN_TKN_T_APP ROUTE On ROUTE.DOC_HDR_ID = DETAIL.CUST_PMT_DOC_NBR
-    """
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
-    # BUILD PAYMENTS SUMMARY
-    print("Build current year payments summary...")
-    sr_file = "X001ab_Report_payments_curr_summ"
-    s_sql = "CREATE TABLE " + sr_file + " AS " + """
-    Select
-        X001aa_Report_payments_curr.VENDOR_ID,
-        Max(X001aa_Report_payments_curr.PMT_DT) As Max_PMT_DT,
-        Sum(X001aa_Report_payments_curr.NET_PMT_AMT) As Sum_NET_PMT_AMT,
-        Count(X001aa_Report_payments_curr.VENDOR_ID) As Count_TRAN
-    From
-        X001aa_Report_payments_curr
-    Group By
-        X001aa_Report_payments_curr.VENDOR_ID
     """
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -791,52 +912,6 @@ def Kfs_lists():
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-    # BUILD PAYMENT LIST WITH ALL APPROVERS
-    print("Build current payment full approvers list...")
-    sr_file = "X001ac_Report_payments_approute_curr"
-    s_sql = "CREATE TABLE " + sr_file + " AS " + """
-    Select
-        PAYMENT.PMT_GRP_ID,
-        PAYMENT.VENDOR_ID,
-        PAYMENT.PAYEE_NAME,
-        PAYMENT.VENDOR_NAME,
-        PAYMENT.VENDOR_REG_NR,
-        PAYMENT.VENDOR_TAX_NR,
-        PAYMENT.VENDOR_BANK_NR,
-        PAYMENT.VENDOR_TYPE,
-        PAYMENT.PAYEE_TYP_DESC,
-        PAYMENT.DISB_NBR,
-        PAYMENT.DISB_TS,
-        PAYMENT.PMT_DT,
-        PAYMENT.PMT_STAT_CD,
-        PAYMENT.PAYMENT_STATUS,
-        PAYMENT.CUST_PMT_DOC_NBR,
-        PAYMENT.INV_NBR,
-        PAYMENT.REQS_NBR,
-        PAYMENT.PO_NBR,
-        PAYMENT.INV_DT,
-        PAYMENT.ORIG_INV_AMT,
-        PAYMENT.NET_PMT_AMT,
-        APPROVE.PRNCPL_ID AS APPROVE_EMP_NO,
-        APPROVE.NAME_ADDR AS APPROVE_EMP_NAME,
-        APPROVE.ACTN_DT AS APPROVE_DATE,
-        APPROVE.ACTN AS APPROVE_STATUS,
-        APPROVE.ANNOTN AS NOTE    
-    From
-        X001aa_Report_payments_curr PAYMENT Left Join
-        X000_Approvers_curr APPROVE On APPROVE.DOC_HDR_ID = PAYMENT.CUST_PMT_DOC_NBR
-    """
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
-    """ ****************************************************************************
-    BUILD PREVIOUS YEAR PAYMENTS
-    *****************************************************************************"""
-    print("BUILD PREVIOUS YEAR PAYMENTS")
-    funcfile.writelog("BUILD PREVIOUS YEAR PAYMENTS")
-
     # BUILD PREV APPROVALS UNIQUE LIST WITH LAST APPROVER
     print("Build previous year unique approvers list...")
     sr_file = "X000_Approvers_prev_last"
@@ -876,71 +951,6 @@ def Kfs_lists():
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-    # BUILD PAYMENTS WITH LAST APPROVER
-    print("Build previous year payments...")
-    sr_file = "X001aa_Report_payments_prev"
-    s_sql = "CREATE TABLE " + sr_file + " AS " + """
-    Select
-        PAYMENT.PMT_GRP_ID,
-        PAYMENT.PAYEE_ID AS VENDOR_ID,
-        PAYMENT.PMT_PAYEE_NM AS PAYEE_NAME,
-        VENDOR.VNDR_NM AS VENDOR_NAME,
-        VENDOR.VNDR_URL_ADDR AS VENDOR_REG_NR,
-        VENDOR.VNDR_TAX_NBR AS VENDOR_TAX_NR,
-        PAYEE.BNK_ACCT_NBR AS VENDOR_BANK_NR,
-        PAYMENT.PAYEE_ID_TYP_CD AS VENDOR_TYPE,
-        TYPE.PAYEE_TYP_DESC,
-        PAYMENT.DISB_NBR,
-        PAYMENT.DISB_TS,
-        PAYMENT.PMT_DT,
-        PAYMENT.PMT_STAT_CD,
-        STATUS.PMT_STAT_CD_DESC AS PAYMENT_STATUS,
-        DETAIL.CUST_PMT_DOC_NBR,
-        DETAIL.INV_NBR,
-        DETAIL.REQS_NBR,
-        DETAIL.PO_NBR,
-        DETAIL.INV_DT,
-        DETAIL.ORIG_INV_AMT,
-        DETAIL.NET_PMT_AMT,
-        APPROVE.PRNCPL_ID AS APPROVE_EMP_NO,
-        APPROVE.NAME_ADDR AS APPROVE_EMP_NAME,
-        APPROVE.ACTN_DT AS APPROVE_DATE,
-        APPROVE.ACTN AS APPROVE_STATUS,
-        APPROVE.ANNOTN AS NOTE    
-    From
-        PDP_PMT_GRP_T_PREV PAYMENT
-        Left Join X000_VENDOR_MASTER VENDOR On VENDOR.VENDOR_ID = PAYMENT.PAYEE_ID
-        Left Join PDP_PAYEE_ACH_ACCT_T PAYEE On PAYEE.PAYEE_ID_NBR = PAYMENT.PAYEE_ID And
-            PAYEE.PAYEE_ID_TYP_CD = PAYMENT.PAYEE_ID_TYP_CD
-        Left Join PDP_PAYEE_TYP_T TYPE ON TYPE.PAYEE_TYP_CD = PAYMENT.PAYEE_ID_TYP_CD
-        Left Join PDP_PMT_STAT_CD_T STATUS On STATUS.PMT_STAT_CD = PAYMENT.PMT_STAT_CD
-        Left Join PDP_PMT_DTL_T DETAIL On DETAIL.PMT_GRP_ID = PAYMENT.PMT_GRP_ID
-        Left Join X000_Approvers_prev_last APPROVE On APPROVE.DOC_HDR_ID = DETAIL.CUST_PMT_DOC_NBR
-    """
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
-    # BUILD PAYMENTS SUMMARY
-    print("Build previous year payments summary...")
-    sr_file = "X001ab_Report_payments_prev_summ"
-    s_sql = "CREATE TABLE " + sr_file + " AS " + """
-    Select
-        X001aa_Report_payments_prev.VENDOR_ID,
-        Max(X001aa_Report_payments_prev.PMT_DT) As Max_PMT_DT,
-        Sum(X001aa_Report_payments_prev.NET_PMT_AMT) As Sum_NET_PMT_AMT,
-        Count(X001aa_Report_payments_prev.VENDOR_ID) As Count_TRAN    
-    From
-        X001aa_Report_payments_prev
-    Group By
-        X001aa_Report_payments_prev.VENDOR_ID
-    """
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)    
-
     # BUILD PREV APPROVALS WITH ALL APPROVERS
     print("Build previous approvers list...")
     sr_file = "X000_Approvers_prev"
@@ -978,6 +988,222 @@ def Kfs_lists():
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
+    """ ****************************************************************************
+    BUILD CURRENT YEAR PAYMENTS
+    *****************************************************************************"""
+    print("BUILD CURRENT YEAR PAYMENTS")
+    funcfile.writelog("BUILD CURRENT YEAR PAYMENTS")
+
+    # BUILD PAYMENTS WITH LAST INITIATOR AND APPROVER
+    print("Build current year payments...")
+    sr_file = "X001aa_Report_payments_curr"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        PAYMENT.PMT_GRP_ID,
+        PAYMENT.PAYEE_ID AS VENDOR_ID,
+        PAYMENT.PMT_PAYEE_NM AS PAYEE_NAME,
+        VENDOR.VNDR_NM AS VENDOR_NAME,
+        VENDOR.VNDR_URL_ADDR AS VENDOR_REG_NR,
+        VENDOR.VNDR_TAX_NBR AS VENDOR_TAX_NR,
+        PAYEE.BNK_ACCT_NBR AS VENDOR_BANK_NR,
+        PAYMENT.PAYEE_ID_TYP_CD AS VENDOR_TYPE,
+        TYPE.PAYEE_TYP_DESC,
+        PAYMENT.DISB_NBR,
+        PAYMENT.DISB_TS,
+        PAYMENT.PMT_DT,
+        PAYMENT.PMT_STAT_CD,
+        STATUS.PMT_STAT_CD_DESC AS PAYMENT_STATUS,
+        DETAIL.CUST_PMT_DOC_NBR,
+        DETAIL.INV_NBR,
+        DETAIL.REQS_NBR,
+        DETAIL.PO_NBR,
+        DETAIL.INV_DT,
+        DETAIL.ORIG_INV_AMT,
+        DETAIL.NET_PMT_AMT,
+        DOC.DOC_TYP_NM As DOC_TYPE,
+        Upper(DOC.LBL) As DOC_LABEL,        
+        COMP.PRNCPL_ID AS COMPLETE_EMP_NO,
+        COMP.NAME_ADDR AS COMPLETE_EMP_NAME,
+        COMP.ACTN_DT AS COMPLETE_DATE,
+        COMP.ACTN AS COMPLETE_STATUS,
+        COMP.ANNOTN AS COMPLETE_NOTE,
+        APPROVE.PRNCPL_ID AS APPROVE_EMP_NO,
+        APPROVE.NAME_ADDR AS APPROVE_EMP_NAME,
+        APPROVE.ACTN_DT AS APPROVE_DATE,
+        APPROVE.ACTN AS APPROVE_STATUS,
+        APPROVE.ANNOTN AS APPROVE_NOTE,
+        ACC.COST_STRING As ACC_COST_STRING,
+        ACC.FDOC_LINE_DESC As ACC_DESC,
+        ACC.COUNT_LINES As ACC_LINE_COUNT
+    From
+        PDP_PMT_GRP_T_CURR PAYMENT
+        Left Join X000_VENDOR_MASTER VENDOR On VENDOR.VENDOR_ID = PAYMENT.PAYEE_ID
+        Left Join PDP_PAYEE_ACH_ACCT_T PAYEE On PAYEE.PAYEE_ID_NBR = PAYMENT.PAYEE_ID And
+            PAYEE.PAYEE_ID_TYP_CD = PAYMENT.PAYEE_ID_TYP_CD
+        Left Join PDP_PAYEE_TYP_T TYPE ON TYPE.PAYEE_TYP_CD = PAYMENT.PAYEE_ID_TYP_CD
+        Left Join PDP_PMT_STAT_CD_T STATUS On STATUS.PMT_STAT_CD = PAYMENT.PMT_STAT_CD
+        Left Join PDP_PMT_DTL_T DETAIL On DETAIL.PMT_GRP_ID = PAYMENT.PMT_GRP_ID
+        Left Join X000_Documents DOC On DOC.DOC_HDR_ID = DETAIL.CUST_PMT_DOC_NBR
+        Left Join X000_Account_line_unique ACC On ACC.FDOC_NBR = DETAIL.CUST_PMT_DOC_NBR
+        Left Join X000_Completed_curr_last COMP On COMP.DOC_HDR_ID = DETAIL.CUST_PMT_DOC_NBR    
+        Left Join X000_Approvers_prev_last APPROVE On APPROVE.DOC_HDR_ID = DETAIL.CUST_PMT_DOC_NBR
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)    
+
+    # BUILD PAYMENTS SUMMARY
+    print("Build current year payments summary...")
+    sr_file = "X001ab_Report_payments_curr_summ"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        X001aa_Report_payments_curr.VENDOR_ID,
+        Max(X001aa_Report_payments_curr.PMT_DT) As Max_PMT_DT,
+        Sum(X001aa_Report_payments_curr.NET_PMT_AMT) As Sum_NET_PMT_AMT,
+        Count(X001aa_Report_payments_curr.VENDOR_ID) As Count_TRAN
+    From
+        X001aa_Report_payments_curr
+    Group By
+        X001aa_Report_payments_curr.VENDOR_ID
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD PAYMENT LIST WITH ALL APPROVERS
+    print("Build current payment full approvers list...")
+    sr_file = "X001ac_Report_payments_approute_curr"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        PAYMENT.PMT_GRP_ID,
+        PAYMENT.VENDOR_ID,
+        PAYMENT.PAYEE_NAME,
+        PAYMENT.VENDOR_NAME,
+        PAYMENT.VENDOR_REG_NR,
+        PAYMENT.VENDOR_TAX_NR,
+        PAYMENT.VENDOR_BANK_NR,
+        PAYMENT.VENDOR_TYPE,
+        PAYMENT.PAYEE_TYP_DESC,
+        PAYMENT.DISB_NBR,
+        PAYMENT.DISB_TS,
+        PAYMENT.PMT_DT,
+        PAYMENT.PMT_STAT_CD,
+        PAYMENT.PAYMENT_STATUS,
+        PAYMENT.CUST_PMT_DOC_NBR,
+        PAYMENT.INV_NBR,
+        PAYMENT.REQS_NBR,
+        PAYMENT.PO_NBR,
+        PAYMENT.INV_DT,
+        PAYMENT.ORIG_INV_AMT,
+        PAYMENT.NET_PMT_AMT,
+        DOC.DOC_TYP_NM As DOC_TYPE,
+        Upper(DOC.LBL) As DOC_LABEL,        
+        APPROVE.PRNCPL_ID AS APPROVE_EMP_NO,
+        APPROVE.NAME_ADDR AS APPROVE_EMP_NAME,
+        APPROVE.ACTN_DT AS APPROVE_DATE,
+        APPROVE.ACTN AS APPROVE_STATUS,
+        APPROVE.ANNOTN AS NOTE,
+        ACC.COST_STRING As ACC_COST_STRING,
+        ACC.FDOC_LINE_DESC As ACC_DESC,
+        ACC.COUNT_LINES As ACC_LINE_COUNT        
+    From
+        X001aa_Report_payments_curr PAYMENT Left Join
+        X000_Documents DOC On DOC.DOC_HDR_ID = PAYMENT.CUST_PMT_DOC_NBR Left Join
+        X000_Account_line_unique ACC On ACC.FDOC_NBR = PAYMENT.CUST_PMT_DOC_NBR Left Join       
+        X000_Approvers_curr APPROVE On APPROVE.DOC_HDR_ID = PAYMENT.CUST_PMT_DOC_NBR
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    """ ****************************************************************************
+    BUILD PREVIOUS YEAR PAYMENTS
+    *****************************************************************************"""
+    print("BUILD PREVIOUS YEAR PAYMENTS")
+    funcfile.writelog("BUILD PREVIOUS YEAR PAYMENTS")
+
+
+    # BUILD PAYMENTS WITH LAST INITIATOR AND APPROVER
+    print("Build previous year payments...")
+    sr_file = "X001aa_Report_payments_prev"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        PAYMENT.PMT_GRP_ID,
+        PAYMENT.PAYEE_ID AS VENDOR_ID,
+        PAYMENT.PMT_PAYEE_NM AS PAYEE_NAME,
+        VENDOR.VNDR_NM AS VENDOR_NAME,
+        VENDOR.VNDR_URL_ADDR AS VENDOR_REG_NR,
+        VENDOR.VNDR_TAX_NBR AS VENDOR_TAX_NR,
+        PAYEE.BNK_ACCT_NBR AS VENDOR_BANK_NR,
+        PAYMENT.PAYEE_ID_TYP_CD AS VENDOR_TYPE,
+        TYPE.PAYEE_TYP_DESC,
+        PAYMENT.DISB_NBR,
+        PAYMENT.DISB_TS,
+        PAYMENT.PMT_DT,
+        PAYMENT.PMT_STAT_CD,
+        STATUS.PMT_STAT_CD_DESC AS PAYMENT_STATUS,
+        DETAIL.CUST_PMT_DOC_NBR,
+        DETAIL.INV_NBR,
+        DETAIL.REQS_NBR,
+        DETAIL.PO_NBR,
+        DETAIL.INV_DT,
+        DETAIL.ORIG_INV_AMT,
+        DETAIL.NET_PMT_AMT,
+        DOC.DOC_TYP_NM As DOC_TYPE,
+        Upper(DOC.LBL) As DOC_LABEL,        
+        COMP.PRNCPL_ID AS COMPLETE_EMP_NO,
+        COMP.NAME_ADDR AS COMPLETE_EMP_NAME,
+        COMP.ACTN_DT AS COMPLETE_DATE,
+        COMP.ACTN AS COMPLETE_STATUS,
+        COMP.ANNOTN AS COMPLETE_NOTE,
+        APPROVE.PRNCPL_ID AS APPROVE_EMP_NO,
+        APPROVE.NAME_ADDR AS APPROVE_EMP_NAME,
+        APPROVE.ACTN_DT AS APPROVE_DATE,
+        APPROVE.ACTN AS APPROVE_STATUS,
+        APPROVE.ANNOTN AS APPROVE_NOTE,
+        ACC.COST_STRING As ACC_COST_STRING,
+        ACC.FDOC_LINE_DESC As ACC_DESC,
+        ACC.COUNT_LINES As ACC_LINE_COUNT        
+    From
+        PDP_PMT_GRP_T_PREV PAYMENT
+        Left Join X000_VENDOR_MASTER VENDOR On VENDOR.VENDOR_ID = PAYMENT.PAYEE_ID
+        Left Join PDP_PAYEE_ACH_ACCT_T PAYEE On PAYEE.PAYEE_ID_NBR = PAYMENT.PAYEE_ID And
+            PAYEE.PAYEE_ID_TYP_CD = PAYMENT.PAYEE_ID_TYP_CD
+        Left Join PDP_PAYEE_TYP_T TYPE ON TYPE.PAYEE_TYP_CD = PAYMENT.PAYEE_ID_TYP_CD
+        Left Join PDP_PMT_STAT_CD_T STATUS On STATUS.PMT_STAT_CD = PAYMENT.PMT_STAT_CD
+        Left Join PDP_PMT_DTL_T DETAIL On DETAIL.PMT_GRP_ID = PAYMENT.PMT_GRP_ID
+        Left Join X000_Documents DOC On DOC.DOC_HDR_ID = DETAIL.CUST_PMT_DOC_NBR
+        Left Join X000_Account_line_unique ACC On ACC.FDOC_NBR = DETAIL.CUST_PMT_DOC_NBR        
+        Left Join X000_Completed_prev_last COMP On COMP.DOC_HDR_ID = DETAIL.CUST_PMT_DOC_NBR    
+        Left Join X000_Approvers_prev_last APPROVE On APPROVE.DOC_HDR_ID = DETAIL.CUST_PMT_DOC_NBR
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD PAYMENTS SUMMARY
+    print("Build previous year payments summary...")
+    sr_file = "X001ab_Report_payments_prev_summ"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        X001aa_Report_payments_prev.VENDOR_ID,
+        Max(X001aa_Report_payments_prev.PMT_DT) As Max_PMT_DT,
+        Sum(X001aa_Report_payments_prev.NET_PMT_AMT) As Sum_NET_PMT_AMT,
+        Count(X001aa_Report_payments_prev.VENDOR_ID) As Count_TRAN    
+    From
+        X001aa_Report_payments_prev
+    Group By
+        X001aa_Report_payments_prev.VENDOR_ID
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)    
+
     # BUILD PREV PAYMENTS FULL APPROVALS
     print("Build previous payment full approvers list...")
     sr_file = "X001ac_Report_payments_approute_prev"
@@ -1004,13 +1230,20 @@ def Kfs_lists():
         PAYMENT.INV_DT,
         PAYMENT.ORIG_INV_AMT,
         PAYMENT.NET_PMT_AMT,
+        DOC.DOC_TYP_NM As DOC_TYPE,
+        Upper(DOC.LBL) As DOC_LABEL,        
         APPROVE.PRNCPL_ID AS APPROVE_EMP_NO,
         APPROVE.NAME_ADDR AS APPROVE_EMP_NAME,
         APPROVE.ACTN_DT AS APPROVE_DATE,
         APPROVE.ACTN AS APPROVE_STATUS,
-        APPROVE.ANNOTN AS NOTE    
+        APPROVE.ANNOTN AS NOTE,
+        ACC.COST_STRING As ACC_COST_STRING,
+        ACC.FDOC_LINE_DESC As ACC_DESC,
+        ACC.COUNT_LINES As ACC_LINE_COUNT        
     From
         X001aa_Report_payments_prev PAYMENT Left Join
+        X000_Documents DOC On DOC.DOC_HDR_ID = PAYMENT.CUST_PMT_DOC_NBR Left Join
+        X000_Account_line_unique ACC On ACC.FDOC_NBR = PAYMENT.CUST_PMT_DOC_NBR Left Join       
         X000_Approvers_curr APPROVE On APPROVE.DOC_HDR_ID = PAYMENT.CUST_PMT_DOC_NBR
     """
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -1018,6 +1251,75 @@ def Kfs_lists():
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
+    """ ****************************************************************************
+    BUILD PAYMENT TYPE SUMMARY PER MONTH
+    *****************************************************************************"""
+    print("BUILD PAYMENT TYPE SUMMARY PER MONTH")
+    funcfile.writelog("BUILD PAYMENT TYPE SUMMARY PER MONTH")
+
+    # BUILD SUMMARY OF CURRENT YEAR PAYMENTS
+    print("Build summary of current year payments...")
+    sr_file = "X002aa_Report_paym_typemon_curr"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        'CURRENT' As YEAR,
+        PAYM.PAYEE_TYP_DESC As TYPE,
+        PAYM.DOC_LABEL,
+        SubStr(PAYM.PMT_DT, 6, 2) As MONTH,
+        Sum(PAYM.NET_PMT_AMT) As Sum_NET_PMT_AMT
+    From
+        X001aa_Report_payments_curr PAYM
+    Group By
+        PAYM.PAYEE_TYP_DESC,
+        PAYM.DOC_LABEL,    
+        SubStr(PAYM.PMT_DT, 6, 2)
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD SUMMARY OF PREVIOUS YEAR PAYMENTS
+    print("Build summary of previous year payments...")
+    sr_file = "X002ab_Report_paym_typemon_prev"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        'PREVIOUS' As YEAR,
+        PAYM.PAYEE_TYP_DESC As TYPE,
+        PAYM.DOC_LABEL,
+        SubStr(PAYM.PMT_DT, 6, 2) As MONTH,
+        Sum(PAYM.NET_PMT_AMT) As Sum_NET_PMT_AMT
+    From
+        X001aa_Report_payments_prev PAYM
+    Group By
+        PAYM.PAYEE_TYP_DESC,
+        PAYM.DOC_LABEL,    
+        SubStr(PAYM.PMT_DT, 6, 2)
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD SUMMARY OF PAYMENTS
+    print("Build summary of payments per month...")
+    sr_file = "X002ac_Report_payment_month"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        PREV.TYPE As TYPE,
+        PREV.MONTH As MONTH,
+        PREV.Sum_NET_PMT_AMT As 'PREVIOUS',
+        CURR.Sum_NET_PMT_AMT As 'CURRENT'
+    From
+        X002ab_Report_paym_typemon_prev PREV Left Join
+        X002aa_Report_paym_typemon_curr CURR On CURR.TYPE = PREV.TYPE
+                And CURR.MONTH = PREV.MONTH
+    """
+    so_curs.execute("DROP TABLE IF EXISTS X002aa_Report_payment_month")
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """ ****************************************************************************
     END OF SCRIPT
