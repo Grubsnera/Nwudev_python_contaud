@@ -2918,8 +2918,7 @@ def People_test_masterfile():
     if i_find > 0 and i_coun > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
-            X004bh_bank_cont.ORG AS ORGANIZATION,
-            X004bh_bank_cont.LOC AS LOCATION,
+            'EMPLOYEE BANK CHANGE VERIFICATION' As FINDING,
             X004bh_bank_cont.EMP AS EMPLOYEE_NUMBER,
             X004bh_bank_cont.NAME,
             X004bh_bank_cont.ACC_TYPE,
