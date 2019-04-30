@@ -1,7 +1,7 @@
 ﻿Select
-    X001aa_Report_payments_prev.CUST_PMT_DOC_NBR,
-    Count(X001aa_Report_payments_prev.REQS_NBR) As Count_REQS_NBR
+    X000_Documents.DOC_HDR_ID,
+    Count(X000_Documents.DOC_TYP_ID) As Count_DOC_TYP_ID
 From
-    X001aa_Report_payments_prev
+    X000_Documents
 Group By
-    X001aa_Report_payments_prev.CUST_PMT_DOC_NBR
+    X000_Documents.DOC_HDR_ID
