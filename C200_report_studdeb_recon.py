@@ -27,7 +27,7 @@ TEST BURSARY POST TO DIFF CAMPUS IN GL
 END OF SCRIPT
 *****************************************************************************"""
 
-def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
+def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
 
     """ PARAMETERS *************************************************************
     dOpenMaf = GL Opening balances for Mafikeng campus
@@ -80,6 +80,7 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     s_sql = "" #SQL statements
     l_mail = True
     l_export = True
+    l_vacuum = False
 
     """*************************************************************************
     OPEN DATABASES
@@ -2536,10 +2537,11 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     *************************************************************************"""
 
     # Close the table connection ***************************************************
-    print("Vacuum the database...")
-    so_conn.commit()
-    so_conn.execute('VACUUM')
-    funcfile.writelog("%t DATABASE: Vacuum")
+    if l_vacuum == True:
+        print("Vacuum the database...")
+        so_conn.commit()
+        so_conn.execute('VACUUM')
+        funcfile.writelog("%t DATABASE: Vacuum")
     so_conn.commit()
     so_conn.close()
     ms_cnxn.commit()    
