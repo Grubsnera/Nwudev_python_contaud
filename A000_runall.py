@@ -128,6 +128,20 @@ else:
     funcfile.writelog("SCRIPT: C001_PEOPLE_TEST_CONFLICT: DO NOT RUN ON SATURDAYS AND SUNDAYS")
 
 """****************************************************************************
+CREDITOR PAYMENT TESTS
+****************************************************************************"""
+
+if funcdate.today_dayname() in "MonTueWedThuFri":
+    import C201_creditor_test_payments
+    try:
+        C201_creditor_test_payments.Creditor_test_payments()
+    except Exception as e:
+        funcsys.ErrMessage(e)
+else:
+    print("KFS CREDITOR PAYMENT TESTS do not run on Saturdays and Sundays")
+    funcfile.writelog("SCRIPT: C201_CREDITOR_TEST_PAYMENTS: DO NOT RUN ON SATURDAYS AND SUNDAYS")
+
+"""****************************************************************************
 KFS VSS STUDENT DEBTOR RECONCILIATION AND TESTS
 ****************************************************************************"""
 
