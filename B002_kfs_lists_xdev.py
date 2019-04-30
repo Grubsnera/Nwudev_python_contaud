@@ -81,11 +81,8 @@ END OF SCRIPT
 print("END OF SCRIPT")
 funcfile.writelog("END OF SCRIPT")
 
-# CLOSE THE DATABASE CONNECTION
-#print("Vacuum the database...")
+#CLOSE THE DATABASE CONNECTION
 so_conn.commit()
-#so_conn.execute('VACUUM')
-#funcfile.writelog("%t DATABASE: Vacuum")
 so_conn.close()
 
 # CLOSE THE LOG WRITER
