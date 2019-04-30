@@ -83,6 +83,7 @@ def People_test_masterfile():
     l_export = True
     l_mail = False
     l_record = False
+    l_vacuum = True
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -4234,10 +4235,12 @@ def People_test_masterfile():
     funcfile.writelog("END OF SCRIPT")
 
     # CLOSE THE DATABASE CONNECTION
-    print("Vacuum the database...")
+    if l_vacuum == True:
+        print("Vacuum the database...")
+        so_conn.commit()
+        so_conn.execute('VACUUM')
+        funcfile.writelog("%t DATABASE: Vacuum")
     so_conn.commit()
-    so_conn.execute('VACUUM')
-    funcfile.writelog("%t DATABASE: Vacuum")
     so_conn.close()
 
     # CLOSE THE LOG WRITER
