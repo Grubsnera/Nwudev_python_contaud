@@ -366,7 +366,7 @@ def People_test_conflict():
             When PERSON.EMPLOYMENT_CATEGORY = 'P' Then 'PERMANENT'
             Else 'OTHER'
         End As CATEGORY,
-        Upper(PERSON.GRADE) As POS_GRADE,
+        Upper(PERSON.GRADE_CALC) As POS_GRADE,
         Upper(PERSON.JOB_NAME) As JOB_NAME,
         Upper(PERSON.PERSON_TYPE) As PERSON_TYPE,
         PERSON.AGE
@@ -453,7 +453,7 @@ def People_test_conflict():
             When PERSON.EMPLOYMENT_CATEGORY = 'P' Then 'PERMANENT'
             Else 'OTHER'
         End As CATEGORY,
-        Upper(PERSON.GRADE) As POS_GRADE,
+        Upper(PERSON.GRADE_CALC) As POS_GRADE,
         Upper(PERSON.JOB_NAME) As JOB_NAME,
         Upper(PERSON.PERSON_TYPE) As PERSON_TYPE,
         PERSON.AGE
@@ -538,12 +538,7 @@ def People_test_conflict():
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     Select
         'NWU' AS ORG,
-        CASE LOCATION_DESCRIPTION
-            WHEN 'Mafikeng Campus' THEN 'MAF'
-            WHEN 'Potchefstroom Campus' THEN 'POT'
-            WHEN 'Vaal Triangle Campus' THEN 'VAA'
-            ELSE 'NWU'
-        END AS LOC,
+        Substr(LOCATION_DESCRIPTION,1,3) As LOC,
         PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER AS EMP,
         PEOPLE.X002_PEOPLE_CURR.ACC_NUMBER AS EMP_BANK
     From
@@ -626,7 +621,6 @@ def People_test_conflict():
     funcfile.writelog("%t FINDING: "+str(i_find)+" SHARED BANK ACCOUNT finding(s)")
 
     # GET PREVIOUS FINDINGS
-    # NOTE ADD CODE
     sr_file = "X100ac_bank_getprev"
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0:
@@ -650,36 +644,35 @@ def People_test_conflict():
         co.close()
         funcfile.writelog("%t IMPORT TABLE: " + ed_path + "001_reported.txt (" + sr_file + ")")
 
-        # ADD PREVIOUS FINDINGS
-        sr_file = "X100ad_bank_addprev"
-        so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-        if i_find > 0:
-            print("Join previously reported to current findings...")
-            s_sql = "CREATE TABLE " + sr_file + " AS" + """
-            SELECT
-              FINDING.*,
-              'bank_share_emp_ven' AS PROCESS,
-              '%TODAY%' AS DATE_REPORTED,
-              '%TODAYPLUS%' AS DATE_RETEST,
-              PREVIOUS.PROCESS AS PREV_PROCESS,
-              PREVIOUS.DATE_REPORTED AS PREV_DATE_REPORTED,
-              PREVIOUS.DATE_RETEST AS PREV_DATE_RETEST,
-              PREVIOUS.DATE_MAILED
-            FROM
-              X100ab_bank_empven FINDING
-              LEFT JOIN X100ac_bank_getprev PREVIOUS ON PREVIOUS.FIELD1 = FINDING.EMP AND
-                  PREVIOUS.DATE_RETEST >= Date('%TODAY%') AND
-                  PREVIOUS.FIELD2 = FINDING.EMP_BANK
-            ;"""
-            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-            s_sql = s_sql.replace("%TODAY%",funcdate.today())
-            s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(10))
-            so_curs.execute(s_sql)
-            so_conn.commit()
-            funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    # ADD PREVIOUS FINDINGS
+    sr_file = "X100ad_bank_addprev"
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    if i_find > 0:
+        print("Join previously reported to current findings...")
+        s_sql = "CREATE TABLE " + sr_file + " AS" + """
+        SELECT
+          FINDING.*,
+          'bank_share_emp_ven' AS PROCESS,
+          '%TODAY%' AS DATE_REPORTED,
+          '%TODAYPLUS%' AS DATE_RETEST,
+          PREVIOUS.PROCESS AS PREV_PROCESS,
+          PREVIOUS.DATE_REPORTED AS PREV_DATE_REPORTED,
+          PREVIOUS.DATE_RETEST AS PREV_DATE_RETEST,
+          PREVIOUS.DATE_MAILED
+        FROM
+          X100ab_bank_empven FINDING
+          LEFT JOIN X100ac_bank_getprev PREVIOUS ON PREVIOUS.FIELD1 = FINDING.EMP AND
+              PREVIOUS.DATE_RETEST >= Date('%TODAY%') AND
+              PREVIOUS.FIELD2 = FINDING.EMP_BANK
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        s_sql = s_sql.replace("%TODAY%",funcdate.today())
+        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(10))
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD LIST TO UPDATE FINDINGS
-    # NOTE ADD CODE
     sr_file = "X100ae_bank_newprev"
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0:
@@ -767,55 +760,55 @@ def People_test_conflict():
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-        # ADD CONTACT DETAILS TO FINDINGS
-        sr_file = "X100ah_bank_addempven"
-        so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-        if i_find > 0 and i_coun > 0:
-            print("Add details to findings...")
-            s_sql = "CREATE TABLE " + sr_file + " AS " + """
-            Select
-                FINDING.*,
-                PERSON.NAME_ADDR AS EMP_NAME,
-                PERSON.ACC_TYPE AS BANKACC_TYPE,
-                PERSON.ACC_BRANCH AS BANKACC_BRANCH,
-                PERSON.ACC_RELATION AS BANKACC_RELATION,
-                PERSON.POSITION_FULL,
-                VENDOR.VNDR_NM AS VENDOR_NAME,
-                DECLARE.DECLARATION_DATE AS DECLARE_DATE,
-                DECLARE.STATUS AS DECLARE_STATUS,
-                DECLARE.INTEREST_TO_DECLARE_FLAG AS DECLARE_INTEREST,
-                PAYMENTS.Max_PMT_DT AS PAY_DATE_LAST,
-                PAYMENTS.Count_TRAN AS PAY_NO_TRAN,
-                PAYMENTS.Sum_NET_PMT_AMT AS PAY_TOTAL_AMOUNT,
-                CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
-                CAMP_OFF.NAME_ADDR As CAMP_OFF_NAME,
-                CAMP_OFF.EMAIL_ADDRESS As CAMP_OFF_MAIL,
-                CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
-                CAMP_SUP.NAME_ADDR As CAMP_SUP_NAME,
-                CAMP_SUP.EMAIL_ADDRESS As CAMP_SUP_MAIL,
-                ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
-                ORG_OFF.NAME_ADDR As ORG_OFF_NAME,
-                ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL,
-                ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
-                ORG_SUP.NAME_ADDR As ORG_SUP_NAME,
-                ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL
-            From
-                X100ad_bank_addprev FINDING
-                Left Join PEOPLE.X002_PEOPLE_CURR PERSON On PERSON.EMPLOYEE_NUMBER = FINDING.EMP
-                Left Join KFS.X000_VENDOR_MASTER VENDOR On VENDOR.VENDOR_ID = FINDING.VENDOR_ID
-                Left Join KFS.X001ab_Report_payments_curr_summ PAYMENTS On PAYMENTS.VENDOR_ID = FINDING.VENDOR_ID
-                Left Join X001_declarations_curr DECLARE On DECLARE.EMPLOYEE = FINDING.EMP
-                Left Join X100af_bank_offi CAMP_OFF On CAMP_OFF.CAMPUS = FINDING.LOC
-                Left Join X100af_bank_offi ORG_OFF On ORG_OFF.CAMPUS = FINDING.ORG
-                Left Join X100ag_bank_supe CAMP_SUP On CAMP_SUP.CAMPUS = FINDING.LOC
-                Left Join X100ag_bank_supe ORG_SUP On ORG_SUP.CAMPUS = FINDING.ORG
-            WHERE
-              FINDING.PREV_PROCESS IS NULL
-            ;"""
-            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-            so_curs.execute(s_sql)
-            so_conn.commit()
-            funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    # ADD CONTACT DETAILS TO FINDINGS
+    sr_file = "X100ah_bank_addempven"
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    if i_find > 0 and i_coun > 0:
+        print("Add details to findings...")
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            FINDING.*,
+            PERSON.NAME_ADDR AS EMP_NAME,
+            PERSON.ACC_TYPE AS BANKACC_TYPE,
+            PERSON.ACC_BRANCH AS BANKACC_BRANCH,
+            PERSON.ACC_RELATION AS BANKACC_RELATION,
+            PERSON.POSITION_FULL,
+            VENDOR.VNDR_NM AS VENDOR_NAME,
+            DECLARE.DECLARATION_DATE AS DECLARE_DATE,
+            DECLARE.STATUS AS DECLARE_STATUS,
+            DECLARE.INTEREST_TO_DECLARE_FLAG AS DECLARE_INTEREST,
+            PAYMENTS.Max_PMT_DT AS PAY_DATE_LAST,
+            PAYMENTS.Count_TRAN AS PAY_NO_TRAN,
+            PAYMENTS.Sum_NET_PMT_AMT AS PAY_TOTAL_AMOUNT,
+            CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
+            CAMP_OFF.NAME_ADDR As CAMP_OFF_NAME,
+            CAMP_OFF.EMAIL_ADDRESS As CAMP_OFF_MAIL,
+            CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
+            CAMP_SUP.NAME_ADDR As CAMP_SUP_NAME,
+            CAMP_SUP.EMAIL_ADDRESS As CAMP_SUP_MAIL,
+            ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
+            ORG_OFF.NAME_ADDR As ORG_OFF_NAME,
+            ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL,
+            ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
+            ORG_SUP.NAME_ADDR As ORG_SUP_NAME,
+            ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL
+        From
+            X100ad_bank_addprev FINDING
+            Left Join PEOPLE.X002_PEOPLE_CURR PERSON On PERSON.EMPLOYEE_NUMBER = FINDING.EMP
+            Left Join KFS.X000_VENDOR_MASTER VENDOR On VENDOR.VENDOR_ID = FINDING.VENDOR_ID
+            Left Join KFS.X001ab_Report_payments_curr_summ PAYMENTS On PAYMENTS.VENDOR_ID = FINDING.VENDOR_ID
+            Left Join X001_declarations_curr DECLARE On DECLARE.EMPLOYEE = FINDING.EMP
+            Left Join X100af_bank_offi CAMP_OFF On CAMP_OFF.CAMPUS = FINDING.LOC
+            Left Join X100af_bank_offi ORG_OFF On ORG_OFF.CAMPUS = FINDING.ORG
+            Left Join X100ag_bank_supe CAMP_SUP On CAMP_SUP.CAMPUS = FINDING.LOC
+            Left Join X100ag_bank_supe ORG_SUP On ORG_SUP.CAMPUS = FINDING.ORG
+        WHERE
+          FINDING.PREV_PROCESS IS NULL
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
     sr_file = "X100ax_bank_emp_vend"
