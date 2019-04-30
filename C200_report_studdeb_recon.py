@@ -331,6 +331,7 @@ def Report_studdeb_recon(dOpenMaf='0',dOpenPot='0',dOpenVaa='0'):
     so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'EDULOANBEURSREKENING','FUNDIMEALALLOWANCE');")
     so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'EDULOANBURSARYACCOUNT','FUNDIMEALALLOWANCE');")
     so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'MISCELANEOUSFEES','MISCELLANEOUSFEES');")
+    so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'NSFASMEALBOOKALLOWANCE','NSFASMEALALLOWANCE');")
 
     # Build sort rename column gl transaction file *****************************
     print("Build and sort gl transaction file...")
