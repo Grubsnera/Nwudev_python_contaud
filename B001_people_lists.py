@@ -4,12 +4,28 @@ Author: Albert J v Rensburg (NWU21162395)
 """
 
 """ INDEX **********************************************************************
+ENVIRONMENT
+OPEN THE DATABASES
+BEGIN OF SCRIPT
+BUILD LOOKUPS
+BUILD GRADES
+BUILD POSITIONS
+BUILD JOBS
+BUILD ORGANIZATION
+BUILD BANK ACCOUNTS
+BUILD PERIODS OF SERVICE
+BUILD ASSIGNMENTS
+BUILD ALL PEOPLE
+BUILD PERSON TYPES
+COUNT RECORDS
+BUILD ADDRESSES AND PHONES
+BUILD ASSIGNMENTS AND PEOPLE
 MYSQL PEOPLE TO WEB (Insert all current people to web)
 MYSQL PEOPLE STRUCT TO WEB (Insert all current people structure to web)
 PEOPLE ORGANIZATION STRUCTURE REF (Employee numbers of structure)
 MYSQL PEOPLE STRUCT TO WEB (Insert all current people structure to web)
-BUILD ASSIGNMENTS AND PEOPLE
 BUILD CURRENT SYSTEM USERS (X000_USER_CURR)
+BUILD PEOPLE LEAVE
 ********************************************************************************
 """
 
@@ -102,8 +118,11 @@ Automatically run on schedule after data extraction
 
 def People_lists():
 
-    # Import python modules
+    """*****************************************************************************
+    ENVIRONMENT
+    *****************************************************************************"""
 
+    # Import python modules
     import sys
 
     # Add own module path
@@ -142,6 +161,12 @@ def People_lists():
     l_mail = True
     l_vacuum = False
 
+    """*****************************************************************************
+    OPEN THE DATABASES
+    *****************************************************************************"""
+    print("OPEN THE DATABASES")
+    funcfile.writelog("OPEN THE DATABASES")
+
     # Open the SQLITE SOURCE file
     with sqlite3.connect(so_path+so_file) as so_conn:
         so_curs = so_conn.cursor()
@@ -152,13 +177,19 @@ def People_lists():
     ms_cnxn = funcmysql.mysql_open(s_database)
     ms_curs = ms_cnxn.cursor()
     funcfile.writelog("%t OPEN MYSQL DATABASE: " + s_database)
+
+    """ ****************************************************************************
+    BEGIN OF SCRIPT
+    *****************************************************************************"""
+    print("BEGIN OF SCRIPT")
+    funcfile.writelog("BEGIN OF SCRIPT")
+
+    """ ****************************************************************************
+    BUILD LOOKUPS
+    *****************************************************************************"""
+    print("BUILD LOOKUPS")
+    funcfile.writelog("BUILD LOOKUPS")
     
-    # Drop tables
-
-    # DEFINITIONS ******************************************************************
-
-    # SCRIPT ***********************************************************************
-
     # Import the X000_OWN_HR_LOOKUPS table *****************************************
     print("Import own lookups...")
     ed_path = "S:/_external_data/"
@@ -179,52 +210,61 @@ def People_lists():
     co.close()
     funcfile.writelog("%t IMPORT TABLE: " + tb_name)
 
-    # 01 Build GRADES **************************************************************
+    """ ****************************************************************************
+    BUILD GRADES
+    *****************************************************************************"""
+    print("BUILD GRADES")
+    funcfile.writelog("BUILD GRADES")
 
+    # BUILD GRADES
     print("Build grades...")
-
     s_sql = "CREATE TABLE X000_GRADES AS " + """
     SELECT
-      PER_GRADES.GRADE_ID,
-      PER_GRADES.DATE_FROM,
-      PER_GRADES.DATE_TO,
-      PER_GRADES.GRADE_DEFINITION_ID,
-      PER_GRADE_DEFINITIONS.SEGMENT1 AS GRADE,
-      PER_GRADES.NAME AS GRADE_COMB,
-      PER_GRADES.CREATED_BY,
-      PER_GRADES.CREATION_DATE,
-      PER_GRADES.LAST_UPDATED_BY,
-      PER_GRADES.LAST_UPDATE_LOGIN,
-      PER_GRADES.SEQUENCE,
-      PER_GRADE_DEFINITIONS.SEGMENT2 AS GRADE_SEGMENT2,
-      PER_GRADE_DEFINITIONS.ID_FLEX_NUM,
-      PER_GRADES.BUSINESS_GROUP_ID,
-      X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS GRADE_CALC
+      GRADES.GRADE_ID,
+      SUBSTR(NAME,INSTR(NAME,'~')+1,60) As GRADE_NAME,
+      GRADES.DATE_FROM,
+      GRADES.DATE_TO,
+      GRADES.GRADE_DEFINITION_ID,
+      DEF.SEGMENT1 AS GRADE,
+      GRADES.NAME AS GRADE_COMB,
+      GRADES.CREATED_BY,
+      GRADES.CREATION_DATE,
+      GRADES.LAST_UPDATED_BY,
+      GRADES.LAST_UPDATE_LOGIN,
+      GRADES.SEQUENCE,
+      DEF.SEGMENT2 AS GRADE_SEGMENT2,
+      DEF.ID_FLEX_NUM,
+      GRADES.BUSINESS_GROUP_ID,
+      LOOKUP.LOOKUP_DESCRIPTION AS GRADE_CALC
     FROM
-      PER_GRADES
-      LEFT JOIN PER_GRADE_DEFINITIONS ON PER_GRADE_DEFINITIONS.GRADE_DEFINITION_ID = PER_GRADES.GRADE_DEFINITION_ID
-      LEFT JOIN X000_OWN_HR_LOOKUPS ON X000_OWN_HR_LOOKUPS.LOOKUP_CODE = PER_GRADE_DEFINITIONS.SEGMENT1 AND
-        X000_OWN_HR_LOOKUPS.LOOKUP = 'GRADE'  
+      PER_GRADES GRADES
+      LEFT JOIN PER_GRADE_DEFINITIONS DEF ON DEF.GRADE_DEFINITION_ID = GRADES.GRADE_DEFINITION_ID
+      LEFT JOIN X000_OWN_HR_LOOKUPS LOOKUP ON LOOKUP.LOOKUP_CODE = DEF.SEGMENT1 AND
+        LOOKUP.LOOKUP = 'GRADE'  
     ORDER BY
-      PER_GRADES.GRADE_ID
+      GRADES.GRADE_ID
     """
     so_curs.execute("DROP TABLE IF EXISTS X000_GRADES")
     so_curs.execute(s_sql)
     so_conn.commit()
-
     funcfile.writelog("%t BUILD TABLE: X000_GRADES")
 
-    # Calc grade name field
+    """
+    # CALC GRADE NAME FIELD
     if "GRADE_NAME" not in funccsv.get_colnames_sqlite(so_curs,"X000_GRADES"):
         so_curs.execute("ALTER TABLE X000_GRADES ADD GRADE_NAME TEXT;")
         so_curs.execute("UPDATE X000_GRADES SET GRADE_NAME = SUBSTR(GRADE_COMB,INSTR(GRADE_COMB,'~')+1,60);")
         so_conn.commit()
         funcfile.writelog("%t ADD COLUMNS: GRADE_NAME")
+    """
 
-    # 02 Build POSITIONS ***********************************************************
+    """ ****************************************************************************
+    BUILD POSITIONS
+    *****************************************************************************"""
+    print("BUILD POSITIONS")
+    funcfile.writelog("BUILD POSITIONS")
 
     print("Build positions...")
-
     s_sql = "CREATE TABLE X000_POSITIONS AS " + """
     SELECT
       PER_ALL_POSITIONS.POSITION_ID,
@@ -304,10 +344,13 @@ def People_lists():
         so_conn.commit()
         funcfile.writelog("%t ADD COLUMNS: ACAD_SUPP")
 
-    # 03 Build JOBS ****************************************************************
+    """ ****************************************************************************
+    BUILD JOBS
+    *****************************************************************************"""
+    print("BUILD JOBS")
+    funcfile.writelog("BUILD JOBS")
 
     print("Build jobs...")
-
     s_sql = "CREATE TABLE X000_JOBS AS " + """
     SELECT
       PER_JOBS.JOB_ID,
@@ -344,10 +387,13 @@ def People_lists():
         so_conn.commit()
         funcfile.writelog("%t ADD COLUMNS: JOB_SEGMENT_NAME")
 
-    # 04 Build ORGANIZATION ********************************************************
+    """ ****************************************************************************
+    BUILD ORGANIZATION
+    *****************************************************************************"""
+    print("BUILD ORGANIZATION")
+    funcfile.writelog("BUILD ORGANIZATION")
 
     print("Build organization...")
-
     s_sql = "CREATE TABLE X000_ORGANIZATION AS " + """
     SELECT
       HR_ALL_ORGANIZATION_UNITS.ORGANIZATION_ID,
@@ -659,6 +705,12 @@ def People_lists():
         so_conn.commit()
         funcfile.writelog("%t ADD COLUMNS: DIVISION")
 
+    """ ****************************************************************************
+    BUILD BANK ACCOUNTS
+    *****************************************************************************"""
+    print("BUILD BANK ACCOUNTS")
+    funcfile.writelog("BUILD BANK ACCOUNTS")
+
     # BUILD PERSONAL PAY BANK ACCOUNT LIST
     print("Build personal pay bank account number list...")
     sr_file = "X000_PAY_ACCOUNTS"
@@ -700,10 +752,14 @@ def People_lists():
     so_conn.commit()
     funcfile.writelog("%t BUILD VIEW: "+sr_file)        
 
-    # 05 Build PER PERIODS OF SERVICE *************************************************
+    """ ****************************************************************************
+    BUILD PERIODS OF SERVICE
+    *****************************************************************************"""
+    print("BUILD PERIODS OF SERVICE")
+    funcfile.writelog("BUILD PERIODS OF SERVICE")
 
+    # PER PERIODS OF SERVICE
     print("Build per periods of service...")
-
     s_sql = "CREATE VIEW X000_PER_PERIODS_OF_SERVICE AS " + """
     SELECT
       PER_PERIODS_OF_SERVICE.PERIOD_OF_SERVICE_ID,
@@ -730,13 +786,16 @@ def People_lists():
     so_curs.execute("DROP VIEW IF EXISTS X000_PER_PERIODS_OF_SERVICE")
     so_curs.execute(s_sql)
     so_conn.commit()
-
     funcfile.writelog("%t BUILD VIEW: X000_PER_PERIODS_OF_SERVICE")
 
-    # 06 Build ASSIGNMENTS *********************************************************
+    """ ****************************************************************************
+    BUILD ASSIGNMENTS
+    *****************************************************************************"""
+    print("BUILD ASSIGNMENTS")
+    funcfile.writelog("BUILD ASSIGNMENTS")
 
+    # BUILD ASSIGNMENTS
     print("Build assignments...")
-
     s_sql = "CREATE VIEW X000_PER_ALL_ASSIGNMENTS AS " + """
     SELECT
       PER_ALL_ASSIGNMENTS_F.ASSIGNMENT_ID AS ASS_ID,
@@ -813,13 +872,16 @@ def People_lists():
     so_curs.execute("DROP VIEW IF EXISTS X000_PER_ALL_ASSIGNMENTS")
     so_curs.execute(s_sql)
     so_conn.commit()
-
     funcfile.writelog("%t BUILD VIEW: X000_PER_ALL_ASSIGNMENTS")
 
-    # 07 Build PER ALL PEOPLE ******************************************************
+    """ ****************************************************************************
+    BUILD ALL PEOPLE
+    *****************************************************************************"""
+    print("BUILD ALL PEOPLE")
+    funcfile.writelog("BUILD ALL PEOPLE")
 
+    # PER ALL PEOPLE
     print("Build per all people...")
-
     s_sql = "CREATE VIEW X000_PER_ALL_PEOPLE AS " + """
     SELECT
       PER_ALL_PEOPLE_F.PERSON_ID,
@@ -903,8 +965,13 @@ def People_lists():
     so_curs.execute("DROP VIEW IF EXISTS X000_PER_ALL_PEOPLE")
     so_curs.execute(s_sql)
     so_conn.commit()
-
     funcfile.writelog("%t BUILD VIEW: X000_PER_ALL_PEOPLE")
+
+    """ ****************************************************************************
+    BUILD PERSON TYPES
+    *****************************************************************************"""
+    print("BUILD PERSON TYPES")
+    funcfile.writelog("BUILD PERSON TYPES")
 
     # BUILD PERSON TYPES ***********************************************************
 
@@ -930,10 +997,14 @@ def People_lists():
     so_conn.commit()
     funcfile.writelog("%t BUILD VIEW: "+sr_file)
 
-    # 08 Count ASSIGNMENTS *********************************************************
+    """ ****************************************************************************
+    COUNT RECORDS
+    *****************************************************************************"""
+    print("COUNT RECORDS")
+    funcfile.writelog("COUNT RECORDS")
 
+    # ASSIGNMENTS
     print("Count assignments...")
-
     s_sql = "CREATE VIEW X000_COUNT_ASSIGNMENTS AS" + """
     SELECT
       PER_ALL_ASSIGNMENTS_F.PERSON_ID,
@@ -946,13 +1017,10 @@ def People_lists():
     so_curs.execute("DROP VIEW IF EXISTS X000_COUNT_ASSIGNMENTS")
     so_curs.execute(s_sql)
     so_conn.commit()
-
     funcfile.writelog("%t BUILD VIEW: X000_COUNT_ASSIGNMENTS")
 
-    # 09 Count PEOPLE **************************************************************
-
+    # PEOPLE
     print("Count people...")
-
     s_sql = "CREATE VIEW X000_COUNT_PEOPLE AS" + """
     SELECT
       PER_ALL_PEOPLE_F.PERSON_ID,
@@ -965,13 +1033,10 @@ def People_lists():
     so_curs.execute("DROP VIEW IF EXISTS X000_COUNT_PEOPLE")
     so_curs.execute(s_sql)
     so_conn.commit()
-
     funcfile.writelog("%t BUILD VIEW: X000_COUNT_PEOPLE")
 
-    # 10 Count PERIOD OF SERVICE ***************************************************
-
+    # PERIOD OF SERVICE
     print("Count periods of service...")
-
     s_sql = "CREATE VIEW X000_COUNT_PERIODOS AS" + """
     SELECT
       PER_PERIODS_OF_SERVICE.PERSON_ID,
@@ -984,13 +1049,10 @@ def People_lists():
     so_curs.execute("DROP VIEW IF EXISTS X000_COUNT_PERIODOS")
     so_curs.execute(s_sql)
     so_conn.commit()
-
     funcfile.writelog("%t BUILD VIEW: X000_COUNT_PERIODOS")
 
-    # 11 Build COUNTS **************************************************************
-
+    # BUILD COUNTS
     print("Build counts...")
-
     s_sql = "CREATE VIEW X000_COUNTS AS" + """
     SELECT
       X000_COUNT_PEOPLE.PERSON_ID,
@@ -1005,7 +1067,6 @@ def People_lists():
     so_curs.execute("DROP VIEW IF EXISTS X000_COUNTS")
     so_curs.execute(s_sql)
     so_conn.commit()
-
     funcfile.writelog("%t BUILD VIEW: X000_COUNTS")
 
     """
@@ -1017,10 +1078,14 @@ def People_lists():
     funcfile.writelog("%t DROP TABLE: X000_COUNT_PERIODOS")
     """
 
-    # 12 Build ADDRESSES ***********************************************************
+    """ ****************************************************************************
+    BUILD ADDRESSES AND PHONES
+    *****************************************************************************"""
+    print("BUILD ADDRESSES")
+    funcfile.writelog("BUILD ADDRESSES")
 
+    # 12 BUILD ADDRESSES
     print("Build adresses...")
-
     s_sql = "CREATE TABLE X000_ADDRESSES AS " + """
     SELECT
       PER_ADDRESSES.ADDRESS_ID,
@@ -1058,7 +1123,6 @@ def People_lists():
     so_curs.execute("DROP TABLE IF EXISTS X000_ADDRESSES")
     so_curs.execute(s_sql)
     so_conn.commit()
-
     funcfile.writelog("%t BUILD TABLE: X000_ADDRESSES")
 
     # Calc COUNTRY NAME field
@@ -1633,7 +1697,6 @@ def People_lists():
     ms_cnxn.commit()
     funcfile.writelog("%t UPDATED MYSQL TRIGGER: FINDING 3 (people current birthdays)")
 
-
     # Build PEOPLE ORGANIZATION STRUCTURE REF **********************************
     print("Build reference people organogram...")
     s_sql = "CREATE TABLE X003_PEOPLE_ORGA_REF AS " + """
@@ -1682,10 +1745,12 @@ def People_lists():
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: X003_PEOPLE_ORGA_REF")
+
     # Create MYSQL PEOPLE STRUCT TO WEB table *****************************************
     print("Build mysql current people structure...")
     ms_curs.execute("DROP TABLE IF EXISTS ia_people_struct")
     funcfile.writelog("%t DROPPED MYSQL TABLE: PEOPLE_STRUCT (ia_people_struct)")
+
     #ia_find_1_auto INT(11) NOT NULL AUTO_INCREMENT,
     s_sql = """
     CREATE TABLE IF NOT EXISTS ia_people_struct (
@@ -2036,6 +2101,12 @@ def People_lists():
 
     # Close the connection *********************************************************
     so_conn.close()
+
+    """ ****************************************************************************
+    BUILD PEOPLE LEAVE
+    *****************************************************************************"""
+    print("BUILD PEOPLE LEAVE")
+    funcfile.writelog("BUILD PEOPLE LEAVE")
 
     # PEOPLE_LEAVE Database ********************************************************
 
