@@ -292,13 +292,75 @@ def Vss_lists():
       STUDQUALFOSRESULT.KBUSINESSENTITYID,
       STUDQUALFOSRESULT.AUDITDATETIME DESC
     """
-
     so_curs.execute("DROP VIEW IF EXISTS X000_Student_qualification_result")
     so_curs.execute("DROP VIEW IF EXISTS X000_Student_qual_result")
     so_curs.execute(s_sql)
     so_conn.commit()
-
     funcfile.writelog("%t BUILD VIEW: X000_Student_qual_result")
+
+    # BUILD QUALIFICATION STEP ONE
+    print("Build qualification...")
+    s_sql = "CREATE VIEW X000_Qualification AS " + """
+    SELECT
+      QUAL.KACADEMICPROGRAMID,
+      QUAL.STARTDATE,
+      QUAL.ENDDATE,
+      QUAL.QUALIFICATIONCODE,
+      QUALTYPE.LONG AS QUAL_TYPE,
+      MINDUR.LANK AS MIN,
+      MINUNI.LONG AS MIN_UNIT,
+      MAXDUR.LONG AS MAX,
+      MAXUNI.LONG AS MAX_UNIT,
+      QUAL.AUDITDATETIME,
+      QUAL.FAUDITSYSTEMFUNCTIONID,
+      QUAL.FAUDITUSERCODE,
+      CERTTYPE.LONG AS CERT_TYPE,
+      LEVY.LONG AS LEVY_TYPE,
+      QUAL.ISVATAPPLICABLE,
+      QUAL.ISPRESENTEDBEFOREAPPROVAL,
+      QUAL.ISDIRECTED
+    FROM
+      QUALIFICATION QUAL
+      LEFT JOIN X000_Codedescription MINDUR ON MINDUR.KCODEDESCID = QUAL.FMINDURATIONCODEID
+      LEFT JOIN X000_Codedescription MINUNI ON MINUNI.KCODEDESCID = QUAL.FMINDURPERIODUNITCODEID
+      LEFT JOIN X000_Codedescription MAXDUR ON MAXDUR.KCODEDESCID = QUAL.FMAXDURATIONCODEID
+      LEFT JOIN X000_Codedescription MAXUNI ON MAXUNI.KCODEDESCID = QUAL.FMAXDURPERIODUNITCODEID
+      LEFT JOIN X000_Codedescription QUALTYPE ON QUALTYPE.KCODEDESCID = QUAL.FQUALIFICATIONTYPECODEID
+      LEFT JOIN X000_Codedescription CERTTYPE ON CERTTYPE.KCODEDESCID = QUAL.FCERTIFICATETYPECODEID
+      LEFT JOIN X000_Codedescription LEVY ON LEVY.KCODEDESCID = QUAL.FLEVYLEVELCODEID
+    """
+    so_curs.execute("DROP VIEW IF EXISTS X000_Qualification")
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD VIEW: X000_Qualification")
+
+    # BUILD QUALIFICATION STEP TWO
+    print("Build qualification level...")
+    s_sql = "CREATE VIEW X000_Qualification_level AS " + """
+    SELECT
+      QUAL.KACADEMICPROGRAMID,
+      QUAL.STARTDATE,
+      QUAL.ENDDATE,
+      QUAL.QUALIFICATIONLEVEL,
+      FINAL.LONG AS STATUS_FINAL,
+      LEVY.LONG AS LEVY_CATEGORY,
+      QUAL.FFIELDOFSTUDYAPID,
+      QUAL.FFINALSTATUSCODEID,
+      QUAL.FLEVYCATEGORYCODEID,
+      QUAL.LOCKSTAMP,
+      QUAL.AUDITDATETIME,
+      QUAL.FAUDITSYSTEMFUNCTIONID,
+      QUAL.FAUDITUSERCODE,
+      QUAL.PHASEOUTDATE
+    FROM
+      QUALIFICATIONLEVEL QUAL
+      LEFT JOIN X000_Codedescription FINAL ON FINAL.KCODEDESCID = QUAL.FFINALSTATUSCODEID
+      LEFT JOIN X000_Codedescription LEVY ON LEVY.KCODEDESCID = QUAL.FLEVYCATEGORYCODEID
+    """
+    so_curs.execute("DROP VIEW IF EXISTS X000_Qualification_level")
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD VIEW: X000_Qualification_level")
 
     """*************************************************************************
     BUILD CURRENT YEAR STUDENTS
@@ -308,7 +370,7 @@ def Vss_lists():
 
     # BUILD STUDENT QUALIFICATION RESULTS
     print("Build current student qualification results...")
-    sr_file = "X000_Student_qual_result_curr"
+    sr_file = "X001_Student_qual_result"
     s_sql = "CREATE VIEW "+ sr_file +" AS " + """
     SELECT
       RESULT.KBUSINESSENTITYID,
@@ -351,8 +413,8 @@ def Vss_lists():
     FROM
       X000_Student_qual_result RESULT
     WHERE
-      RESULT.KRESULTYYYYMM >= SubStr('%CYEARB%',1,4)||SubStr('%YEARB%',6,2) AND
-      RESULT.KRESULTYYYYMM <= SubStr('%CYEARE%',1,4)||SubStr('%YEARE%',6,2)
+      RESULT.KRESULTYYYYMM >= SubStr('%YEARB%',1,4)||SubStr('%YEARB%',6,2) AND
+      RESULT.KRESULTYYYYMM <= SubStr('%YEARE%',1,4)||SubStr('%YEARE%',6,2)
     ORDER BY
       RESULT.KBUSINESSENTITYID
     """
@@ -361,76 +423,12 @@ def Vss_lists():
     so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD VIEW: X000_Student_qual_result_curr")
-
-    # BUILD QUALIFICATION STEP ONE
-    print("Build qualification...")
-    s_sql = "CREATE VIEW X001aa_Qualification AS " + """
-    SELECT
-      QUAL.KACADEMICPROGRAMID,
-      QUAL.STARTDATE,
-      QUAL.ENDDATE,
-      QUAL.QUALIFICATIONCODE,
-      QUALTYPE.LONG AS QUAL_TYPE,
-      MINDUR.LANK AS MIN,
-      MINUNI.LONG AS MIN_UNIT,
-      MAXDUR.LONG AS MAX,
-      MAXUNI.LONG AS MAX_UNIT,
-      QUAL.AUDITDATETIME,
-      QUAL.FAUDITSYSTEMFUNCTIONID,
-      QUAL.FAUDITUSERCODE,
-      CERTTYPE.LONG AS CERT_TYPE,
-      LEVY.LONG AS LEVY_TYPE,
-      QUAL.ISVATAPPLICABLE,
-      QUAL.ISPRESENTEDBEFOREAPPROVAL,
-      QUAL.ISDIRECTED
-    FROM
-      QUALIFICATION QUAL
-      LEFT JOIN X000_Codedescription MINDUR ON MINDUR.KCODEDESCID = QUAL.FMINDURATIONCODEID
-      LEFT JOIN X000_Codedescription MINUNI ON MINUNI.KCODEDESCID = QUAL.FMINDURPERIODUNITCODEID
-      LEFT JOIN X000_Codedescription MAXDUR ON MAXDUR.KCODEDESCID = QUAL.FMAXDURATIONCODEID
-      LEFT JOIN X000_Codedescription MAXUNI ON MAXUNI.KCODEDESCID = QUAL.FMAXDURPERIODUNITCODEID
-      LEFT JOIN X000_Codedescription QUALTYPE ON QUALTYPE.KCODEDESCID = QUAL.FQUALIFICATIONTYPECODEID
-      LEFT JOIN X000_Codedescription CERTTYPE ON CERTTYPE.KCODEDESCID = QUAL.FCERTIFICATETYPECODEID
-      LEFT JOIN X000_Codedescription LEVY ON LEVY.KCODEDESCID = QUAL.FLEVYLEVELCODEID
-    """
-    so_curs.execute("DROP VIEW IF EXISTS X001aa_Qualification")
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD VIEW: X001aa_Qualification")
-
-    # BUILD QUALIFICATION STEP TWO
-    print("Build qualification level...")
-    s_sql = "CREATE VIEW X001ba_Qualification_level AS " + """
-    SELECT
-      QUAL.KACADEMICPROGRAMID,
-      QUAL.STARTDATE,
-      QUAL.ENDDATE,
-      QUAL.QUALIFICATIONLEVEL,
-      FINAL.LONG AS STATUS_FINAL,
-      LEVY.LONG AS LEVY_CATEGORY,
-      QUAL.FFIELDOFSTUDYAPID,
-      QUAL.FFINALSTATUSCODEID,
-      QUAL.FLEVYCATEGORYCODEID,
-      QUAL.LOCKSTAMP,
-      QUAL.AUDITDATETIME,
-      QUAL.FAUDITSYSTEMFUNCTIONID,
-      QUAL.FAUDITUSERCODE,
-      QUAL.PHASEOUTDATE
-    FROM
-      QUALIFICATIONLEVEL QUAL
-      LEFT JOIN X000_Codedescription FINAL ON FINAL.KCODEDESCID = QUAL.FFINALSTATUSCODEID
-      LEFT JOIN X000_Codedescription LEVY ON LEVY.KCODEDESCID = QUAL.FLEVYCATEGORYCODEID
-    """
-    so_curs.execute("DROP VIEW IF EXISTS X001ba_Qualification_level")
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD VIEW: X001ba_Qualification_level")
+    funcfile.writelog("%t BUILD VIEW: X001_Student_qual_result")
 
     # BUILD CURRENT STUDENT QUALIFICATION ONE
     # QUALLEVELENROLSTUD + PRESENTOUENROLPRESENTCAT
     print("Build current student qualification step 1...")
-    s_sql = "CREATE VIEW X001ca_Stud_qual_curr AS " + """
+    s_sql = "CREATE VIEW X001aa_Stud_qual_enrol AS " + """
     Select
       QUAL.KSTUDBUSENTID,
       QUAL.KENROLSTUDID,
@@ -475,17 +473,17 @@ def Vss_lists():
       QUAL.KSTUDBUSENTID,
       QUAL.DATEQUALLEVELSTARTED  
     """
-    so_curs.execute("DROP VIEW IF EXISTS X001ca_Stud_qual_curr")
+    so_curs.execute("DROP VIEW IF EXISTS X001aa_Stud_qual_enrol")
     so_curs.execute(s_sql)
     so_conn.commit()
 
-    funcfile.writelog("%t BUILD VIEW: X001ca_Stud_qual_curr")
+    funcfile.writelog("%t BUILD VIEW: X001aa_Stud_qual_enrol")
 
     # BUILD CURRENT STUDENT QUALIFICATION TWO
     # QUALLEVELENROLSTUD + PRESENTOUENROLPRESENTCAT
     # QUALIFICATIONLEVEL
     print("Build current student qualification step 2...")
-    s_sql = "CREATE VIEW X001cb_Stud_qual_curr AS " + """
+    s_sql = "CREATE VIEW X001ab_Stud_qual_present AS " + """
     Select
       QUAL.KSTUDBUSENTID,
       QUAL.KENROLSTUDID,
@@ -507,9 +505,9 @@ def Vss_lists():
       QUAL.FPRESENTATIONCATEGORYCODEID,
       QUAL.PRESENT_CAT,
       QUALLEVE.FFINALSTATUSCODEID,
-      FINAL.LONG AS QUAL_LEVEL_STATUS_FINAL,  
+      QUALLEVE.STATUS_FINAL AS QUAL_LEVEL_STATUS_FINAL,  
       QUALLEVE.FLEVYCATEGORYCODEID,
-      LEVY.LONG AS QUAL_LEVEL_LEVY_CAT,  
+      QUALLEVE.LEVY_CATEGORY AS QUAL_LEVEL_LEVY_CAT,  
       QUAL.FBLACKLISTCODEID,
       QUAL.BLACKLIST,
       QUALPRES.FBUSINESSENTITYID,
@@ -533,23 +531,21 @@ def Vss_lists():
       QUALLEVE.STARTDATE AS QUAL_LEVEL_STARTDATE,
       QUALLEVE.ENDDATE AS QUAL_LEVEL_ENDDATE
     From
-      X001ca_Stud_qual_curr QUAL Left Join
+      X001aa_Stud_qual_enrol QUAL Left Join
       QUALLEVELPRESENTINGOU QUALPRES ON QUALPRES.KPRESENTINGOUID = QUAL.FQUALPRESENTINGOUID Left Join
-      QUALIFICATIONLEVEL QUALLEVE ON QUALLEVE.KACADEMICPROGRAMID = QUALPRES.FQUALLEVELAPID Left Join
-      X000_Orgunitinstance ORG ON ORG.KBUSINESSENTITYID = QUALPRES.FBUSINESSENTITYID Left Join
-      X000_Codedescription FINAL ON FINAL.KCODEDESCID = QUALLEVE.FFINALSTATUSCODEID Left Join
-      X000_Codedescription LEVY ON LEVY.KCODEDESCID = QUALLEVE.FLEVYCATEGORYCODEID
+      X000_Qualification_level QUALLEVE ON QUALLEVE.KACADEMICPROGRAMID = QUALPRES.FQUALLEVELAPID Left Join
+      X000_Orgunitinstance ORG ON ORG.KBUSINESSENTITYID = QUALPRES.FBUSINESSENTITYID
     """
-    so_curs.execute("DROP VIEW IF EXISTS X001cb_Stud_qual_curr")
+    so_curs.execute("DROP VIEW IF EXISTS X001ab_Stud_qual_present")
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD VIEW: X001cb_Stud_qual_curr")
+    funcfile.writelog("%t BUILD VIEW: X001ab_Stud_qual_present")
 
     # BUILD CURRENT STUDENT QUALIFICATION THREE
     # QUALLEVELENROLSTUD + PRESENTOUENROLPRESENTCAT
     # QUALIFICATIONLEVEL
     print("Build current student qualification step 3...")
-    s_sql = "CREATE VIEW X001cc_Stud_qual_curr AS " + """
+    s_sql = "CREATE VIEW X001ac_Stud_qual_fos AS " + """
     SELECT
       QUAL.KSTUDBUSENTID,
       QUAL.KENROLSTUDID,
@@ -607,19 +603,19 @@ def Vss_lists():
       QUAL.FPROGRAMAPID,  
       FOS.FQUALIFICATIONAPID
     FROM
-      X001cb_Stud_qual_curr QUAL Left Join
+      X001ab_Stud_qual_present QUAL Left Join
       FIELDOFSTUDY FOS ON FOS.KACADEMICPROGRAMID = QUAL.FFIELDOFSTUDYAPID Left Join
       X000_Codedescription SEL ON SEL.KCODEDESCID = FOS.FSELECTIONCODEID Left Join
-      X001aa_Qualification PROG ON PROG.KACADEMICPROGRAMID = FOS.FQUALIFICATIONAPID
+      X000_Qualification PROG ON PROG.KACADEMICPROGRAMID = FOS.FQUALIFICATIONAPID
     """
-    so_curs.execute("DROP VIEW IF EXISTS X001cc_Stud_qual_curr")
+    so_curs.execute("DROP VIEW IF EXISTS X001ac_Stud_qual_fos")
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD VIEW: X001cc_Stud_qual_curr")
+    funcfile.writelog("%t BUILD VIEW: X001ac_Stud_qual_fos")
 
     # BUILD CURRENT STUDENT QUALIFICATION RESULTS FOUR
     print("Build current student qualification step 4...")
-    sr_file = "X001cd_Stud_qual_curr"
+    sr_file = "X001ad_Stud_qual_result"
     s_sql = "CREATE VIEW "+ sr_file +" AS " + """
     SELECT
       QUAL.KSTUDBUSENTID,
@@ -715,8 +711,8 @@ def Vss_lists():
       RESULT.CERTDISPATCHREFNO,
       RESULT.ISSUEFIRSTNAMES
     FROM
-      X001cc_Stud_qual_curr QUAL Left Join
-      X000_Student_qual_result_curr RESULT ON RESULT.KBUSINESSENTITYID = QUAL.KSTUDBUSENTID AND
+      X001ac_Stud_qual_fos QUAL Left Join
+      X001_Student_qual_result RESULT ON RESULT.KBUSINESSENTITYID = QUAL.KSTUDBUSENTID AND
           RESULT.FPROGRAMAPID = QUAL.FPROGRAMAPID AND
           RESULT.KACADEMICPROGRAMID = QUAL.FFIELDOFSTUDYAPID
     """
@@ -724,11 +720,11 @@ def Vss_lists():
     so_curs.execute(s_sql)
     so_conn.commit()
 
-    funcfile.writelog("%t BUILD VIEW: X001cd_Stud_qual_curr")
+    funcfile.writelog("%t BUILD VIEW: X001ad_Stud_qual_result")
 
     # BUILD CURRENT STUDENT QUALIFICATION FINAL LIST
     print("Build current student qualification step 5...")
-    sr_file = "X001cx_Stud_qual_curr"
+    sr_file = "X001ax_Student_curr"
     s_sql = "CREATE TABLE "+ sr_file +" AS " + """
     SELECT
       QUAL.KSTUDBUSENTID,
@@ -795,7 +791,7 @@ def Vss_lists():
       PROGRAM.FFIELDOFSTUDYAPID AS FFIELDOFSTUDYAPID1,
       PROGRAM.PROGRAMCODE
     FROM
-      X001cd_Stud_qual_curr QUAL Left Join
+      X001ad_Stud_qual_result QUAL Left Join
       PROGRAM ON PROGRAM.KACADEMICPROGRAMID = QUAL.FPROGRAMAPID
     ORDER BY
       QUAL.KSTUDBUSENTID,
