@@ -47,19 +47,19 @@ funcfile.writelog("STUDENT LIST ON " + s_date)
 
 # Build current student qualification results **********************************
 print("Build list of current students on specific day...")
-sr_file = "X001_Student_qual_curr_day"
+sr_file = "X001_Student_selected"
 s_sql = "CREATE TABLE "+ sr_file +" AS " + """
 SELECT
-  X001cx_Stud_qual_curr.*
+  STUDENT.*
 FROM
-  X001cx_Stud_qual_curr
+  X001_Student_curr STUDENT
 WHERE
-  (X001cx_Stud_qual_curr.DATEENROL <= Date('%DAY%') AND
-  X001cx_Stud_qual_curr.DISCONTINUEDATE >= Date('%DAY%') AND
-  Upper(X001cx_Stud_qual_curr.QUAL_TYPE) != 'SHORT COURSE') OR
-  (X001cx_Stud_qual_curr.DATEENROL <= Date('%DAY%') AND
-  X001cx_Stud_qual_curr.DISCONTINUEDATE IS NULL AND
-  Upper(X001cx_Stud_qual_curr.QUAL_TYPE) != 'SHORT COURSE')
+  (STUDENT.DATEENROL <= Date('%DAY%') AND
+  STUDENT.DISCONTINUEDATE >= Date('%DAY%') AND
+  Upper(STUDENT.QUAL_TYPE) != 'SHORT COURSE') OR
+  (STUDENT.DATEENROL <= Date('%DAY%') AND
+  STUDENT.DISCONTINUEDATE IS NULL AND
+  Upper(STUDENT.QUAL_TYPE) != 'SHORT COURSE')
 """
 s_sql = s_sql.replace("%DAY%",s_date)
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -72,11 +72,9 @@ funcfile.writelog("%t BUILD TABLE: " + sr_file)
 print("Export list of students on specific date...")
 sr_filet = sr_file
 sx_path = re_path + funcdate.cur_year() + "/"
-sx_file = "Student_001_list_" + s_date.replace("-","")
-#sx_filet = sx_file + funcdate.prev_monthendfile()
+sx_file = "Student_001_list_" + s_date.replace("-","") + "_"
 s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
 funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-#funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)    
 funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 
 # Close the connection *********************************************************
