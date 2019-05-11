@@ -147,7 +147,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
       UPPER(TRIM(DESCRIPTION_A)) AS TEMP_DESC_A,
       UPPER(TRIM(DESCRIPTION_E)) AS TEMP_DESC_E
     FROM
-      VSS.X010_Studytrans
+      VSS.X010_Studytrans_curr
     WHERE
       TRANSCODE <> ''
     ;"""
