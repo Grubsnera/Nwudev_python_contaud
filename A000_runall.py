@@ -171,6 +171,20 @@ else:
     print("C300_TEST_STUDENT_GENERAL only run on 1st of the month")
     funcfile.writelog("SCRIPT: C300_TEST_STUDENT_GENERAL: ONLY RUN ON 1ST OF THE MONTH")
 
+"""****************************************************************************
+VSS STUDENT DEFERMENT MASTERFILE
+****************************************************************************"""
+
+if funcdate.today_dayname() in "MonTueWedThuFri":
+    import C301_report_student_deferment
+    try:
+        C301_report_student_deferment.Studdeb_deferments('curr',funcdate.cur_year())
+    except Exception as e:
+        funcsys.ErrMessage(e)
+else:
+    print("VSS STUDENT DEFERMENT MASTERFILE do not run on Saturdays and Sundays")
+    funcfile.writelog("SCRIPT: C301_REPORT_STUDENT_DEFERMENT_RUN: DO NOT RUN ON SATURDAYS AND SUNDAYS")
+
 """ ****************************************************************************
 END OF SCRIPT
 *****************************************************************************"""
