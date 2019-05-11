@@ -6,7 +6,7 @@ Copyright (c) AB Janse van Rensburg 10 Feb 2018
 #from __future__ import generators
 #wait = input("PRESS ENTER TO CONTINUE.")
 
-def Oracle_to_sqlite():
+def Oracle_to_sqlite(s_table="000b_Table.csv"):
 
     # Import python objects *******************************************************
     import csv
@@ -106,7 +106,7 @@ def Oracle_to_sqlite():
         # TABLE info from text *****************************************************
 
         # Read the table parameters from the 02_Table.csv file
-        tb = open(sl_path + "000b_Table.csv", "rU")
+        tb = open(sl_path + s_table, "rU")
         tb_reader = csv.reader(tb)
 
         # Read the TABLE database data
