@@ -108,7 +108,8 @@ def Creditor_test_payments():
     From
         KFS.X001aa_Report_payments_curr PAYMENT
     Where
-        StrfTime('%Y-%m-%d',PAYMENT.PMT_DT) >= StrfTime('%Y-%m-%d','now','%DAYS%')
+        StrfTime('%Y-%m-%d',PAYMENT.PMT_DT) >= StrfTime('%Y-%m-%d','now','%DAYS%') And
+        PAYMENT.PMT_STAT_CD = 'EXTR'
     """
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if funcdate.today_dayname() == "Mon":
@@ -223,6 +224,8 @@ def Creditor_test_payments():
         '' As INV_CALC3
     From
         KFS.X001aa_Report_payments_prev PAYMENT
+    Where
+        PAYMENT.PMT_STAT_CD = 'EXTR'
     """
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -333,6 +336,8 @@ def Creditor_test_payments():
         '' As INV_CALC3
     From
         KFS.X001aa_Report_payments_curr PAYMENT
+    Where
+        PAYMENT.PMT_STAT_CD = 'EXTR'
     """
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
