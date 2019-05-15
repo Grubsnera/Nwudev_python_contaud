@@ -44,8 +44,8 @@ with sqlite3.connect(so_path+so_file) as so_conn:
     so_curs = so_conn.cursor()
 funcfile.writelog("%t OPEN DATABASE: Kfs_vss_studdeb")
 
-#so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
-#funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
+so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
+funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
 so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs.sqlite' AS 'KFS'")
 funcfile.writelog("%t ATTACH DATABASE: KFS.SQLITE")
 so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss.sqlite' AS 'VSS'")
