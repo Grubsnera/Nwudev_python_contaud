@@ -1032,25 +1032,29 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     sr_file = "X002ea_vss_gl_balance_month"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     SELECT
-      UPPER(SUBSTR(X002ce_vss_balmonth_calc_runbal.CAMPUS_VSS,1,3))||TRIM(X002ce_vss_balmonth_calc_runbal.MONTH_VSS) AS ROWID,
+      UPPER(SUBSTR(VSSBAL.CAMPUS_VSS,1,3))||TRIM(VSSBAL.MONTH_VSS) AS ROWID,
+      CASE
+          WHEN VSSBAL.MONTH_VSS = '%CMONTH%' THEN 'Y'
+          ELSE 'N'
+      END As CURRENT,
       'NWU' AS ORG,
-      X002ce_vss_balmonth_calc_runbal.CAMPUS_VSS AS CAMPUS,
-      X002ce_vss_balmonth_calc_runbal.MONTH_VSS AS MONTH,
-      X002ce_vss_balmonth_calc_runbal.AMOUNT_DT AS VSS_TRAN_DT,
-      X002ce_vss_balmonth_calc_runbal.AMOUNT_CT AS VSS_TRAN_CT,
-      X002ce_vss_balmonth_calc_runbal.AMOUNT AS VSS_TRAN,
-      X002ce_vss_balmonth_calc_runbal.RUNBAL AS VSS_RUNBAL,
-      X001ce_gl_balmonth_calc_runbal.BALANCE AS GL_TRAN,
-      X001ce_gl_balmonth_calc_runbal.RUNBAL AS GL_RUNBAL
+      VSSBAL.CAMPUS_VSS AS CAMPUS,
+      VSSBAL.MONTH_VSS AS MONTH,
+      VSSBAL.AMOUNT_DT AS VSS_TRAN_DT,
+      VSSBAL.AMOUNT_CT AS VSS_TRAN_CT,
+      VSSBAL.AMOUNT AS VSS_TRAN,
+      VSSBAL.RUNBAL AS VSS_RUNBAL,
+      GLBAL.BALANCE AS GL_TRAN,
+      GLBAL.RUNBAL AS GL_RUNBAL
     FROM
-      X002ce_vss_balmonth_calc_runbal
-      LEFT JOIN X001ce_gl_balmonth_calc_runbal ON X001ce_gl_balmonth_calc_runbal.CAMPUS = X002ce_vss_balmonth_calc_runbal.CAMPUS_VSS AND
-        X001ce_gl_balmonth_calc_runbal.MONTH = X002ce_vss_balmonth_calc_runbal.MONTH_VSS
+      X002ce_vss_balmonth_calc_runbal VSSBAL
+      LEFT JOIN X001ce_gl_balmonth_calc_runbal GLBAL ON GLBAL.CAMPUS = VSSBAL.CAMPUS_VSS AND
+        GLBAL.MONTH = VSSBAL.MONTH_VSS
     ;"""
     #WHERE
     #  X002ce_vss_balmonth_calc_runbal.MONTH_VSS <= '%PMONTH%'
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    s_sql = s_sql.replace("%PMONTH%",gl_month) 
+    s_sql = s_sql.replace("%CMONTH%",funcdate.cur_month()) 
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
@@ -1069,6 +1073,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     SELECT
       a.ROWID,
+      a.CURRENT,
       a.ORG,
       a.CAMPUS,
       a.MONTH,
@@ -1158,16 +1163,17 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     sr_file = "X002ex_vss_gl_balance_month"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     SELECT
-      X002ea_vss_gl_balance_month_move.CAMPUS,
-      X002ea_vss_gl_balance_month_move.MONTH,
-      X002ea_vss_gl_balance_month_move.VSS_TRAN_DT,
-      X002ea_vss_gl_balance_month_move.VSS_TRAN_CT,
-      X002ea_vss_gl_balance_month_move.VSS_TRAN,
-      X002ea_vss_gl_balance_month_move.VSS_RUNBAL,
-      X002ea_vss_gl_balance_month_move.GL_TRAN,
-      X002ea_vss_gl_balance_month_move.GL_RUNBAL,
-      X002ea_vss_gl_balance_month_move.DIFF,
-      X002ea_vss_gl_balance_month_move.MOVE,
+      BAL.CAMPUS,
+      BAL.MONTH,
+      BAL.CURRENT,
+      BAL.VSS_TRAN_DT,
+      BAL.VSS_TRAN_CT,
+      BAL.VSS_TRAN,
+      BAL.VSS_RUNBAL,
+      BAL.GL_TRAN,
+      BAL.GL_RUNBAL,
+      BAL.DIFF,
+      BAL.MOVE,
       CAMP_OFFICER.EMPLOYEE_NUMBER AS OFFICER_CAMP,
       CAMP_OFFICER.KNOWN_NAME AS OFFICER_NAME_CAMP,
       CAMP_OFFICER.EMAIL_ADDRESS AS OFFICER_MAIL_CAMP,
@@ -1181,11 +1187,11 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
       ORG_SUPERVISOR.KNOWN_NAME AS SUPERVISOR_NAME_ORG,
       ORG_SUPERVISOR.EMAIL_ADDRESS AS SUPERVISOR_MAIL_ORG
     FROM
-      X002ea_vss_gl_balance_month_move
-      LEFT JOIN X002eb_impo_report_officer CAMP_OFFICER ON CAMP_OFFICER.CAMPUS = X002ea_vss_gl_balance_month_move.CAMPUS
-      LEFT JOIN X002eb_impo_report_officer ORG_OFFICER ON ORG_OFFICER.CAMPUS = X002ea_vss_gl_balance_month_move.ORG
-      LEFT JOIN X002ec_impo_report_supervisor CAMP_SUPERVISOR ON CAMP_SUPERVISOR.CAMPUS = X002ea_vss_gl_balance_month_move.CAMPUS
-      LEFT JOIN X002ec_impo_report_supervisor ORG_SUPERVISOR ON ORG_SUPERVISOR.CAMPUS = X002ea_vss_gl_balance_month_move.ORG
+      X002ea_vss_gl_balance_month_move BAL
+      LEFT JOIN X002eb_impo_report_officer CAMP_OFFICER ON CAMP_OFFICER.CAMPUS = BAL.CAMPUS
+      LEFT JOIN X002eb_impo_report_officer ORG_OFFICER ON ORG_OFFICER.CAMPUS = BAL.ORG
+      LEFT JOIN X002ec_impo_report_supervisor CAMP_SUPERVISOR ON CAMP_SUPERVISOR.CAMPUS = BAL.CAMPUS
+      LEFT JOIN X002ec_impo_report_supervisor ORG_SUPERVISOR ON ORG_SUPERVISOR.CAMPUS = BAL.ORG
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
