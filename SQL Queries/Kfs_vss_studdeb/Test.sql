@@ -1,12 +1,13 @@
-﻿SELECT
-  X002dc_vss_prevbal_curopen.CAMPUS,
-  X002dc_vss_prevbal_curopen.STUDENT,
-  X002dc_vss_prevbal_curopen.BAL_PREV,
-  X002dc_vss_prevbal_curopen.BAL_OPEN,
-  X002dc_vss_prevbal_curopen.DIFF_BAL
-FROM
-  X002dc_vss_prevbal_curopen
-WHERE
-  (X002dc_vss_prevbal_curopen.DIFF_BAL <> 0) OR
-  (X002dc_vss_prevbal_curopen.DIFF_BAL IS NULL AND
-  X002dc_vss_prevbal_curopen.BAL_PREV <> 0)
+﻿Select
+    X002ab_vss_transort.CAMPUS_VSS,
+    X002ab_vss_transort.TRANSDATE_VSS,
+    Sum(X002ab_vss_transort.AMOUNT_VSS) As Sum_AMOUNT_VSS,
+    Sum(X002ab_vss_transort.AMOUNT_DT) As Sum_AMOUNT_DT,
+    Sum(X002ab_vss_transort.AMOUNT_CR) As Sum_AMOUNT_CR
+From
+    X002ab_vss_transort
+Where
+    X002ab_vss_transort.MONTH_VSS = '05'
+Group By
+    X002ab_vss_transort.CAMPUS_VSS,
+    X002ab_vss_transort.TRANSDATE_VSS
