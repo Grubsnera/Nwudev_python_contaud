@@ -145,7 +145,7 @@ else:
 KFS VSS STUDENT DEBTOR RECONCILIATION AND TESTS
 ****************************************************************************"""
 
-if funcdate.cur_day() in "01z02z03z04z10z13":
+if funcdate.today_dayname() in "MonTueWedThuFri":
     import C200_report_studdeb_recon
     try:
         C200_report_studdeb_recon.Report_studdeb_recon()
