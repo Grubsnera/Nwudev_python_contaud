@@ -438,6 +438,7 @@ def People_test_masterfile():
     if i_find > 0 and i_coun > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
+            'ID NUMBER BLANK' As AUDIT_FINDING,
             X002ah_id_cont.ORG AS ORGANIZATION,
             X002ah_id_cont.LOC AS LOCATION,
             X002ah_id_cont.EMP AS EMPLOYEE_NUMBER,
@@ -740,6 +741,7 @@ def People_test_masterfile():
     if i_find > 0 and i_coun > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
+            'ID NUMBER INVALID' As AUDIT_FINDING,
             X002bh_id_cont.ORG AS ORGANIZATION,
             X002bh_id_cont.LOC AS LOCATION,
             X002bh_id_cont.EMP AS EMPLOYEE_NUMBER,
@@ -1035,6 +1037,7 @@ def People_test_masterfile():
         print("Build the final report")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
+            'ID DOB INVALID' As AUDIT_FINDING,
             X002ch_dob_cont.ORG AS ORGANIZATION,
             X002ch_dob_cont.LOC AS LOCATION,
             X002ch_dob_cont.EMP AS EMPLOYEE_NUMBER,
@@ -1336,6 +1339,7 @@ def People_test_masterfile():
         print("Build the final report")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
+            'ID GENDER INVALID' As AUDIT_FINDING,
             X002dh_sex_cont.ORG AS ORGANIZATION,
             X002dh_sex_cont.LOC AS LOCATION,
             X002dh_sex_cont.EMP AS EMPLOYEE_NUMBER,
@@ -1630,6 +1634,7 @@ def People_test_masterfile():
         print("Build the final report")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
+            'ID NUMBER DUPLICATE' As AUDIT_FINDING,
             X002eh_id_cont.ORG AS ORGANIZATION,
             X002eh_id_cont.LOC AS LOCATION,
             X002eh_id_cont.EMP AS EMPLOYEE_NUMBER,
@@ -1939,6 +1944,7 @@ def People_test_masterfile():
     if i_find > 0 and i_coun > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
+            'PASSPORT BLANK' As AUDIT_FINDING,
             X003ah_pass_cont.ORG AS ORGANIZATION,
             X003ah_pass_cont.LOC AS LOCATION,
             X003ah_pass_cont.EMP AS EMPLOYEE_NUMBER,
@@ -2228,6 +2234,7 @@ def People_test_masterfile():
     if i_find > 0 and i_coun > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
+            'PASSPORT DUPLICATE' As AUDIT_FINDING,
             X003bh_pass_cont.ORG AS ORGANIZATION,
             X003bh_pass_cont.LOC AS LOCATION,
             X003bh_pass_cont.EMP AS EMPLOYEE_NUMBER,
@@ -2550,6 +2557,7 @@ def People_test_masterfile():
     if i_find > 0 and i_coun > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
+            'BANK ACC DUPLICATE' As AUDIT_FINDING,
             X004ah_bank_cont.ORG AS ORGANIZATION,
             X004ah_bank_cont.LOC AS LOCATION,
             X004ah_bank_cont.EMP AS EMPLOYEE_NUMBER,
@@ -3245,6 +3253,7 @@ def People_test_masterfile():
     if i_find > 0 and i_coun > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
+            'TAX NUMBER BLANK' As AUDIT_FINDING,
             X005ah_paye_cont.ORG AS ORGANIZATION,
             X005ah_paye_cont.LOC AS LOCATION,
             X005ah_paye_cont.EMP AS EMPLOYEE_NUMBER,
@@ -3577,6 +3586,7 @@ def People_test_masterfile():
         print("Build the final report")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
+            'TAX NUMBER INVALID' As AUDIT_FINDING,
             X005bh_paye_cont.ORG AS ORGANIZATION,
             X005bh_paye_cont.LOC AS LOCATION,
             X005bh_paye_cont.EMP AS EMPLOYEE_NUMBER,
@@ -3865,6 +3875,7 @@ def People_test_masterfile():
     if i_find > 0 and i_coun > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
+            'TAX NUMBER DUPLICATE' As AUDIT_FINDING,
             X005ch_paye_cont.ORG AS ORGANIZATION,
             X005ch_paye_cont.LOC AS LOCATION,
             X005ch_paye_cont.EMP AS EMPLOYEE_NUMBER,
@@ -4182,6 +4193,7 @@ def People_test_masterfile():
     if i_find > 0 and i_coun > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
+            'NAME DUPLICATE' As AUDIT_FINDING,
             X006ah_name_cont.ORG AS ORGANIZATION,
             X006ah_name_cont.LOC AS LOCATION,
             X006ah_name_cont.EMP AS EMPLOYEE_NUMBER,
