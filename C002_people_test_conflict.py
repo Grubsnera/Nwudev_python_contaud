@@ -817,6 +817,7 @@ def People_test_conflict():
     if i_find > 0 and i_coun > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
+            'EMPL VENDOR SAME BANK ACC' As AUDIT_FINDING,
             FINDING.ORG AS ORGANIZATION,
             FINDING.LOC AS LOCATION,
             FINDING.EMP AS EMPLOYEE_NUMBER,
