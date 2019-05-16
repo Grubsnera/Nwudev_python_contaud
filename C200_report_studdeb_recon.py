@@ -1214,6 +1214,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     ia_find5_auto INT(11) AUTO_INCREMENT,
     ia_find5_campus VARCHAR(20),
     ia_find5_month VARCHAR(2),
+    ia_find5_current VARCHAR(1),
     ia_find5_vss_tran_dt DECIMAL(20,2),
     ia_find5_vss_tran_ct DECIMAL(20,2),
     ia_find5_vss_tran DECIMAL(20,2),
