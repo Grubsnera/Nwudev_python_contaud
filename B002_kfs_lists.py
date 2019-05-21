@@ -541,23 +541,29 @@ def Kfs_lists():
     sr_file = "X001ad_vendor_bankacc"
     s_sql = "CREATE VIEW "+sr_file+" AS " + """
     Select Distinct
-        PDP_PAYEE_ACH_ACCT_T.PAYEE_ID_NBR As VENDOR_ID,
+        BANK.PAYEE_ID_NBR As VENDOR_ID,
         STUD.BNK_ACCT_NBR As STUD_BANK,
+        STUDB.BNK_BRANCH_CD As STUD_BRANCH,
         STUD.PAYEE_ID_TYP_CD As STUD_TYPE,
         STUD.PAYEE_EMAIL_ADDR As STUD_MAIL,
         VEND.BNK_ACCT_NBR As VEND_BANK,
+        VENDB.BNK_BRANCH_CD As VEND_BRANCH,
         VEND.PAYEE_ID_TYP_CD As VEND_TYPE,
         VEND.PAYEE_EMAIL_ADDR As VEND_MAIL,
         EMPL.BNK_ACCT_NBR As EMPL_BANK,
+        EMPLB.BNK_BRANCH_CD As EMPL_BRANCH,
         EMPL.PAYEE_ID_TYP_CD As EMPL_TYPE,
         EMPL.PAYEE_EMAIL_ADDR As EMPL_MAIL
     From
-        PDP_PAYEE_ACH_ACCT_T
-        Left Join PDP_PAYEE_ACH_ACCT_T STUD On STUD.PAYEE_ID_NBR = PDP_PAYEE_ACH_ACCT_T.PAYEE_ID_NBR And STUD.PAYEE_ID_TYP_CD = 'S' And STUD.ROW_ACTV_IND = 'Y'
-        Left Join PDP_PAYEE_ACH_ACCT_T VEND On VEND.PAYEE_ID_NBR = PDP_PAYEE_ACH_ACCT_T.PAYEE_ID_NBR And VEND.PAYEE_ID_TYP_CD = 'V' And VEND.ROW_ACTV_IND = 'Y'
-        Left Join PDP_PAYEE_ACH_ACCT_T EMPL On EMPL.PAYEE_ID_NBR = PDP_PAYEE_ACH_ACCT_T.PAYEE_ID_NBR And EMPL.PAYEE_ID_TYP_CD = 'E' And EMPL.ROW_ACTV_IND = 'Y'
+        PDP_PAYEE_ACH_ACCT_T BANK
+        Left Join PDP_PAYEE_ACH_ACCT_T STUD On STUD.PAYEE_ID_NBR = BANK.PAYEE_ID_NBR And STUD.PAYEE_ID_TYP_CD = 'S' And STUD.ROW_ACTV_IND = 'Y'
+        Left Join PDP_PAYEE_ACH_ACCT_EXT_T STUDB On STUDB.ACH_ACCT_GNRTD_ID = STUD.ACH_ACCT_GNRTD_ID
+        Left Join PDP_PAYEE_ACH_ACCT_T VEND On VEND.PAYEE_ID_NBR = BANK.PAYEE_ID_NBR And VEND.PAYEE_ID_TYP_CD = 'V' And VEND.ROW_ACTV_IND = 'Y'
+        Left Join PDP_PAYEE_ACH_ACCT_EXT_T VENDB On VENDB.ACH_ACCT_GNRTD_ID = VEND.ACH_ACCT_GNRTD_ID
+        Left Join PDP_PAYEE_ACH_ACCT_T EMPL On EMPL.PAYEE_ID_NBR = BANK.PAYEE_ID_NBR And EMPL.PAYEE_ID_TYP_CD = 'E' And EMPL.ROW_ACTV_IND = 'Y'
+        Left Join PDP_PAYEE_ACH_ACCT_EXT_T EMPLB On EMPLB.ACH_ACCT_GNRTD_ID = EMPL.ACH_ACCT_GNRTD_ID
     Where
-        PDP_PAYEE_ACH_ACCT_T.ROW_ACTV_IND = 'Y'
+        BANK.ROW_ACTV_IND = 'Y'
     """
     so_curs.execute("DROP VIEW IF EXISTS "+sr_file)
     so_curs.execute(s_sql)
@@ -569,38 +575,39 @@ def Kfs_lists():
     sr_file = "X000_Vendor_master"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     Select
-        PUR_VNDR_DTL_T.VNDR_ID As VENDOR_ID,
-        UPPER(PUR_VNDR_DTL_T.VNDR_NM) AS VNDR_NM,
-        PUR_VNDR_DTL_T.VNDR_URL_ADDR,
-        PUR_VNDR_HDR_T.VNDR_TAX_NBR,
-        X001ad_vendor_bankacc.VEND_BANK,
-        X001ad_vendor_bankacc.VEND_MAIL,
-        X001ad_vendor_bankacc.EMPL_BANK,
-        X001ad_vendor_bankacc.STUD_BANK,
-        X001ac_vendor_address_comb.FAX,
-        X001ac_vendor_address_comb.EMAIL,
-        X001ac_vendor_address_comb.ADDRESS,
-        X001ac_vendor_address_comb.URL,
-        X001ac_vendor_address_comb.STATE_CD,
-        X001ac_vendor_address_comb.COUNTRY_CD,
-        PUR_VNDR_HDR_T.VNDR_TAX_TYP_CD,
-        PUR_VNDR_HDR_T.VNDR_TYP_CD,
-        PUR_VNDR_DTL_T.VNDR_PMT_TERM_CD,
-        PUR_VNDR_DTL_T.VNDR_SHP_TTL_CD,
-        PUR_VNDR_DTL_T.VNDR_PARENT_IND,
-        PUR_VNDR_DTL_T.VNDR_1ST_LST_NM_IND,
-        PUR_VNDR_DTL_T.COLLECT_TAX_IND,
-        PUR_VNDR_HDR_T.VNDR_FRGN_IND,
-        PUR_VNDR_DTL_T.VNDR_CNFM_IND,
-        PUR_VNDR_DTL_T.VNDR_PRPYMT_IND,
-        PUR_VNDR_DTL_T.VNDR_CCRD_IND,
-        PUR_VNDR_DTL_T.DOBJ_MAINT_CD_ACTV_IND,
-        PUR_VNDR_DTL_T.VNDR_INACTV_REAS_CD
+        DETAIL.VNDR_ID As VENDOR_ID,
+        UPPER(DETAIL.VNDR_NM) AS VNDR_NM,
+        DETAIL.VNDR_URL_ADDR,
+        HEADER.VNDR_TAX_NBR,
+        BANK.VEND_BANK,
+        BANK.VEND_BRANCH,
+        BANK.VEND_MAIL,
+        BANK.EMPL_BANK,
+        BANK.STUD_BANK,
+        ADDR.FAX,
+        ADDR.EMAIL,
+        ADDR.ADDRESS,
+        ADDR.URL,
+        ADDR.STATE_CD,
+        ADDR.COUNTRY_CD,
+        HEADER.VNDR_TAX_TYP_CD,
+        HEADER.VNDR_TYP_CD,
+        DETAIL.VNDR_PMT_TERM_CD,
+        DETAIL.VNDR_SHP_TTL_CD,
+        DETAIL.VNDR_PARENT_IND,
+        DETAIL.VNDR_1ST_LST_NM_IND,
+        DETAIL.COLLECT_TAX_IND,
+        HEADER.VNDR_FRGN_IND,
+        DETAIL.VNDR_CNFM_IND,
+        DETAIL.VNDR_PRPYMT_IND,
+        DETAIL.VNDR_CCRD_IND,
+        DETAIL.DOBJ_MAINT_CD_ACTV_IND,
+        DETAIL.VNDR_INACTV_REAS_CD
     From
-        PUR_VNDR_DTL_T Left Join
-        PUR_VNDR_HDR_T On PUR_VNDR_HDR_T.VNDR_HDR_GNRTD_ID = PUR_VNDR_DTL_T.VNDR_HDR_GNRTD_ID Left Join
-        X001ac_vendor_address_comb On X001ac_vendor_address_comb.VENDOR_ID = PUR_VNDR_DTL_T.VNDR_ID Left Join
-        X001ad_vendor_bankacc On X001ad_vendor_bankacc.VENDOR_ID = PUR_VNDR_DTL_T.VNDR_ID
+        PUR_VNDR_DTL_T DETAIL Left Join
+        PUR_VNDR_HDR_T HEADER On HEADER.VNDR_HDR_GNRTD_ID = DETAIL.VNDR_HDR_GNRTD_ID Left Join
+        X001ac_vendor_address_comb ADDR On ADDR.VENDOR_ID = DETAIL.VNDR_ID Left Join
+        X001ad_vendor_bankacc BANK On BANK.VENDOR_ID = DETAIL.VNDR_ID
     Order by
         VNDR_NM,
         VENDOR_ID
@@ -608,7 +615,7 @@ def Kfs_lists():
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)    
 
     """ ****************************************************************************
     DOCUMENTS MASTER LIST
