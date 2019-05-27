@@ -67,7 +67,7 @@ BEGIN OF SCRIPT
 print("BEGIN OF SCRIPT")
 funcfile.writelog("BEGIN OF SCRIPT")
 
-# Import the X000_OWN_HR_LOOKUPS table *****************************************
+# Import the X000_OWN_HR_LOOKUPS table
 print("Import own lookups...")
 ed_path = "S:/_external_data/"
 tb_name = "X000_OWN_HR_LOOKUPS"
