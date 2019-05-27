@@ -2659,6 +2659,45 @@ def People_test_masterfile():
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
+    # GET PREVIOUS BANK ACCOUNTS
+    sr_file = "X004_bank_master_prev"
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    print("Import previous employee banks...")
+    so_curs.execute("CREATE TABLE " + sr_file + "(ORG TEXT, LOC TEXT, EMP TEXT, ACC_TYPE TEXT, ACC_BRANCH TEXT, ACC_NUMBER TEXT, ACC_RELATION TEXT)")
+    s_cols = ""
+    co = open(ed_path + "001_employee_bank.csv", "r")
+    co_reader = csv.reader(co)
+    # Read the COLUMN database data
+    for row in co_reader:
+        # Populate the column variables
+        if row[0] == "ORG":
+            continue
+        else:
+            s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "','" + row[3] + "','" + row[4] + "','" + row[5] + "','" + row[6] + "')"
+            so_curs.execute(s_cols)
+    so_conn.commit()
+    # Close the impoted data file
+    co.close()
+    funcfile.writelog("%t IMPORT TABLE: " + ed_path + "001_employee_bank.csv (" + sr_file + ")")
+
+    # EXPORT THE PREVIOUS BANK DETAILS
+    print("Export previous bank details...")
+    sr_filet = "X004_bank_master_prev"
+    sx_path = ed_path
+    sx_file = "001_employee_bank_prev"
+    s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
+    funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
+
+    # EXPORT THE CURRENT BANK DETAILS
+    print("Export current bank details...")
+    sr_filet = "X004_bank_master"
+    sx_path = ed_path
+    sx_file = "001_employee_bank"
+    s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
+    funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
+
     """ ****************************************************************************
     BANK CHANGE VERIFICATION
     *****************************************************************************"""
@@ -2705,19 +2744,23 @@ def People_test_masterfile():
     sr_file = "X004bb_bank_verify"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     Select
-        X004ba_bank_verify.ORG,
-        X004ba_bank_verify.LOC,
-        X004ba_bank_verify.EMP,
-        X004ba_bank_verify.ACC_TYPE,
-        X004ba_bank_verify.ACC_BRANCH,
-        X004ba_bank_verify.ACC_NUMBER,
-        X004ba_bank_verify.UPDATE_DATE,
-        X004ba_bank_verify.UPDATE_BY
+        CURR.ORG,
+        CURR.LOC,
+        CURR.EMP,
+        CURR.ACC_TYPE,
+        CURR.ACC_BRANCH,
+        CURR.ACC_NUMBER,
+        CURR.UPDATE_DATE,
+        CURR.UPDATE_BY,
+        OLD.ACC_BRANCH As OLD_ACC_BRANCH,
+        OLD.ACC_NUMBER As OLD_ACC_NUMBER
     From
-        X004ba_bank_verify
+        X004ba_bank_verify CURR Inner Join
+        X004_bank_master_prev OLD On OLD.EMP = CURR.EMP
     Where
-        X004ba_bank_verify.NAME <> '' AND
-        StrfTime('%Y-%m-%d',X004ba_bank_verify.END_DATE) >= StrfTime('%Y-%m-%d','now')
+        CURR.NAME <> '' And
+        StrfTime('%Y-%m-%d',CURR.END_DATE) >= StrfTime('%Y-%m-%d','now') And
+        CURR.ACC_NUMBER <> OLD.ACC_NUMBER
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     so_curs.execute(s_sql)
@@ -2885,6 +2928,13 @@ def People_test_masterfile():
             X004bd_bank_addprev.ACC_TYPE,
             X004bd_bank_addprev.ACC_BRANCH,
             X004bd_bank_addprev.ACC_NUMBER,
+            X004bd_bank_addprev.OLD_ACC_BRANCH,
+            X004bd_bank_addprev.OLD_ACC_NUMBER,
+            Trim(X004bd_bank_addprev.EMP)||'@nwu.ac.za' As MAIL,
+            Case
+                When Trim(X004bd_bank_addprev.EMP)||'@nwu.ac.za' <> Trim(PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS) Then Trim(PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS)
+                Else ''
+            End As MAIL2,
             PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS AS MAIL,
             CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
             CAMP_OFF.KNOWN_NAME As CAMP_OFF_NAME,
@@ -2932,7 +2982,10 @@ def People_test_masterfile():
             X004bh_bank_cont.ACC_TYPE,
             X004bh_bank_cont.ACC_BRANCH,
             X004bh_bank_cont.ACC_NUMBER,
+            X004bh_bank_cont.OLD_ACC_BRANCH,
+            X004bh_bank_cont.OLD_ACC_NUMBER,
             X004bh_bank_cont.MAIL,
+            X004bh_bank_cont.MAIL2,        
             X004bh_bank_cont.CAMP_OFF_NAME AS RESPONSIBLE_OFFICER,
             X004bh_bank_cont.CAMP_OFF_NUMB AS RESPONSIBLE_OFFICER_NUMB,
             X004bh_bank_cont.CAMP_OFF_MAIL AS RESPONSIBLE_OFFICER_MAIL,
