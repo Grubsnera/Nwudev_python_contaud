@@ -1,0 +1,14 @@
+﻿Select
+    CURR.ORG,
+    CURR.LOC,
+    CURR.EMP,
+    CURR.ACC_TYPE,
+    CURR.ACC_BRANCH,
+    CURR.ACC_NUMBER,
+    CURR.UPDATE_DATE,
+    CURR.UPDATE_BY,
+    OLD.ACC_BRANCH As OLD_ACC_BRANCH,
+    OLD.ACC_NUMBER As OLD_ACC_NUMBER
+From
+    X004ba_bank_verify CURR Inner Join
+    X004_bank_master_prev OLD On OLD.EMP = CURR.EMP
