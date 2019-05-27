@@ -860,6 +860,24 @@ def Creditor_test_payments():
     co.close()
     funcfile.writelog("%t IMPORT TABLE: " + ed_path + "201_vendor_bank.csv (" + sr_file + ")")
 
+    # EXPORT THE PREVIOUS BANK DETAILS
+    print("Export previous bank details...")
+    sr_filet = "X002_vendor_bank_prev"
+    sx_path = ed_path
+    sx_file = "201_vendor_bank_prev"
+    s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
+    funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
+
+    # EXPORT THE CURRENT BANK DETAILS
+    print("Export current bank details...")
+    sr_filet = "X002_vendor_bank"
+    sx_path = ed_path
+    sx_file = "201_vendor_bank"
+    s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
+    funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)    
+
     # COMBINE CURRENT AND PREVIOUS BANK ACCOUNTS
     print("Combine current and previous bank accounts...")
     sr_file = "X002aa_bank_change"
@@ -890,7 +908,7 @@ def Creditor_test_payments():
     From
         X002aa_bank_change VEND
     Where
-        VEND.VEND_BANK_PREV Is Null Or
+        VEND.VEND_BANK_PREV Is Not Null And
         VEND.VEND_BANK <> VEND.VEND_BANK_PREV
     """
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -1095,21 +1113,21 @@ def Creditor_test_payments():
         print("Build the final report")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
-            'VENDOR BANK ACCOUNT VERIFY' As AUDIT_FINDING,
-            FIND.VENDOR_ID,
-            FIND.VNDR_NM As VENDOR_NAME,
-            FIND.EMAIL1 As VENDOR_EMAIL1,
+            'NWU VENDOR BANK ACCOUNT VERIFY' As AUDIT_FINDING,
+            FIND.VENDOR_ID As NWU_VENDOR_ID,
+            FIND.VNDR_NM As NAME,
+            FIND.EMAIL1 As EMAIL1,
             CASE
                 WHEN FIND.EMAIL1 <> '' And FIND.EMAIL <> '' And FIND.EMAIL1 <> FIND.EMAIL THEN EMAIL
                 ELSE ''
-            END As VENDOR_EMAIL2,
-            '' As VENDOR_CONTACT,
-            '' As VENDOR_TEL1,
-            '' As VENDOR_TEL2,
-            FIND.VEND_BANK,
-            FIND.VEND_BRANCH,
-            FIND.VEND_BANK_PREV,
-            FIND.VEND_BRANCH_PREV,
+            END As EMAIL2,
+            '' As CONTACT,
+            '' As TEL1,
+            '' As TEL2,
+            FIND.VEND_BRANCH As NEW_BRANCH_CODE,
+            FIND.VEND_BANK As NEW_BANK_ACC_NUMBER,
+            FIND.VEND_BRANCH_PREV As OLD_BRANCH_CODE,
+            FIND.VEND_BANK_PREV As OLD_BANK_ACC_NUMBER,
             FIND.CAMP_OFF_NAME AS RESPONSIBLE_OFFICER,
             FIND.CAMP_OFF_NUMB AS RESPONSIBLE_OFFICER_NUMB,
             FIND.CAMP_OFF_MAIL AS RESPONSIBLE_OFFICER_MAIL,
