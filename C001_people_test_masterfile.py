@@ -4335,7 +4335,7 @@ def People_test_masterfile():
     funcfile.writelog("PERMANENT TEMPORARY CATEGORY")
 
     # DECLARE TEST VARIABLES
-    l_record = False # Record the findings in the previous reported findings file
+    l_record = True # Record the findings in the previous reported findings file
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
@@ -4375,7 +4375,7 @@ def People_test_masterfile():
     # COUNT THE NUMBER OF FINDINGS
     i_find = funcsys.tablerowcount(so_curs,sr_file)
     print("*** Found "+str(i_find)+" exceptions ***")
-    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPLOYMENT CATEGORY finding(s)")
+    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPLOYMENT CATEGORY invalid finding(s)")
 
     # GET PREVIOUS FINDINGS
     sr_file = "X007ac_getprev"
