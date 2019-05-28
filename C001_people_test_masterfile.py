@@ -37,6 +37,9 @@ TEST PAYE NUMBER DUPLICATE
 NAME MASTER FILE
 TEST NAME DUPLICATE *
 
+GRADE LEAVE MASTER FILE
+TEST PERMANENT TEMPORARY CATEGORY
+
 END OF SCRIPT
 *****************************************************************************"""
 
@@ -405,16 +408,16 @@ def People_test_masterfile():
             X002ad_id_addprev.EMP,
             PEOPLE.X002_PEOPLE_CURR.NAME_LIST AS NAME,
             CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
-            CAMP_OFF.KNOWN_NAME As CAMP_OFF_NAME,
+            CAMP_OFF.NAME As CAMP_OFF_NAME,
             CAMP_OFF.EMAIL_ADDRESS As CAMP_OFF_MAIL,
             CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
-            CAMP_SUP.KNOWN_NAME As CAMP_SUP_NAME,
+            CAMP_SUP.NAME As CAMP_SUP_NAME,
             CAMP_SUP.EMAIL_ADDRESS As CAMP_SUP_MAIL,
             ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
-            ORG_OFF.KNOWN_NAME As ORG_OFF_NAME,
+            ORG_OFF.NAME As ORG_OFF_NAME,
             ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL,
             ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
-            ORG_SUP.KNOWN_NAME As ORG_SUP_NAME,
+            ORG_SUP.NAME As ORG_SUP_NAME,
             ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL
         From
             X002ad_id_addprev
@@ -708,16 +711,16 @@ def People_test_masterfile():
             PEOPLE.X002_PEOPLE_CURR.NAME_LIST AS NAME,
             X002bd_id_addprev.NUMB,
             CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
-            CAMP_OFF.KNOWN_NAME As CAMP_OFF_NAME,
+            CAMP_OFF.NAME As CAMP_OFF_NAME,
             CAMP_OFF.EMAIL_ADDRESS As CAMP_OFF_MAIL,
             CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
-            CAMP_SUP.KNOWN_NAME As CAMP_SUP_NAME,
+            CAMP_SUP.NAME As CAMP_SUP_NAME,
             CAMP_SUP.EMAIL_ADDRESS As CAMP_SUP_MAIL,
             ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
-            ORG_OFF.KNOWN_NAME As ORG_OFF_NAME,
+            ORG_OFF.NAME As ORG_OFF_NAME,
             ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL,
             ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
-            ORG_SUP.KNOWN_NAME As ORG_SUP_NAME,
+            ORG_SUP.NAME As ORG_SUP_NAME,
             ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL
         From
             X002bd_id_addprev
@@ -1004,16 +1007,16 @@ def People_test_masterfile():
             SUBSTR(X002cd_dob_addprev.DOB,3,8) AS DOB,
             X002cd_dob_addprev.DOBC,
             CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
-            CAMP_OFF.KNOWN_NAME As CAMP_OFF_NAME,
+            CAMP_OFF.NAME As CAMP_OFF_NAME,
             CAMP_OFF.EMAIL_ADDRESS As CAMP_OFF_MAIL,
             CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
-            CAMP_SUP.KNOWN_NAME As CAMP_SUP_NAME,
+            CAMP_SUP.NAME As CAMP_SUP_NAME,
             CAMP_SUP.EMAIL_ADDRESS As CAMP_SUP_MAIL,
             ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
-            ORG_OFF.KNOWN_NAME As ORG_OFF_NAME,
+            ORG_OFF.NAME As ORG_OFF_NAME,
             ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL,
             ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
-            ORG_SUP.KNOWN_NAME As ORG_SUP_NAME,
+            ORG_SUP.NAME As ORG_SUP_NAME,
             ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL
         From
             X002cd_dob_addprev
@@ -1306,16 +1309,16 @@ def People_test_masterfile():
             X002dd_sex_addprev.SEX,
             X002dd_sex_addprev.GEND,
             CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
-            CAMP_OFF.KNOWN_NAME As CAMP_OFF_NAME,
+            CAMP_OFF.NAME As CAMP_OFF_NAME,
             CAMP_OFF.EMAIL_ADDRESS As CAMP_OFF_MAIL,
             CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
-            CAMP_SUP.KNOWN_NAME As CAMP_SUP_NAME,
+            CAMP_SUP.NAME As CAMP_SUP_NAME,
             CAMP_SUP.EMAIL_ADDRESS As CAMP_SUP_MAIL,
             ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
-            ORG_OFF.KNOWN_NAME As ORG_OFF_NAME,
+            ORG_OFF.NAME As ORG_OFF_NAME,
             ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL,
             ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
-            ORG_SUP.KNOWN_NAME As ORG_SUP_NAME,
+            ORG_SUP.NAME As ORG_SUP_NAME,
             ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL
         From
             X002dd_sex_addprev
@@ -1601,16 +1604,16 @@ def People_test_masterfile():
             X002ed_id_addprev.COUNT,
             PEOPLE.X002_PEOPLE_CURR.NAME_LIST AS NAME,
             CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
-            CAMP_OFF.KNOWN_NAME As CAMP_OFF_NAME,
+            CAMP_OFF.NAME As CAMP_OFF_NAME,
             CAMP_OFF.EMAIL_ADDRESS As CAMP_OFF_MAIL,
             CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
-            CAMP_SUP.KNOWN_NAME As CAMP_SUP_NAME,
+            CAMP_SUP.NAME As CAMP_SUP_NAME,
             CAMP_SUP.EMAIL_ADDRESS As CAMP_SUP_MAIL,
             ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
-            ORG_OFF.KNOWN_NAME As ORG_OFF_NAME,
+            ORG_OFF.NAME As ORG_OFF_NAME,
             ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL,
             ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
-            ORG_SUP.KNOWN_NAME As ORG_SUP_NAME,
+            ORG_SUP.NAME As ORG_SUP_NAME,
             ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL
         From
             X002ed_id_addprev
@@ -1911,16 +1914,16 @@ def People_test_masterfile():
             PEOPLE.X002_PEOPLE_CURR.NAME_LIST AS NAME,
             UPPER(PEOPLE.X002_PEOPLE_CURR.NATIONALITY_NAME) AS NATIONALITY,
             CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
-            CAMP_OFF.KNOWN_NAME As CAMP_OFF_NAME,
+            CAMP_OFF.NAME As CAMP_OFF_NAME,
             CAMP_OFF.EMAIL_ADDRESS As CAMP_OFF_MAIL,
             CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
-            CAMP_SUP.KNOWN_NAME As CAMP_SUP_NAME,
+            CAMP_SUP.NAME As CAMP_SUP_NAME,
             CAMP_SUP.EMAIL_ADDRESS As CAMP_SUP_MAIL,
             ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
-            ORG_OFF.KNOWN_NAME As ORG_OFF_NAME,
+            ORG_OFF.NAME As ORG_OFF_NAME,
             ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL,
             ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
-            ORG_SUP.KNOWN_NAME As ORG_SUP_NAME,
+            ORG_SUP.NAME As ORG_SUP_NAME,
             ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL
         From
             X003ad_pass_addprev
@@ -2201,16 +2204,16 @@ def People_test_masterfile():
             PEOPLE.X002_PEOPLE_CURR.NAME_ADDR AS NAME,
             PEOPLE.X002_PEOPLE_CURR.NATIONALITY_NAME AS NAT,
             CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
-            CAMP_OFF.KNOWN_NAME As CAMP_OFF_NAME,
+            CAMP_OFF.NAME As CAMP_OFF_NAME,
             CAMP_OFF.EMAIL_ADDRESS As CAMP_OFF_MAIL,
             CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
-            CAMP_SUP.KNOWN_NAME As CAMP_SUP_NAME,
+            CAMP_SUP.NAME As CAMP_SUP_NAME,
             CAMP_SUP.EMAIL_ADDRESS As CAMP_SUP_MAIL,
             ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
-            ORG_OFF.KNOWN_NAME As ORG_OFF_NAME,
+            ORG_OFF.NAME As ORG_OFF_NAME,
             ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL,
             ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
-            ORG_SUP.KNOWN_NAME As ORG_SUP_NAME,
+            ORG_SUP.NAME As ORG_SUP_NAME,
             ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL
         From
             X003bd_pass_addprev
@@ -2524,16 +2527,16 @@ def People_test_masterfile():
             X004ad_bank_addprev.COUNT,
             PEOPLE.X002_PEOPLE_CURR.NAME_LIST AS NAME,
             CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
-            CAMP_OFF.KNOWN_NAME As CAMP_OFF_NAME,
+            CAMP_OFF.NAME As CAMP_OFF_NAME,
             CAMP_OFF.EMAIL_ADDRESS As CAMP_OFF_MAIL,
             CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
-            CAMP_SUP.KNOWN_NAME As CAMP_SUP_NAME,
+            CAMP_SUP.NAME As CAMP_SUP_NAME,
             CAMP_SUP.EMAIL_ADDRESS As CAMP_SUP_MAIL,
             ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
-            ORG_OFF.KNOWN_NAME As ORG_OFF_NAME,
+            ORG_OFF.NAME As ORG_OFF_NAME,
             ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL,
             ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
-            ORG_SUP.KNOWN_NAME As ORG_SUP_NAME,
+            ORG_SUP.NAME As ORG_SUP_NAME,
             ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL
         From
             X004ad_bank_addprev
@@ -2937,16 +2940,16 @@ def People_test_masterfile():
             End As MAIL2,
             PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS AS MAIL,
             CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
-            CAMP_OFF.KNOWN_NAME As CAMP_OFF_NAME,
+            CAMP_OFF.NAME As CAMP_OFF_NAME,
             CAMP_OFF.EMAIL_ADDRESS As CAMP_OFF_MAIL,
             CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
-            CAMP_SUP.KNOWN_NAME As CAMP_SUP_NAME,
+            CAMP_SUP.NAME As CAMP_SUP_NAME,
             CAMP_SUP.EMAIL_ADDRESS As CAMP_SUP_MAIL,
             ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
-            ORG_OFF.KNOWN_NAME As ORG_OFF_NAME,
+            ORG_OFF.NAME As ORG_OFF_NAME,
             ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL,
             ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
-            ORG_SUP.KNOWN_NAME As ORG_SUP_NAME,
+            ORG_SUP.NAME As ORG_SUP_NAME,
             ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL,
             X004bd_bank_addprev.UPDATE_DATE,
             X004bd_bank_addprev.UPDATE_BY,
@@ -3273,16 +3276,16 @@ def People_test_masterfile():
             X005ad_paye_addprev.EMP,
             PEOPLE.X002_PEOPLE_CURR.NAME_LIST AS NAME,
             CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
-            CAMP_OFF.KNOWN_NAME As CAMP_OFF_NAME,
+            CAMP_OFF.NAME As CAMP_OFF_NAME,
             CAMP_OFF.EMAIL_ADDRESS As CAMP_OFF_MAIL,
             CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
-            CAMP_SUP.KNOWN_NAME As CAMP_SUP_NAME,
+            CAMP_SUP.NAME As CAMP_SUP_NAME,
             CAMP_SUP.EMAIL_ADDRESS As CAMP_SUP_MAIL,
             ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
-            ORG_OFF.KNOWN_NAME As ORG_OFF_NAME,
+            ORG_OFF.NAME As ORG_OFF_NAME,
             ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL,
             ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
-            ORG_SUP.KNOWN_NAME As ORG_SUP_NAME,
+            ORG_SUP.NAME As ORG_SUP_NAME,
             ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL
         From
             X005ad_paye_addprev
@@ -3605,16 +3608,16 @@ def People_test_masterfile():
             PEOPLE.X002_PEOPLE_CURR.NAME_LIST AS NAME,
             X005bd_paye_addprev.NUMB,
             CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
-            CAMP_OFF.KNOWN_NAME As CAMP_OFF_NAME,
+            CAMP_OFF.NAME As CAMP_OFF_NAME,
             CAMP_OFF.EMAIL_ADDRESS As CAMP_OFF_MAIL,
             CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
-            CAMP_SUP.KNOWN_NAME As CAMP_SUP_NAME,
+            CAMP_SUP.NAME As CAMP_SUP_NAME,
             CAMP_SUP.EMAIL_ADDRESS As CAMP_SUP_MAIL,
             ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
-            ORG_OFF.KNOWN_NAME As ORG_OFF_NAME,
+            ORG_OFF.NAME As ORG_OFF_NAME,
             ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL,
             ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
-            ORG_SUP.KNOWN_NAME As ORG_SUP_NAME,
+            ORG_SUP.NAME As ORG_SUP_NAME,
             ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL
         From
             X005bd_paye_addprev
@@ -3895,16 +3898,16 @@ def People_test_masterfile():
             X005cd_paye_addprev.COUNT,
             PEOPLE.X002_PEOPLE_CURR.NAME_ADDR AS NAME,
             CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
-            CAMP_OFF.KNOWN_NAME As CAMP_OFF_NAME,
+            CAMP_OFF.NAME As CAMP_OFF_NAME,
             CAMP_OFF.EMAIL_ADDRESS As CAMP_OFF_MAIL,
             CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
-            CAMP_SUP.KNOWN_NAME As CAMP_SUP_NAME,
+            CAMP_SUP.NAME As CAMP_SUP_NAME,
             CAMP_SUP.EMAIL_ADDRESS As CAMP_SUP_MAIL,
             ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
-            ORG_OFF.KNOWN_NAME As ORG_OFF_NAME,
+            ORG_OFF.NAME As ORG_OFF_NAME,
             ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL,
             ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
-            ORG_SUP.KNOWN_NAME As ORG_SUP_NAME,
+            ORG_SUP.NAME As ORG_SUP_NAME,
             ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL
         From
             X005cd_paye_addprev
@@ -4213,16 +4216,16 @@ def People_test_masterfile():
             X006ad_name_addprev.COUNT,
             PEOPLE.X002_PEOPLE_CURR.FULL_NAME AS FULLNAME,
             CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
-            CAMP_OFF.KNOWN_NAME As CAMP_OFF_NAME,
+            CAMP_OFF.NAME As CAMP_OFF_NAME,
             CAMP_OFF.EMAIL_ADDRESS As CAMP_OFF_MAIL,
             CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
-            CAMP_SUP.KNOWN_NAME As CAMP_SUP_NAME,
+            CAMP_SUP.NAME As CAMP_SUP_NAME,
             CAMP_SUP.EMAIL_ADDRESS As CAMP_SUP_MAIL,
             ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
-            ORG_OFF.KNOWN_NAME As ORG_OFF_NAME,
+            ORG_OFF.NAME As ORG_OFF_NAME,
             ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL,
             ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
-            ORG_SUP.KNOWN_NAME As ORG_SUP_NAME,
+            ORG_SUP.NAME As ORG_SUP_NAME,
             ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL
         From
             X006ad_name_addprev
@@ -4290,7 +4293,314 @@ def People_test_masterfile():
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
         so_conn.commit()
-        funcfile.writelog("%t BUILD TABLE: " + sr_file)        
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    """ ****************************************************************************
+    GRADE LEAVE MASTER FILE
+    *****************************************************************************"""
+
+    # BUILD GRADE AND LEAVE MASTER TABLE
+    print("Obtain master list of all grades and leave codes...")
+    sr_file = "X007_grade_leave_master"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    Select
+        'NWU' As ORG,
+        CASE LOCATION_DESCRIPTION
+            WHEN 'MAFIKENG CAMPUS' THEN 'MAF'
+            WHEN 'POTCHEFSTROOM CAMPUS' THEN 'POT'
+            WHEN 'VAAL TRIANGLE CAMPUS' THEN 'VAA'
+            ELSE 'NWU'
+        END AS LOC,
+        PEOPLE.EMPLOYEE_NUMBER,
+        PEOPLE.EMP_START,
+        PEOPLE.ACAD_SUPP,
+        PEOPLE.EMPLOYMENT_CATEGORY,
+        PEOPLE.PERSON_TYPE,
+        PEOPLE.ASS_WEEK_LEN,
+        PEOPLE.LEAVE_CODE,
+        PEOPLE.GRADE,
+        PEOPLE.GRADE_CALC
+    From
+        PEOPLE.X002_PEOPLE_CURR PEOPLE
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+
+    """ ****************************************************************************
+    TEST PERMANENT TEMPORARY CATEGORY
+    *****************************************************************************"""
+    print("PERMANENT TEMPORARY CATEGORY")
+    funcfile.writelog("PERMANENT TEMPORARY CATEGORY")
+
+    # DECLARE TEST VARIABLES
+    l_record = False # Record the findings in the previous reported findings file
+    i_find = 0 # Number of findings before previous reported findings
+    i_coun = 0 # Number of new findings to report
+
+    # IDENTIFY FINDING 
+    print("Identify incorrect data...")
+    sr_file = "X007aa_category"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    Select
+        MASTER.ORG,
+        MASTER.LOC,
+        MASTER.EMPLOYEE_NUMBER,
+        MASTER.EMPLOYMENT_CATEGORY
+    From
+        X007_grade_leave_master MASTER
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+
+    # ADD DETAILS
+    print("Add data details...")
+    sr_file = "X007ab_detail"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    Select
+        FIND.*
+    From
+        X007aa_category FIND
+    Where
+        FIND.EMPLOYMENT_CATEGORY = 'OTHER'
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+
+    # COUNT THE NUMBER OF FINDINGS
+    i_find = funcsys.tablerowcount(so_curs,sr_file)
+    print("*** Found "+str(i_find)+" exceptions ***")
+    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPLOYMENT CATEGORY finding(s)")
+
+    # GET PREVIOUS FINDINGS
+    sr_file = "X007ac_getprev"
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    if i_find > 0:
+        print("Import previously reported findings...")
+        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,DATE_MAILED TEXT)")
+        s_cols = ""
+        co = open(ed_path + "001_reported.txt", "r")
+        co_reader = csv.reader(co)
+        # Read the COLUMN database data
+        for row in co_reader:
+            # Populate the column variables
+            if row[0] == "PROCESS":
+                continue
+            elif row[0] != "empl_category_invalid":
+                continue
+            else:
+                s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "','" + row[3] + "','" + row[4] + "','" + row[5] + "','" + row[6] + "','" + row[7] + "','" + row[8] + "')"
+                so_curs.execute(s_cols)
+        so_conn.commit()
+        # Close the impoted data file
+        co.close()
+        funcfile.writelog("%t IMPORT TABLE: " + ed_path + "001_reported.txt (" + sr_file + ")")
+
+    # ADD PREVIOUS FINDINGS
+    sr_file = "X007ad_addprev"
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    if i_find > 0:
+        print("Join previously reported to current findings...")
+        s_sql = "CREATE TABLE " + sr_file + " AS" + """
+        Select
+          FIND.*,
+          'empl_category_invalid' AS PROCESS,
+          '%TODAY%' AS DATE_REPORTED,
+          '%TODAYPLUS%' AS DATE_RETEST,
+          PREV.PROCESS AS PREV_PROCESS,
+          PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
+          PREV.DATE_RETEST AS PREV_DATE_RETEST,
+          PREV.DATE_MAILED
+        From
+          X007ab_detail FIND Left Join
+          X007ac_getprev PREV ON PREV.FIELD1 = FIND.EMPLOYEE_NUMBER
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        s_sql = s_sql.replace("%TODAY%",funcdate.today())
+        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(10))
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD LIST TO UPDATE FINDINGS
+    sr_file = "X007ae_newprev"
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    if i_find > 0:
+        s_sql = "CREATE TABLE "+sr_file+" AS " + """
+        Select
+          FIND.PROCESS,
+          FIND.EMPLOYEE_NUMBER As FIELD1,
+          '' As FIELD2,
+          '' AS FIELD3,
+          '' AS FIELD4,
+          '' AS FIELD5,
+          FIND.DATE_REPORTED,
+          FIND.DATE_RETEST,
+          FIND.DATE_MAILED
+        From
+          X007ad_addprev FIND
+        Where
+          FIND.PREV_PROCESS Is Null
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: "+sr_file)
+        # Export findings to previous reported file
+        i_coun = funcsys.tablerowcount(so_curs,sr_file)
+        if i_coun > 0:
+            print("*** " +str(i_coun)+ " Finding(s) to report ***")    
+            sr_filet = sr_file
+            sx_path = ed_path
+            sx_file = "001_reported"
+            # Read the header data
+            s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+            # Write the data
+            if l_record == True:
+                funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head,"a",".txt")
+                funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
+                funcfile.writelog("%t EXPORT DATA: "+sr_file)
+        else:
+            print("*** No new findings to report ***")
+            funcfile.writelog("%t FINDING: No new findings to export")
+
+    # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
+    sr_file = "X007af_officer"
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    if i_find > 0 and i_coun > 0:
+        print("Import reporting officers for mail purposes...")
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        SELECT
+          LOOKUP.LOOKUP,
+          LOOKUP.LOOKUP_CODE AS TYPE,
+          LOOKUP.LOOKUP_DESCRIPTION AS EMP,
+          PERSON.NAME_ADDR AS NAME,
+          PERSON.EMAIL_ADDRESS AS MAIL
+        FROM
+          PEOPLE.X000_OWN_HR_LOOKUPS LOOKUP
+          LEFT JOIN PEOPLE.X002_PEOPLE_CURR PERSON ON PERSON.EMPLOYEE_NUMBER = LOOKUP.LOOKUP_DESCRIPTION
+        WHERE
+          LOOKUP.LOOKUP = 'TEST_EMPL_CATEGORY_INVALID_OFFICER'
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
+    sr_file = "X007ag_supervisor"
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    if i_find > 0 and i_coun > 0:
+        print("Import reporting supervisors for mail purposes...")
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        SELECT
+          LOOKUP.LOOKUP,
+          LOOKUP.LOOKUP_CODE AS TYPE,
+          LOOKUP.LOOKUP_DESCRIPTION AS EMP,
+          PERSON.NAME_ADDR AS NAME,
+          PERSON.EMAIL_ADDRESS AS MAIL
+        FROM
+          PEOPLE.X000_OWN_HR_LOOKUPS LOOKUP
+          LEFT JOIN PEOPLE.X002_PEOPLE_CURR PERSON ON PERSON.EMPLOYEE_NUMBER = LOOKUP.LOOKUP_DESCRIPTION
+        WHERE
+          LOOKUP.LOOKUP = 'TEST_EMPL_CATEGORY_INVALID_SUPERVISOR'
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # ADD CONTACT DETAILS TO FINDINGS
+    sr_file = "X007ah_contact"
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    if i_find > 0 and i_coun > 0:
+        print("Add contact details to findings...")
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            FIND.ORG,
+            FIND.LOC,
+            FIND.EMPLOYEE_NUMBER,
+            PEOP.NAME_LIST,
+            CAMP_OFF.EMP As CAMP_OFF_NUMB,
+            CAMP_OFF.NAME As CAMP_OFF_NAME,
+            CAMP_OFF.MAIL As CAMP_OFF_MAIL,
+            CAMP_SUP.EMP As CAMP_SUP_NUMB,
+            CAMP_SUP.NAME As CAMP_SUP_NAME,
+            CAMP_SUP.MAIL As CAMP_SUP_MAIL,
+            ORG_OFF.EMP As ORG_OFF_NUMB,
+            ORG_OFF.NAME As ORG_OFF_NAME,
+            ORG_OFF.MAIL As ORG_OFF_MAIL,
+            ORG_SUP.EMP As ORG_SUP_NUMB,
+            ORG_SUP.NAME As ORG_SUP_NAME,
+            ORG_SUP.MAIL As ORG_SUP_MAIL
+        From
+            X007ad_addprev FIND Left Join
+            X007af_officer CAMP_OFF On CAMP_OFF.TYPE = FIND.LOC Left Join
+            X007af_officer ORG_OFF On ORG_OFF.TYPE = FIND.ORG Left Join
+            X007ag_supervisor CAMP_SUP On CAMP_SUP.TYPE = FIND.LOC Left Join
+            X007ag_supervisor ORG_SUP On ORG_SUP.TYPE = FIND.ORG Left Join
+            PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = FIND.EMPLOYEE_NUMBER
+        Where
+            FIND.PREV_PROCESS IS NULL
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
+    sr_file = "X007ax_category_invalid"
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    if i_find > 0 and i_coun > 0:
+        print("Build the final report")
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            'EMPLOYEE CATEGORY INVALID' As Audit_finding,
+            FIND.EMPLOYEE_NUMBER As Employee,
+            FIND.NAME_LIST As Name,
+            FIND.CAMP_OFF_NAME AS Responsible_Officer,
+            FIND.CAMP_OFF_NUMB AS Responsible_Officer_Numb,
+            FIND.CAMP_OFF_MAIL AS Responsible_Officer_Mail,
+            FIND.CAMP_SUP_NAME AS Supervisor,
+            FIND.CAMP_SUP_NUMB AS Supervisor_Numb,
+            FIND.CAMP_SUP_MAIL AS Supervisor_Mail,
+            FIND.ORG_OFF_NAME AS Org_Officer,
+            FIND.ORG_OFF_NUMB AS Org_Officer_Numb,
+            FIND.ORG_OFF_MAIL AS Org_Officer_Mail,
+            FIND.ORG_SUP_NAME AS Org_Supervisor,
+            FIND.ORG_SUP_NUMB AS Org_Supervisor_Numb,
+            FIND.ORG_SUP_MAIL AS Org_Supervisor_Mail
+        From
+            X007ah_contact FIND
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+        # Export findings
+        if l_export == True and funcsys.tablerowcount(so_curs,sr_file) > 0:
+            print("Export findings...")
+            sr_filet = sr_file
+            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_file = "People_test_007ax_category_invalid_"
+            sx_filet = sx_file + funcdate.today_file()
+            s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+            funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
+            funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
+            funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
+    else:
+        s_sql = "CREATE TABLE " + sr_file + " (" + """
+        BLANK TEXT
+        );"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)       
 
     """ ****************************************************************************
     END OF SCRIPT
