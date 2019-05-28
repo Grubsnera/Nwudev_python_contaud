@@ -185,6 +185,20 @@ else:
     print("VSS STUDENT DEFERMENT MASTERFILE do not run on Saturdays and Sundays")
     funcfile.writelog("SCRIPT: C301_REPORT_STUDENT_DEFERMENT_RUN: DO NOT RUN ON SATURDAYS AND SUNDAYS")
 
+"""****************************************************************************
+MYSQL LISTS
+****************************************************************************"""
+
+if funcdate.today_dayname() in "TueWedThuFriSat":
+    import B005_mysql_lists
+    try:
+        B005_mysql_lists.Mysql_lists()
+    except Exception as e:
+        funcsys.ErrMessage(e)
+else:
+    print("MYSQL lists do not run on Sundays and Mondays")
+    funcfile.writelog("SCRIPT: B005_MYSQL_LISTS: DO NOT RUN ON SUNDAYS AND MONDAYS")
+
 """ ****************************************************************************
 END OF SCRIPT
 *****************************************************************************"""
