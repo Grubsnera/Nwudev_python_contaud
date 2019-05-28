@@ -80,160 +80,76 @@ print("BEGIN OF SCRIPT")
 funcfile.writelog("BEGIN OF SCRIPT")
 
 """ ****************************************************************************
-BANK CHANGE MASTER FILE
+GRADE LEAVE MASTER FILE
 *****************************************************************************"""
 
-# BUILD TABLE WITH BANK ACCOUNT CHANGES FOR YESTERDAY (FRIDAY IF MONDAY)
-print("Obtain master list of all bank changes...")
-sr_file = "X004_bank_change"
-s_sql = "CREATE TABLE "+sr_file+" AS " + """
-SELECT
-    PEOPLE.X000_PAY_ACCOUNTS.ASSIGNMENT_ID,
-    PEOPLE.X001_ASSIGNMENT_CURR.EMPLOYEE_NUMBER,
-    PEOPLE.X000_PAY_ACCOUNTS.EFFECTIVE_START_DATE,
-    PEOPLE.X000_PAY_ACCOUNTS.EFFECTIVE_END_DATE,
-    PEOPLE.X000_PAY_ACCOUNTS.PERSONAL_PAYMENT_METHOD_ID,
-    PEOPLE.X000_PAY_ACCOUNTS.BUSINESS_GROUP_ID,
-    PEOPLE.X000_PAY_ACCOUNTS.ORG_PAYMENT_METHOD_ID,
-    PEOPLE.X000_PAY_ACCOUNTS.PPM_INFORMATION_CATEGORY,
-    PEOPLE.X000_PAY_ACCOUNTS.PPM_INFORMATION1,
-    PEOPLE.X000_PAY_ACCOUNTS.CREATION_DATE,
-    PEOPLE.X000_PAY_ACCOUNTS.CREATED_BY,
-    PEOPLE.X000_PAY_ACCOUNTS.LAST_UPDATE_DATE,
-    PEOPLE.X000_PAY_ACCOUNTS.LAST_UPDATED_BY,
-    PEOPLE.X000_PAY_ACCOUNTS.EXTERNAL_ACCOUNT_ID,
-    PEOPLE.X000_PAY_ACCOUNTS.TERRITORY_CODE,
-    PEOPLE.X000_PAY_ACCOUNTS.ACC_BRANCH,
-    PEOPLE.X000_PAY_ACCOUNTS.ACC_TYPE_CODE,
-    PEOPLE.X000_PAY_ACCOUNTS.ACC_TYPE,
-    PEOPLE.X000_PAY_ACCOUNTS.ACC_NUMBER,
-    PEOPLE.X000_PAY_ACCOUNTS.ACC_HOLDER,
-    PEOPLE.X000_PAY_ACCOUNTS.ACC_UNKNOWN,
-    PEOPLE.X000_PAY_ACCOUNTS.ACC_RELATION_CODE,
-    PEOPLE.X000_PAY_ACCOUNTS.ACC_RELATION    
-FROM
-    PEOPLE.X000_PAY_ACCOUNTS LEFT JOIN
-    PEOPLE.X001_ASSIGNMENT_CURR ON PEOPLE.X001_ASSIGNMENT_CURR.ASS_ID = PEOPLE.X000_PAY_ACCOUNTS.ASSIGNMENT_ID AND
-        StrfTime('%Y-%m-%d',PEOPLE.X001_ASSIGNMENT_CURR.ASS_START) <= StrfTime('%Y-%m-%d',PEOPLE.X000_PAY_ACCOUNTS.LAST_UPDATE_DATE) AND
-        StrfTime('%Y-%m-%d',PEOPLE.X001_ASSIGNMENT_CURR.ASS_END) >= StrfTime('%Y-%m-%d',PEOPLE.X000_PAY_ACCOUNTS.LAST_UPDATE_DATE)
-WHERE
-    %WHERE%
-ORDER BY
-    ASSIGNMENT_ID,
-    LAST_UPDATE_DATE
-;"""
-so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-if funcdate.today_dayname() == "Mon":
-    s_sql = s_sql.replace("%WHERE%","StrfTime('%Y-%m-%d',PEOPLE.X000_PAY_ACCOUNTS.LAST_UPDATE_DATE)>=StrfTime('%Y-%m-%d','now','-3 day') AND StrfTime('%Y-%m-%d',PEOPLE.X000_PAY_ACCOUNTS.CREATION_DATE)<StrfTime('%Y-%m-%d','now','-3 day')")
-else:
-    s_sql = s_sql.replace("%WHERE%","StrfTime('%Y-%m-%d',PEOPLE.X000_PAY_ACCOUNTS.LAST_UPDATE_DATE)>=StrfTime('%Y-%m-%d','now','-1 day') AND StrfTime('%Y-%m-%d',PEOPLE.X000_PAY_ACCOUNTS.CREATION_DATE)<StrfTime('%Y-%m-%d','now','-1 day')")
-#print(s_sql) # DEBUG
-so_curs.execute(s_sql)
-so_conn.commit()
-funcfile.writelog("%t BUILD TABLE: "+sr_file)
-
-# GET PREVIOUS BANK ACCOUNTS
-sr_file = "X004_bank_master_prev"
-so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-print("Import previous employee banks...")
-so_curs.execute("CREATE TABLE " + sr_file + "(ORG TEXT, LOC TEXT, EMP TEXT, ACC_TYPE TEXT, ACC_BRANCH TEXT, ACC_NUMBER TEXT, ACC_RELATION TEXT)")
-s_cols = ""
-co = open(ed_path + "001_employee_bank.csv", "r")
-co_reader = csv.reader(co)
-# Read the COLUMN database data
-for row in co_reader:
-    # Populate the column variables
-    if row[0] == "ORG":
-        continue
-    else:
-        s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "','" + row[3] + "','" + row[4] + "','" + row[5] + "','" + row[6] + "')"
-        so_curs.execute(s_cols)
-so_conn.commit()
-# Close the impoted data file
-co.close()
-funcfile.writelog("%t IMPORT TABLE: " + ed_path + "001_employee_bank.csv (" + sr_file + ")")
-
-# EXPORT THE PREVIOUS BANK DETAILS
-print("Export previous bank details...")
-sr_filet = "X004_bank_master_prev"
-sx_path = ed_path
-sx_file = "001_employee_bank_prev"
-s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
-
-# EXPORT THE CURRENT BANK DETAILS
-print("Export current bank details...")
-sr_filet = "X004_bank_master"
-sx_path = ed_path
-sx_file = "001_employee_bank"
-s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
-
-""" ****************************************************************************
-BANK CHANGE VERIFICATION
-*****************************************************************************"""
-print("BANK CHANGE VERIFICATION")
-funcfile.writelog("BANK CHANGE VERIFICATION")
-
-# DECLARE TEST VARIABLES
-l_record = True # Record the findings in the previous reported findings file
-i_find = 0 # Number of findings before previous reported findings
-i_coun = 0 # Number of new findings to report
-
-# ADD EMPLOYEE DETAILS
-print("Add employee details...")
-sr_file = "X004ba_bank_verify"
+# BUILD GRADE AND LEAVE MASTER TABLE
+print("Obtain master list of all grades and leave codes...")
+sr_file = "X007_grade_leave_master"
 s_sql = "CREATE TABLE "+sr_file+" AS " + """
 Select
-    'NWU' AS ORG,
-    CASE PEOPLE.X002_PEOPLE_CURR.LOCATION_DESCRIPTION
+    'NWU' As ORG,
+    CASE LOCATION_DESCRIPTION
         WHEN 'MAFIKENG CAMPUS' THEN 'MAF'
         WHEN 'POTCHEFSTROOM CAMPUS' THEN 'POT'
         WHEN 'VAAL TRIANGLE CAMPUS' THEN 'VAA'
         ELSE 'NWU'
     END AS LOC,
-    X004_bank_change.EMPLOYEE_NUMBER AS EMP,
-    PEOPLE.X002_PEOPLE_CURR.NAME_ADDR AS NAME,
-    X004_bank_change.EFFECTIVE_START_DATE AS START_DATE,
-    X004_bank_change.EFFECTIVE_END_DATE AS END_DATE,
-    X004_bank_change.MEANING AS ACC_TYPE,
-    X004_bank_change.SEGMENT1 AS ACC_BRANCH,
-    X004_bank_change.SEGMENT3 AS ACC_NUMBER,
-    X004_bank_change.LAST_UPDATE_DATE AS UPDATE_DATE,
-    X004_bank_change.LAST_UPDATED_BY AS UPDATE_BY
+    PEOPLE.EMPLOYEE_NUMBER,
+    PEOPLE.EMP_START,
+    PEOPLE.ACAD_SUPP,
+    PEOPLE.EMPLOYMENT_CATEGORY,
+    PEOPLE.PERSON_TYPE,
+    PEOPLE.ASS_WEEK_LEN,
+    PEOPLE.LEAVE_CODE,
+    PEOPLE.GRADE,
+    PEOPLE.GRADE_CALC
 From
-    X004_bank_change Left Join
-    PEOPLE.X002_PEOPLE_CURR ON PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = X004_bank_change.EMPLOYEE_NUMBER
+    PEOPLE.X002_PEOPLE_CURR PEOPLE
 ;"""
 so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
 so_curs.execute(s_sql)
 so_conn.commit()
 funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
-# FILTER RECORDS TO REPORT - ONLY EMPLOYEES ACTIVE TODAY
-print("Filter employee records...")
-sr_file = "X004bb_bank_verify"
+""" ****************************************************************************
+TEST PERMANENT TEMPORARY CATEGORY
+*****************************************************************************"""
+print("PERMANENT TEMPORARY CATEGORY")
+funcfile.writelog("PERMANENT TEMPORARY CATEGORY")
+
+# DECLARE TEST VARIABLES
+l_record = False # Record the findings in the previous reported findings file
+i_find = 0 # Number of findings before previous reported findings
+i_coun = 0 # Number of new findings to report
+
+# IDENTIFY FINDING 
+print("Identify incorrect data...")
+sr_file = "X007aa_category"
 s_sql = "CREATE TABLE "+sr_file+" AS " + """
 Select
-    CURR.ORG,
-    CURR.LOC,
-    CURR.EMP,
-    CURR.ACC_TYPE,
-    CURR.ACC_BRANCH,
-    CURR.ACC_NUMBER,
-    CURR.UPDATE_DATE,
-    CURR.UPDATE_BY,
-    OLD.ACC_BRANCH As OLD_ACC_BRANCH,
-    OLD.ACC_NUMBER As OLD_ACC_NUMBER
+    MASTER.ORG,
+    MASTER.LOC,
+    MASTER.EMPLOYEE_NUMBER,
+    MASTER.EMPLOYMENT_CATEGORY
 From
-    X004ba_bank_verify CURR Inner Join
-    X004_bank_master_prev OLD On OLD.EMP = CURR.EMP
+    X007_grade_leave_master MASTER
+;"""
+so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+so_curs.execute(s_sql)
+so_conn.commit()
+funcfile.writelog("%t BUILD TABLE: "+sr_file)
+
+# ADD DETAILS
+print("Add data details...")
+sr_file = "X007ab_detail"
+s_sql = "CREATE TABLE "+sr_file+" AS " + """
+Select
+    FIND.*
+From
+    X007aa_category FIND
 Where
-    CURR.NAME <> '' And
-    StrfTime('%Y-%m-%d',CURR.END_DATE) >= StrfTime('%Y-%m-%d','now') And
-    CURR.ACC_NUMBER <> OLD.ACC_NUMBER
+    FIND.EMPLOYMENT_CATEGORY = 'OTHER'
 ;"""
 so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
 so_curs.execute(s_sql)
@@ -243,11 +159,10 @@ funcfile.writelog("%t BUILD TABLE: "+sr_file)
 # COUNT THE NUMBER OF FINDINGS
 i_find = funcsys.tablerowcount(so_curs,sr_file)
 print("*** Found "+str(i_find)+" exceptions ***")
-funcfile.writelog("%t FINDING: "+str(i_find)+" BANK change finding(s)")
+funcfile.writelog("%t FINDING: "+str(i_find)+" EMPLOYMENT CATEGORY finding(s)")
 
 # GET PREVIOUS FINDINGS
-# NOTE ADD CODE
-sr_file = "X004bc_bank_getprev"
+sr_file = "X007ac_getprev"
 so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
 if i_find > 0:
     print("Import previously reported findings...")
@@ -260,7 +175,7 @@ if i_find > 0:
         # Populate the column variables
         if row[0] == "PROCESS":
             continue
-        elif row[0] != "bank_change":
+        elif row[0] != "empl_category_invalid":
             continue
         else:
             s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "','" + row[3] + "','" + row[4] + "','" + row[5] + "','" + row[6] + "','" + row[7] + "','" + row[8] + "')"
@@ -271,53 +186,50 @@ if i_find > 0:
     funcfile.writelog("%t IMPORT TABLE: " + ed_path + "001_reported.txt (" + sr_file + ")")
 
 # ADD PREVIOUS FINDINGS
-sr_file = "X004bd_bank_addprev"
+sr_file = "X007ad_addprev"
 so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
 if i_find > 0:
     print("Join previously reported to current findings...")
     s_sql = "CREATE TABLE " + sr_file + " AS" + """
-    SELECT
-      X004bb_bank_verify.*,
-      'bank_change' AS PROCESS,
+    Select
+      FIND.*,
+      'empl_category_invalid' AS PROCESS,
       '%TODAY%' AS DATE_REPORTED,
       '%TODAYPLUS%' AS DATE_RETEST,
-      X004bc_bank_getprev.PROCESS AS PREV_PROCESS,
-      X004bc_bank_getprev.DATE_REPORTED AS PREV_DATE_REPORTED,
-      X004bc_bank_getprev.DATE_RETEST AS PREV_DATE_RETEST,
-      X004bc_bank_getprev.DATE_MAILED
-    FROM
-      X004bb_bank_verify
-      LEFT JOIN X004bc_bank_getprev ON X004bc_bank_getprev.FIELD1 = X004bb_bank_verify.EMP AND
-          X004bc_bank_getprev.FIELD2 = X004bb_bank_verify.ACC_NUMBER AND
-          X004bc_bank_getprev.DATE_RETEST >= Date('%TODAY%')
+      PREV.PROCESS AS PREV_PROCESS,
+      PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
+      PREV.DATE_RETEST AS PREV_DATE_RETEST,
+      PREV.DATE_MAILED
+    From
+      X007ab_detail FIND Left Join
+      X007ac_getprev PREV ON PREV.FIELD1 = FIND.EMPLOYEE_NUMBER
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = s_sql.replace("%TODAY%",funcdate.today())
-    s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(20000))
+    s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(10))
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
 # BUILD LIST TO UPDATE FINDINGS
-# NOTE ADD CODE
-sr_file = "X004be_bank_newprev"
+sr_file = "X007ae_newprev"
 so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
 if i_find > 0:
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
-    SELECT
-      X004bd_bank_addprev.PROCESS,
-      X004bd_bank_addprev.EMP AS FIELD1,
-      X004bd_bank_addprev.ACC_NUMBER AS FIELD2,
+    Select
+      FIND.PROCESS,
+      FIND.EMPLOYEE_NUMBER As FIELD1,
+      '' As FIELD2,
       '' AS FIELD3,
       '' AS FIELD4,
       '' AS FIELD5,
-      X004bd_bank_addprev.DATE_REPORTED,
-      X004bd_bank_addprev.DATE_RETEST,
-      X004bd_bank_addprev.DATE_MAILED
-    FROM
-      X004bd_bank_addprev
-    WHERE
-      X004bd_bank_addprev.PREV_PROCESS IS NULL
+      FIND.DATE_REPORTED,
+      FIND.DATE_RETEST,
+      FIND.DATE_MAILED
+    From
+      X007ad_addprev FIND
+    Where
+      FIND.PREV_PROCESS Is Null
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     so_curs.execute(s_sql)
@@ -339,25 +251,25 @@ if i_find > 0:
             funcfile.writelog("%t EXPORT DATA: "+sr_file)
     else:
         print("*** No new findings to report ***")
-        funcfile.writelog("%t FINDING: No new findings to export")    
+        funcfile.writelog("%t FINDING: No new findings to export")
 
 # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
-sr_file = "X004bf_offi"
+sr_file = "X007af_officer"
 so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
 if i_find > 0 and i_coun > 0:
     print("Import reporting officers for mail purposes...")
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     SELECT
-      PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
-      PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
-      PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-      PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
-      PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
+      LOOKUP.LOOKUP,
+      LOOKUP.LOOKUP_CODE AS TYPE,
+      LOOKUP.LOOKUP_DESCRIPTION AS EMP,
+      PERSON.NAME_ADDR AS NAME,
+      PERSON.EMAIL_ADDRESS AS MAIL
     FROM
-      PEOPLE.X000_OWN_HR_LOOKUPS
-      LEFT JOIN PEOPLE.X002_PEOPLE_CURR ON PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION
+      PEOPLE.X000_OWN_HR_LOOKUPS LOOKUP
+      LEFT JOIN PEOPLE.X002_PEOPLE_CURR PERSON ON PERSON.EMPLOYEE_NUMBER = LOOKUP.LOOKUP_DESCRIPTION
     WHERE
-      PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP = 'TEST_BANKACC_VERIFY_OFFICER'
+      LOOKUP.LOOKUP = 'TEST_EMPL_CATEGORY_INVALID_OFFICER'
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -365,22 +277,22 @@ if i_find > 0 and i_coun > 0:
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
 # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
-sr_file = "X004bg_supe"
+sr_file = "X007ag_supervisor"
 so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
 if i_find > 0 and i_coun > 0:
     print("Import reporting supervisors for mail purposes...")
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     SELECT
-      PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
-      PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
-      PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-      PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
-      PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
+      LOOKUP.LOOKUP,
+      LOOKUP.LOOKUP_CODE AS TYPE,
+      LOOKUP.LOOKUP_DESCRIPTION AS EMP,
+      PERSON.NAME_ADDR AS NAME,
+      PERSON.EMAIL_ADDRESS AS MAIL
     FROM
-      PEOPLE.X000_OWN_HR_LOOKUPS
-      LEFT JOIN PEOPLE.X002_PEOPLE_CURR ON PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION
+      PEOPLE.X000_OWN_HR_LOOKUPS LOOKUP
+      LEFT JOIN PEOPLE.X002_PEOPLE_CURR PERSON ON PERSON.EMPLOYEE_NUMBER = LOOKUP.LOOKUP_DESCRIPTION
     WHERE
-      PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP = 'TEST_BANKACC_VERIFY_SUPERVISOR'
+      LOOKUP.LOOKUP = 'TEST_EMPL_CATEGORY_INVALID_SUPERVISOR'
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -388,54 +300,37 @@ if i_find > 0 and i_coun > 0:
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
 # ADD CONTACT DETAILS TO FINDINGS
-sr_file = "X004bh_bank_cont"
+sr_file = "X007ah_contact"
 so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
 if i_find > 0 and i_coun > 0:
     print("Add contact details to findings...")
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
-        X004bd_bank_addprev.ORG,
-        X004bd_bank_addprev.LOC,
-        X004bd_bank_addprev.EMP,
-        PEOPLE.X002_PEOPLE_CURR.NAME_ADDR AS NAME,
-        X004bd_bank_addprev.ACC_TYPE,
-        X004bd_bank_addprev.ACC_BRANCH,
-        X004bd_bank_addprev.ACC_NUMBER,
-        X004bd_bank_addprev.OLD_ACC_BRANCH,
-        X004bd_bank_addprev.OLD_ACC_NUMBER,
-        Trim(X004bd_bank_addprev.EMP)||'@nwu.ac.za' As MAIL,
-        Case
-            When Trim(X004bd_bank_addprev.EMP)||'@nwu.ac.za' <> Trim(PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS) Then Trim(PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS)
-            Else ''
-        End As MAIL2,
-        PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS AS MAIL,
-        CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
-        CAMP_OFF.KNOWN_NAME As CAMP_OFF_NAME,
-        CAMP_OFF.EMAIL_ADDRESS As CAMP_OFF_MAIL,
-        CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
-        CAMP_SUP.KNOWN_NAME As CAMP_SUP_NAME,
-        CAMP_SUP.EMAIL_ADDRESS As CAMP_SUP_MAIL,
-        ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
-        ORG_OFF.KNOWN_NAME As ORG_OFF_NAME,
-        ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL,
-        ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
-        ORG_SUP.KNOWN_NAME As ORG_SUP_NAME,
-        ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL,
-        X004bd_bank_addprev.UPDATE_DATE,
-        X004bd_bank_addprev.UPDATE_BY,
-        PEOPLE.X000_USER_CURR.EMPLOYEE_NUMBER AS UPDATE_EMP,
-        PEOPLE.X000_USER_CURR.KNOWN_NAME AS UPDATE_NAME,
-        PEOPLE.X000_USER_CURR.EMAIL_ADDRESS AS UPDATE_MAIL
+        FIND.ORG,
+        FIND.LOC,
+        FIND.EMPLOYEE_NUMBER,
+        PEOP.NAME_LIST,
+        CAMP_OFF.EMP As CAMP_OFF_NUMB,
+        CAMP_OFF.NAME As CAMP_OFF_NAME,
+        CAMP_OFF.MAIL As CAMP_OFF_MAIL,
+        CAMP_SUP.EMP As CAMP_SUP_NUMB,
+        CAMP_SUP.NAME As CAMP_SUP_NAME,
+        CAMP_SUP.MAIL As CAMP_SUP_MAIL,
+        ORG_OFF.EMP As ORG_OFF_NUMB,
+        ORG_OFF.NAME As ORG_OFF_NAME,
+        ORG_OFF.MAIL As ORG_OFF_MAIL,
+        ORG_SUP.EMP As ORG_SUP_NUMB,
+        ORG_SUP.NAME As ORG_SUP_NAME,
+        ORG_SUP.MAIL As ORG_SUP_MAIL
     From
-        X004bd_bank_addprev
-        Left Join PEOPLE.X002_PEOPLE_CURR On PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = X004bd_bank_addprev.EMP
-        Left Join PEOPLE.X000_USER_CURR On PEOPLE.X000_USER_CURR.USER_ID = X004bd_bank_addprev.UPDATE_BY
-        Left Join X004bf_offi CAMP_OFF On CAMP_OFF.CAMPUS = X004bd_bank_addprev.LOC
-        Left Join X004bf_offi ORG_OFF On ORG_OFF.CAMPUS = X004bd_bank_addprev.ORG
-        Left Join X004bg_supe CAMP_SUP On CAMP_SUP.CAMPUS = X004bd_bank_addprev.LOC
-        Left Join X004bg_supe ORG_SUP On ORG_SUP.CAMPUS = X004bd_bank_addprev.ORG
-    WHERE
-      X004bd_bank_addprev.PREV_PROCESS IS NULL
+        X007ad_addprev FIND Left Join
+        X007af_officer CAMP_OFF On CAMP_OFF.TYPE = FIND.LOC Left Join
+        X007af_officer ORG_OFF On ORG_OFF.TYPE = FIND.ORG Left Join
+        X007ag_supervisor CAMP_SUP On CAMP_SUP.TYPE = FIND.LOC Left Join
+        X007ag_supervisor ORG_SUP On ORG_SUP.TYPE = FIND.ORG Left Join
+        PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = FIND.EMPLOYEE_NUMBER
+    Where
+        FIND.PREV_PROCESS IS NULL
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -443,41 +338,29 @@ if i_find > 0 and i_coun > 0:
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
 # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
-sr_file = "X004bx_bank_verify"
+sr_file = "X007ax_category_invalid"
 so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-print("Build the final report")
 if i_find > 0 and i_coun > 0:
+    print("Build the final report")
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
-        'EMPLOYEE BANK CHANGE VERIFICATION' As FINDING,
-        X004bh_bank_cont.EMP AS EMPLOYEE_NUMBER,
-        X004bh_bank_cont.NAME,
-        X004bh_bank_cont.ACC_TYPE,
-        X004bh_bank_cont.ACC_BRANCH,
-        X004bh_bank_cont.ACC_NUMBER,
-        X004bh_bank_cont.OLD_ACC_BRANCH,
-        X004bh_bank_cont.OLD_ACC_NUMBER,
-        X004bh_bank_cont.MAIL,
-        X004bh_bank_cont.MAIL2,        
-        X004bh_bank_cont.CAMP_OFF_NAME AS RESPONSIBLE_OFFICER,
-        X004bh_bank_cont.CAMP_OFF_NUMB AS RESPONSIBLE_OFFICER_NUMB,
-        X004bh_bank_cont.CAMP_OFF_MAIL AS RESPONSIBLE_OFFICER_MAIL,
-        X004bh_bank_cont.CAMP_SUP_NAME AS SUPERVISOR,
-        X004bh_bank_cont.CAMP_SUP_NUMB AS SUPERVISOR_NUMB,
-        X004bh_bank_cont.CAMP_SUP_MAIL AS SUPERVISOR_MAIL,
-        X004bh_bank_cont.ORG_OFF_NAME AS ORGANIZATION_OFFICER,
-        X004bh_bank_cont.ORG_OFF_NUMB AS ORGANIZATION_OFFICER_NUMB,
-        X004bh_bank_cont.ORG_OFF_MAIL AS ORGANIZATION_OFFICER_MAIL,
-        X004bh_bank_cont.ORG_SUP_NAME AS ORGANIZATION_SUPERVISOR,
-        X004bh_bank_cont.ORG_SUP_NUMB AS ORGANIZATION_SUPERVISOR_NUMB,
-        X004bh_bank_cont.ORG_SUP_MAIL AS ORGANIZATION_SUPERVISOR_MAIL,
-        X004bh_bank_cont.UPDATE_DATE,
-        X004bh_bank_cont.UPDATE_BY,
-        X004bh_bank_cont.UPDATE_EMP,
-        X004bh_bank_cont.UPDATE_NAME,
-        X004bh_bank_cont.UPDATE_MAIL
+        'EMPLOYEE CATEGORY INVALID' As Audit_finding,
+        FIND.EMPLOYEE_NUMBER As Employee,
+        FIND.NAME_LIST As Name,
+        FIND.CAMP_OFF_NAME AS Responsible_Officer,
+        FIND.CAMP_OFF_NUMB AS Responsible_Officer_Numb,
+        FIND.CAMP_OFF_MAIL AS Responsible_Officer_Mail,
+        FIND.CAMP_SUP_NAME AS Supervisor,
+        FIND.CAMP_SUP_NUMB AS Supervisor_Numb,
+        FIND.CAMP_SUP_MAIL AS Supervisor_Mail,
+        FIND.ORG_OFF_NAME AS Org_Officer,
+        FIND.ORG_OFF_NUMB AS Org_Officer_Numb,
+        FIND.ORG_OFF_MAIL AS Org_Officer_Mail,
+        FIND.ORG_SUP_NAME AS Org_Supervisor,
+        FIND.ORG_SUP_NUMB AS Org_Supervisor_Numb,
+        FIND.ORG_SUP_MAIL AS Org_Supervisor_Mail
     From
-        X004bh_bank_cont
+        X007ah_contact FIND
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -488,7 +371,7 @@ if i_find > 0 and i_coun > 0:
         print("Export findings...")
         sr_filet = sr_file
         sx_path = re_path + funcdate.cur_year() + "/"
-        sx_file = "People_test_004bx_bank_verify_"
+        sx_file = "People_test_007ax_category_invalid_"
         sx_filet = sx_file + funcdate.today_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
         funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
@@ -502,6 +385,10 @@ else:
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+
+
+        
 
 """ ****************************************************************************
 END OF SCRIPT
