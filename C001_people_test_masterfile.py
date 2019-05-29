@@ -4887,7 +4887,7 @@ def People_test_masterfile():
     funcfile.writelog("GRADE INVALID")
 
     # DECLARE TEST VARIABLES
-    l_record = False # Record the findings in the previous reported findings file
+    l_record = True # Record the findings in the previous reported findings file
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
@@ -5153,7 +5153,7 @@ def People_test_masterfile():
             'EMPLOYEE GRADE INVALID' As Audit_finding,
             FIND.EMPLOYEE_NUMBER As Employee,
             FIND.NAME_LIST As Name,
-            FIND.EMPLOYMENT_CATEGORY As Categoty,
+            FIND.EMPLOYMENT_CATEGORY As Category,
             FIND.PERSON_TYPE As Person_type,
             FIND.ACAD_SUPP As Acad_supp,
             FIND.PGRADE As Grade,
