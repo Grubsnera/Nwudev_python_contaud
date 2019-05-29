@@ -1,13 +1,14 @@
 ﻿Select
-    X007_grade_leave_master.EMPLOYMENT_CATEGORY,
-    X007_grade_leave_master.PERSON_TYPE,
-    X007_grade_leave_master.ACAD_SUPP,
-    X007_grade_leave_master.GRADE,
-    Count(X007_grade_leave_master.GRADE_CALC) As Count_GRADE_CALC
+    MASTER.ORG,
+    MASTER.LOC,
+    MASTER.EMPLOYEE_NUMBER,
+    MASTER.GRADE,
+    BENCH.GRADE As GRADE_BENCH,
+    MASTER.EMPLOYMENT_CATEGORY,
+    MASTER.ACAD_SUPP,
+    MASTER.PERSON_TYPE
 From
-    X007_grade_leave_master
-Group By
-    X007_grade_leave_master.EMPLOYMENT_CATEGORY,
-    X007_grade_leave_master.PERSON_TYPE,
-    X007_grade_leave_master.ACAD_SUPP,
-    X007_grade_leave_master.GRADE
+    X007_grade_leave_master MASTER Left Join
+    X007_grade_master BENCH On BENCH.CATEGORY = MASTER.EMPLOYMENT_CATEGORY
+            And BENCH.TYPE = MASTER.PERSON_TYPE
+            And BENCH.ACADSUPP = MASTER.ACAD_SUPP
