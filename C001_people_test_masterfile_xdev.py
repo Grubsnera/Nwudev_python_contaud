@@ -346,7 +346,7 @@ if i_find > 0 and i_coun > 0:
         'EMPLOYEE GRADE INVALID' As Audit_finding,
         FIND.EMPLOYEE_NUMBER As Employee,
         FIND.NAME_LIST As Name,
-        FIND.EMPLOYMENT_CATEGORY As Categoty,
+        FIND.EMPLOYMENT_CATEGORY As Category,
         FIND.PERSON_TYPE As Person_type,
         FIND.ACAD_SUPP As Acad_supp,
         FIND.PGRADE As Grade,
