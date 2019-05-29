@@ -1882,8 +1882,6 @@ def People_lists():
         funcfile.writelog("%t DATABASE: Vacuum people")
     so_conn.commit()
     so_conn.close()
-    ms_cnxn.commit()
-    ms_cnxn.close()
 
     # Close the log writer *********************************************************
     funcfile.writelog("----------------------------")
