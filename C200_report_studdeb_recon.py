@@ -2380,8 +2380,6 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
         funcfile.writelog("%t DATABASE: Vacuum")
     so_conn.commit()
     so_conn.close()
-    ms_cnxn.commit()    
-    ms_cnxn.close()    
 
     # Close the log writer *********************************************************
     funcfile.writelog("------------------------------------")
