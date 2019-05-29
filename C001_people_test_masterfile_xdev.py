@@ -67,12 +67,6 @@ funcfile.writelog("%t OPEN DATABASE: PEOPLE_TEST_MASTERFILE.SQLITE")
 so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
 funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
 
-# OPEN THE MYSQL DESTINATION TABLE
-s_database = "Web_ia_nwu"
-ms_cnxn = funcmysql.mysql_open(s_database)
-ms_curs = ms_cnxn.cursor()
-funcfile.writelog("%t OPEN MYSQL DATABASE: " + s_database)
-
 """ ****************************************************************************
 BEGIN OF SCRIPT
 *****************************************************************************"""
@@ -80,43 +74,10 @@ print("BEGIN OF SCRIPT")
 funcfile.writelog("BEGIN OF SCRIPT")
 
 """ ****************************************************************************
-GRADE LEAVE MASTER FILE
+TEST ACADEMIC SUPPORT INVALID
 *****************************************************************************"""
-
-# BUILD GRADE AND LEAVE MASTER TABLE
-print("Obtain master list of all grades and leave codes...")
-sr_file = "X007_grade_leave_master"
-s_sql = "CREATE TABLE "+sr_file+" AS " + """
-Select
-    'NWU' As ORG,
-    CASE LOCATION_DESCRIPTION
-        WHEN 'MAFIKENG CAMPUS' THEN 'MAF'
-        WHEN 'POTCHEFSTROOM CAMPUS' THEN 'POT'
-        WHEN 'VAAL TRIANGLE CAMPUS' THEN 'VAA'
-        ELSE 'NWU'
-    END AS LOC,
-    PEOPLE.EMPLOYEE_NUMBER,
-    PEOPLE.EMP_START,
-    PEOPLE.ACAD_SUPP,
-    PEOPLE.EMPLOYMENT_CATEGORY,
-    PEOPLE.PERSON_TYPE,
-    PEOPLE.ASS_WEEK_LEN,
-    PEOPLE.LEAVE_CODE,
-    PEOPLE.GRADE,
-    PEOPLE.GRADE_CALC
-From
-    PEOPLE.X002_PEOPLE_CURR PEOPLE
-;"""
-so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-so_curs.execute(s_sql)
-so_conn.commit()
-funcfile.writelog("%t BUILD TABLE: "+sr_file)
-
-""" ****************************************************************************
-TEST PERMANENT TEMPORARY CATEGORY
-*****************************************************************************"""
-print("PERMANENT TEMPORARY CATEGORY")
-funcfile.writelog("PERMANENT TEMPORARY CATEGORY")
+print("ACADEMIC SUPPORT INVALID")
+funcfile.writelog("ACADEMIC SUPPORT INVALID")
 
 # DECLARE TEST VARIABLES
 l_record = False # Record the findings in the previous reported findings file
@@ -125,13 +86,13 @@ i_coun = 0 # Number of new findings to report
 
 # IDENTIFY FINDING 
 print("Identify incorrect data...")
-sr_file = "X007aa_category"
+sr_file = "X007ba_acadsupp"
 s_sql = "CREATE TABLE "+sr_file+" AS " + """
 Select
     MASTER.ORG,
     MASTER.LOC,
     MASTER.EMPLOYEE_NUMBER,
-    MASTER.EMPLOYMENT_CATEGORY
+    MASTER.ACAD_SUPP
 From
     X007_grade_leave_master MASTER
 ;"""
@@ -142,14 +103,14 @@ funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
 # ADD DETAILS
 print("Add data details...")
-sr_file = "X007ab_detail"
+sr_file = "X007bb_detail"
 s_sql = "CREATE TABLE "+sr_file+" AS " + """
 Select
     FIND.*
 From
-    X007aa_category FIND
+    X007ba_acadsupp FIND
 Where
-    FIND.EMPLOYMENT_CATEGORY = 'OTHER'
+    FIND.ACAD_SUPP Is Null
 ;"""
 so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
 so_curs.execute(s_sql)
@@ -159,10 +120,10 @@ funcfile.writelog("%t BUILD TABLE: "+sr_file)
 # COUNT THE NUMBER OF FINDINGS
 i_find = funcsys.tablerowcount(so_curs,sr_file)
 print("*** Found "+str(i_find)+" exceptions ***")
-funcfile.writelog("%t FINDING: "+str(i_find)+" EMPLOYMENT CATEGORY finding(s)")
+funcfile.writelog("%t FINDING: "+str(i_find)+" ACADEMIC SUPPORT invalid finding(s)")
 
 # GET PREVIOUS FINDINGS
-sr_file = "X007ac_getprev"
+sr_file = "X007bc_getprev"
 so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
 if i_find > 0:
     print("Import previously reported findings...")
@@ -175,7 +136,7 @@ if i_find > 0:
         # Populate the column variables
         if row[0] == "PROCESS":
             continue
-        elif row[0] != "empl_category_invalid":
+        elif row[0] != "empl_acadsupp_invalid":
             continue
         else:
             s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "','" + row[3] + "','" + row[4] + "','" + row[5] + "','" + row[6] + "','" + row[7] + "','" + row[8] + "')"
@@ -186,14 +147,14 @@ if i_find > 0:
     funcfile.writelog("%t IMPORT TABLE: " + ed_path + "001_reported.txt (" + sr_file + ")")
 
 # ADD PREVIOUS FINDINGS
-sr_file = "X007ad_addprev"
+sr_file = "X007bd_addprev"
 so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
 if i_find > 0:
     print("Join previously reported to current findings...")
     s_sql = "CREATE TABLE " + sr_file + " AS" + """
     Select
       FIND.*,
-      'empl_category_invalid' AS PROCESS,
+      'empl_acadsupp_invalid' AS PROCESS,
       '%TODAY%' AS DATE_REPORTED,
       '%TODAYPLUS%' AS DATE_RETEST,
       PREV.PROCESS AS PREV_PROCESS,
@@ -201,8 +162,8 @@ if i_find > 0:
       PREV.DATE_RETEST AS PREV_DATE_RETEST,
       PREV.DATE_MAILED
     From
-      X007ab_detail FIND Left Join
-      X007ac_getprev PREV ON PREV.FIELD1 = FIND.EMPLOYEE_NUMBER
+      X007bb_detail FIND Left Join
+      X007bc_getprev PREV ON PREV.FIELD1 = FIND.EMPLOYEE_NUMBER
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = s_sql.replace("%TODAY%",funcdate.today())
@@ -212,7 +173,7 @@ if i_find > 0:
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
 # BUILD LIST TO UPDATE FINDINGS
-sr_file = "X007ae_newprev"
+sr_file = "X007be_newprev"
 so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
 if i_find > 0:
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
@@ -227,7 +188,7 @@ if i_find > 0:
       FIND.DATE_RETEST,
       FIND.DATE_MAILED
     From
-      X007ad_addprev FIND
+      X007bd_addprev FIND
     Where
       FIND.PREV_PROCESS Is Null
     ;"""
@@ -254,7 +215,7 @@ if i_find > 0:
         funcfile.writelog("%t FINDING: No new findings to export")
 
 # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
-sr_file = "X007af_officer"
+sr_file = "X007bf_officer"
 so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
 if i_find > 0 and i_coun > 0:
     print("Import reporting officers for mail purposes...")
@@ -269,7 +230,7 @@ if i_find > 0 and i_coun > 0:
       PEOPLE.X000_OWN_HR_LOOKUPS LOOKUP
       LEFT JOIN PEOPLE.X002_PEOPLE_CURR PERSON ON PERSON.EMPLOYEE_NUMBER = LOOKUP.LOOKUP_DESCRIPTION
     WHERE
-      LOOKUP.LOOKUP = 'TEST_EMPL_CATEGORY_INVALID_OFFICER'
+      LOOKUP.LOOKUP = 'TEST_EMPL_ACAD_SUPP_INVALID_OFFICER'
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -277,7 +238,7 @@ if i_find > 0 and i_coun > 0:
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
 # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
-sr_file = "X007ag_supervisor"
+sr_file = "X007bg_supervisor"
 so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
 if i_find > 0 and i_coun > 0:
     print("Import reporting supervisors for mail purposes...")
@@ -292,7 +253,7 @@ if i_find > 0 and i_coun > 0:
       PEOPLE.X000_OWN_HR_LOOKUPS LOOKUP
       LEFT JOIN PEOPLE.X002_PEOPLE_CURR PERSON ON PERSON.EMPLOYEE_NUMBER = LOOKUP.LOOKUP_DESCRIPTION
     WHERE
-      LOOKUP.LOOKUP = 'TEST_EMPL_CATEGORY_INVALID_SUPERVISOR'
+      LOOKUP.LOOKUP = 'TEST_EMPL_ACAD_SUPP_INVALID_SUPERVISOR'
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -300,7 +261,7 @@ if i_find > 0 and i_coun > 0:
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
 # ADD CONTACT DETAILS TO FINDINGS
-sr_file = "X007ah_contact"
+sr_file = "X007bh_contact"
 so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
 if i_find > 0 and i_coun > 0:
     print("Add contact details to findings...")
@@ -323,11 +284,11 @@ if i_find > 0 and i_coun > 0:
         ORG_SUP.NAME As ORG_SUP_NAME,
         ORG_SUP.MAIL As ORG_SUP_MAIL
     From
-        X007ad_addprev FIND Left Join
-        X007af_officer CAMP_OFF On CAMP_OFF.TYPE = FIND.LOC Left Join
-        X007af_officer ORG_OFF On ORG_OFF.TYPE = FIND.ORG Left Join
-        X007ag_supervisor CAMP_SUP On CAMP_SUP.TYPE = FIND.LOC Left Join
-        X007ag_supervisor ORG_SUP On ORG_SUP.TYPE = FIND.ORG Left Join
+        X007bd_addprev FIND Left Join
+        X007bf_officer CAMP_OFF On CAMP_OFF.TYPE = FIND.LOC Left Join
+        X007bf_officer ORG_OFF On ORG_OFF.TYPE = FIND.ORG Left Join
+        X007bg_supervisor CAMP_SUP On CAMP_SUP.TYPE = FIND.LOC Left Join
+        X007bg_supervisor ORG_SUP On ORG_SUP.TYPE = FIND.ORG Left Join
         PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = FIND.EMPLOYEE_NUMBER
     Where
         FIND.PREV_PROCESS IS NULL
@@ -338,13 +299,13 @@ if i_find > 0 and i_coun > 0:
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
 # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
-sr_file = "X007ax_category_invalid"
+sr_file = "X007bx_category_invalid"
 so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
 if i_find > 0 and i_coun > 0:
     print("Build the final report")
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
-        'EMPLOYEE CATEGORY INVALID' As Audit_finding,
+        'EMPLOYEE ACADSUPP INVALID' As Audit_finding,
         FIND.EMPLOYEE_NUMBER As Employee,
         FIND.NAME_LIST As Name,
         FIND.CAMP_OFF_NAME AS Responsible_Officer,
@@ -360,7 +321,7 @@ if i_find > 0 and i_coun > 0:
         FIND.ORG_SUP_NUMB AS Org_Supervisor_Numb,
         FIND.ORG_SUP_MAIL AS Org_Supervisor_Mail
     From
-        X007ah_contact FIND
+        X007bh_contact FIND
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -371,7 +332,7 @@ if i_find > 0 and i_coun > 0:
         print("Export findings...")
         sr_filet = sr_file
         sx_path = re_path + funcdate.cur_year() + "/"
-        sx_file = "People_test_007ax_category_invalid_"
+        sx_file = "People_test_007bx_acadsupp_invalid_"
         sx_filet = sx_file + funcdate.today_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
         funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
