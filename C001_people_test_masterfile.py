@@ -87,7 +87,7 @@ def People_test_masterfile():
     s_sql = "" # SQL statements
     l_export = True
     l_mail = False
-    l_record = False
+    l_record = True
     l_vacuum = True
 
     """*****************************************************************************
@@ -214,7 +214,7 @@ def People_test_masterfile():
     funcfile.writelog("TEST ID NUMBER BLANK")
 
     # DECLARE TEST VARIABLES
-    l_record = True # Record the findings in the previous reported findings file
+    # l_record = True # Record the findings in the previous reported findings file
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
@@ -362,7 +362,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-          PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
+          PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
           PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
         FROM
           PEOPLE.X000_OWN_HR_LOOKUPS
@@ -385,7 +385,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-          PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
+          PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
           PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
         FROM
           PEOPLE.X000_OWN_HR_LOOKUPS
@@ -495,7 +495,7 @@ def People_test_masterfile():
     funcfile.writelog("TEST ID NUMBER INVALID")
 
     # DECLARE TEST VARIABLES
-    l_record = True # Record the findings in the previous reported findings file
+    # l_record = True # Record the findings in the previous reported findings file
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
@@ -664,7 +664,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-          PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
+          PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
           PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
         FROM
           PEOPLE.X000_OWN_HR_LOOKUPS
@@ -687,7 +687,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-          PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
+          PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
           PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
         FROM
           PEOPLE.X000_OWN_HR_LOOKUPS
@@ -958,7 +958,7 @@ def People_test_masterfile():
               PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
               PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
               PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-              PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
+              PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
               PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
             FROM
               PEOPLE.X000_OWN_HR_LOOKUPS
@@ -981,7 +981,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-          PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
+          PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
           PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
         FROM
           PEOPLE.X000_OWN_HR_LOOKUPS
@@ -1250,28 +1250,28 @@ def People_test_masterfile():
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
 
-        # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
-        sr_file = "X002df_offi"
-        so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-        if i_find > 0 and i_coun > 0:
-            print("Import reporting officers for mail purposes...")
-            s_sql = "CREATE TABLE " + sr_file + " AS " + """
-            SELECT
-              PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
-              PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
-              PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-              PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
-              PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
-            FROM
-              PEOPLE.X000_OWN_HR_LOOKUPS
-              LEFT JOIN PEOPLE.X002_PEOPLE_CURR ON PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION
-            WHERE
-              PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP = 'TEST_SEX_INVALID_OFFICER'
-            ;"""
-            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-            so_curs.execute(s_sql)
-            so_conn.commit()
-            funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
+    sr_file = "X002df_offi"
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    if i_find > 0 and i_coun > 0:
+        print("Import reporting officers for mail purposes...")
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        SELECT
+          PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
+          PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
+          PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
+          PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
+          PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
+        FROM
+          PEOPLE.X000_OWN_HR_LOOKUPS
+          LEFT JOIN PEOPLE.X002_PEOPLE_CURR ON PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION
+        WHERE
+          PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP = 'TEST_SEX_INVALID_OFFICER'
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
     sr_file = "X002dg_supe"
@@ -1283,7 +1283,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-          PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
+          PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
           PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
         FROM
           PEOPLE.X000_OWN_HR_LOOKUPS
@@ -1399,7 +1399,7 @@ def People_test_masterfile():
     funcfile.writelog("TEST ID NUMBER DUPLICATE")
 
     # DECLARE TEST VARIABLES
-    l_record = True # Record the findings in the previous reported findings file
+    # l_record = True # Record the findings in the previous reported findings file
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
@@ -1556,7 +1556,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-          PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
+          PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
           PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
         FROM
           PEOPLE.X000_OWN_HR_LOOKUPS
@@ -1579,7 +1579,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-          PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
+          PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
           PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
         FROM
           PEOPLE.X000_OWN_HR_LOOKUPS
@@ -1719,7 +1719,7 @@ def People_test_masterfile():
     funcfile.writelog("TEST PASSPORT NUMBER BLANK")
 
     # DECLARE TEST VARIABLES
-    l_record = True # Record the findings in the previous reported findings file
+    # l_record = True # Record the findings in the previous reported findings file
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
@@ -1867,7 +1867,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-          PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
+          PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
           PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
         FROM
           PEOPLE.X000_OWN_HR_LOOKUPS
@@ -1890,7 +1890,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-          PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
+          PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
           PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
         FROM
           PEOPLE.X000_OWN_HR_LOOKUPS
@@ -2001,7 +2001,7 @@ def People_test_masterfile():
     funcfile.writelog("TEST PASSPORT NUMBER DUPLICATE")
 
     # DECLARE TEST VARIABLES
-    l_record = True # Record the findings in the previous reported findings file
+    # l_record = True # Record the findings in the previous reported findings file
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
@@ -2155,7 +2155,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-          PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
+          PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
           PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
         FROM
           PEOPLE.X000_OWN_HR_LOOKUPS
@@ -2178,7 +2178,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-          PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
+          PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
           PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
         FROM
           PEOPLE.X000_OWN_HR_LOOKUPS
@@ -2323,7 +2323,7 @@ def People_test_masterfile():
     funcfile.writelog("TEST BANK NUMBER DUPLICATE")
 
     # DECLARE TEST VARIABLES
-    l_record = True # Record the findings in the previous reported findings file
+    # l_record = True # Record the findings in the previous reported findings file
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
@@ -2476,7 +2476,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-          PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
+          PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
           PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
         FROM
           PEOPLE.X000_OWN_HR_LOOKUPS
@@ -2499,7 +2499,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-          PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
+          PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
           PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
         FROM
           PEOPLE.X000_OWN_HR_LOOKUPS
@@ -2710,7 +2710,7 @@ def People_test_masterfile():
     funcfile.writelog("BANK CHANGE VERIFICATION")
 
     # DECLARE TEST VARIABLES
-    l_record = True # Record the findings in the previous reported findings file
+    # l_record = True # Record the findings in the previous reported findings file
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
@@ -2883,7 +2883,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-          PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
+          PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
           PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
         FROM
           PEOPLE.X000_OWN_HR_LOOKUPS
@@ -2906,7 +2906,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-          PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
+          PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
           PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
         FROM
           PEOPLE.X000_OWN_HR_LOOKUPS
@@ -3080,7 +3080,7 @@ def People_test_masterfile():
     funcfile.writelog("TEST PAYE NUMBER BLANK")
 
     # DECLARE TEST VARIABLES
-    l_record = True # Record the findings in the previous reported findings file
+    # l_record = True # Record the findings in the previous reported findings file
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
@@ -3230,7 +3230,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-          PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
+          PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
           PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
         FROM
           PEOPLE.X000_OWN_HR_LOOKUPS
@@ -3253,7 +3253,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-          PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
+          PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
           PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
         FROM
           PEOPLE.X000_OWN_HR_LOOKUPS
@@ -3363,7 +3363,7 @@ def People_test_masterfile():
     funcfile.writelog("TEST PAYE NUMBER INVALID")
 
     # DECLARE TEST VARIABLES
-    l_record = True # Record the findings in the previous reported findings file
+    # l_record = True # Record the findings in the previous reported findings file
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
@@ -3561,7 +3561,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-          PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
+          PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
           PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
         FROM
           PEOPLE.X000_OWN_HR_LOOKUPS
@@ -3584,7 +3584,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-          PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
+          PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
           PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
         FROM
           PEOPLE.X000_OWN_HR_LOOKUPS
@@ -3696,7 +3696,7 @@ def People_test_masterfile():
     funcfile.writelog("TEST PAYE NUMBER DUPLICATE")
 
     # DECLARE TEST VARIABLES
-    l_record = True # Record the findings in the previous reported findings file
+    # l_record = True # Record the findings in the previous reported findings file
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
@@ -3850,7 +3850,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-          PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
+          PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
           PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
         FROM
           PEOPLE.X000_OWN_HR_LOOKUPS
@@ -3873,7 +3873,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-          PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
+          PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
           PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
         FROM
           PEOPLE.X000_OWN_HR_LOOKUPS
@@ -4013,7 +4013,7 @@ def People_test_masterfile():
     funcfile.writelog("TEST NAME DUPLICATE")
 
     # DECLARE TEST VARIABLES
-    l_record = True # Record the findings in the previous reported findings file
+    # l_record = True # Record the findings in the previous reported findings file
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
@@ -4167,7 +4167,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-          PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
+          PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
           PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
         FROM
           PEOPLE.X000_OWN_HR_LOOKUPS
@@ -4190,7 +4190,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-          PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
+          PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
           PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
         FROM
           PEOPLE.X000_OWN_HR_LOOKUPS
@@ -4339,7 +4339,7 @@ def People_test_masterfile():
     funcfile.writelog("PERMANENT TEMPORARY CATEGORY")
 
     # DECLARE TEST VARIABLES
-    l_record = True # Record the findings in the previous reported findings file
+    # l_record = True # Record the findings in the previous reported findings file
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
@@ -4613,7 +4613,7 @@ def People_test_masterfile():
     funcfile.writelog("ACADEMIC SUPPORT INVALID")
 
     # DECLARE TEST VARIABLES
-    l_record = True # Record the findings in the previous reported findings file
+    # l_record = True # Record the findings in the previous reported findings file
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
@@ -4887,7 +4887,7 @@ def People_test_masterfile():
     funcfile.writelog("GRADE INVALID")
 
     # DECLARE TEST VARIABLES
-    l_record = True # Record the findings in the previous reported findings file
+    # l_record = True # Record the findings in the previous reported findings file
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
