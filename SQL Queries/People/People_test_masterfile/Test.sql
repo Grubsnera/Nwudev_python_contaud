@@ -1,14 +1,9 @@
 ﻿Select
-    MASTER.ORG,
-    MASTER.LOC,
-    MASTER.EMPLOYEE_NUMBER,
-    MASTER.GRADE,
-    BENCH.GRADE As GRADE_BENCH,
-    MASTER.EMPLOYMENT_CATEGORY,
-    MASTER.ACAD_SUPP,
-    MASTER.PERSON_TYPE
+    X007da_leave.EMPLOYEE_NUMBER,
+    Count(X007da_leave.VALID) As Count_VALID
 From
-    X007_grade_leave_master MASTER Left Join
-    X007_grade_master BENCH On BENCH.CATEGORY = MASTER.EMPLOYMENT_CATEGORY
-            And BENCH.TYPE = MASTER.PERSON_TYPE
-            And BENCH.ACADSUPP = MASTER.ACAD_SUPP
+    X007da_leave
+Group By
+    X007da_leave.EMPLOYEE_NUMBER
+Having
+    Count(X007da_leave.VALID) > 1
