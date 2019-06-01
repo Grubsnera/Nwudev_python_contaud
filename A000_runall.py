@@ -1,5 +1,4 @@
 """ SCRIPT TO RUN ON A SCHEDULED TIME FOR ALL PYTHON SCRIPTS *******************
-Created: 2018
 Author: Albert J van Rensburg (NWU21162395)
 ****************************************************************************"""
 
@@ -12,7 +11,7 @@ VSS LISTS (Run tuesdays to saturdays)
 PEOPLE MASTER FILE TESTS (Run only on weekdays)
 PEOPLE CONFLICT TESTS (Run only on weekdays)
 KFS VSS STUDENT DEBTOR RECONCILIATION AND TESTS
-VSS STUDENT MASTERFILE TESTS
+VSS STUDENT MASTER FILE TESTS
 ****************************************************************************"""
 
 """****************************************************************************
@@ -110,7 +109,7 @@ if funcdate.today_dayname() in "MonTueWedThuFri":
     except Exception as e:
         funcsys.ErrMessage(e)
 else:
-    print("PEOPLE MASTERFILE TESTS do not run on Saturdays and Sundays")
+    print("PEOPLE MASTER FILE TESTS do not run on Saturdays and Sundays")
     funcfile.writelog("SCRIPT: C001_PEOPLE_TEST_MASTERFILE: DO NOT RUN ON SATURDAYS AND SUNDAYS")
 
 """****************************************************************************
@@ -150,7 +149,7 @@ if funcdate.today_dayname() in "MonTueWedThuFri":
     try:
         C200_report_studdeb_recon.Report_studdeb_recon()
         # 2019 balances
-        #C200_report_studdeb_recon.Report_studdeb_recon('66561452.48','-18340951.06','39482933.18')
+        # C200_report_studdeb_recon.Report_studdeb_recon('66561452.48','-18340951.06','39482933.18')
     except Exception as e:
         funcsys.ErrMessage(e)
 else:
@@ -158,7 +157,7 @@ else:
     funcfile.writelog("SCRIPT: C200_REPORT_STUDDEB_RECON: ONLY RUN ON 1-4 AND 10TH OF THE MONTH")
 
 """****************************************************************************
-VSS STUDENT MASTERFILE TESTS
+VSS STUDENT MASTER FILE TESTS
 ****************************************************************************"""
 
 if funcdate.cur_day() in "01z13":
@@ -178,11 +177,11 @@ VSS STUDENT DEFERMENT MASTERFILE
 if funcdate.today_dayname() in "MonTueWedThuFri":
     import C301_report_student_deferment
     try:
-        C301_report_student_deferment.Studdeb_deferments('curr',funcdate.cur_year())
+        C301_report_student_deferment.Studdeb_deferments('curr', funcdate.cur_year())
     except Exception as e:
         funcsys.ErrMessage(e)
 else:
-    print("VSS STUDENT DEFERMENT MASTERFILE do not run on Saturdays and Sundays")
+    print("VSS STUDENT DEFERMENT MASTER FILE do not run on Saturdays and Sundays")
     funcfile.writelog("SCRIPT: C301_REPORT_STUDENT_DEFERMENT_RUN: DO NOT RUN ON SATURDAYS AND SUNDAYS")
 
 """****************************************************************************
@@ -208,7 +207,6 @@ funcfile.writelog("Now")
 funcfile.writelog("COMPLETED: A000_RUN_ALL")
 funcfile.writelog("-----------------------")
 
-# SEND MAIL TO INDICATE THE SUCCESSFULL COMPLETION OF ALL PYTHON SCRIPTS
-if l_mail == True:
-    funcmail.Mail("python_log")   
-
+# SEND MAIL TO INDICATE THE SUCCESSFUL COMPLETION OF ALL PYTHON SCRIPTS
+if l_mail is True:
+    funcmail.Mail("python_log")
