@@ -1,3 +1,6 @@
+import sys
+import sqlite3
+
 """ Script to test PEOPLE master file data *************************************
 Created on: 1 Mar 2019
 Author: Albert J v Rensburg (NWU21162395)
@@ -14,27 +17,14 @@ END OF SCRIPT
 ENVIRONMENT
 *****************************************************************************"""
 
-# IMPORT PYTHON MODULES
-import csv
-import datetime
-import sqlite3
-import sys
-
 # ADD OWN MODULE PATH
 sys.path.append('S:/_my_modules')
 
 # IMPORT OWN MODULES
-import funccsv
-import funcdate
 import funcfile
-import funcmail
-import funcmysql
-import funcpeople
-import funcstr
-import funcsys
 
 # OPEN THE SCRIPT LOG FILE
-print("-------------------------------")    
+print("-------------------------------")
 print("C001_PEOPLE_TEST_MASTERFILE_DEV")
 print("-------------------------------")
 funcfile.writelog("Now")
@@ -43,11 +33,11 @@ funcfile.writelog("---------------------------------------")
 ilog_severity = 1
 
 # DECLARE VARIABLES
-so_path = "W:/People/" #Source database path
-re_path = "R:/People/" # Results path
-ed_path = "S:/_external_data/" #external data path
-so_file = "People_test_masterfile.sqlite" # Source database
-s_sql = "" # SQL statements
+so_path = "W:/People/"  # Source database path
+re_path = "R:/People/"  # Results path
+ed_path = "S:/_external_data/"  # external data path
+so_file = "People_test_masterfile.sqlite"  # Source database
+s_sql = ""  # SQL statements
 l_export = False
 l_mail = True
 l_record = False
@@ -59,7 +49,7 @@ print("OPEN THE DATABASES")
 funcfile.writelog("OPEN THE DATABASES")
 
 # OPEN THE WORKING DATABASE
-with sqlite3.connect(so_path+so_file) as so_conn:
+with sqlite3.connect(so_path + so_file) as so_conn:
     so_curs = so_conn.cursor()
 funcfile.writelog("%t OPEN DATABASE: PEOPLE_TEST_MASTERFILE.SQLITE")
 
@@ -72,8 +62,6 @@ BEGIN OF SCRIPT
 *****************************************************************************"""
 print("BEGIN OF SCRIPT")
 funcfile.writelog("BEGIN OF SCRIPT")
-
-
 
 """ ****************************************************************************
 END OF SCRIPT
