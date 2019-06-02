@@ -82,7 +82,7 @@
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+    <property name="settings.editor.selected.configurable" value="project.propVCSSupport.Mappings" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -177,7 +177,14 @@
       <option name="project" value="LOCAL" />
       <updated>1559452717989</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Delete from dictionary">
+      <created>1559461686645</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1559461686645</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TodoView" selected-index="1">
@@ -192,7 +199,7 @@
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.49796748" visible="true" weight="0.1974901" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49796748" visible="true" weight="0.1974901" />
       <window_info id="Structure" order="1" sideWeight="0.5020325" side_tool="true" weight="0.22523117" />
       <window_info id="Favorites" order="2" sideWeight="0.5020325" side_tool="true" weight="0.22523117" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -202,7 +209,7 @@
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.3281471" />
-      <window_info anchor="bottom" id="Version Control" order="7" sideWeight="0.4993395" visible="true" weight="0.13861386" />
+      <window_info active="true" anchor="bottom" id="Version Control" order="7" sideWeight="0.4993395" visible="true" weight="0.13861386" />
       <window_info anchor="bottom" id="Terminal" order="8" weight="0.3281471" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.5006605" side_tool="true" weight="0.13861386" />
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.3281471" />
@@ -255,7 +262,8 @@
     <MESSAGE value="Add pyCharm environment" />
     <MESSAGE value="Debug people test masterfile dev environment" />
     <MESSAGE value="Add to dictionary" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add to dictionary" />
+    <MESSAGE value="Delete from dictionary" />
+    <option name="LAST_COMMIT_MESSAGE" value="Delete from dictionary" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/C001_people_test_masterfile_xdev.py">
@@ -332,6 +340,9 @@
           <caret line="2" selection-start-line="2" selection-end-line="2" />
         </state>
       </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/Test3.txt">
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
   </component>
 </project>
