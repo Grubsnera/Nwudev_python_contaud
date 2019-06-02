@@ -1,2 +1,0 @@
-Test text file in /docs
-This is another line
