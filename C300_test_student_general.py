@@ -75,15 +75,15 @@ def Test_student_general():
     sr_file = "X001aa_impo_vsstran"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     SELECT
-      VSS.X010_Studytrans.FBUSENTID AS STUDENT,
-      VSS.X010_Studytrans.FDEBTCOLLECTIONSITE AS CAMPUS,
-      SUBSTR(VSS.X010_Studytrans.TRANSDATE,1,4) AS YEAR
+      TRAN.FBUSENTID AS STUDENT,
+      TRAN.FDEBTCOLLECTIONSITE AS CAMPUS,
+      SUBSTR(TRAN.TRANSDATE,1,4) AS YEAR
     FROM
-      VSS.X010_Studytrans
+      VSS.X010_Studytrans_curr TRAN
     GROUP BY
-      VSS.X010_Studytrans.FBUSENTID
+      TRAN.FBUSENTID
     ORDER BY
-      VSS.X010_Studytrans.FBUSENTID
+      TRAN.FBUSENTID
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     so_curs.execute(s_sql)
