@@ -1,3 +1,5 @@
+import sys
+
 """ SCRIPT TO RUN ON A SCHEDULED TIME FOR ALL PYTHON SCRIPTS *******************
 Author: Albert J van Rensburg (NWU21162395)
 ****************************************************************************"""
@@ -17,9 +19,6 @@ VSS STUDENT MASTER FILE TESTS
 """****************************************************************************
 ENVIRONMENT
 ****************************************************************************"""
-
-# IMPORT PYTHON MODULES
-import sys
 
 # ADD OWN MODULE PATH
 sys.path.append('S:/_my_modules')
