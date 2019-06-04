@@ -1017,130 +1017,115 @@ def People_lists():
     # 12 BUILD ADDRESSES
     print("Build adresses...")
     s_sql = "CREATE TABLE X000_ADDRESSES AS " + """
-    SELECT
-      PER_ADDRESSES.ADDRESS_ID,
-      PER_ADDRESSES.PERSON_ID,
-      PER_ADDRESSES.DATE_FROM,
-      PER_ADDRESSES.DATE_TO,
-      PER_ADDRESSES.STYLE,
-      PER_ADDRESSES.ADDRESS_TYPE,
-      PER_ADDRESSES.PRIMARY_FLAG,
-      PER_ADDRESSES.ADDRESS_LINE1,
-      PER_ADDRESSES.ADDRESS_LINE2,
-      PER_ADDRESSES.ADDRESS_LINE3,
-      PER_ADDRESSES.POSTAL_CODE,
-      PER_ADDRESSES.TOWN_OR_CITY,
-      PER_ADDRESSES.COUNTRY AS COUNTRY_CODE,
-      HR_LOOKUPS.MEANING AS COUNTRY_LOOKUP,
-      PER_ADDRESSES.REGION_1,
-      PER_ADDRESSES.REGION_2,
-      PER_ADDRESSES.REGION_3,
-      PER_ADDRESSES.ADD_INFORMATION14,
-      PER_ADDRESSES.ADD_INFORMATION15,
-      PER_ADDRESSES.ADD_INFORMATION16,
-      PER_ADDRESSES.ADD_INFORMATION17,
-      PER_ADDRESSES.ADD_INFORMATION18,
-      PER_ADDRESSES.CREATION_DATE,
-      PER_ADDRESSES.CREATED_BY,
-      PER_ADDRESSES.LAST_UPDATED_BY,
-      PER_ADDRESSES.LAST_UPDATE_DATE,
-      PER_ADDRESSES.PARTY_ID
-    FROM
-      PER_ADDRESSES
-      LEFT JOIN HR_LOOKUPS ON HR_LOOKUPS.LOOKUP_CODE = PER_ADDRESSES.COUNTRY AND HR_LOOKUPS.LOOKUP_TYPE =
-        'GHR_US_POSTAL_COUNTRY_CODE'
+    Select
+        ADDR.ADDRESS_ID,
+        ADDR.PERSON_ID,
+        ADDR.PARTY_ID,  
+        ADDR.DATE_FROM,
+        ADDR.DATE_TO,
+        ADDR.STYLE,
+        ADDR.ADDRESS_TYPE,
+        ADDR.PRIMARY_FLAG,
+        ADDR.ADDRESS_LINE1,
+        ADDR.ADDRESS_LINE2,
+        ADDR.ADDRESS_LINE3,
+        ADDR.POSTAL_CODE,
+        ADDR.TOWN_OR_CITY,
+        ADDR.COUNTRY AS COUNTRY_CODE,
+        COUN.MEANING AS COUNTRY_LOOKUP,
+        Case
+            When Length(COUN.MEANING) <> 0 Then Upper(COUN.MEANING)
+            When Length(ADDR.COUNTRY) > 0 AND COUN.MEANING Is Null Then Upper(ADDR.COUNTRY)
+            Else 'SOUTH AFRICA'
+        End As COUNTRY_NAME,
+        ADDR.REGION_1,
+        ADDR.REGION_2,
+        ADDR.REGION_3,
+        ADDR.ADD_INFORMATION14,
+        ADDR.ADD_INFORMATION15,
+        ADDR.ADD_INFORMATION16,
+        ADDR.ADD_INFORMATION17,
+        ADDR.ADD_INFORMATION18,
+        '' As ADDRESS_STYLE,
+        '' As ADDRESS_SARS,
+        '' As ADDRESS_HOME,
+        '' As ADDRESS_POST,
+        '' As ADDRESS_OTHE,
+        ADDR.CREATION_DATE,
+        ADDR.CREATED_BY,
+        ADDR.LAST_UPDATED_BY,
+        ADDR.LAST_UPDATE_DATE
+    From
+        PER_ADDRESSES ADDR Left Join
+        HR_LOOKUPS COUN ON COUN.LOOKUP_CODE = ADDR.COUNTRY AND COUN.LOOKUP_TYPE = 'GHR_US_POSTAL_COUNTRY_CODE'
     """
     so_curs.execute("DROP TABLE IF EXISTS X000_ADDRESSES")
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: X000_ADDRESSES")
 
-    # Calc COUNTRY NAME field
-    if "COUNTRY_NAME" not in funccsv.get_colnames_sqlite(so_curs,"X000_ADDRESSES"):
-        so_curs.execute("ALTER TABLE X000_ADDRESSES ADD COUNTRY_NAME TEXT;")
-        so_curs.execute("UPDATE X000_ADDRESSES " + """
-                        SET COUNTRY_NAME = 
-                        CASE
-                           WHEN LENGTH(COUNTRY_LOOKUP) <> 0 THEN UPPER(COUNTRY_LOOKUP)
-                           WHEN LENGTH(COUNTRY_CODE) > 0 AND TYPEOF(COUNTRY_LOOKUP)='null' THEN UPPER(COUNTRY_CODE)
-                           ELSE "SOUTH AFRICA"
-                        END
-                        ;""")
-        so_conn.commit()
-        funcfile.writelog("%t ADD COLUMN: COUNTRY_NAME")
-
     # Calc ADDRESS_STYLE style field
-    if "ADDRESS_STYLE" not in funccsv.get_colnames_sqlite(so_curs,"X000_ADDRESSES"):
-        so_curs.execute("ALTER TABLE X000_ADDRESSES ADD ADDRESS_STYLE TEXT;")
-        so_curs.execute("UPDATE X000_ADDRESSES " + """
-                        SET ADDRESS_STYLE = 
-                        CASE
-                           WHEN STYLE = "ZA_SARS" THEN        UPPER( PRIMARY_FLAG ||'~'|| TRIM(ADDRESS_LINE1||' '||ADDRESS_LINE2)         ||'~'|| TRIM(ADDRESS_LINE3||' '||REGION_1)          ||'~'|| REGION_2      ||'~'|| TOWN_OR_CITY  ||'~'|| POSTAL_CODE ||'~'|| COUNTRY_NAME )
-                           WHEN STYLE = "ZA_POST_STREET" THEN UPPER( PRIMARY_FLAG ||'~'|| TRIM(ADD_INFORMATION15||' '||ADD_INFORMATION16) ||'~'|| TRIM(ADD_INFORMATION17||' '||ADDRESS_LINE1) ||'~'|| ADDRESS_LINE2 ||'~'|| ADDRESS_LINE3 ||'~'|| POSTAL_CODE ||'~'|| COUNTRY_NAME )
-                           WHEN STYLE = "ZA_POST_POBOX"  THEN UPPER( PRIMARY_FLAG ||'~'||                                                   '~'|| TRIM('PO BOX '||ADDRESS_LINE2)              ||'~'                 ||'~'|| ADDRESS_LINE3 ||'~'|| POSTAL_CODE ||'~'|| COUNTRY_NAME )
-                           WHEN STYLE = "ZA_POST_PBAG"   THEN UPPER( PRIMARY_FLAG ||'~'||                                                   '~'|| TRIM('P BAG '||ADDRESS_LINE2)               ||'~'                 ||'~'|| ADDRESS_LINE3 ||'~'|| POSTAL_CODE ||'~'|| COUNTRY_NAME )
-                           WHEN STYLE = "ZA_POST_SSERV"  THEN UPPER( PRIMARY_FLAG ||'~'|| REGION_3                                        ||'~'|| TRIM(ADDRESS_LINE1||' '||ADDRESS_LINE2)     ||'~'                 ||'~'|| ADDRESS_LINE3 ||'~'|| POSTAL_CODE ||'~'|| COUNTRY_NAME )
-                           ELSE                               UPPER( PRIMARY_FLAG ||'~'||                                                   '~'|| ADDRESS_LINE1                               ||'~'|| ADDRESS_LINE2 ||'~'|| ADDRESS_LINE3 ||'~'|| POSTAL_CODE ||'~'|| COUNTRY_NAME )
-                        END
-                        ;""")
-        so_conn.commit()
-        funcfile.writelog("%t ADD COLUMN: ADDRESS_STYLE")
+    so_curs.execute("UPDATE X000_ADDRESSES " + """
+    Set ADDRESS_STYLE = 
+    Case
+       When STYLE = "ZA_SARS" Then        UPPER( PRIMARY_FLAG ||'~'|| TRIM(ADDRESS_LINE1||' '||ADDRESS_LINE2)         ||'~'|| TRIM(ADDRESS_LINE3||' '||REGION_1)          ||'~'|| REGION_2      ||'~'|| TOWN_OR_CITY  ||'~'|| POSTAL_CODE ||'~'|| COUNTRY_NAME )
+       When STYLE = "ZA_POST_STREET" Then UPPER( PRIMARY_FLAG ||'~'|| TRIM(ADD_INFORMATION15||' '||ADD_INFORMATION16) ||'~'|| TRIM(ADD_INFORMATION17||' '||ADDRESS_LINE1) ||'~'|| ADDRESS_LINE2 ||'~'|| ADDRESS_LINE3 ||'~'|| POSTAL_CODE ||'~'|| COUNTRY_NAME )
+       When STYLE = "ZA_POST_POBOX"  Then UPPER( PRIMARY_FLAG ||'~'||                                                   '~'|| TRIM('PO BOX '||ADDRESS_LINE2)              ||'~'                 ||'~'|| ADDRESS_LINE3 ||'~'|| POSTAL_CODE ||'~'|| COUNTRY_NAME )
+       When STYLE = "ZA_POST_PBAG"   Then UPPER( PRIMARY_FLAG ||'~'||                                                   '~'|| TRIM('P BAG '||ADDRESS_LINE2)               ||'~'                 ||'~'|| ADDRESS_LINE3 ||'~'|| POSTAL_CODE ||'~'|| COUNTRY_NAME )
+       When STYLE = "ZA_POST_SSERV"  Then UPPER( PRIMARY_FLAG ||'~'|| REGION_3                                        ||'~'|| TRIM(ADDRESS_LINE1||' '||ADDRESS_LINE2)     ||'~'                 ||'~'|| ADDRESS_LINE3 ||'~'|| POSTAL_CODE ||'~'|| COUNTRY_NAME )
+       Else                               UPPER( PRIMARY_FLAG ||'~'||                                                   '~'|| ADDRESS_LINE1                               ||'~'|| ADDRESS_LINE2 ||'~'|| ADDRESS_LINE3 ||'~'|| POSTAL_CODE ||'~'|| COUNTRY_NAME )
+    End
+    ;""")
+    so_conn.commit()
+    funcfile.writelog("%t ADD COLUMN: ADDRESS_STYLE")
 
     # Calc ADDRESS_SARS field
-    if "ADDRESS_SARS" not in funccsv.get_colnames_sqlite(so_curs,"X000_ADDRESSES"):
-        so_curs.execute("ALTER TABLE X000_ADDRESSES ADD ADDRESS_SARS TEXT;")
-        so_curs.execute("UPDATE X000_ADDRESSES " + """
-                        SET ADDRESS_SARS = 
-                        CASE
-                           WHEN STYLE = "ZA_SARS" THEN ADDRESS_STYLE
-                           ELSE ''
-                        END
-                        ;""")
-        so_conn.commit()
-        funcfile.writelog("%t ADD COLUMN: ADDRESS_SARS")
+    so_curs.execute("UPDATE X000_ADDRESSES " + """
+    SET ADDRESS_SARS = 
+    Case
+       When STYLE = "ZA_SARS" Then ADDRESS_STYLE
+       Else ''
+    End
+    ;""")
+    so_conn.commit()
+    funcfile.writelog("%t ADD COLUMN: ADDRESS_SARS")
         
     # Calc ADDRESS_HOME field
-    if "ADDRESS_HOME" not in funccsv.get_colnames_sqlite(so_curs,"X000_ADDRESSES"):
-        so_curs.execute("ALTER TABLE X000_ADDRESSES ADD ADDRESS_HOME TEXT;")
-        so_curs.execute("UPDATE X000_ADDRESSES " + """
-                        SET ADDRESS_HOME = 
-                        CASE
-                           WHEN STYLE = "ZA_SARS" THEN ''
-                           WHEN ADDRESS_TYPE = "H" THEN ADDRESS_STYLE
-                           ELSE ''
-                        END
-                        ;""")
-        so_conn.commit()
-        funcfile.writelog("%t ADD COLUMN: ADDRESS_HOME")
+    so_curs.execute("UPDATE X000_ADDRESSES " + """
+    Set ADDRESS_HOME = 
+    Case
+        When ADDRESS_TYPE = "ZA_RES" Then ADDRESS_STYLE
+        When ADDRESS_TYPE = "H" Then ADDRESS_STYLE
+        Else ''
+    End
+    ;""")
+    so_conn.commit()
+    funcfile.writelog("%t ADD COLUMN: ADDRESS_HOME")
 
     # Calc ADDRESS_POST field
-    if "ADDRESS_POST" not in funccsv.get_colnames_sqlite(so_curs,"X000_ADDRESSES"):
-        so_curs.execute("ALTER TABLE X000_ADDRESSES ADD ADDRESS_POST TEXT;")
-        so_curs.execute("UPDATE X000_ADDRESSES " + """
-                        SET ADDRESS_POST = 
-                        CASE
-                           WHEN STYLE = "ZA_SARS" THEN ''
-                           WHEN ADDRESS_TYPE = "P" THEN ADDRESS_STYLE
-                           ELSE ''
-                        END
-                        ;""")
-        so_conn.commit()
-        funcfile.writelog("%t ADD COLUMN: ADDRESS_POST")
+    so_curs.execute("UPDATE X000_ADDRESSES " + """
+    SET ADDRESS_POST = 
+    Case
+        When ADDRESS_TYPE = "P" Then ADDRESS_STYLE
+        Else ''
+    End
+    ;""")
+    so_conn.commit()
+    funcfile.writelog("%t ADD COLUMN: ADDRESS_POST")
 
     # Calc ADDRESS_OTHE field
-    if "ADDRESS_OTHE" not in funccsv.get_colnames_sqlite(so_curs,"X000_ADDRESSES"):
-        so_curs.execute("ALTER TABLE X000_ADDRESSES ADD ADDRESS_OTHE TEXT;")
-        so_curs.execute("UPDATE X000_ADDRESSES " + """
-                        SET ADDRESS_OTHE = 
-                        CASE
-                           WHEN STYLE = "ZA_SARS" THEN ''
-                           WHEN ADDRESS_TYPE = "H" THEN ''
-                           WHEN ADDRESS_TYPE = "P" THEN ''
-                           ELSE ADDRESS_STYLE
-                        END
-                        ;""")
-        so_conn.commit()
-        funcfile.writelog("%t ADD COLUMN: ADDRESS_OTHE")
+    so_curs.execute("UPDATE X000_ADDRESSES " + """
+    SET ADDRESS_OTHE = 
+    Case
+       When STYLE = "ZA_SARS" Then ''
+       When ADDRESS_TYPE = "H" Then ''
+       When ADDRESS_TYPE = "P" Then ''
+       When ADDRESS_TYPE = "ZA_RES" Then ''
+       Else ADDRESS_STYLE
+    End
+    ;""")
+    so_conn.commit()
+    funcfile.writelog("%t ADD COLUMN: ADDRESS_OTHE")
 
     # 13 Build ADDRESS SARS ********************************************************
 
