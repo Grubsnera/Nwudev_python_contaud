@@ -115,7 +115,7 @@ def People_test_masterfile():
     """ ****************************************************************************
     TEMPORARY SCRIPT (Delete after one run) 2019-05-31
     *****************************************************************************"""    
-    so_curs.execute("DROP TABLE IF EXISTS X007bx_category_invalid) 
+    # so_curs.execute("DROP TABLE IF EXISTS X007bx_category_invalid) 
 
     """ ****************************************************************************
     BEGIN OF SCRIPT
@@ -260,7 +260,7 @@ def People_test_masterfile():
     # COUNT THE NUMBER OF FINDINGS
     i_find = funcsys.tablerowcount(so_curs,sr_file)
     print("*** Found "+str(i_find)+" exceptions ***")
-    funcfile.writelog("%t FINDING: "+str(i_find)+" ID NUMBER blank finding(s)")
+    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL ID blank finding(s)")
 
     # GET PREVIOUS FINDINGS
     # NOTE ADD CODE
@@ -564,7 +564,7 @@ def People_test_masterfile():
     # COUNT THE NUMBER OF FINDINGS
     i_find = funcsys.tablerowcount(so_curs,sr_file)
     print("*** Found "+str(i_find)+" exceptions ***")
-    funcfile.writelog("%t FINDING: "+str(i_find)+" ID invalid finding(s)")
+    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL ID invalid finding(s)")
 
     # GET PREVIOUS FINDINGS
     # NOTE ADD CODE
@@ -858,7 +858,7 @@ def People_test_masterfile():
     # COUNT THE NUMBER OF FINDINGS
     i_find = funcsys.tablerowcount(so_curs,sr_file)
     print("*** Found "+str(i_find)+" exceptions ***")
-    funcfile.writelog("%t FINDING: "+str(i_find)+" DATE OF BIRTH invalid finding(s)")
+    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL ID DATEBIRTH invalid finding(s)")
 
     # GET PREVIOUS FINDINGS
     # NOTE ADD CODE
@@ -1160,7 +1160,7 @@ def People_test_masterfile():
     # COUNT THE NUMBER OF FINDINGS
     i_find = funcsys.tablerowcount(so_curs,sr_file)
     print("*** Found "+str(i_find)+" exceptions ***")
-    funcfile.writelog("%t FINDING: "+str(i_find)+" SEX invalid finding(s)")
+    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL ID GENDER invalid finding(s)")
 
     # GET PREVIOUS FINDINGS
     # NOTE ADD CODE
@@ -1454,7 +1454,7 @@ def People_test_masterfile():
     # COUNT THE NUMBER OF FINDINGS
     i_find = funcsys.tablerowcount(so_curs,sr_file)
     print("*** Found "+str(i_find)+" exceptions ***")
-    funcfile.writelog("%t FINDING: "+str(i_find)+" ID DUPLICATE finding(s)")
+    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL ID duplicate finding(s)")
 
     # GET PREVIOUS FINDINGS
     # NOTE ADD CODE
@@ -1765,7 +1765,7 @@ def People_test_masterfile():
     # COUNT THE NUMBER OF FINDINGS
     i_find = funcsys.tablerowcount(so_curs,sr_file)
     print("*** Found "+str(i_find)+" exceptions ***")
-    funcfile.writelog("%t FINDING: "+str(i_find)+" PASSPORT blank finding(s)")
+    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL PASSPORT blank finding(s)")
 
     # GET PREVIOUS FINDINGS
     # NOTE ADD CODE
@@ -2053,7 +2053,7 @@ def People_test_masterfile():
     # COUNT THE NUMBER OF FINDINGS
     i_find = funcsys.tablerowcount(so_curs,sr_file)
     print("*** Found "+str(i_find)+" exceptions ***")
-    funcfile.writelog("%t FINDING: "+str(i_find)+" PASSPORT duplicate finding(s)")
+    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL PASSPORT duplicate finding(s)")
 
     # GET PREVIOUS FINDINGS
     # NOTE ADD CODE
@@ -2375,7 +2375,7 @@ def People_test_masterfile():
     # COUNT THE NUMBER OF FINDINGS
     i_find = funcsys.tablerowcount(so_curs,sr_file)
     print("*** Found "+str(i_find)+" exceptions ***")
-    funcfile.writelog("%t FINDING: "+str(i_find)+" BANK duplicate finding(s)")
+    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL BANK duplicate finding(s)")
 
     # GET PREVIOUS FINDINGS
     # NOTE ADD CODE
@@ -2781,7 +2781,7 @@ def People_test_masterfile():
     # COUNT THE NUMBER OF FINDINGS
     i_find = funcsys.tablerowcount(so_curs,sr_file)
     print("*** Found "+str(i_find)+" exceptions ***")
-    funcfile.writelog("%t FINDING: "+str(i_find)+" BANK change finding(s)")
+    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL BANK change finding(s)")
 
     # GET PREVIOUS FINDINGS
     # NOTE ADD CODE
@@ -3128,7 +3128,7 @@ def People_test_masterfile():
     # COUNT THE NUMBER OF FINDINGS
     i_find = funcsys.tablerowcount(so_curs,sr_file)
     print("*** Found "+str(i_find)+" exceptions ***")
-    funcfile.writelog("%t FINDING: "+str(i_find)+" PAYE invalid finding(s)")
+    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL PAYE invalid finding(s)")
 
     # GET PREVIOUS FINDINGS
     # NOTE ADD CODE
@@ -3459,7 +3459,7 @@ def People_test_masterfile():
     # COUNT THE NUMBER OF FINDINGS
     i_find = funcsys.tablerowcount(so_curs,sr_file)
     print("*** Found "+str(i_find)+" exceptions ***")
-    funcfile.writelog("%t FINDING: "+str(i_find)+" PAYE invalid finding(s)")
+    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL PAYE invalid finding(s)")
 
     # GET PREVIOUS FINDINGS
     # NOTE ADD CODE
@@ -3748,7 +3748,7 @@ def People_test_masterfile():
     # COUNT THE NUMBER OF FINDINGS
     i_find = funcsys.tablerowcount(so_curs,sr_file)
     print("*** Found "+str(i_find)+" exceptions ***")
-    funcfile.writelog("%t FINDING: "+str(i_find)+" PAYE duplicate finding(s)")
+    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL PAYE duplicate finding(s)")
 
     # GET PREVIOUS FINDINGS
     # NOTE ADD CODE
@@ -4065,7 +4065,7 @@ def People_test_masterfile():
     # COUNT THE NUMBER OF FINDINGS
     i_find = funcsys.tablerowcount(so_curs,sr_file)
     print("*** Found "+str(i_find)+" exceptions ***")
-    funcfile.writelog("%t FINDING: "+str(i_find)+" NAME duplicate finding(s)")
+    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL NAME duplicate finding(s)")
 
     # GET PREVIOUS FINDINGS
     # NOTE ADD CODE
@@ -4389,7 +4389,7 @@ def People_test_masterfile():
     # COUNT THE NUMBER OF FINDINGS
     i_find = funcsys.tablerowcount(so_curs,sr_file)
     print("*** Found "+str(i_find)+" exceptions ***")
-    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPLOYMENT CATEGORY invalid finding(s)")
+    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL CATEGORY invalid finding(s)")
 
     # GET PREVIOUS FINDINGS
     sr_file = "X007ac_getprev"
@@ -4663,7 +4663,7 @@ def People_test_masterfile():
     # COUNT THE NUMBER OF FINDINGS
     i_find = funcsys.tablerowcount(so_curs,sr_file)
     print("*** Found "+str(i_find)+" exceptions ***")
-    funcfile.writelog("%t FINDING: "+str(i_find)+" ACADEMIC SUPPORT invalid finding(s)")
+    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL ACADSUPP invalid finding(s)")
 
     # GET PREVIOUS FINDINGS
     sr_file = "X007bc_getprev"
@@ -4971,7 +4971,7 @@ def People_test_masterfile():
     # COUNT THE NUMBER OF FINDINGS
     i_find = funcsys.tablerowcount(so_curs,sr_file)
     print("*** Found "+str(i_find)+" exceptions ***")
-    funcfile.writelog("%t FINDING: "+str(i_find)+" GRADE invalid finding(s)")
+    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL GRADE invalid finding(s)")
 
     # GET PREVIOUS FINDINGS
     sr_file = "X007cc_getprev"
@@ -5319,7 +5319,7 @@ def People_test_masterfile():
     # COUNT THE NUMBER OF FINDINGS
     i_find = funcsys.tablerowcount(so_curs,sr_file)
     print("*** Found "+str(i_find)+" exceptions ***")
-    funcfile.writelog("%t FINDING: "+str(i_find)+" LEAVE CODE invalid finding(s)")
+    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL LEAVE CODE invalid finding(s)")
 
     # GET PREVIOUS FINDINGS
     sr_file = "X007dc_getprev"
