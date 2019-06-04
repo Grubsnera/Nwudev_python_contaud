@@ -544,7 +544,7 @@ def Creditor_test_payments():
     # COUNT THE NUMBER OF FINDINGS
     i_find = funcsys.tablerowcount(so_curs,sr_file)
     print("*** Found "+str(i_find)+" exceptions ***")
-    funcfile.writelog("%t FINDING: "+str(i_find)+" PAYMENT duplicate finding(s)")
+    funcfile.writelog("%t FINDING: "+str(i_find)+" VENDOR PAYMENT duplicate finding(s)")
 
     # GET PREVIOUS FINDINGS
     sr_file = "X001ac_paym_getprev"
@@ -919,7 +919,7 @@ def Creditor_test_payments():
     # COUNT THE NUMBER OF FINDINGS
     i_find = funcsys.tablerowcount(so_curs,sr_file)
     print("*** Found "+str(i_find)+" exceptions ***")
-    funcfile.writelog("%t FINDING: "+str(i_find)+" BANK change finding(s)")
+    funcfile.writelog("%t FINDING: "+str(i_find)+" VENDOR BANK verify finding(s)")
 
     # GET PREVIOUS FINDINGS
     sr_file = "X002ac_getprev"
