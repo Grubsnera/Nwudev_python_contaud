@@ -3,7 +3,11 @@ Created on: 12 Apr 2018
 Author: Albert J v Rensburg (NWU21162395)
 """
 
-""" INDEX **********************************************************************
+import csv
+import sqlite3
+import sys
+
+""" Index
 ENVIRONMENT
 OPEN THE DATABASES
 BEGIN OF SCRIPT
@@ -23,25 +27,21 @@ BUILD ASSIGNMENTS AND PEOPLE
 PEOPLE ORGANIZATION STRUCTURE REF (Employee numbers of structure)
 BUILD CURRENT SYSTEM USERS (X000_USER_CURR)
 BUILD PEOPLE LEAVE
-*****************************************************************************"""
+"""
+
 
 def people_lists():
+    """
+    Function to build standard PEOPLE tables from various people tables in oracle
+    :return: Nothing
+    """
 
     """*****************************************************************************
     ENVIRONMENT
     *****************************************************************************"""
 
-    # Import python modules
-    import sys
-
     # Add own module path
     sys.path.append('S:/_my_modules')
-
-    # Import python objects
-    import csv
-    import pyodbc
-    import datetime
-    import sqlite3    
 
     # Import own modules
     import funcdate
@@ -49,26 +49,22 @@ def people_lists():
     import funcfile
     import funcpeople
     import funcmail
-    import funcmysql
-    import funcstr
 
     # Script log file
     funcfile.writelog("Now")
     funcfile.writelog("SCRIPT: B001_PEOPLE_LISTS")
     funcfile.writelog("-------------------------")
-    print("-----------------")    
+    print("-----------------")
     print("B001_PEOPLE_LISTS")
     print("-----------------")
-    ilog_severity = 1
-    
+
     # SQLITE Declare variables 
-    so_path = "W:/People/" #Source database path
-    re_path = "R:/People/"
-    so_file = "People.sqlite" #Source database
-    s_sql = "" #SQL statements
-    l_export = True
-    l_mail = True
-    l_vacuum = False
+    so_path = "W:/People/"  # Source database path
+    so_file = "People.sqlite"  # Source database
+    re_path = "R:/People/"  # Results path
+    l_export: bool = True
+    l_mail: bool = True
+    l_vacuum: bool = False
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -77,10 +73,10 @@ def people_lists():
     funcfile.writelog("OPEN THE DATABASES")
 
     # Open the SQLITE SOURCE file
-    with sqlite3.connect(so_path+so_file) as so_conn:
+    with sqlite3.connect(so_path + so_file) as so_conn:
         so_curs = so_conn.cursor()
     funcfile.writelog("%t OPEN SQLITE DATABASE: PEOPLE.SQLITE")
-    
+
     """ ****************************************************************************
     BEGIN OF SCRIPT
     *****************************************************************************"""
@@ -92,14 +88,13 @@ def people_lists():
     *****************************************************************************"""
     print("BUILD LOOKUPS")
     funcfile.writelog("BUILD LOOKUPS")
-    
+
     # IMPORT LOOKUPS
     print("Import own lookups...")
     ed_path = "S:/_external_data/"
     tb_name = "X000_OWN_HR_LOOKUPS"
     so_curs.execute("DROP TABLE IF EXISTS " + tb_name)
     so_curs.execute("CREATE TABLE " + tb_name + "(LOOKUP TEXT,LOOKUP_CODE TEXT,LOOKUP_DESCRIPTION TEXT)")
-    s_cols = ""
     co = open(ed_path + "001_own_hr_lookups.csv", newline=None)
     co_reader = csv.reader(co)
     for row in co_reader:
@@ -109,7 +104,7 @@ def people_lists():
             s_cols = "INSERT INTO " + tb_name + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "')"
             so_curs.execute(s_cols)
     so_conn.commit()
-    # Close the impoted data file
+    # Close the imported data file
     co.close()
     funcfile.writelog("%t IMPORT TABLE: " + tb_name)
 
@@ -151,15 +146,6 @@ def people_lists():
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: X000_GRADES")
-
-    """
-    # CALC GRADE NAME FIELD
-    if "GRADE_NAME" not in funccsv.get_colnames_sqlite(so_curs,"X000_GRADES"):
-        so_curs.execute("ALTER TABLE X000_GRADES ADD GRADE_NAME TEXT;")
-        so_curs.execute("UPDATE X000_GRADES SET GRADE_NAME = SUBSTR(GRADE_COMB,INSTR(GRADE_COMB,'~')+1,60);")
-        so_conn.commit()
-        funcfile.writelog("%t ADD COLUMNS: GRADE_NAME")
-    """
 
     """ ****************************************************************************
     BUILD POSITIONS
@@ -235,7 +221,7 @@ def people_lists():
 
     funcfile.writelog("%t BUILD TABLE: X000_POSITIONS")
 
-    if "ACAD_SUPP" not in funccsv.get_colnames_sqlite(so_curs,"X000_POSITIONS"):
+    if "ACAD_SUPP" not in funccsv.get_colnames_sqlite(so_curs, "X000_POSITIONS"):
         so_curs.execute("ALTER TABLE X000_POSITIONS ADD COLUMN ACAD_SUPP TEXT;")
         so_curs.execute("UPDATE X000_POSITIONS " + """
                         SET ACAD_SUPP = 
@@ -284,7 +270,7 @@ def people_lists():
     funcfile.writelog("%t BUILD TABLE: X000_JOBS")
 
     # Calc grade name field
-    if "JOB_SEGMENT_NAME" not in funccsv.get_colnames_sqlite(so_curs,"X000_JOBS"):
+    if "JOB_SEGMENT_NAME" not in funccsv.get_colnames_sqlite(so_curs, "X000_JOBS"):
         so_curs.execute("ALTER TABLE X000_JOBS ADD JOB_SEGMENT_NAME TEXT;")
         so_curs.execute("UPDATE X000_JOBS SET JOB_SEGMENT_NAME = SUBSTR(JOB_COMB,INSTR(JOB_COMB,'~')+1,60);")
         so_conn.commit()
@@ -299,30 +285,30 @@ def people_lists():
     print("Build organization...")
     s_sql = "CREATE TABLE X000_ORGANIZATION AS " + """
     SELECT
-      HR_ALL_ORGANIZATION_UNITS.ORGANIZATION_ID,
-      HR_ALL_ORGANIZATION_UNITS.LOCATION_ID,
-      HR_ALL_ORGANIZATION_UNITS.DATE_FROM,
-      HR_ALL_ORGANIZATION_UNITS.DATE_TO,
-      HR_ALL_ORGANIZATION_UNITS.TYPE AS ORG_TYPE,
-      HR_ALL_ORGANIZATION_UNITS.ATTRIBUTE_CATEGORY AS ORG_TYPE_DESC,
-      HR_ALL_ORGANIZATION_UNITS.ATTRIBUTE1,
-      HR_ALL_ORGANIZATION_UNITS.ATTRIBUTE2 AS ORG_NAAM,
-      HR_ALL_ORGANIZATION_UNITS.NAME AS OE_CODE,
+      ORG.ORGANIZATION_ID,
+      ORG.LOCATION_ID,
+      ORG.DATE_FROM,
+      ORG.DATE_TO,
+      ORG.TYPE AS ORG_TYPE,
+      ORG.ATTRIBUTE_CATEGORY AS ORG_TYPE_DESC,
+      ORG.ATTRIBUTE1,
+      ORG.ATTRIBUTE2 AS ORG_NAAM,
+      ORG.NAME AS OE_CODE,
       HR_ORGANIZATION_INFORMATION.ORG_INFORMATION1 AS ORG_NAME,
-      HR_ALL_ORGANIZATION_UNITS.CREATION_DATE,
-      HR_ALL_ORGANIZATION_UNITS.CREATED_BY,
-      HR_ALL_ORGANIZATION_UNITS.LAST_UPDATE_DATE,
-      HR_ALL_ORGANIZATION_UNITS.LAST_UPDATED_BY,
-      HR_ALL_ORGANIZATION_UNITS.LAST_UPDATE_LOGIN,
-      HR_ALL_ORGANIZATION_UNITS.BUSINESS_GROUP_ID,
-      HR_ALL_ORGANIZATION_UNITS.COST_ALLOCATION_KEYFLEX_ID,
-      HR_ALL_ORGANIZATION_UNITS.SOFT_CODING_KEYFLEX_ID,
+      ORG.CREATION_DATE,
+      ORG.CREATED_BY,
+      ORG.LAST_UPDATE_DATE,
+      ORG.LAST_UPDATED_BY,
+      ORG.LAST_UPDATE_LOGIN,
+      ORG.BUSINESS_GROUP_ID,
+      ORG.COST_ALLOCATION_KEYFLEX_ID,
+      ORG.SOFT_CODING_KEYFLEX_ID,
       OWN_HR_LOOKUPS_MAILTO.LOOKUP_DESCRIPTION AS MAILTO
     FROM
-      HR_ALL_ORGANIZATION_UNITS
-      LEFT JOIN HR_ORGANIZATION_INFORMATION ON HR_ORGANIZATION_INFORMATION.ORGANIZATION_ID = HR_ALL_ORGANIZATION_UNITS.ORGANIZATION_ID
+      HR_ALL_ORGANIZATION_UNITS ORG
+      LEFT JOIN HR_ORGANIZATION_INFORMATION ON HR_ORGANIZATION_INFORMATION.ORGANIZATION_ID = ORG.ORGANIZATION_ID
         AND HR_ORGANIZATION_INFORMATION.ORG_INFORMATION_CONTEXT = 'NWU_ORG_INFO'
-      LEFT JOIN X000_OWN_HR_LOOKUPS OWN_HR_LOOKUPS_MAILTO ON OWN_HR_LOOKUPS_MAILTO.LOOKUP_CODE = HR_ALL_ORGANIZATION_UNITS.NAME
+      LEFT JOIN X000_OWN_HR_LOOKUPS OWN_HR_LOOKUPS_MAILTO ON OWN_HR_LOOKUPS_MAILTO.LOOKUP_CODE = ORG.NAME
         AND OWN_HR_LOOKUPS_MAILTO.LOOKUP = 'CHECK_OFFICER'
     """
     so_curs.execute("DROP TABLE IF EXISTS X000_ORGANIZATION")
@@ -334,7 +320,7 @@ def people_lists():
     # Build organization structure step 1*******************************************
     print("Build organization structure step 1...")
     sr_file = "X000_ORG_STRUCT_1"
-    s_sql = "CREATE VIEW "+sr_file+" AS " + """
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
     SELECT
       PER_ORG_STRUCTURE_ELEMENTS.ORG_STRUCTURE_ELEMENT_ID,
       PER_ORG_STRUCTURE_ELEMENTS.BUSINESS_GROUP_ID,
@@ -346,15 +332,15 @@ def people_lists():
     WHERE
       PER_ORG_STRUCTURE_ELEMENTS.ORG_STRUCTURE_VERSION_ID = 61
     ;"""
-    so_curs.execute("DROP VIEW IF EXISTS "+sr_file)
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD VIEW: "+sr_file)
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
     # Build organization structure step 2*******************************************
     print("Build organization structure step 2...")
     sr_file = "X000_ORG_STRUCT_2"
-    s_sql = "CREATE VIEW "+sr_file+" AS " + """
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
     SELECT
       X000_ORG_STRUCT_1.ORG_STRUCTURE_ELEMENT_ID,
       X000_ORG_STRUCT_1.BUSINESS_GROUP_ID,
@@ -368,15 +354,15 @@ def people_lists():
     GROUP BY
       X000_ORG_STRUCT_1.ORG1
     ;"""
-    so_curs.execute("DROP VIEW IF EXISTS "+sr_file)
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD VIEW: "+sr_file)
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
     # Build organization structure step 3*******************************************
     print("Build organization structure step 3...")
     sr_file = "X000_ORG_STRUCT_3"
-    s_sql = "CREATE VIEW "+sr_file+" AS " + """
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
     SELECT
       X000_ORG_STRUCT_2.ORG_STRUCTURE_ELEMENT_ID,
       X000_ORG_STRUCT_2.BUSINESS_GROUP_ID,
@@ -391,15 +377,15 @@ def people_lists():
     GROUP BY
       X000_ORG_STRUCT_2.ORG1  
     ;"""
-    so_curs.execute("DROP VIEW IF EXISTS "+sr_file)
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD VIEW: "+sr_file)
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
     # Build organization structure step 4*******************************************
     print("Build organization structure step 4...")
     sr_file = "X000_ORG_STRUCT_4"
-    s_sql = "CREATE VIEW "+sr_file+" AS " + """
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
     SELECT
       X000_ORG_STRUCT_3.ORG_STRUCTURE_ELEMENT_ID,
       X000_ORG_STRUCT_3.BUSINESS_GROUP_ID,
@@ -415,15 +401,15 @@ def people_lists():
     GROUP BY
       X000_ORG_STRUCT_3.ORG1  
     ;"""
-    so_curs.execute("DROP VIEW IF EXISTS "+sr_file)
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD VIEW: "+sr_file)
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
     # Build organization structure step 5*******************************************
     print("Build organization structure step 5...")
     sr_file = "X000_ORG_STRUCT_5"
-    s_sql = "CREATE VIEW "+sr_file+" AS " + """
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
     SELECT
       X000_ORG_STRUCT_4.ORG_STRUCTURE_ELEMENT_ID,
       X000_ORG_STRUCT_4.BUSINESS_GROUP_ID,
@@ -440,15 +426,15 @@ def people_lists():
     GROUP BY
       X000_ORG_STRUCT_4.ORG1  
     ;"""
-    so_curs.execute("DROP VIEW IF EXISTS "+sr_file)
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD VIEW: "+sr_file)
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
     # Build organization structure step 6*******************************************
     print("Build organization structure step 6...")
     sr_file = "X000_ORG_STRUCT_6"
-    s_sql = "CREATE VIEW "+sr_file+" AS " + """
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
     SELECT
       X000_ORG_STRUCT_5.ORG_STRUCTURE_ELEMENT_ID,
       X000_ORG_STRUCT_5.BUSINESS_GROUP_ID,
@@ -466,15 +452,15 @@ def people_lists():
     GROUP BY
       X000_ORG_STRUCT_5.ORG1  
     ;"""
-    so_curs.execute("DROP VIEW IF EXISTS "+sr_file)
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD VIEW: "+sr_file)
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
     # Build organization structure step 7*******************************************
     print("Build organization structure step 7...")
     sr_file = "X000_ORG_STRUCT_7"
-    s_sql = "CREATE VIEW "+sr_file+" AS " + """
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
     SELECT
       X000_ORG_STRUCT_6.ORG_STRUCTURE_ELEMENT_ID,
       X000_ORG_STRUCT_6.BUSINESS_GROUP_ID,
@@ -493,15 +479,15 @@ def people_lists():
     GROUP BY
       X000_ORG_STRUCT_6.ORG1  
     ;"""
-    so_curs.execute("DROP VIEW IF EXISTS "+sr_file)
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD VIEW: "+sr_file)
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
     # Build organization structure *************************************************
     print("Build organization structure...")
     sr_file = "X000_ORGANIZATION_STRUCT"
-    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
     SELECT
       X000_ORG_STRUCT_7.ORG_STRUCTURE_ELEMENT_ID,
       X000_ORG_STRUCT_7.BUSINESS_GROUP_ID,
@@ -565,13 +551,13 @@ def people_lists():
       LEFT JOIN X000_ORGANIZATION ORG7 ON ORG7.ORGANIZATION_ID = X000_ORG_STRUCT_7.ORG7
       LEFT JOIN X000_ORGANIZATION ORG8 ON ORG8.ORGANIZATION_ID = X000_ORG_STRUCT_7.ORG8
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-    if "FACULTY" not in funccsv.get_colnames_sqlite(so_curs,sr_file):
-        so_curs.execute("ALTER TABLE "+sr_file+" ADD COLUMN FACULTY TEXT;")
+    if "FACULTY" not in funccsv.get_colnames_sqlite(so_curs, sr_file):
+        so_curs.execute("ALTER TABLE " + sr_file + " ADD COLUMN FACULTY TEXT;")
         so_curs.execute("UPDATE " + sr_file + """
                         SET FACULTY = 
                         CASE
@@ -589,8 +575,8 @@ def people_lists():
         so_conn.commit()
         funcfile.writelog("%t ADD COLUMNS: FACULTY")
 
-    if "DIVISION" not in funccsv.get_colnames_sqlite(so_curs,sr_file):
-        so_curs.execute("ALTER TABLE "+sr_file+" ADD COLUMN DIVISION TEXT;")
+    if "DIVISION" not in funccsv.get_colnames_sqlite(so_curs, sr_file):
+        so_curs.execute("ALTER TABLE " + sr_file + " ADD COLUMN DIVISION TEXT;")
         so_curs.execute("UPDATE " + sr_file + """
                         SET DIVISION = 
                         CASE
@@ -617,7 +603,7 @@ def people_lists():
     # BUILD PERSONAL PAY BANK ACCOUNT LIST
     print("Build personal pay bank account number list...")
     sr_file = "X000_PAY_ACCOUNTS"
-    s_sql = "CREATE VIEW "+sr_file+" AS " + """
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
     Select
         PAYM.ASSIGNMENT_ID,
         PAYM.EFFECTIVE_START_DATE,
@@ -647,10 +633,10 @@ def people_lists():
         HR_LOOKUPS HRTY On HRTY.LOOKUP_TYPE = 'ZA_ACCOUNT_TYPE' And HRTY.LOOKUP_CODE = EXTA.SEGMENT2 Left Join
         HR_LOOKUPS HRRE On HRRE.LOOKUP_TYPE = 'ZA_ACCOUNT_HOLDER_RELATION' And HRRE.LOOKUP_CODE = EXTA.SEGMENT6
     ;"""
-    so_curs.execute("DROP VIEW IF EXISTS "+sr_file)
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD VIEW: "+sr_file)    
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
     """ ****************************************************************************
     BUILD PERIODS OF SERVICE
@@ -767,8 +753,8 @@ def people_lists():
     """
 
     so_curs.execute("DROP VIEW IF EXISTS X000_ASSIGNMENTS")
-    s_sql = s_sql.replace("%CYEARB%",funcdate.cur_yearbegin())
-    s_sql = s_sql.replace("%CYEARE%",funcdate.cur_yearend())
+    s_sql = s_sql.replace("%CYEARB%", funcdate.cur_yearbegin())
+    s_sql = s_sql.replace("%CYEARE%", funcdate.cur_yearend())
     so_curs.execute("DROP VIEW IF EXISTS X000_PER_ALL_ASSIGNMENTS")
     so_curs.execute(s_sql)
     so_conn.commit()
@@ -784,83 +770,83 @@ def people_lists():
     print("Build per all people...")
     s_sql = "CREATE VIEW X000_PER_ALL_PEOPLE AS " + """
     SELECT
-      PER_ALL_PEOPLE_F.PERSON_ID,
-      PER_ALL_PEOPLE_F.PARTY_ID,
-      PER_ALL_PEOPLE_F.EMPLOYEE_NUMBER,
-      PER_ALL_PEOPLE_F.FULL_NAME,
-      PER_ALL_PEOPLE_F.DATE_OF_BIRTH,
-      PER_ALL_PEOPLE_F.SEX,
-      PER_ALL_PEOPLE_F.NATIONAL_IDENTIFIER,
-      PER_ALL_PEOPLE_F.EFFECTIVE_START_DATE,
-      PER_ALL_PEOPLE_F.EFFECTIVE_END_DATE,
-      PER_ALL_PEOPLE_F.EMAIL_ADDRESS,
-      PER_ALL_PEOPLE_F.TITLE,
+      PEOP.PERSON_ID,
+      PEOP.PARTY_ID,
+      PEOP.EMPLOYEE_NUMBER,
+      PEOP.FULL_NAME,
+      PEOP.DATE_OF_BIRTH,
+      PEOP.SEX,
+      PEOP.NATIONAL_IDENTIFIER,
+      PEOP.EFFECTIVE_START_DATE,
+      PEOP.EFFECTIVE_END_DATE,
+      PEOP.EMAIL_ADDRESS,
+      PEOP.TITLE,
       HR_LOOKUPS_TITLE.MEANING AS TITLE_FULL,
-      PER_ALL_PEOPLE_F.FIRST_NAME,
-      PER_ALL_PEOPLE_F.MIDDLE_NAMES,
-      PER_ALL_PEOPLE_F.LAST_NAME,
-      PER_ALL_PEOPLE_F.PERSON_TYPE_ID,
+      PEOP.FIRST_NAME,
+      PEOP.MIDDLE_NAMES,
+      PEOP.LAST_NAME,
+      PEOP.PERSON_TYPE_ID,
       PER_PERSON_TYPES.USER_PERSON_TYPE,
-      PER_ALL_PEOPLE_F.MARITAL_STATUS,
-      PER_ALL_PEOPLE_F.NATIONALITY,
+      PEOP.MARITAL_STATUS,
+      PEOP.NATIONALITY,
       HR_LOOKUPS_NATIONALITY.MEANING AS NATIONALITY_NAME,
-      PER_ALL_PEOPLE_F.ATTRIBUTE1,
-      PER_ALL_PEOPLE_F.ATTRIBUTE2 AS INT_MAIL,
-      PER_ALL_PEOPLE_F.ATTRIBUTE3,
-      PER_ALL_PEOPLE_F.ATTRIBUTE4 AS KNOWN_NAME,
-      PER_ALL_PEOPLE_F.ATTRIBUTE5,
-      PER_ALL_PEOPLE_F.ATTRIBUTE6,
-      PER_ALL_PEOPLE_F.ATTRIBUTE7,
-      PER_ALL_PEOPLE_F.PER_INFORMATION_CATEGORY,
-      PER_ALL_PEOPLE_F.PER_INFORMATION1 AS TAX_NUMBER,
-      PER_ALL_PEOPLE_F.PER_INFORMATION2,
-      PER_ALL_PEOPLE_F.PER_INFORMATION3,
-      PER_ALL_PEOPLE_F.PER_INFORMATION4 AS RACE_CODE,
+      PEOP.ATTRIBUTE1,
+      PEOP.ATTRIBUTE2 AS INT_MAIL,
+      PEOP.ATTRIBUTE3,
+      PEOP.ATTRIBUTE4 AS KNOWN_NAME,
+      PEOP.ATTRIBUTE5,
+      PEOP.ATTRIBUTE6,
+      PEOP.ATTRIBUTE7,
+      PEOP.PER_INFORMATION_CATEGORY,
+      PEOP.PER_INFORMATION1 AS TAX_NUMBER,
+      PEOP.PER_INFORMATION2,
+      PEOP.PER_INFORMATION3,
+      PEOP.PER_INFORMATION4 AS RACE_CODE,
       HR_LOOKUPS_RACE.MEANING AS RACE_DESC,  
-      PER_ALL_PEOPLE_F.PER_INFORMATION5,
-      PER_ALL_PEOPLE_F.PER_INFORMATION6 AS LANG_CODE,
+      PEOP.PER_INFORMATION5,
+      PEOP.PER_INFORMATION6 AS LANG_CODE,
       HR_LOOKUPS_LANG.MEANING AS LANG_DESC,  
-      PER_ALL_PEOPLE_F.PER_INFORMATION7,
-      PER_ALL_PEOPLE_F.PER_INFORMATION8,
-      PER_ALL_PEOPLE_F.PER_INFORMATION9,
-      PER_ALL_PEOPLE_F.PER_INFORMATION10,
-      PER_ALL_PEOPLE_F.PER_INFORMATION11,
-      PER_ALL_PEOPLE_F.PER_INFORMATION12,
-      PER_ALL_PEOPLE_F.PER_INFORMATION13,
-      PER_ALL_PEOPLE_F.PER_INFORMATION14,
-      PER_ALL_PEOPLE_F.CREATED_BY,
-      PER_ALL_PEOPLE_F.CREATION_DATE,
-      PER_ALL_PEOPLE_F.LAST_UPDATE_DATE,
-      PER_ALL_PEOPLE_F.LAST_UPDATED_BY,
-      PER_ALL_PEOPLE_F.LAST_UPDATE_LOGIN,
-      PER_ALL_PEOPLE_F.ORIGINAL_DATE_OF_HIRE,
-      PER_ALL_PEOPLE_F.START_DATE,
-      PER_ALL_PEOPLE_F.DATE_OF_DEATH,
-      PER_ALL_PEOPLE_F.RECEIPT_OF_DEATH_CERT_DATE,
-      PER_ALL_PEOPLE_F.OBJECT_VERSION_NUMBER,
-      PER_ALL_PEOPLE_F.BUSINESS_GROUP_ID,
-      PER_ALL_PEOPLE_F.CURRENT_EMP_OR_APL_FLAG,
-      PER_ALL_PEOPLE_F.CURRENT_EMPLOYEE_FLAG,
-      PER_ALL_PEOPLE_F.DATE_EMPLOYEE_DATA_VERIFIED,
-      PER_ALL_PEOPLE_F.RESUME_EXISTS,
-      PER_ALL_PEOPLE_F.RESUME_LAST_UPDATED,
-      PER_ALL_PEOPLE_F.REGISTERED_DISABLED_FLAG,
-      PER_ALL_PEOPLE_F.SECOND_PASSPORT_EXISTS,
-      PER_ALL_PEOPLE_F.PREVIOUS_LAST_NAME
+      PEOP.PER_INFORMATION7,
+      PEOP.PER_INFORMATION8,
+      PEOP.PER_INFORMATION9,
+      PEOP.PER_INFORMATION10,
+      PEOP.PER_INFORMATION11,
+      PEOP.PER_INFORMATION12,
+      PEOP.PER_INFORMATION13,
+      PEOP.PER_INFORMATION14,
+      PEOP.CREATED_BY,
+      PEOP.CREATION_DATE,
+      PEOP.LAST_UPDATE_DATE,
+      PEOP.LAST_UPDATED_BY,
+      PEOP.LAST_UPDATE_LOGIN,
+      PEOP.ORIGINAL_DATE_OF_HIRE,
+      PEOP.START_DATE,
+      PEOP.DATE_OF_DEATH,
+      PEOP.RECEIPT_OF_DEATH_CERT_DATE,
+      PEOP.OBJECT_VERSION_NUMBER,
+      PEOP.BUSINESS_GROUP_ID,
+      PEOP.CURRENT_EMP_OR_APL_FLAG,
+      PEOP.CURRENT_EMPLOYEE_FLAG,
+      PEOP.DATE_EMPLOYEE_DATA_VERIFIED,
+      PEOP.RESUME_EXISTS,
+      PEOP.RESUME_LAST_UPDATED,
+      PEOP.REGISTERED_DISABLED_FLAG,
+      PEOP.SECOND_PASSPORT_EXISTS,
+      PEOP.PREVIOUS_LAST_NAME
     FROM
-      PER_ALL_PEOPLE_F
-      LEFT JOIN PER_PERSON_TYPES ON PER_PERSON_TYPES.PERSON_TYPE_ID = PER_ALL_PEOPLE_F.PERSON_TYPE_ID
-      LEFT JOIN HR_LOOKUPS HR_LOOKUPS_NATIONALITY ON HR_LOOKUPS_NATIONALITY.LOOKUP_CODE = PER_ALL_PEOPLE_F.NATIONALITY AND
-        HR_LOOKUPS_NATIONALITY.LOOKUP_TYPE = 'NATIONALITY'  
-      LEFT JOIN HR_LOOKUPS HR_LOOKUPS_TITLE ON HR_LOOKUPS_TITLE.LOOKUP_CODE = PER_ALL_PEOPLE_F.TITLE AND
-        HR_LOOKUPS_TITLE.LOOKUP_TYPE = 'TITLE'
-      LEFT JOIN HR_LOOKUPS HR_LOOKUPS_RACE ON HR_LOOKUPS_RACE.LOOKUP_CODE = PER_ALL_PEOPLE_F.PER_INFORMATION4 AND
-        HR_LOOKUPS_RACE.LOOKUP_TYPE = 'ZA_RACE'
-      LEFT JOIN HR_LOOKUPS HR_LOOKUPS_LANG ON HR_LOOKUPS_LANG.LOOKUP_CODE = PER_ALL_PEOPLE_F.PER_INFORMATION6 AND
+      PER_ALL_PEOPLE_F PEOP Left Join
+      PER_PERSON_TYPES ON PER_PERSON_TYPES.PERSON_TYPE_ID = PEOP.PERSON_TYPE_ID Left Join
+      HR_LOOKUPS HR_LOOKUPS_NATIONALITY ON HR_LOOKUPS_NATIONALITY.LOOKUP_CODE = PEOP.NATIONALITY AND
+        HR_LOOKUPS_NATIONALITY.LOOKUP_TYPE = 'NATIONALITY' Left Join  
+      HR_LOOKUPS HR_LOOKUPS_TITLE ON HR_LOOKUPS_TITLE.LOOKUP_CODE = PEOP.TITLE AND
+        HR_LOOKUPS_TITLE.LOOKUP_TYPE = 'TITLE' Left Join
+      HR_LOOKUPS HR_LOOKUPS_RACE ON HR_LOOKUPS_RACE.LOOKUP_CODE = PEOP.PER_INFORMATION4 AND
+        HR_LOOKUPS_RACE.LOOKUP_TYPE = 'ZA_RACE' Left Join
+      HR_LOOKUPS HR_LOOKUPS_LANG ON HR_LOOKUPS_LANG.LOOKUP_CODE = PEOP.PER_INFORMATION6 AND
         HR_LOOKUPS_LANG.LOOKUP_TYPE = 'ZA_LANG_PREF'
     ORDER BY
-      PER_ALL_PEOPLE_F.EMPLOYEE_NUMBER,
-      PER_ALL_PEOPLE_F.EFFECTIVE_START_DATE
+      PEOP.EMPLOYEE_NUMBER,
+      PEOP.EFFECTIVE_START_DATE
     """
     so_curs.execute("DROP VIEW IF EXISTS X000_PER_ALL_PEOPLE")
     so_curs.execute(s_sql)
@@ -877,7 +863,7 @@ def people_lists():
 
     print("Build person types...")
     sr_file = "X000_PER_PEOPLE_TYPES"
-    s_sql = "CREATE VIEW "+sr_file+" AS " + """
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
     SELECT
       PER_PERSON_TYPE_USAGES_F.PERSON_TYPE_USAGE_ID,
       PER_PERSON_TYPE_USAGES_F.PERSON_ID,
@@ -892,10 +878,10 @@ def people_lists():
       PER_PERSON_TYPE_USAGES_F
       LEFT JOIN PER_PERSON_TYPES ON PER_PERSON_TYPES.PERSON_TYPE_ID = PER_PERSON_TYPE_USAGES_F.PERSON_TYPE_ID
     ;"""
-    so_curs.execute("DROP VIEW IF EXISTS "+sr_file)
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD VIEW: "+sr_file)
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
     """ ****************************************************************************
     COUNT RECORDS
@@ -1059,7 +1045,7 @@ def people_lists():
     ;""")
     so_conn.commit()
     funcfile.writelog("%t ADD COLUMN: ADDRESS_SARS")
-        
+
     # Calc ADDRESS_HOME field
     so_curs.execute("UPDATE X000_ADDRESSES " + """
     Set ADDRESS_HOME = 
@@ -1205,8 +1191,9 @@ def people_lists():
       PER_PHONES.PHONE_NUMBER AS PHONE_MOBI
     FROM
       PER_PHONES
-      INNER JOIN X001_ASSIGNMENT_CURR ON PER_PHONES.PARENT_ID = X001_ASSIGNMENT_CURR.PERSON_ID AND PER_PHONES.DATE_FROM <=
-        X001_ASSIGNMENT_CURR.DATE_EMP_LOOKUP AND PER_PHONES.DATE_TO >= X001_ASSIGNMENT_CURR.DATE_EMP_LOOKUP
+      INNER JOIN X001_ASSIGNMENT_CURR ON PER_PHONES.PARENT_ID = X001_ASSIGNMENT_CURR.PERSON_ID AND
+        PER_PHONES.DATE_FROM <= X001_ASSIGNMENT_CURR.DATE_EMP_LOOKUP AND
+        PER_PHONES.DATE_TO >= X001_ASSIGNMENT_CURR.DATE_EMP_LOOKUP
     WHERE    
          PER_PHONES.PHONE_TYPE = 'M'
     ORDER BY
@@ -1258,8 +1245,9 @@ def people_lists():
       PER_PHONES.PHONE_NUMBER AS PHONE_WORK
     FROM
       PER_PHONES
-      INNER JOIN X001_ASSIGNMENT_CURR ON PER_PHONES.PARENT_ID = X001_ASSIGNMENT_CURR.PERSON_ID AND PER_PHONES.DATE_FROM <=
-        X001_ASSIGNMENT_CURR.DATE_EMP_LOOKUP AND PER_PHONES.DATE_TO >= X001_ASSIGNMENT_CURR.DATE_EMP_LOOKUP
+      INNER JOIN X001_ASSIGNMENT_CURR ON PER_PHONES.PARENT_ID = X001_ASSIGNMENT_CURR.PERSON_ID AND
+        PER_PHONES.DATE_FROM <= X001_ASSIGNMENT_CURR.DATE_EMP_LOOKUP AND
+        PER_PHONES.DATE_TO >= X001_ASSIGNMENT_CURR.DATE_EMP_LOOKUP
     WHERE    
          PER_PHONES.PHONE_TYPE = 'W1'
     ORDER BY
@@ -1311,8 +1299,9 @@ def people_lists():
       PER_PHONES.PHONE_NUMBER AS PHONE_HOME
     FROM
       PER_PHONES
-      INNER JOIN X001_ASSIGNMENT_CURR ON PER_PHONES.PARENT_ID = X001_ASSIGNMENT_CURR.PERSON_ID AND PER_PHONES.DATE_FROM <=
-        X001_ASSIGNMENT_CURR.DATE_EMP_LOOKUP AND PER_PHONES.DATE_TO >= X001_ASSIGNMENT_CURR.DATE_EMP_LOOKUP
+      INNER JOIN X001_ASSIGNMENT_CURR ON PER_PHONES.PARENT_ID = X001_ASSIGNMENT_CURR.PERSON_ID AND
+        PER_PHONES.DATE_FROM <= X001_ASSIGNMENT_CURR.DATE_EMP_LOOKUP AND
+        PER_PHONES.DATE_TO >= X001_ASSIGNMENT_CURR.DATE_EMP_LOOKUP
     WHERE    
          PER_PHONES.PHONE_TYPE = 'H1'
     ORDER BY
@@ -1353,13 +1342,15 @@ def people_lists():
     BUILD ASSIGNMENTS AND PEOPLE
     *****************************************************************************"""
     print("BUILD ASSIGNMENTS AND PEOPLE")
-    funcfile.writelog("BUILD ASSIGNMENTS AND PEOPLE")    
+    funcfile.writelog("BUILD ASSIGNMENTS AND PEOPLE")
 
     # Build current year assignment round 1 ******************************************
-    funcpeople.Assign01(so_conn,"X001_ASSIGNMENT_CURR_01",funcdate.cur_yearbegin(),funcdate.cur_yearend(),funcdate.today(),"Build current year assignments 1...")
+    funcpeople.Assign01(so_conn, "X001_ASSIGNMENT_CURR_01", funcdate.cur_yearbegin(), funcdate.cur_yearend(),
+                        funcdate.today(), "Build current year assignments 1...")
     # Build current year assignment round 2 ******************************************
-    funcpeople.Assign02(so_conn,"X001_ASSIGNMENT_CURR","X001_ASSIGNMENT_CURR_01","Build current year assignments 2...")
-    if l_export == True:
+    funcpeople.Assign02(so_conn, "X001_ASSIGNMENT_CURR", "X001_ASSIGNMENT_CURR_01",
+                        "Build current year assignments 2...")
+    if l_export:
         # Data export
         sr_file = "X001_ASSIGNMENT_CURR"
         sr_filet = sr_file
@@ -1374,13 +1365,15 @@ def people_lists():
         funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_filet)
 
     # Build previous year assignment round 1 ******************************************
-    funcpeople.Assign01(so_conn,"X001_ASSIGNMENT_PREV_01",funcdate.prev_yearbegin(),funcdate.prev_yearend(),funcdate.prev_yearend(),"Build previous year assignments 1...")
+    funcpeople.Assign01(so_conn, "X001_ASSIGNMENT_PREV_01", funcdate.prev_yearbegin(), funcdate.prev_yearend(),
+                        funcdate.prev_yearend(), "Build previous year assignments 1...")
     # Build previous year assignment round 2 ******************************************
-    funcpeople.Assign02(so_conn,"X001_ASSIGNMENT_PREV","X001_ASSIGNMENT_PREV_01","Build previous year assignments 2...")
+    funcpeople.Assign02(so_conn, "X001_ASSIGNMENT_PREV", "X001_ASSIGNMENT_PREV_01",
+                        "Build previous year assignments 2...")
 
     # Build PEOPLE CURRENT ******************************************************
-    funcpeople.People01(so_conn,"X002_PEOPLE_CURR","X001_ASSIGNMENT_CURR","CURR","Build current people...","Y")
-    if l_export == True:
+    funcpeople.People01(so_conn, "X002_PEOPLE_CURR", "X001_ASSIGNMENT_CURR", "CURR", "Build current people...", "Y")
+    if l_export:
         # Data export
         sr_file = "X002_PEOPLE_CURR"
         sr_filet = sr_file
@@ -1395,10 +1388,12 @@ def people_lists():
         funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_filet)
 
     # Build PEOPLE CURRENT ******************************************************
-    funcpeople.People01(so_conn,"X002_PEOPLE_CURR_YEAR","X001_ASSIGNMENT_CURR","CURR","Build current year people ...","N")
+    funcpeople.People01(so_conn, "X002_PEOPLE_CURR_YEAR", "X001_ASSIGNMENT_CURR", "CURR",
+                        "Build current year people ...", "N")
 
     # Build PEOPLE PREVIOUS YEAR ************************************************
-    funcpeople.People01(so_conn,"X002_PEOPLE_PREV_YEAR","X001_ASSIGNMENT_PREV","CURR","Build previous year people...","N")
+    funcpeople.People01(so_conn, "X002_PEOPLE_PREV_YEAR", "X001_ASSIGNMENT_PREV", "CURR",
+                        "Build previous year people...", "N")
 
     # Build PEOPLE ORGANIZATION STRUCTURE REF **********************************
     print("Build reference people organogram...")
@@ -1489,8 +1484,7 @@ def people_lists():
 
     funcfile.writelog("%t BUILD TABLE: X003_PEOPLE_SUMM")
 
-    if l_export == True:
-        
+    if l_export:
         # Data export
         sr_file = "X003_PEOPLE_SUMM"
         sr_filet = sr_file
@@ -1509,10 +1503,10 @@ def people_lists():
 
         funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_filet)
 
-    if l_mail == True:
-        funcmail.Mail("hr_people_summary")    
+    if l_mail:
+        funcmail.Mail("hr_people_summary")
 
-    # 30 Build PEOPLE ORGANIZATION MONTH *******************************************
+        # 30 Build PEOPLE ORGANIZATION MONTH *******************************************
 
     print("Build month people organogram...")
 
@@ -1584,8 +1578,7 @@ def people_lists():
 
     funcfile.writelog("%t BUILD TABLE: X003_PEOPLE_ORGA")
 
-    if l_export == True:
-        
+    if l_export:
         # Data export
         sr_file = "X003_PEOPLE_ORGA"
         sr_filet = sr_file
@@ -1604,7 +1597,7 @@ def people_lists():
 
         funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_filet)
 
-    if l_mail == True:
+    if l_mail:
         funcmail.Mail("hr_people_organogram")
 
     """ ****************************************************************************
@@ -1616,7 +1609,7 @@ def people_lists():
     # LOOKUP PARTY ID FOR USERS
     print("Lookup party id for users...")
     sr_file = "X000_USER_CURR_PARTY"
-    s_sql = "CREATE VIEW "+sr_file+" AS " + """
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
     Select
         FND_USER.USER_ID,
         FND_USER.USER_NAME,
@@ -1629,15 +1622,15 @@ def people_lists():
         FND_USER.PERSON_PARTY_ID = 0 And
         Cast(FND_USER.USER_NAME As Integer) > 0
     ;"""
-    so_curs.execute("DROP VIEW IF EXISTS "+sr_file)
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD VIEW: "+sr_file)
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
     # LOOKUP PARTY ID FOR USERS
     print("Add party id for users...")
     sr_file = "FND_USER_PARTY"
-    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         FND_USER.*,
         X000_USER_CURR_PARTY.PARTY_ID As PEOPLE_PARTY_ID
@@ -1645,10 +1638,10 @@ def people_lists():
         FND_USER Left Join
         X000_USER_CURR_PARTY On X000_USER_CURR_PARTY.USER_ID = FND_USER.USER_ID
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: "+sr_file) 
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # CALCULATE USER FIELD
     print("Calculate party column...")
@@ -1666,7 +1659,7 @@ def people_lists():
     # BUILD CURRENT USERS
     print("Build current users...")
     sr_file = "X000_USER_CURR"
-    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         FND_USER_PARTY.USER_ID,
         FND_USER_PARTY.USER_NAME,
@@ -1679,10 +1672,10 @@ def people_lists():
         FND_USER_PARTY Inner Join
         X002_PEOPLE_CURR On X002_PEOPLE_CURR.PARTY_ID = FND_USER_PARTY.CALC_PARTY_ID
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: "+sr_file)        
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # Delete some unncessary files *************************************************
 
@@ -1705,12 +1698,11 @@ def people_lists():
     # PEOPLE_LEAVE Database ********************************************************
 
     # Declare variables
-    so_path = "W:/People_leave/" #Source database path
-    so_file = "People_leave.sqlite" #Source database
-    s_sql = "" #SQL statements
+    so_path = "W:/People_leave/"  # Source database path
+    so_file = "People_leave.sqlite"  # Source database
 
     # Open the SOURCE file
-    with sqlite3.connect(so_path+so_file) as so_conn:
+    with sqlite3.connect(so_path + so_file) as so_conn:
         so_curs = so_conn.cursor()
     funcfile.writelog("%t OPEN DATABASE: PEOPLE_LEAVE.SQLITE")
     so_curs.execute("ATTACH DATABASE 'W:/PEOPLE/People.sqlite' AS 'PEOPLE'")
@@ -1830,7 +1822,7 @@ def people_lists():
     funcfile.writelog("%t BUILD TABLE:  X102_PER_ABSENCE_ATTENDANCE_TYPES")
 
     # Close the connection *********************************************************
-    if l_vacuum == True:
+    if l_vacuum:
         print("Vacuum the database...")
         so_conn.commit()
         so_conn.execute('VACUUM')
