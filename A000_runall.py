@@ -190,7 +190,7 @@ MYSQL LISTS
 if funcdate.today_dayname() in "TueWedThuFriSat":
     import B005_mysql_lists
     try:
-        B005_mysql_lists.Mysql_lists()
+        B005_mysql_lists.mysql_lists()
     except Exception as e:
         funcsys.ErrMessage(e)
 else:

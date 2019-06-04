@@ -20,7 +20,7 @@ l_mail = True
 
 # People lists
 try:
-    B005_mysql_lists.Mysql_lists()
+    B005_mysql_lists.mysql_lists()
 except Exception as e:
     funcsys.ErrMessage(e)
 
