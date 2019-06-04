@@ -1,3 +1,7 @@
+import csv
+import sqlite3
+import sys
+
 """ Script to test PEOPLE master file data *************************************
 Created on: 1 Mar 2019
 Author: Albert J v Rensburg (NWU21162395)
@@ -14,23 +18,11 @@ End OF SCRIPT
 ENVIRONMENT
 *****************************************************************************"""
 
-# IMPORT PYTHON MODULES
-import csv
-import datetime
-import sqlite3
-import sys
-
 # ADD OWN MODULE PATH
 sys.path.append('S:/_my_modules')
 
 # IMPORT OWN MODULES
-import funccsv
-import funcdate
 import funcfile
-import funcmail
-import funcmysql
-import funcpeople
-import funcstr
 
 # OPEN THE SCRIPT LOG FILE
 print("-----------------")    
