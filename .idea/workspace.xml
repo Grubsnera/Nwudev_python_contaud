@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="a22c2837-4c6f-4e70-98f1-ab4be28e1495" name="Default Changelist" comment="">
       <change beforePath="S:/.idea/workspace.xml" beforeDir="false" afterPath="S:/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="S:/C001_people_test_masterfile_xdev.py" beforeDir="false" afterPath="S:/C001_people_test_masterfile_xdev.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -33,9 +34,9 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="S:/C001_people_test_masterfile_xdev.py" />
         <option value="S:/A000_runall.py" />
         <option value="S:/B001_people_lists_xdev.py" />
+        <option value="S:/C001_people_test_masterfile_xdev.py" />
       </list>
     </option>
   </component>
@@ -159,7 +160,7 @@
     <option name="localTasksCounter" value="6" />
     <servers />
   </component>
-  <component name="TodoView">
+  <component name="TodoView" selected-index="1">
     <todo-panel id="selected-file">
       <is-autoscroll-to-source value="true" />
     </todo-panel>
@@ -256,16 +257,6 @@
     <option name="LAST_COMMIT_MESSAGE" value="Standardize script" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://S:/C001_people_test_masterfile_xdev.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="558">
-          <caret line="65" selection-start-line="65" selection-end-line="65" />
-          <folding>
-            <element signature="e#0#10#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://S:/.idea/workspace.xml">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -280,6 +271,16 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="460">
           <caret line="46" column="6" selection-start-line="46" selection-start-column="6" selection-end-line="46" selection-end-column="6" />
+          <folding>
+            <element signature="e#0#10#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://S:/C001_people_test_masterfile_xdev.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="466">
+          <caret line="77" lean-forward="true" selection-start-line="77" selection-end-line="77" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
           </folding>
