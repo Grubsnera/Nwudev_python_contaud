@@ -618,7 +618,7 @@ def People_test_conflict():
     # COUNT THE NUMBER OF FINDINGS
     i_find = funcsys.tablerowcount(so_curs,sr_file)
     print("*** Found "+str(i_find)+" exceptions ***")
-    funcfile.writelog("%t FINDING: "+str(i_find)+" SHARED BANK ACCOUNT finding(s)")
+    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL BANK conflict finding(s)")
 
     # GET PREVIOUS FINDINGS
     sr_file = "X100ac_bank_getprev"
