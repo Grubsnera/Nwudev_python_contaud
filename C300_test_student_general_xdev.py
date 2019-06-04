@@ -52,37 +52,7 @@ funcfile.writelog("%t ATTACH DATABASE: Vss.sqlite")
 BEGIN
 *****************************************************************************"""
 
-# Join the tran and party data *********************************************
-print("IDNo list join the vss tran and party data...")
-sr_file = "X001bb_join_tran_vss"
-s_sql = "CREATE TABLE "+sr_file+" AS " + """
-SELECT
-  VSS.X000_party.IDNO,
-  X001aa_impo_vsstran.STUDENT,
-  VSS.X000_Party.FULL_NAME AS NAME,
-  X001aa_impo_vsstran.YEAR,
-  X001aa_impo_vsstran.CAMPUS,
-  Trim(VSS.X000_Party.FIRSTNAMES) AS FIRSTNAME,
-  VSS.X000_Party.INITIALS,
-  VSS.X000_Party.SURNAME,
-  VSS.X000_Party.TITLE,
-  VSS.X000_Party.DATEOFBIRTH,
-  VSS.X000_Party.GENDER,
-  VSS.X000_Party.NATIONALITY,
-  VSS.X000_Party.POPULATION,
-  VSS.X000_Party.RACE,
-  VSS.X000_Party.FAUDITUSERCODE AS PARTY_AUDITDATETIME,
-  VSS.X000_Party.AUDITDATETIME AS PARTY_AUDITUSERCODE
-FROM
-  X001aa_impo_vsstran
-  INNER JOIN VSS.X000_Party ON VSS.X000_Party.KBUSINESSENTITYID = X001aa_impo_vsstran.STUDENT
-ORDER BY
-  X001aa_impo_vsstran.STUDENT
-;"""
-so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-so_curs.execute(s_sql)
-so_conn.commit()
-funcfile.writelog("%t BUILD TABLE: "+sr_file)
+
  
 """ ****************************************************************************
 END
