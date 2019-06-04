@@ -1345,10 +1345,10 @@ def people_lists():
     funcfile.writelog("BUILD ASSIGNMENTS AND PEOPLE")
 
     # Build current year assignment round 1 ******************************************
-    funcpeople.Assign01(so_conn, "X001_ASSIGNMENT_CURR_01", funcdate.cur_yearbegin(), funcdate.cur_yearend(),
+    funcpeople.assign01(so_conn, "X001_ASSIGNMENT_CURR_01", funcdate.cur_yearbegin(), funcdate.cur_yearend(),
                         funcdate.today(), "Build current year assignments 1...")
     # Build current year assignment round 2 ******************************************
-    funcpeople.Assign02(so_conn, "X001_ASSIGNMENT_CURR", "X001_ASSIGNMENT_CURR_01",
+    funcpeople.assign02(so_conn, "X001_ASSIGNMENT_CURR", "X001_ASSIGNMENT_CURR_01",
                         "Build current year assignments 2...")
     if l_export:
         # Data export
@@ -1365,14 +1365,14 @@ def people_lists():
         funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_filet)
 
     # Build previous year assignment round 1 ******************************************
-    funcpeople.Assign01(so_conn, "X001_ASSIGNMENT_PREV_01", funcdate.prev_yearbegin(), funcdate.prev_yearend(),
+    funcpeople.assign01(so_conn, "X001_ASSIGNMENT_PREV_01", funcdate.prev_yearbegin(), funcdate.prev_yearend(),
                         funcdate.prev_yearend(), "Build previous year assignments 1...")
     # Build previous year assignment round 2 ******************************************
-    funcpeople.Assign02(so_conn, "X001_ASSIGNMENT_PREV", "X001_ASSIGNMENT_PREV_01",
+    funcpeople.assign02(so_conn, "X001_ASSIGNMENT_PREV", "X001_ASSIGNMENT_PREV_01",
                         "Build previous year assignments 2...")
 
     # Build PEOPLE CURRENT ******************************************************
-    funcpeople.People01(so_conn, "X002_PEOPLE_CURR", "X001_ASSIGNMENT_CURR", "CURR", "Build current people...", "Y")
+    funcpeople.people01(so_conn, "X002_PEOPLE_CURR", "X001_ASSIGNMENT_CURR", "CURR", "Build current people...", "Y")
     if l_export:
         # Data export
         sr_file = "X002_PEOPLE_CURR"
@@ -1388,11 +1388,11 @@ def people_lists():
         funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_filet)
 
     # Build PEOPLE CURRENT ******************************************************
-    funcpeople.People01(so_conn, "X002_PEOPLE_CURR_YEAR", "X001_ASSIGNMENT_CURR", "CURR",
+    funcpeople.people01(so_conn, "X002_PEOPLE_CURR_YEAR", "X001_ASSIGNMENT_CURR", "CURR",
                         "Build current year people ...", "N")
 
     # Build PEOPLE PREVIOUS YEAR ************************************************
-    funcpeople.People01(so_conn, "X002_PEOPLE_PREV_YEAR", "X001_ASSIGNMENT_PREV", "CURR",
+    funcpeople.people01(so_conn, "X002_PEOPLE_PREV_YEAR", "X001_ASSIGNMENT_PREV", "CURR",
                         "Build previous year people...", "N")
 
     # Build PEOPLE ORGANIZATION STRUCTURE REF **********************************

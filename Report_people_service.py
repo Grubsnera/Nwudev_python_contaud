@@ -58,11 +58,11 @@ print("")
 
 # 12 Build current assignment round 1 ******************************************
 
-funcpeople.Assign01(so_conn,"X001_ASSIGNMENT_PERI_01",s_fr,s_to,s_on,"Build period assignments 1...")
+funcpeople.assign01(so_conn,"X001_ASSIGNMENT_PERI_01",s_fr,s_to,s_on,"Build period assignments 1...")
 
 # 13 Build current assignment round 2 ******************************************
 
-funcpeople.Assign02(so_conn,"X001_ASSIGNMENT_PERI","X001_ASSIGNMENT_PERI_01","Build period assignments 2...")
+funcpeople.assign02(so_conn,"X001_ASSIGNMENT_PERI","X001_ASSIGNMENT_PERI_01","Build period assignments 2...")
 
 if s_export == "True":
 
@@ -244,7 +244,7 @@ funcfile.writelog("%t BUILD VIEW: X000_PHONE_HOME_PERI_LIST")
 
 # 16 Build PEOPLE CURRENT ******************************************************
 
-funcpeople.People01(so_conn,"X002_PEOPLE_PERI","X001_ASSIGNMENT_PERI","PERI","Build period people...",s_acti)
+funcpeople.people01(so_conn,"X002_PEOPLE_PERI","X001_ASSIGNMENT_PERI","PERI","Build period people...",s_acti)
 
 if s_export == "True":
     

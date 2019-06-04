@@ -4,23 +4,18 @@ Copyright (c) AB Janse van Rensburg 25 May 2018
 """
 
 # Import python objects
-import csv
-import pyodbc
-import sqlite3
-import datetime
 import sys
 
 # Add own module path
 sys.path.append('S:/_my_modules')
 
 # Import own functions
-import funcdate
 import funccsv
 import funcfile
 
 # 17 Build current assignment round 1 ******************************************
 
-def Assign01(so_conn,s_table,s_from,s_to,s_on,s_mess):
+def assign01(so_conn,s_table,s_from,s_to,s_on,s_mess):
 
     """ Function to build the X000_Assignment table with different date periods
     Parameters: s_table = Table name to create
@@ -152,7 +147,7 @@ def Assign01(so_conn,s_table,s_from,s_to,s_on,s_mess):
 
 # 18 Build current assignment round 2 ******************************************
 
-def Assign02(so_conn,s_table,s_source,s_mess):
+def assign02(so_conn,s_table,s_source,s_mess):
 
     """ Function to build the X000_Assignment table with different date periods
     Parameters: s_table = Table name to create
@@ -242,7 +237,7 @@ def Assign02(so_conn,s_table,s_source,s_mess):
 
 # 19 Build PEOPLE CURRENT ******************************************************
 
-def People01(so_conn,s_table,s_source,s_peri,s_mess,s_acti):
+def people01(so_conn,s_table,s_source,s_peri,s_mess,s_acti):
 
     """ Function to build the X002_People table from different assignments
     Parameters: s_table = Table name to create
