@@ -34,10 +34,10 @@ funcfile.writelog("-----------------------------")
 ilog_severity = 1
 
 # DECLARE VARIABLES
-so_path = "W:/People/" #Source database path
+so_path = "W:/People/"
+so_file = "People.sqlite"
 re_path = "R:/People/"
-so_file = "People.sqlite" #Source database
-s_sql = "" #SQL statements
+s_sql = ""
 l_export = False
 l_mail = True
 
