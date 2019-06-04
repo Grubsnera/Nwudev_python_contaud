@@ -25,37 +25,7 @@ BUILD CURRENT SYSTEM USERS (X000_USER_CURR)
 BUILD PEOPLE LEAVE
 *****************************************************************************"""
 
-""" DEPENDANCIES ***************************************************************
-# 01 PER_GRADES table (Vss.sqlite)
-     PER_GRADE_DEFINITIONS (Vss.sqlite)
-# 02 PER_ALL_POSITIONS (Vss.sqlite)
-     PER_POSITION_DEFINITIONS (Vss.sqlite)
-# 03 PER_JOBS (Vss.sqlite)
-     PER_JOB_DEFINITIONS (Vss.sqlite)
-# 04 HR_ALL_ORGANIZATION_UNITS (Vss.sqlite)
-     HR_ORGANIZATION_INFORMATION (Vss.sqlite)
-# 05 PER_PERIODS_OF_SERVICE (Vss.sqlite)
-     HR_LOOKUPS (Vss.sqlite)
-# 06 PER_ALL_ASSIGNMENTS_F (Vss.sqlite)
-     HR_LOCATIONS_ALL (Vss.sqlite)
-     PAY_PEOPLE_GROUPS (Vss.sqlite)
-     (01 - 05) (Vss.sqlite)
-# 07 PER_ALL_PEOPLE_F (Vss.sqlite)
-     PER_PERSON_TYPES (Vss.sqlite)
-     HR_LOOKUPS (Vss.sqlite)
-# 08 PER_ALL_ASSIGNMENTS_F (Vss.sqlite)
-# 09 PER_ALL_PEOPLE_F (Vss.sqlite)
-# 10 PER_PERIODS_OF_SERVICE (Vss.sqlite)
-# 11 X000_COUNT_ASSIGNMENTS (Vss.sqlite)
-     X000_COUNT_PEOPLE (Vss.sqlite)
-#    X000_COUNT_PERIODOS (Vss.sqlite)
-# 12 X000_PER_ALL_ASSIGNMENTS (Vss.sqlite view)
-# 13 X000_PER_ALL_PEOPLE
-     X001_ASSIGNMENT_CURR_01
-     X000_COUNTS
-**************************************************************************** """
-
-def People_lists():
+def people_lists():
 
     """*****************************************************************************
     ENVIRONMENT
@@ -123,7 +93,7 @@ def People_lists():
     print("BUILD LOOKUPS")
     funcfile.writelog("BUILD LOOKUPS")
     
-    # Import the X000_OWN_HR_LOOKUPS table *****************************************
+    # IMPORT LOOKUPS
     print("Import own lookups...")
     ed_path = "S:/_external_data/"
     tb_name = "X000_OWN_HR_LOOKUPS"

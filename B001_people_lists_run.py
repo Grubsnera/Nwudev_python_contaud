@@ -20,7 +20,7 @@ l_mail = True
 
 # People lists
 try:
-    B001_people_lists.People_lists()
+    B001_people_lists.people_lists()
 except Exception as e:
     funcsys.ErrMessage(e)
 
