@@ -3,9 +3,16 @@ Created on: 12 Apr 2018
 Author: Albert J v Rensburg (NWU21162395)
 """
 
+# IMPORT SYSTEM MODULES
 import csv
 import sqlite3
-import sys
+
+# IMPORT OWN MODULES
+from _my_modules import funccsv
+from _my_modules import funcfile
+from _my_modules import funcdate
+from _my_modules import funcmail
+from _my_modules import funcpeople
 
 """ Index
 ENVIRONMENT
@@ -40,17 +47,7 @@ def people_lists():
     ENVIRONMENT
     *****************************************************************************"""
 
-    # Add own module path
-    sys.path.append('S:/_my_modules')
-
-    # Import own modules
-    import funcdate
-    import funccsv
-    import funcfile
-    import funcpeople
-    import funcmail
-
-    # Script log file
+    # SCRIPT LOG
     funcfile.writelog("Now")
     funcfile.writelog("SCRIPT: B001_PEOPLE_LISTS")
     funcfile.writelog("-------------------------")
@@ -58,7 +55,7 @@ def people_lists():
     print("B001_PEOPLE_LISTS")
     print("-----------------")
 
-    # SQLITE Declare variables 
+    # DECLARE VARIABLES 
     so_path = "W:/People/"  # Source database path
     so_file = "People.sqlite"  # Source database
     re_path = "R:/People/"  # Results path
@@ -119,7 +116,7 @@ def people_lists():
     s_sql = "CREATE TABLE X000_GRADES AS " + """
     SELECT
       GRADES.GRADE_ID,
-      SUBSTR(NAME,INSTR(NAME,'~')+1,60) As GRADE_NAME,
+      Substr(NAME,INSTR(NAME,'~')+1,60) As GRADE_NAME,
       GRADES.DATE_FROM,
       GRADES.DATE_TO,
       GRADES.GRADE_DEFINITION_ID,
@@ -633,12 +630,10 @@ def people_lists():
         HR_LOOKUPS HRTY On HRTY.LOOKUP_TYPE = 'ZA_ACCOUNT_TYPE' And HRTY.LOOKUP_CODE = EXTA.SEGMENT2 Left Join
         HR_LOOKUPS HRRE On HRRE.LOOKUP_TYPE = 'ZA_ACCOUNT_HOLDER_RELATION' And HRRE.LOOKUP_CODE = EXTA.SEGMENT6
     ;"""
-    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD VIEW: " + sr_file)
-
 
     """ ****************************************************************************
     BUILD PERIODS OF SERVICE
@@ -973,7 +968,7 @@ def people_lists():
     funcfile.writelog("BUILD ADDRESSES")
 
     # 12 BUILD ADDRESSES
-    print("Build adresses...")
+    print("Build addresses...")
     s_sql = "CREATE TABLE X000_ADDRESSES AS " + """
     Select
         ADDR.ADDRESS_ID,
@@ -1087,7 +1082,7 @@ def people_lists():
 
     # 13 Build ADDRESS SARS ********************************************************
 
-    print("Build sars adresses...")
+    print("Build sars addresses...")
 
     s_sql = "CREATE VIEW X000_ADDRESS_SARS AS " + """
     SELECT
@@ -1109,7 +1104,7 @@ def people_lists():
 
     # 14 Build ADDRESS POST ********************************************************
 
-    print("Build post adresses...")
+    print("Build post addresses...")
 
     s_sql = "CREATE VIEW X000_ADDRESS_POST AS " + """
     SELECT
@@ -1131,7 +1126,7 @@ def people_lists():
 
     # 15 Build ADDRESS HOME ********************************************************
 
-    print("Build home adresses...")
+    print("Build home addresses...")
 
     s_sql = "CREATE VIEW X000_ADDRESS_HOME AS " + """
     SELECT
@@ -1153,7 +1148,7 @@ def people_lists():
 
     # 16 Build ADDRESS OTHE ********************************************************
 
-    print("Build other adresses...")
+    print("Build other addresses...")
 
     s_sql = "CREATE VIEW X000_ADDRESS_OTHE AS " + """
     SELECT
@@ -1355,16 +1350,15 @@ def people_lists():
     if l_export:
         # Data export
         sr_file = "X001_ASSIGNMENT_CURR"
-        sr_filet = sr_file
         sx_path = re_path + funcdate.cur_year() + "/"
         sx_file = "Assignment_001_all_"
-        sx_filet = sx_file + funcdate.cur_year()
-        print("Export current year assignments..." + sx_path + sx_filet)
+        sx_file_dated = sx_file + funcdate.cur_year()
+        print("Export current year assignments..." + sx_path + sx_file_dated)
         # Read the header data
-        s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+        s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
         # Write the data
-        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
-        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_filet)
+        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
+        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file_dated)
 
     # Build previous year assignment round 1 ******************************************
     funcpeople.assign01(so_conn, "X001_ASSIGNMENT_PREV_01", funcdate.prev_yearbegin(), funcdate.prev_yearend(),
@@ -1378,16 +1372,15 @@ def people_lists():
     if l_export:
         # Data export
         sr_file = "X002_PEOPLE_CURR"
-        sr_filet = sr_file
         sx_path = re_path + funcdate.cur_year() + "/"
         sx_file = "People_002_all_"
-        sx_filet = sx_file + funcdate.cur_year()
-        print("Export current year people..." + sx_path + sx_filet)
+        sx_file_dated = sx_file + funcdate.cur_year()
+        print("Export current year people..." + sx_path + sx_file_dated)
         # Read the header data
-        s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+        s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
         # Write the data
-        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
-        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_filet)
+        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
+        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file_dated)
 
     # Build PEOPLE CURRENT ******************************************************
     funcpeople.people01(so_conn, "X002_PEOPLE_CURR_YEAR", "X001_ASSIGNMENT_CURR", "CURR",
@@ -1489,21 +1482,20 @@ def people_lists():
     if l_export:
         # Data export
         sr_file = "X003_PEOPLE_SUMM"
-        sr_filet = sr_file
         sx_path = re_path + funcdate.cur_year() + "/"
         sx_file = "People_003_summary_"
-        sx_filet = sx_file + funcdate.cur_month()
+        sx_file_dated = sx_file + funcdate.cur_month()
 
-        print("Export current people summary..." + sx_path + sx_filet)
+        print("Export current people summary..." + sx_path + sx_file_dated)
 
         # Read the header data
-        s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+        s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
 
         # Write the data
-        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
+        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
+        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
 
-        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_filet)
+        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file_dated)
 
     if l_mail:
         funcmail.Mail("hr_people_summary")
@@ -1586,18 +1578,18 @@ def people_lists():
         sr_filet = sr_file
         sx_path = re_path + funcdate.cur_year() + "/"
         sx_file = "People_003_organogram_"
-        sx_filet = sx_file + funcdate.cur_month()
+        sx_file_dated = sx_file + funcdate.cur_month()
 
-        print("Export month people organogram..." + sx_path + sx_filet)
+        print("Export month people organogram..." + sx_path + sx_file_dated)
 
         # Read the header data
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
 
         # Write the data
         funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
+        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file_dated, s_head)
 
-        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_filet)
+        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file_dated)
 
     if l_mail:
         funcmail.Mail("hr_people_organogram")
