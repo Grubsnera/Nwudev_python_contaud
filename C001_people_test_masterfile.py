@@ -66,9 +66,6 @@ def People_test_masterfile():
     import funcdate
     import funcfile
     import funcmail
-    import funcmysql
-    import funcpeople
-    import funcstr
     import funcsys
 
     # OPEN THE SCRIPT LOG FILE
@@ -105,12 +102,6 @@ def People_test_masterfile():
     # ATTACH DATA SOURCES
     so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
     funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
-
-    # OPEN THE MYSQL DESTINATION TABLE
-    s_database = "Web_ia_nwu"
-    ms_cnxn = funcmysql.mysql_open(s_database)
-    ms_curs = ms_cnxn.cursor()
-    funcfile.writelog("%t OPEN MYSQL DATABASE: " + s_database)
 
     """ ****************************************************************************
     TEMPORARY SCRIPT (Delete after one run) 2019-05-31
@@ -179,7 +170,7 @@ def People_test_masterfile():
     """
     # Mail the birthdays
     """
-    if l_mail == True:
+    if l_mail:
         funcmail.Mail("hr_people_birthday")
     """
 
@@ -2624,51 +2615,53 @@ def People_test_masterfile():
     # BUILD TABLE WITH BANK ACCOUNT CHANGES FOR YESTERDAY (FRIDAY IF MONDAY)
     print("Obtain master list of all bank changes...")
     sr_file = "X004_bank_change"
-    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
     SELECT
-        PEOPLE.X000_PAY_ACCOUNTS.ASSIGNMENT_ID,
+        PEOP.ASSIGNMENT_ID,
         PEOPLE.X001_ASSIGNMENT_CURR.EMPLOYEE_NUMBER,
-        PEOPLE.X000_PAY_ACCOUNTS.EFFECTIVE_START_DATE,
-        PEOPLE.X000_PAY_ACCOUNTS.EFFECTIVE_END_DATE,
-        PEOPLE.X000_PAY_ACCOUNTS.PERSONAL_PAYMENT_METHOD_ID,
-        PEOPLE.X000_PAY_ACCOUNTS.BUSINESS_GROUP_ID,
-        PEOPLE.X000_PAY_ACCOUNTS.ORG_PAYMENT_METHOD_ID,
-        PEOPLE.X000_PAY_ACCOUNTS.PPM_INFORMATION_CATEGORY,
-        PEOPLE.X000_PAY_ACCOUNTS.PPM_INFORMATION1,
-        PEOPLE.X000_PAY_ACCOUNTS.CREATION_DATE,
-        PEOPLE.X000_PAY_ACCOUNTS.CREATED_BY,
-        PEOPLE.X000_PAY_ACCOUNTS.LAST_UPDATE_DATE,
-        PEOPLE.X000_PAY_ACCOUNTS.LAST_UPDATED_BY,
-        PEOPLE.X000_PAY_ACCOUNTS.EXTERNAL_ACCOUNT_ID,
-        PEOPLE.X000_PAY_ACCOUNTS.TERRITORY_CODE,
-        PEOPLE.X000_PAY_ACCOUNTS.ACC_BRANCH,
-        PEOPLE.X000_PAY_ACCOUNTS.ACC_TYPE_CODE,
-        PEOPLE.X000_PAY_ACCOUNTS.ACC_TYPE,
-        PEOPLE.X000_PAY_ACCOUNTS.ACC_NUMBER,
-        PEOPLE.X000_PAY_ACCOUNTS.ACC_HOLDER,
-        PEOPLE.X000_PAY_ACCOUNTS.ACC_UNKNOWN,
-        PEOPLE.X000_PAY_ACCOUNTS.ACC_RELATION_CODE,
-        PEOPLE.X000_PAY_ACCOUNTS.ACC_RELATION    
+        PEOP.EFFECTIVE_START_DATE,
+        PEOP.EFFECTIVE_END_DATE,
+        PEOP.PERSONAL_PAYMENT_METHOD_ID,
+        PEOP.BUSINESS_GROUP_ID,
+        PEOP.ORG_PAYMENT_METHOD_ID,
+        PEOP.PPM_INFORMATION_CATEGORY,
+        PEOP.PPM_INFORMATION1,
+        PEOP.CREATION_DATE,
+        PEOP.CREATED_BY,
+        PEOP.LAST_UPDATE_DATE,
+        PEOP.LAST_UPDATED_BY,
+        PEOP.EXTERNAL_ACCOUNT_ID,
+        PEOP.TERRITORY_CODE,
+        PEOP.ACC_BRANCH,
+        PEOP.ACC_TYPE_CODE,
+        PEOP.ACC_TYPE,
+        PEOP.ACC_NUMBER,
+        PEOP.ACC_HOLDER,
+        PEOP.ACC_UNKNOWN,
+        PEOP.ACC_RELATION_CODE,
+        PEOP.ACC_RELATION    
     FROM
-        PEOPLE.X000_PAY_ACCOUNTS LEFT JOIN
-        PEOPLE.X001_ASSIGNMENT_CURR ON PEOPLE.X001_ASSIGNMENT_CURR.ASS_ID = PEOPLE.X000_PAY_ACCOUNTS.ASSIGNMENT_ID AND
-            StrfTime('%Y-%m-%d',PEOPLE.X001_ASSIGNMENT_CURR.ASS_START) <= StrfTime('%Y-%m-%d',PEOPLE.X000_PAY_ACCOUNTS.LAST_UPDATE_DATE) AND
-            StrfTime('%Y-%m-%d',PEOPLE.X001_ASSIGNMENT_CURR.ASS_END) >= StrfTime('%Y-%m-%d',PEOPLE.X000_PAY_ACCOUNTS.LAST_UPDATE_DATE)
+        PEOPLE.X000_PAY_ACCOUNTS PEOP LEFT JOIN
+        PEOPLE.X001_ASSIGNMENT_CURR ON PEOPLE.X001_ASSIGNMENT_CURR.ASS_ID = PEOP.ASSIGNMENT_ID AND
+            StrfTime('%Y-%m-%d',PEOPLE.X001_ASSIGNMENT_CURR.ASS_START) <= StrfTime('%Y-%m-%d',PEOP.LAST_UPDATE_DATE) AND
+            StrfTime('%Y-%m-%d',PEOPLE.X001_ASSIGNMENT_CURR.ASS_END) >= StrfTime('%Y-%m-%d',PEOP.LAST_UPDATE_DATE)
     WHERE
         %WHERE%
     ORDER BY
         ASSIGNMENT_ID,
         LAST_UPDATE_DATE
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if funcdate.today_dayname() == "Mon":
-        s_sql = s_sql.replace("%WHERE%","StrfTime('%Y-%m-%d',PEOPLE.X000_PAY_ACCOUNTS.LAST_UPDATE_DATE)>=StrfTime('%Y-%m-%d','now','-3 day') AND StrfTime('%Y-%m-%d',PEOPLE.X000_PAY_ACCOUNTS.CREATION_DATE)<StrfTime('%Y-%m-%d','now','-3 day')")
+        s_sql = s_sql.replace("%WHERE%",
+                              "StrfTime('%Y-%m-%d',PEOP.LAST_UPDATE_DATE)>=StrfTime('%Y-%m-%d','now','-3 day') AND StrfTime('%Y-%m-%d',PEOP.CREATION_DATE)<StrfTime('%Y-%m-%d','now','-3 day')")
     else:
-        s_sql = s_sql.replace("%WHERE%","StrfTime('%Y-%m-%d',PEOPLE.X000_PAY_ACCOUNTS.LAST_UPDATE_DATE)>=StrfTime('%Y-%m-%d','now','-1 day') AND StrfTime('%Y-%m-%d',PEOPLE.X000_PAY_ACCOUNTS.CREATION_DATE)<StrfTime('%Y-%m-%d','now','-1 day')")
-    #print(s_sql) # DEBUG
+        s_sql = s_sql.replace("%WHERE%",
+                              "StrfTime('%Y-%m-%d',PEOP.LAST_UPDATE_DATE)>=StrfTime('%Y-%m-%d','now','-1 day') AND StrfTime('%Y-%m-%d',PEOP.CREATION_DATE)<StrfTime('%Y-%m-%d','now','-1 day')")
+    # print(s_sql) # DEBUG
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # GET PREVIOUS BANK ACCOUNTS
     sr_file = "X004_bank_master_prev"
@@ -2717,43 +2710,41 @@ def People_test_masterfile():
 
     # DECLARE TEST VARIABLES
     # l_record = True # Record the findings in the previous reported findings file
-    i_find = 0 # Number of findings before previous reported findings
-    i_coun = 0 # Number of new findings to report
 
     # ADD EMPLOYEE DETAILS
     print("Add employee details...")
-    sr_file = "X004ba_bank_verify"
-    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    sr_file: str = "X004ba_bank_verify"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         'NWU' AS ORG,
-        CASE PEOPLE.X002_PEOPLE_CURR.LOCATION_DESCRIPTION
+        CASE PEOP.LOCATION_DESCRIPTION
             WHEN 'MAFIKENG CAMPUS' THEN 'MAF'
             WHEN 'POTCHEFSTROOM CAMPUS' THEN 'POT'
             WHEN 'VAAL TRIANGLE CAMPUS' THEN 'VAA'
             ELSE 'NWU'
         END AS LOC,
-        X004_bank_change.EMPLOYEE_NUMBER AS EMP,
-        PEOPLE.X002_PEOPLE_CURR.NAME_ADDR AS NAME,
-        X004_bank_change.EFFECTIVE_START_DATE AS START_DATE,
-        X004_bank_change.EFFECTIVE_END_DATE AS END_DATE,
-        X004_bank_change.MEANING AS ACC_TYPE,
-        X004_bank_change.SEGMENT1 AS ACC_BRANCH,
-        X004_bank_change.SEGMENT3 AS ACC_NUMBER,
-        X004_bank_change.LAST_UPDATE_DATE AS UPDATE_DATE,
-        X004_bank_change.LAST_UPDATED_BY AS UPDATE_BY
+        BANK.EMPLOYEE_NUMBER AS EMP,
+        PEOP.NAME_ADDR AS NAME,
+        BANK.EFFECTIVE_START_DATE AS START_DATE,
+        BANK.EFFECTIVE_END_DATE AS END_DATE,
+        BANK.ACC_TYPE,
+        BANK.ACC_BRANCH,
+        BANK.ACC_NUMBER,
+        BANK.LAST_UPDATE_DATE AS UPDATE_DATE,
+        BANK.LAST_UPDATED_BY AS UPDATE_BY
     From
-        X004_bank_change Left Join
-        PEOPLE.X002_PEOPLE_CURR ON PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = X004_bank_change.EMPLOYEE_NUMBER
+        X004_bank_change BANK Left Join
+        PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = BANK.EMPLOYEE_NUMBER
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # FILTER RECORDS TO REPORT - ONLY EMPLOYEES ACTIVE TODAY
     print("Filter employee records...")
     sr_file = "X004bb_bank_verify"
-    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         CURR.ORG,
         CURR.LOC,
@@ -2773,23 +2764,33 @@ def People_test_masterfile():
         StrfTime('%Y-%m-%d',CURR.END_DATE) >= StrfTime('%Y-%m-%d','now') And
         CURR.ACC_NUMBER <> OLD.ACC_NUMBER
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # COUNT THE NUMBER OF FINDINGS
-    i_find = funcsys.tablerowcount(so_curs,sr_file)
-    print("*** Found "+str(i_find)+" exceptions ***")
-    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL BANK change finding(s)")
+    i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
+    print("*** Found " + str(i_finding_before) + " exceptions ***")
+    funcfile.writelog("%t FINDING: " + str(i_finding_before) + " EMPL BANK change finding(s)")
 
     # GET PREVIOUS FINDINGS
-    # NOTE ADD CODE
     sr_file = "X004bc_bank_getprev"
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    if i_find > 0:
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
         print("Import previously reported findings...")
-        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,DATE_MAILED TEXT)")
+        so_curs.execute(
+            "CREATE TABLE " + sr_file + """
+            (PROCESS TEXT,
+            FIELD1 INT,
+            FIELD2 TEXT,
+            FIELD3 TEXT,
+            FIELD4 TEXT,
+            FIELD5 TEXT,
+            DATE_REPORTED TEXT,
+            DATE_RETEST TEXT,
+            DATE_MAILED TEXT)
+            """)
         s_cols = ""
         co = open(ed_path + "001_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -2801,17 +2802,18 @@ def People_test_masterfile():
             elif row[0] != "bank_change":
                 continue
             else:
-                s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "','" + row[3] + "','" + row[4] + "','" + row[5] + "','" + row[6] + "','" + row[7] + "','" + row[8] + "')"
+                s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "','" + row[
+                    3] + "','" + row[4] + "','" + row[5] + "','" + row[6] + "','" + row[7] + "','" + row[8] + "')"
                 so_curs.execute(s_cols)
         so_conn.commit()
-        # Close the impoted data file
+        # Close the imported data file
         co.close()
         funcfile.writelog("%t IMPORT TABLE: " + ed_path + "001_reported.txt (" + sr_file + ")")
 
     # ADD PREVIOUS FINDINGS
     sr_file = "X004bd_bank_addprev"
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    if i_find > 0:
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
         print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         SELECT
@@ -2830,8 +2832,8 @@ def People_test_masterfile():
               X004bc_bank_getprev.DATE_RETEST >= Date('%TODAY%')
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%",funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(20000))
+        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%TODAYPLUS%", funcdate.today_plusdays(20000))
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -2839,9 +2841,9 @@ def People_test_masterfile():
     # BUILD LIST TO UPDATE FINDINGS
     # NOTE ADD CODE
     sr_file = "X004be_bank_newprev"
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    if i_find > 0:
-        s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
         SELECT
           X004bd_bank_addprev.PROCESS,
           X004bd_bank_addprev.EMP AS FIELD1,
@@ -2857,45 +2859,45 @@ def People_test_masterfile():
         WHERE
           X004bd_bank_addprev.PREV_PROCESS IS NULL
         ;"""
-        so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
         so_conn.commit()
-        funcfile.writelog("%t BUILD TABLE: "+sr_file)
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
         # Export findings to previous reported file
-        i_coun = funcsys.tablerowcount(so_curs,sr_file)
-        if i_coun > 0:
-            print("*** " +str(i_coun)+ " Finding(s) to report ***")    
-            sr_filet = sr_file
+        i_finding_after: int = funcsys.tablerowcount(so_curs, sr_file)
+        if i_finding_after > 0:
+            print("*** " + str(i_finding_after) + " Finding(s) to report ***")
             sx_path = ed_path
             sx_file = "001_reported"
             # Read the header data
-            s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+            s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             # Write the data
-            if l_record == True:
-                funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head,"a",".txt")
-                funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
-                funcfile.writelog("%t EXPORT DATA: "+sr_file)
+            if l_record:
+                funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
+                funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
+                funcfile.writelog("%t EXPORT DATA: " + sr_file)
         else:
             print("*** No new findings to report ***")
-            funcfile.writelog("%t FINDING: No new findings to export")    
+            funcfile.writelog("%t FINDING: No new findings to export")
 
-    # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
-    sr_file = "X004bf_offi"
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    if i_find > 0 and i_coun > 0:
+        # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
+    sr_file = "X004bf_officer"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0 and i_finding_after > 0:
         print("Import reporting officers for mail purposes...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         SELECT
-          PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
-          PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
-          PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-          PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
-          PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
+            PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
+            PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
+            PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
+            PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
+            PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
         FROM
-          PEOPLE.X000_OWN_HR_LOOKUPS
-          LEFT JOIN PEOPLE.X002_PEOPLE_CURR ON PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION
+            PEOPLE.X000_OWN_HR_LOOKUPS
+            LEFT JOIN PEOPLE.X002_PEOPLE_CURR ON
+            PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION
         WHERE
-          PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP = 'TEST_BANKACC_VERIFY_OFFICER'
+            PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP = 'TEST_BANKACC_VERIFY_OFFICER'
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -2903,20 +2905,21 @@ def People_test_masterfile():
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
-    sr_file = "X004bg_supe"
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    if i_find > 0 and i_coun > 0:
+    sr_file = "X004bg_supervisor"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0 and i_finding_after > 0:
         print("Import reporting supervisors for mail purposes...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         SELECT
-          PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
-          PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
-          PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-          PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
-          PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
+            PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP,
+            PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_CODE AS CAMPUS,
+            PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
+            PEOPLE.X002_PEOPLE_CURR.NAME_ADDR As NAME,
+            PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
         FROM
-          PEOPLE.X000_OWN_HR_LOOKUPS
-          LEFT JOIN PEOPLE.X002_PEOPLE_CURR ON PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION
+            PEOPLE.X000_OWN_HR_LOOKUPS
+            LEFT JOIN PEOPLE.X002_PEOPLE_CURR ON 
+            PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION
         WHERE
           PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP = 'TEST_BANKACC_VERIFY_SUPERVISOR'
         ;"""
@@ -2927,8 +2930,8 @@ def People_test_masterfile():
 
     # ADD CONTACT DETAILS TO FINDINGS
     sr_file = "X004bh_bank_cont"
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    if i_find > 0 and i_coun > 0:
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0 and i_finding_after > 0:
         print("Add contact details to findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
@@ -2968,10 +2971,10 @@ def People_test_masterfile():
             X004bd_bank_addprev
             Left Join PEOPLE.X002_PEOPLE_CURR On PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = X004bd_bank_addprev.EMP
             Left Join PEOPLE.X000_USER_CURR On PEOPLE.X000_USER_CURR.USER_ID = X004bd_bank_addprev.UPDATE_BY
-            Left Join X004bf_offi CAMP_OFF On CAMP_OFF.CAMPUS = X004bd_bank_addprev.LOC
-            Left Join X004bf_offi ORG_OFF On ORG_OFF.CAMPUS = X004bd_bank_addprev.ORG
-            Left Join X004bg_supe CAMP_SUP On CAMP_SUP.CAMPUS = X004bd_bank_addprev.LOC
-            Left Join X004bg_supe ORG_SUP On ORG_SUP.CAMPUS = X004bd_bank_addprev.ORG
+            Left Join X004bf_officer CAMP_OFF On CAMP_OFF.CAMPUS = X004bd_bank_addprev.LOC
+            Left Join X004bf_officer ORG_OFF On ORG_OFF.CAMPUS = X004bd_bank_addprev.ORG
+            Left Join X004bg_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = X004bd_bank_addprev.LOC
+            Left Join X004bg_supervisor ORG_SUP On ORG_SUP.CAMPUS = X004bd_bank_addprev.ORG
         WHERE
           X004bd_bank_addprev.PREV_PROCESS IS NULL
         ;"""
@@ -2982,9 +2985,9 @@ def People_test_masterfile():
 
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
     sr_file = "X004bx_bank_verify"
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     print("Build the final report")
-    if i_find > 0 and i_coun > 0:
+    if i_finding_before > 0 and i_finding_after > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             'EMPLOYEE BANK CHANGE VERIFICATION' As FINDING,
@@ -3022,16 +3025,15 @@ def People_test_masterfile():
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
         # Export findings
-        if l_export == True and funcsys.tablerowcount(so_curs,sr_file) > 0:
+        if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
-            sr_filet = sr_file
             sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = "People_test_004bx_bank_verify_"
-            sx_filet = sx_file + funcdate.today_file()
-            s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-            funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-            funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
-            funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
+            sx_file_dated = sx_file + funcdate.today_file()
+            s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+            funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
+            funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
+            funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
     else:
         s_sql = "CREATE TABLE " + sr_file + " (" + """
         BLANK TEXT
@@ -5561,7 +5563,6 @@ def People_test_masterfile():
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
 
     """ ****************************************************************************
     END OF SCRIPT

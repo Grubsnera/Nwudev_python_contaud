@@ -1,10 +1,15 @@
-import sys
-import sqlite3
-
-""" Script to test PEOPLE master file data *************************************
+""" Script to test PEOPLE master file data
 Created on: 1 Mar 2019
-Author: Albert J v Rensburg (NWU21162395)
-*****************************************************************************"""
+Author: Albert Janse van Rensburg (NWU21162395)
+"""
+
+import csv
+import sqlite3
+import sys
+from _my_modules import funccsv
+from _my_modules import funcdate
+from _my_modules import funcfile
+from _my_modules import funcsys
 
 """ INDEX **********************************************************************
 ENVIRONMENT
@@ -17,12 +22,6 @@ END OF SCRIPT
 ENVIRONMENT
 *****************************************************************************"""
 
-# ADD OWN MODULE PATH
-sys.path.append('S:/_my_modules')
-
-# IMPORT OWN MODULES
-import funcfile
-
 # OPEN THE SCRIPT LOG FILE
 print("-------------------------------")
 print("C001_PEOPLE_TEST_MASTERFILE_DEV")
@@ -30,17 +29,15 @@ print("-------------------------------")
 funcfile.writelog("Now")
 funcfile.writelog("SCRIPT: C001_PEOPLE_TEST_MASTERFILE_DEV")
 funcfile.writelog("---------------------------------------")
-ilog_severity = 1
 
 # DECLARE VARIABLES
 so_path = "W:/People/"  # Source database path
 re_path = "R:/People/"  # Results path
 ed_path = "S:/_external_data/"  # external data path
 so_file = "People_test_masterfile.sqlite"  # Source database
-s_sql = ""  # SQL statements
-l_export = False
-l_mail = True
-l_record = False
+l_export: bool = False
+l_mail: bool = True
+l_record: bool = True
 
 """*****************************************************************************
 OPEN THE DATABASES
