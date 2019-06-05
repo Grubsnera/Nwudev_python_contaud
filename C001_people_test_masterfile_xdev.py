@@ -1,15 +1,18 @@
-""" Script to test PEOPLE master file data
+""" Script to test PEOPLE master file data development area
 Created on: 1 Mar 2019
 Author: Albert Janse van Rensburg (NWU21162395)
 """
 
-import csv
+# IMPORT SYSTEM MODULES
+# import csv
 import sqlite3
-import sys
-from _my_modules import funccsv
-from _my_modules import funcdate
+
+# OPEN OWN MODULES
+# import sys
+# from _my_modules import funccsv
+# from _my_modules import funcdate
 from _my_modules import funcfile
-from _my_modules import funcsys
+# from _my_modules import funcsys
 
 """ INDEX **********************************************************************
 ENVIRONMENT
@@ -22,7 +25,7 @@ END OF SCRIPT
 ENVIRONMENT
 *****************************************************************************"""
 
-# OPEN THE SCRIPT LOG FILE
+# OPEN THE LOG
 print("-------------------------------")
 print("C001_PEOPLE_TEST_MASTERFILE_DEV")
 print("-------------------------------")
@@ -66,9 +69,9 @@ END OF SCRIPT
 print("END OF SCRIPT")
 funcfile.writelog("END OF SCRIPT")
 
-# CLOSE THE DATABASE CONNECTION
+# CLOSE THE WORKING DATABASE
 so_conn.close()
 
-# CLOSE THE LOG WRITER
+# CLOSE THE LOG
 funcfile.writelog("------------------------------------------")
 funcfile.writelog("COMPLETED: C001_PEOPLE_TEST_MASTERFILE_DEV")
