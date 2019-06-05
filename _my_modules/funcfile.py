@@ -12,7 +12,7 @@ import time
 import sys
 
 # Import own modules
-import funcdate
+from _my_modules import funcdate
 
 # FUNCTION TO WRITE INTO LOG FILE **********************************************
 
