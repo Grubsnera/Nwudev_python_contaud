@@ -603,7 +603,7 @@ def people_lists():
     # BUILD PERSONAL PAY BANK ACCOUNT LIST
     print("Build personal pay bank account number list...")
     sr_file = "X000_PAY_ACCOUNTS"
-    s_sql = "CREATE VIEW " + sr_file + " AS " + """
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         PAYM.ASSIGNMENT_ID,
         PAYM.EFFECTIVE_START_DATE,
@@ -634,9 +634,11 @@ def people_lists():
         HR_LOOKUPS HRRE On HRRE.LOOKUP_TYPE = 'ZA_ACCOUNT_HOLDER_RELATION' And HRRE.LOOKUP_CODE = EXTA.SEGMENT6
     ;"""
     so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD VIEW: " + sr_file)
+
 
     """ ****************************************************************************
     BUILD PERIODS OF SERVICE
