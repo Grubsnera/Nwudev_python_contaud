@@ -2622,7 +2622,7 @@ def People_test_masterfile():
 
     # OBTAIN TEST DATA
     print("Obtain test data and add employee details...")
-    sr_file: str = "X004ca_bank_sars"
+    sr_file: str = "X004ca_bank_sars_verify"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         'NWU' AS ORG,
@@ -2655,7 +2655,7 @@ def People_test_masterfile():
         CURR.ACC_NUMBER,
         CURR.ACC_SARS
     From
-        X004ca_bank_sars CURR
+        X004ca_bank_sars_verify CURR
     Where
         CURR.ACC_NUMBER <> '' And
         CURR.ACC_SARS <> 'Y'
@@ -2668,7 +2668,7 @@ def People_test_masterfile():
     # COUNT THE NUMBER OF FINDINGS
     i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
     print("*** Found " + str(i_finding_before) + " exceptions ***")
-    funcfile.writelog("%t FINDING: " + str(i_finding_before) + " EMPL BANK SARS invalid finding(s)")
+    funcfile.writelog("%t FINDING: " + str(i_finding_before) + " EMPL BANK SARS verify finding(s)")
 
     # GET PREVIOUS FINDINGS
     sr_file = "X004cc_get_previous"
@@ -2695,7 +2695,7 @@ def People_test_masterfile():
             # Populate the column variables
             if row[0] == "PROCESS":
                 continue
-            elif row[0] != "bank_sars_invalid":
+            elif row[0] != "bank_sars_verify":
                 continue
             else:
                 s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "','" + \
@@ -2716,7 +2716,7 @@ def People_test_masterfile():
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         Select
             FIND.*,
-            'bank_change' AS PROCESS,
+            'bank_sars_verify' AS PROCESS,
             '%TODAY%' AS DATE_REPORTED,
             '%DAYS%' AS DATE_RETEST,
             PREV.PROCESS AS PREV_PROCESS,
@@ -2731,7 +2731,7 @@ def People_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.today_plusdays(20000))
+        s_sql = s_sql.replace("%DAYS%", funcdate.today_plusdays(10))
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -2745,7 +2745,7 @@ def People_test_masterfile():
         Select
             PREV.PROCESS,
             PREV.EMP AS FIELD1,
-            PREV.ACC_NUMBER AS FIELD2,
+            '' AS FIELD2,
             '' AS FIELD3,
             '' AS FIELD4,
             '' AS FIELD5,
@@ -2796,7 +2796,7 @@ def People_test_masterfile():
                 PEOPLE.X002_PEOPLE_CURR PEOP ON
                     PEOP.EMPLOYEE_NUMBER = OFFICER.LOOKUP_DESCRIPTION
             Where
-                OFFICER.LOOKUP = 'TEST_BANK_SARS_INVALID_OFFICER'
+                OFFICER.LOOKUP = 'TEST_BANKACC_SARS_VERIFY_OFFICER'
             ;"""
             so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
             so_curs.execute(s_sql)
@@ -2820,7 +2820,7 @@ def People_test_masterfile():
             PEOPLE.X002_PEOPLE_CURR PEOP ON 
                 PEOP.EMPLOYEE_NUMBER = SUPERVISOR.LOOKUP_DESCRIPTION
         Where
-            SUPERVISOR.LOOKUP = 'TEST_BANK_SARS_VERIFY_SUPERVISOR'
+            SUPERVISOR.LOOKUP = 'TEST_BANKACC_SARS_VERIFY_SUPERVISOR'
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -2869,7 +2869,7 @@ def People_test_masterfile():
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
-    sr_file = "X004cx_bank_sars_invalid"
+    sr_file = "X004cx_bank_sars_verify"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     print("Build the final report")
     if i_finding_before > 0 and i_finding_after > 0:
@@ -2904,7 +2904,7 @@ def People_test_masterfile():
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
             sx_path = re_path + funcdate.cur_year() + "/"
-            sx_file = "People_test_004cx_bank_verify_"
+            sx_file = "People_test_004cx_bank_sars_verify_"
             sx_file_dated = sx_file + funcdate.today_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
