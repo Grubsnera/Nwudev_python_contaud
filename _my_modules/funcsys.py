@@ -1,15 +1,15 @@
 from _my_modules import funcfile
 
 
-def ResultIter(cursor, arraysize=10000):
+def ResultIter(cursor, size=10000):
     """
     An iterator to keep memory usage down
-    :param cursor:
-    :param arraysize:
-    :return:
+    :param size: Array size before commit
+    :param cursor: Database cursor
+    :return: Result of fetchmany
     """
     while True:
-        results = cursor.fetchmany(arraysize)
+        results = cursor.fetchmany(size)
         if not results:
             break
         for result in results:
@@ -29,9 +29,11 @@ def ErrMessage(e):
 def tablerowcount(so_curs, table):
     """
     Count the number of rows in a table
+    :param so_curs: Database cursor
+    :param table: Table to count
     :rtype: int
+    :return: Number of rows
     """
     so_curs.execute("SELECT COUNT(*) FROM " + table)
     x = so_curs.fetchone()
-    y = int(x[0])
-    return y
+    return int(x[0])
