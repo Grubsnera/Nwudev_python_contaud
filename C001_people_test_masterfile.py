@@ -1,7 +1,20 @@
-""" Script to test PEOPLE master file data *************************************
+""" Script to test PEOPLE master file data
 Created on: 1 Mar 2019
 Author: Albert J v Rensburg (NWU21162395)
-*****************************************************************************"""
+"""
+
+# IMPORT PYTHON MODULES
+import csv
+import datetime
+import sqlite3
+import sys
+
+# IMPORT OWN MODULES
+from _my_modules import funccsv
+from _my_modules import funcdate
+from _my_modules import funcfile
+from _my_modules import funcmail
+from _my_modules import funcsys
 
 """ INDEX **********************************************************************
 ENVIRONMENT
@@ -47,27 +60,16 @@ TEST LEAVE CODE INVALID
 END OF SCRIPT
 *****************************************************************************"""
 
+
 def People_test_masterfile():
+    """
+    Script to test multiple PEOPLE MASTER FILE items
+    :return: Nothing
+    """
 
     """*****************************************************************************
     ENVIRONMENT
     *****************************************************************************"""
-
-    # IMPORT PYTHON MODULES
-    import csv
-    import datetime
-    import sqlite3
-    import sys
-
-    # ADD OWN MODULE PATH
-    sys.path.append('S:/_my_modules')
-
-    # IMPORT OWN MODULES
-    import funccsv
-    import funcdate
-    import funcfile
-    import funcmail
-    import funcsys
 
     # OPEN THE SCRIPT LOG FILE
     print("---------------------------")    
