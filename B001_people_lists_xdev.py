@@ -1,11 +1,14 @@
+""" Development are for PEOPLE LISTS
+Created: 1 Mar 2019
+Author: Albert Janse van Rensburg (NWU21162395)
+"""
+
+# IMPORT SYSTEM MODULES
 import csv
 import sqlite3
-import sys
 
-""" Script to test PEOPLE master file data *************************************
-Created on: 1 Mar 2019
-Author: Albert J v Rensburg (NWU21162395)
-*****************************************************************************"""
+# IMPORT OWN MODULES
+from _my_modules import funcfile
 
 """ INDEX **********************************************************************
 ENVIRONMENT
@@ -17,12 +20,6 @@ End OF SCRIPT
 """*****************************************************************************
 ENVIRONMENT
 *****************************************************************************"""
-
-# ADD OWN MODULE PATH
-sys.path.append('S:/_my_modules')
-
-# IMPORT OWN MODULES
-import funcfile
 
 # OPEN THE SCRIPT LOG FILE
 print("-----------------")    
@@ -37,9 +34,8 @@ ilog_severity = 1
 so_path = "W:/People/"
 so_file = "People.sqlite"
 re_path = "R:/People/"
-s_sql = ""
-l_export = False
-l_mail = True
+l_export: bool = False
+l_mail: bool = False
 
 """*****************************************************************************
 OPEN THE DATABASES
@@ -50,14 +46,7 @@ funcfile.writelog("OPEN THE DATABASES")
 # OPEN THE WORKING DATABASE
 with sqlite3.connect(so_path+so_file) as so_conn:
     so_curs = so_conn.cursor()
-
 funcfile.writelog("%t OPEN DATABASE: PEOPLE.SQLITE")
-
-""" ****************************************************************************
-BEGIN OF SCRIPT
-*****************************************************************************"""
-print("BEGIN OF SCRIPT")
-funcfile.writelog("BEGIN OF SCRIPT")
 
 # Import the X000_OWN_HR_LOOKUPS table
 print("Import own lookups...")
@@ -75,9 +64,15 @@ for row in co_reader:
         s_cols = "INSERT INTO " + tb_name + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "')"
         so_curs.execute(s_cols)
 so_conn.commit()
-# Close the impoted data file
+# Close the imported data file
 co.close()
 funcfile.writelog("%t IMPORT TABLE: " + tb_name)
+
+""" ****************************************************************************
+BEGIN OF SCRIPT
+*****************************************************************************"""
+print("BEGIN OF SCRIPT")
+funcfile.writelog("BEGIN OF SCRIPT")
 
 """ ****************************************************************************
 End OF SCRIPT
