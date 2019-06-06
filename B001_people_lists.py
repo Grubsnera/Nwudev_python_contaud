@@ -1036,7 +1036,7 @@ def people_lists():
     so_curs.execute("UPDATE X000_ADDRESSES " + """
     SET ADDRESS_SARS = 
     Case
-       When STYLE = "ZA_SARS" Then ADDRESS_STYLE
+       When ADDRESS_TYPE = "ZA_RES" Then ADDRESS_STYLE
        Else ''
     End
     ;""")
@@ -1047,7 +1047,6 @@ def people_lists():
     so_curs.execute("UPDATE X000_ADDRESSES " + """
     Set ADDRESS_HOME = 
     Case
-        When ADDRESS_TYPE = "ZA_RES" Then ADDRESS_STYLE
         When ADDRESS_TYPE = "H" Then ADDRESS_STYLE
         Else ''
     End
@@ -1070,7 +1069,6 @@ def people_lists():
     so_curs.execute("UPDATE X000_ADDRESSES " + """
     SET ADDRESS_OTHE = 
     Case
-       When STYLE = "ZA_SARS" Then ''
        When ADDRESS_TYPE = "H" Then ''
        When ADDRESS_TYPE = "P" Then ''
        When ADDRESS_TYPE = "ZA_RES" Then ''
