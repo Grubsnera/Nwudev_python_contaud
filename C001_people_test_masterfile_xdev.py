@@ -53,7 +53,7 @@ with sqlite3.connect(so_path + so_file) as so_conn:
 funcfile.writelog("%t OPEN DATABASE: PEOPLE_TEST_MASTERFILE.SQLITE")
 
 # ATTACH DATA SOURCES
-so_curs.execute("ATTACH DATABASE " + so_path + "People.sqlite' AS 'PEOPLE'")
+so_curs.execute("ATTACH DATABASE '" + so_path + "People.sqlite' AS 'PEOPLE'")
 funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
 
 """ ****************************************************************************
