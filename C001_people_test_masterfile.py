@@ -101,7 +101,7 @@ def People_test_masterfile():
     funcfile.writelog("%t OPEN DATABASE: PEOPLE_TEST_MASTERFILE.SQLITE")
 
     # ATTACH DATA SOURCES
-    so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
+    so_curs.execute("ATTACH DATABASE '" + so_path + "People.sqlite' AS 'PEOPLE'")
     funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
 
     """ ****************************************************************************
@@ -2837,7 +2837,7 @@ def People_test_masterfile():
             PREV.ORG,
             PREV.LOC,
             PREV.EMP,
-            PEOP.NAME_ADDR AS NAME,
+            PEOP.NAME_LIST,
             PEOP.ACC_TYPE,
             PEOP.ACC_BRANCH,
             PREV.ACC_NUMBER,
@@ -2875,26 +2875,27 @@ def People_test_masterfile():
     if i_finding_before > 0 and i_finding_after > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
-            'EMPLOYEE BANK SARS FLAG INVALID' As FINDING,
-            DETAIL.EMP AS EMPLOYEE_NUMBER,
-            DETAIL.NAME,
-            DETAIL.ACC_TYPE,
-            DETAIL.ACC_BRANCH,
-            DETAIL.ACC_NUMBER,  
-            DETAIL.CAMP_OFF_NAME AS RESPONSIBLE_OFFICER,
-            DETAIL.CAMP_OFF_NUMB AS RESPONSIBLE_OFFICER_NUMB,
-            DETAIL.CAMP_OFF_MAIL AS RESPONSIBLE_OFFICER_MAIL,
-            DETAIL.CAMP_SUP_NAME AS SUPERVISOR,
-            DETAIL.CAMP_SUP_NUMB AS SUPERVISOR_NUMB,
-            DETAIL.CAMP_SUP_MAIL AS SUPERVISOR_MAIL,
-            DETAIL.ORG_OFF_NAME AS ORGANIZATION_OFFICER,
-            DETAIL.ORG_OFF_NUMB AS ORGANIZATION_OFFICER_NUMB,
-            DETAIL.ORG_OFF_MAIL AS ORGANIZATION_OFFICER_MAIL,
-            DETAIL.ORG_SUP_NAME AS ORGANIZATION_SUPERVISOR,
-            DETAIL.ORG_SUP_NUMB AS ORGANIZATION_SUPERVISOR_NUMB,
-            DETAIL.ORG_SUP_MAIL AS ORGANIZATION_SUPERVISOR_MAIL
+            'EMPLOYEE BANKACC SARS FLAG INVALID' As Audit_finding,
+            FIND.EMP AS Employee,
+            FIND.NAME_LIST As Name,
+            FIND.ACC_TYPE As Bank_type,
+            FIND.ACC_BRANCH As Bank_branch,
+            FIND.ACC_NUMBER As Bank_number,  
+            FIND.CAMP_OFF_NAME AS Responsible_Officer,
+            FIND.CAMP_OFF_NUMB AS Responsible_Officer_Numb,
+            FIND.CAMP_OFF_MAIL AS Responsible_Officer_Mail,
+            FIND.CAMP_SUP_NAME AS Supervisor,
+            FIND.CAMP_SUP_NUMB AS Supervisor_Numb,
+            FIND.CAMP_SUP_MAIL AS Supervisor_Mail,
+            FIND.ORG_OFF_NAME AS Org_Officer,
+            FIND.ORG_OFF_NUMB AS Org_Officer_Numb,
+            FIND.ORG_OFF_MAIL AS Org_Officer_Mail,
+            FIND.ORG_SUP_NAME AS Org_Supervisor,
+            FIND.ORG_SUP_NUMB AS Org_Supervisor_Numb,
+            FIND.ORG_SUP_MAIL AS Org_Supervisor_Mail            
+            
         From
-            X004ch_detail DETAIL
+            X004ch_detail FIND
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
