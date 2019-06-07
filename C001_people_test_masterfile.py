@@ -610,7 +610,7 @@ def People_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(30))
+        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(10))
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -904,7 +904,7 @@ def People_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(30))
+        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(10))
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -1206,7 +1206,7 @@ def People_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(30))
+        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(10))
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -1501,7 +1501,7 @@ def People_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(30))
+        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(10))
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -2731,7 +2731,6 @@ def People_test_masterfile():
         From
             X004cb_findings FIND
             LEFT JOIN X004cc_get_previous PREV ON PREV.FIELD1 = FIND.EMP AND
-                PREV.FIELD2 = FIND.ACC_NUMBER AND
                 PREV.DATE_RETEST >= Date('%TODAY%')
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -4751,7 +4750,8 @@ def People_test_masterfile():
           PREV.DATE_MAILED
         From
           X007ab_detail FIND Left Join
-          X007ac_getprev PREV ON PREV.FIELD1 = FIND.EMPLOYEE_NUMBER
+          X007ac_getprev PREV ON PREV.FIELD1 = FIND.EMPLOYEE_NUMBER AND
+              X007ac_getprev.DATE_RETEST >= Date('%TODAY%')          
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
@@ -5025,7 +5025,8 @@ def People_test_masterfile():
           PREV.DATE_MAILED
         From
           X007bb_detail FIND Left Join
-          X007bc_getprev PREV ON PREV.FIELD1 = FIND.EMPLOYEE_NUMBER
+          X007bc_getprev PREV ON PREV.FIELD1 = FIND.EMPLOYEE_NUMBER AND
+              X007bc_getprev.DATE_RETEST >= Date('%TODAY%')          
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
@@ -5333,7 +5334,8 @@ def People_test_masterfile():
           PREV.DATE_MAILED
         From
           X007cb_detail FIND Left Join
-          X007cc_getprev PREV ON PREV.FIELD1 = FIND.EMPLOYEE_NUMBER
+          X007cc_getprev PREV ON PREV.FIELD1 = FIND.EMPLOYEE_NUMBER AND
+              X007cc_getprev.DATE_RETEST >= Date('%TODAY%')          
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
@@ -5681,7 +5683,8 @@ def People_test_masterfile():
           PREV.DATE_MAILED
         From
           X007db_detail FIND Left Join
-          X007dc_getprev PREV ON PREV.FIELD1 = FIND.EMPLOYEE_NUMBER
+          X007dc_getprev PREV ON PREV.FIELD1 = FIND.EMPLOYEE_NUMBER AND
+              X007dc_getprev.DATE_RETEST >= Date('%TODAY%')          
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
@@ -5890,34 +5893,8 @@ def People_test_masterfile():
     sr_file = "X008_bio_master"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
-        'NWU' AS ORG,
-        CASE PEOP.LOCATION_DESCRIPTION
-            WHEN 'MAFIKENG CAMPUS' THEN 'MAF'
-            WHEN 'POTCHEFSTROOM CAMPUS' THEN 'POT'
-            WHEN 'VAAL TRIANGLE CAMPUS' THEN 'VAA'
-            ELSE 'NWU'
-        END AS LOC,
-        PEOP.EMPLOYEE_NUMBER As EMP,
-        CASE
-            WHEN Substr(PEOP.ADDRESS_POST,1,1) = 'Y' THEN 1
-            ELSE 0
-        END As PRIMARY_VALID,
-        CASE 
-            WHEN Substr(PEOP.ADDRESS_POST,1,1) = 'Y' AND
-                Substr(PEOP.ADDRESS_POST,2) <> Substr(PEOP.ADDRESS_SARS,2) AND
-                Substr(PEOP.ADDRESS_SARS,1,1) = 'N' THEN 1
-            WHEN Substr(PEOP.ADDRESS_POST,1,1) = 'Y' AND
-                Substr(PEOP.ADDRESS_POST,2) <> Substr(PEOP.ADDRESS_HOME,2) AND
-                Substr(PEOP.ADDRESS_HOME,1,1) = 'N' THEN 2
-            WHEN Substr(PEOP.ADDRESS_POST,1,1) = 'Y' AND
-                Substr(PEOP.ADDRESS_POST,2) <> Substr(PEOP.ADDRESS_OTHE,2) AND
-                Substr(PEOP.ADDRESS_OTHE,1,1) = 'N' THEN 3
-            ELSE 0 
-        END As SECONDARY_VALID,
-        CASE
-            WHEN Length(PEOP.PHONE_WORK) = 10 THEN 1
-            ELSE 0
-        END As PHONE_VALID,
+        PEOP.EMPLOYEE_NUMBER,
+        PEOP.LOCATION_DESCRIPTION,
         PEOP.ADDRESS_POST,
         PEOP.ADDRESS_SARS,
         PEOP.ADDRESS_HOME,
@@ -5930,8 +5907,6 @@ def People_test_masterfile():
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
-
 
     """ ****************************************************************************
     END OF SCRIPT
