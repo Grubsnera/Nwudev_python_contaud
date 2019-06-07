@@ -57,6 +57,9 @@ TEST ACADEMIC SUPPORT INVALID
 TEST GRADE INVALID
 TEST LEAVE CODE INVALID
 
+BIO MASTER FILE
+
+
 END OF SCRIPT
 *****************************************************************************"""
 
@@ -5877,6 +5880,58 @@ def People_test_masterfile():
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    """ ****************************************************************************
+    BIO MASTER FILE
+    *****************************************************************************"""
+
+    # BUILD TABLE WITH EMPLOYEE BIO INFORMATION
+    print("Obtain master list of all employees...")
+    sr_file = "X008_bio_master"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        'NWU' AS ORG,
+        CASE PEOP.LOCATION_DESCRIPTION
+            WHEN 'MAFIKENG CAMPUS' THEN 'MAF'
+            WHEN 'POTCHEFSTROOM CAMPUS' THEN 'POT'
+            WHEN 'VAAL TRIANGLE CAMPUS' THEN 'VAA'
+            ELSE 'NWU'
+        END AS LOC,
+        PEOP.EMPLOYEE_NUMBER As EMP,
+        CASE
+            WHEN Substr(PEOP.ADDRESS_POST,1,1) = 'Y' THEN 1
+            ELSE 0
+        END As PRIMARY_VALID,
+        CASE 
+            WHEN Substr(PEOP.ADDRESS_POST,1,1) = 'Y' AND
+                Substr(PEOP.ADDRESS_POST,2) <> Substr(PEOP.ADDRESS_SARS,2) AND
+                Substr(PEOP.ADDRESS_SARS,1,1) = 'N' THEN 1
+            WHEN Substr(PEOP.ADDRESS_POST,1,1) = 'Y' AND
+                Substr(PEOP.ADDRESS_POST,2) <> Substr(PEOP.ADDRESS_HOME,2) AND
+                Substr(PEOP.ADDRESS_HOME,1,1) = 'N' THEN 2
+            WHEN Substr(PEOP.ADDRESS_POST,1,1) = 'Y' AND
+                Substr(PEOP.ADDRESS_POST,2) <> Substr(PEOP.ADDRESS_OTHE,2) AND
+                Substr(PEOP.ADDRESS_OTHE,1,1) = 'N' THEN 3
+            ELSE 0 
+        END As SECONDARY_VALID,
+        CASE
+            WHEN Length(PEOP.PHONE_WORK) = 10 THEN 1
+            ELSE 0
+        END As PHONE_VALID,
+        PEOP.ADDRESS_POST,
+        PEOP.ADDRESS_SARS,
+        PEOP.ADDRESS_HOME,
+        PEOP.ADDRESS_OTHE,
+        PEOP.PHONE_WORK
+    From
+        PEOPLE.X002_PEOPLE_CURR PEOP
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+
 
     """ ****************************************************************************
     END OF SCRIPT
