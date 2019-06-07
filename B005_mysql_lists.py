@@ -111,6 +111,7 @@ def mysql_lists():
     people_idno VARCHAR(150),
     people_passport VARCHAR(150),
     people_permit VARCHAR(150),
+    people_permit_expire DATETIME,
     people_tax_number VARCHAR(150),
     people_sex VARCHAR(30),
     people_marital_status VARCHAR(30),
