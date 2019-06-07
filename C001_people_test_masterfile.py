@@ -4751,7 +4751,7 @@ def People_test_masterfile():
         From
           X007ab_detail FIND Left Join
           X007ac_getprev PREV ON PREV.FIELD1 = FIND.EMPLOYEE_NUMBER AND
-              X007ac_getprev.DATE_RETEST >= Date('%TODAY%')          
+              PREV.DATE_RETEST >= Date('%TODAY%')          
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
@@ -5026,7 +5026,7 @@ def People_test_masterfile():
         From
           X007bb_detail FIND Left Join
           X007bc_getprev PREV ON PREV.FIELD1 = FIND.EMPLOYEE_NUMBER AND
-              X007bc_getprev.DATE_RETEST >= Date('%TODAY%')          
+              PREV.DATE_RETEST >= Date('%TODAY%')          
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
@@ -5335,7 +5335,7 @@ def People_test_masterfile():
         From
           X007cb_detail FIND Left Join
           X007cc_getprev PREV ON PREV.FIELD1 = FIND.EMPLOYEE_NUMBER AND
-              X007cc_getprev.DATE_RETEST >= Date('%TODAY%')          
+              PREV.DATE_RETEST >= Date('%TODAY%')          
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
@@ -5684,7 +5684,7 @@ def People_test_masterfile():
         From
           X007db_detail FIND Left Join
           X007dc_getprev PREV ON PREV.FIELD1 = FIND.EMPLOYEE_NUMBER AND
-              X007dc_getprev.DATE_RETEST >= Date('%TODAY%')          
+              PREV.DATE_RETEST >= Date('%TODAY%')          
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
