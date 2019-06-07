@@ -6472,7 +6472,7 @@ def People_test_masterfile():
     if i_finding_before > 0 and i_finding_after > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
-            'EMPLOYEE WORK PHONE INVALID' As Audit_finding,
+            'EMPLOYEE POST ADDRESS NOT PRIMARY' As Audit_finding,
             FIND.EMP AS Employee,
             FIND.NAME_LIST As Name,
             FIND.ADDRESS_POST As Address_post,
