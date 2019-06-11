@@ -447,7 +447,7 @@ def People_test_masterfile():
     if i_find > 0 and i_coun > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
-            'ID NUMBER BLANK' As AUDIT_FINDING,
+            'EMPLOYEE ID NUMBER BLANK' As AUDIT_FINDING,
             X002ah_id_cont.ORG AS ORGANIZATION,
             X002ah_id_cont.LOC AS LOCATION,
             X002ah_id_cont.EMP AS EMPLOYEE_NUMBER,
