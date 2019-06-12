@@ -9,6 +9,7 @@ import sqlite3
 
 # IMPORT OWN MODULES
 from _my_modules import funcfile
+from _my_modules import funcdate
 
 """ INDEX **********************************************************************
 ENVIRONMENT
@@ -22,7 +23,7 @@ ENVIRONMENT
 *****************************************************************************"""
 
 # OPEN THE SCRIPT LOG FILE
-print("-----------------")    
+print("-----------------")
 print("B001_PEOPLE_LISTS")
 print("-----------------")
 funcfile.writelog("Now")
@@ -44,7 +45,7 @@ print("OPEN THE DATABASES")
 funcfile.writelog("OPEN THE DATABASES")
 
 # OPEN THE WORKING DATABASE
-with sqlite3.connect(so_path+so_file) as so_conn:
+with sqlite3.connect(so_path + so_file) as so_conn:
     so_curs = so_conn.cursor()
 funcfile.writelog("%t OPEN DATABASE: PEOPLE.SQLITE")
 
