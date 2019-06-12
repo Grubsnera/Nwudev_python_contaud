@@ -67,29 +67,37 @@ print("Build table for start date analysis...")
 sr_file: str = "X001_People_start_end_master"
 s_sql = "CREATE TABLE " + sr_file + " As " + """
 Select
-    PEOP.EMPLOYEE_NUMBER,
-    PEOP.NAME_LIST,
-    PEOP.NATIONALITY_NAME,
-    PEOP.SEX,
-    PEOP.RACE_DESC,
+    PEOP.EMPLOYEE_NUMBER AS EMP,
+    PEOP.NAME_LIST AS NAME,
+    CASE
+        WHEN PEOP.NATIONALITY_NAME = 'SOUTH AFRICA' THEN PEOP.NATIONALITY_NAME
+        ELSE 'FOREIGN'
+    END AS NATIONALITY,
+    PEOP.SEX As GENDER,
+    PEOP.RACE_DESC AS RACE,
     'START' As DATE_TYPE,
     PEOP.EMP_START As DATE,
     '' As LEAVING_REASON,
     '' As LEAVE_REASON_DESCRIP,
-    PEOP.LOCATION_DESCRIPTION,
+    PEOP.LOCATION_DESCRIPTION AS CAMPUS,
     PEOP.ACAD_SUPP,
-    PEOP.FACULTY,
-    PEOP.EMPLOYMENT_CATEGORY,
+    CASE
+        WHEN PEOP.FACULTY <> '' THEN PEOP.FACULTY
+        ELSE 'SUPPORT'
+    END AS FACULTY,
+    PEOP.EMPLOYMENT_CATEGORY AS PERM_TEMP,
     PEOP.DIVISION,
     PEOP.GRADE,
     PEOP.GRADE_CALC,
     PEOP.POSITION_NAME,
     PEOP.JOB_NAME,
     PEOP.PERSON_TYPE,
-    Strftime('%m', PEOP.EMP_START) As MONTH
+    Strftime('%m', PEOP.EMP_START) As MONTH,
+    Cast(1 As Int) As COUNT
 From
     PEOPLE.X002_PEOPLE_CURR_YEAR PEOP
 Where
+    Substr(PEOP.LEAVE_REASON_DESCRIP,1,6) <> 'AD HOC' And
     Substr(PEOP.PERSON_TYPE,1,6) <> 'AD HOC' And
     Strftime('%Y', PEOP.EMP_START) = '%CYEAR%'
 """
@@ -104,33 +112,43 @@ print("Build table for start date analysis...")
 sr_file: str = "X001_People_start_end_master"
 s_sql = "INSERT INTO " + sr_file + " " + """
 Select
-    PEOP.EMPLOYEE_NUMBER,
-    PEOP.NAME_LIST,
-    PEOP.NATIONALITY_NAME,
-    PEOP.SEX,
-    PEOP.RACE_DESC,
+    PEOP.EMPLOYEE_NUMBER AS EMP,
+    PEOP.NAME_LIST AS NAME,
+    CASE
+        WHEN PEOP.NATIONALITY_NAME = 'SOUTH AFRICA' THEN PEOP.NATIONALITY_NAME
+        ELSE 'FOREIGN'
+    END AS NATIONALITY,        
+    PEOP.SEX AS GENDER,
+    PEOP.RACE_DESC AS RACE,
     'END' As DATE_TYPE,
     PEOP.EMP_END As DATE,
     PEOP.LEAVING_REASON,
     PEOP.LEAVE_REASON_DESCRIP,
-    PEOP.LOCATION_DESCRIPTION,
+    PEOP.LOCATION_DESCRIPTION AS CAMPUS,
     PEOP.ACAD_SUPP,
-    PEOP.FACULTY,
-    PEOP.EMPLOYMENT_CATEGORY,
+    CASE
+        WHEN PEOP.FACULTY <> '' THEN PEOP.FACULTY
+        ELSE 'SUPPORT'
+    END AS FACULTY,
+    PEOP.EMPLOYMENT_CATEGORY AS PERM_TEMP,
     PEOP.DIVISION,
     PEOP.GRADE,
     PEOP.GRADE_CALC,
     PEOP.POSITION_NAME,
     PEOP.JOB_NAME,
     PEOP.PERSON_TYPE,
-    Strftime('%m', PEOP.EMP_END) As MONTH
+    Strftime('%m', PEOP.EMP_END) As MONTH,
+    Cast(-1 As Int) As COUNT
 From
     PEOPLE.X002_PEOPLE_CURR_YEAR PEOP
 Where
+    Substr(PEOP.LEAVE_REASON_DESCRIP,1,6) <> 'AD HOC' And
     Substr(PEOP.PERSON_TYPE,1,6) <> 'AD HOC' And
-    Strftime('%Y', PEOP.EMP_END) = '%CYEAR%'
+    Strftime('%Y', PEOP.EMP_END) = '%CYEAR%' And
+    PEOP.EMP_END < Date('%TODAY%')
 """
 s_sql = s_sql.replace("%CYEAR%", funcdate.cur_year())
+s_sql = s_sql.replace("%TODAY%", funcdate.today())
 so_curs.execute(s_sql)
 so_conn.commit()
 funcfile.writelog("%t BUILD TABLE: X003_PEOPLE_ORGA_REF")
