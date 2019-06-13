@@ -88,7 +88,7 @@ Select
     PEOP.EMPLOYMENT_CATEGORY AS PERM_TEMP,
     PEOP.DIVISION,
     PEOP.GRADE,
-    PEOP.GRADE_CALC,
+    Substr(PEOP.GRADE_CALC,1,3) As GRADE_CALC,
     PEOP.POSITION_NAME,
     PEOP.JOB_NAME,
     PEOP.PERSON_TYPE,
@@ -133,7 +133,7 @@ Select
     PEOP.EMPLOYMENT_CATEGORY AS PERM_TEMP,
     PEOP.DIVISION,
     PEOP.GRADE,
-    PEOP.GRADE_CALC,
+    Substr(PEOP.GRADE_CALC,1,3) As GRADE_CALC,
     PEOP.POSITION_NAME,
     PEOP.JOB_NAME,
     PEOP.PERSON_TYPE,
@@ -148,7 +148,7 @@ Where
     PEOP.EMP_END < Date('%TODAY%')
 """
 s_sql = s_sql.replace("%CYEAR%", funcdate.cur_year())
-s_sql = s_sql.replace("%TODAY%", funcdate.today())
+s_sql = s_sql.replace("%TODAY%", funcdate.cur_monthend())
 so_curs.execute(s_sql)
 so_conn.commit()
 funcfile.writelog("%t BUILD TABLE: X003_PEOPLE_ORGA_REF")
