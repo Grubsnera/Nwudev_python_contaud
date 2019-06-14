@@ -1,4 +1,10 @@
-import sys
+# IMPORT SYSTEM MODULES
+
+# IMPORT OWN MODULES
+from _my_modules import funcfile
+from _my_modules import funcmail
+from _my_modules import funcdate
+from _my_modules import funcsys
 
 """ SCRIPT TO RUN ON A SCHEDULED TIME FOR ALL PYTHON SCRIPTS *******************
 Author: Albert J van Rensburg (NWU21162395)
@@ -19,16 +25,6 @@ VSS STUDENT MASTER FILE TESTS
 """****************************************************************************
 ENVIRONMENT
 ****************************************************************************"""
-
-# ADD OWN MODULE PATH
-sys.path.append('S:/_my_modules')
-sys.path.append('S:/')
-
-# IMPORT OWN MODULES
-import funcdate
-import funcfile
-import funcmail
-import funcsys
 
 # DECLARE VARIABLES
 l_mail = True
@@ -182,6 +178,20 @@ if funcdate.today_dayname() in "MonTueWedThuFri":
 else:
     print("VSS STUDENT DEFERMENT MASTER FILE do not run on Saturdays and Sundays")
     funcfile.writelog("SCRIPT: C301_REPORT_STUDENT_DEFERMENT_RUN: DO NOT RUN ON SATURDAYS AND SUNDAYS")
+
+""" ***************************************************************************
+PEOPLE LIST MASTERFILE
+****************************************************************************"""
+
+if funcdate.today_dayname() in "MonTueWedThuFri":
+    import C003_people_list_masterfile
+    try:
+        C003_people_list_masterfile.people_list_masterfile()
+    except Exception as e:
+        funcsys.ErrMessage(e)
+else:
+    print("PEOPLE MASTERFILE LISTS do not run on Saturdays and Sundays")
+    funcfile.writelog("SCRIPT: C003_PEOPLE_LIST_MASTERFILE_RUN: DO NOT RUN ON SATURDAYS AND SUNDAYS")
 
 """****************************************************************************
 MYSQL LISTS
