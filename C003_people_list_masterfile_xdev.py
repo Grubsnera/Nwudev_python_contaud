@@ -62,6 +62,12 @@ BEGIN OF SCRIPT
 print("BEGIN OF SCRIPT")
 funcfile.writelog("BEGIN OF SCRIPT")
 
+""" ****************************************************************************
+LIST ENTRY EXIT DATES MASTER
+*****************************************************************************"""
+print("ENTRY EXIT DATES MASTER")
+funcfile.writelog("ENTRY EXIT DATES MASTER")
+
 # BUILD PEOPLE START AND END DATE MASTER TABLE
 print("Build table for start date analysis...")
 sr_file: str = "X001_People_start_end_master"
@@ -105,7 +111,7 @@ so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 s_sql = s_sql.replace("%CYEAR%", funcdate.cur_year())
 so_curs.execute(s_sql)
 so_conn.commit()
-funcfile.writelog("%t BUILD TABLE: X003_PEOPLE_ORGA_REF")
+funcfile.writelog("%t BUILD TABLE: X001_People_start_end_master")
 
 # BUILD PEOPLE START AND END DATE MASTER TABLE
 print("Build table for start date analysis...")
@@ -151,7 +157,7 @@ s_sql = s_sql.replace("%CYEAR%", funcdate.cur_year())
 s_sql = s_sql.replace("%TODAY%", funcdate.cur_monthend())
 so_curs.execute(s_sql)
 so_conn.commit()
-funcfile.writelog("%t BUILD TABLE: X003_PEOPLE_ORGA_REF")
+funcfile.writelog("%t INSERT TABLE: X001_People_start_end_master")
 
 """ ****************************************************************************
 END OF SCRIPT
