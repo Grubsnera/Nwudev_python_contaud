@@ -63,101 +63,64 @@ print("BEGIN OF SCRIPT")
 funcfile.writelog("BEGIN OF SCRIPT")
 
 """ ****************************************************************************
-LIST ENTRY EXIT DATES MASTER
+LIST AGE MASTER
 *****************************************************************************"""
-print("ENTRY EXIT DATES MASTER")
-funcfile.writelog("ENTRY EXIT DATES MASTER")
+print("AGE MASTER")
+funcfile.writelog("AGE MASTER")
 
 # BUILD PEOPLE START AND END DATE MASTER TABLE
-print("Build table for start date analysis...")
-sr_file: str = "X001_People_start_end_master"
+print("Build table for age analysis...")
+sr_file: str = "X002_People_age_master"
 s_sql = "CREATE TABLE " + sr_file + " As " + """
 Select
     PEOP.EMPLOYEE_NUMBER AS EMP,
     PEOP.NAME_LIST AS NAME,
+    PEOP.EMPLOYMENT_CATEGORY AS PERM_TEMP,
+    PEOP.ACAD_SUPP,
+    PEOP.SEX As GENDER,
+    PEOP.RACE_DESC AS RACE,
+    PEOP.PERSON_TYPE,
+    PEOP.GRADE,
+    Substr(PEOP.GRADE_CALC,1,3) As GRADE_CALC,
     CASE
         WHEN PEOP.NATIONALITY_NAME = 'SOUTH AFRICA' THEN PEOP.NATIONALITY_NAME
         ELSE 'FOREIGN'
     END AS NATIONALITY,
-    PEOP.SEX As GENDER,
-    PEOP.RACE_DESC AS RACE,
-    'START' As DATE_TYPE,
-    PEOP.EMP_START As DATE,
-    '' As LEAVING_REASON,
-    '' As LEAVE_REASON_DESCRIP,
     PEOP.LOCATION_DESCRIPTION AS CAMPUS,
-    PEOP.ACAD_SUPP,
     CASE
         WHEN PEOP.FACULTY <> '' THEN PEOP.FACULTY
         ELSE 'SUPPORT'
     END AS FACULTY,
-    PEOP.EMPLOYMENT_CATEGORY AS PERM_TEMP,
     PEOP.DIVISION,
-    PEOP.GRADE,
-    Substr(PEOP.GRADE_CALC,1,3) As GRADE_CALC,
     PEOP.POSITION_NAME,
     PEOP.JOB_NAME,
-    PEOP.PERSON_TYPE,
-    Strftime('%m', PEOP.EMP_START) As MONTH,
+    PEOP.AGE,
+    CASE
+        When PEOP.AGE >= 10 And PEOP.AGE <= 20 Then '00-20'
+        When PEOP.AGE >= 21 And PEOP.AGE <= 25 Then '21-25'
+        When PEOP.AGE >= 26 And PEOP.AGE <= 30 Then '26-30'
+        When PEOP.AGE >= 31 And PEOP.AGE <= 35 Then '31-35'
+        When PEOP.AGE >= 36 And PEOP.AGE <= 40 Then '36-40'
+        When PEOP.AGE >= 41 And PEOP.AGE <= 45 Then '41-45'
+        When PEOP.AGE >= 46 And PEOP.AGE <= 50 Then '46-50'
+        When PEOP.AGE >= 51 And PEOP.AGE <= 55 Then '51-55'
+        When PEOP.AGE >= 56 And PEOP.AGE <= 60 Then '56-60'
+        When PEOP.AGE >= 61 And PEOP.AGE <= 65 Then '61-65'
+        When PEOP.AGE >= 66 And PEOP.AGE <= 70 Then '66-70'
+        Else '71-99'
+    END As AGE_GROUP,
     Cast(1 As Int) As COUNT
 From
-    PEOPLE.X002_PEOPLE_CURR_YEAR PEOP
+    PEOPLE.X002_PEOPLE_CURR PEOP
 Where
-    Substr(PEOP.LEAVE_REASON_DESCRIP,1,6) <> 'AD HOC' And
-    Substr(PEOP.PERSON_TYPE,1,6) <> 'AD HOC' And
-    Strftime('%Y', PEOP.EMP_START) = '%CYEAR%'
+    Substr(PEOP.PERSON_TYPE,1,6) <> 'AD HOC'
+Order By
+    PEOP.AGE Desc
 """
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-s_sql = s_sql.replace("%CYEAR%", funcdate.cur_year())
 so_curs.execute(s_sql)
 so_conn.commit()
-funcfile.writelog("%t BUILD TABLE: X001_People_start_end_master")
-
-# BUILD PEOPLE START AND END DATE MASTER TABLE
-print("Build table for start date analysis...")
-sr_file: str = "X001_People_start_end_master"
-s_sql = "INSERT INTO " + sr_file + " " + """
-Select
-    PEOP.EMPLOYEE_NUMBER AS EMP,
-    PEOP.NAME_LIST AS NAME,
-    CASE
-        WHEN PEOP.NATIONALITY_NAME = 'SOUTH AFRICA' THEN PEOP.NATIONALITY_NAME
-        ELSE 'FOREIGN'
-    END AS NATIONALITY,        
-    PEOP.SEX AS GENDER,
-    PEOP.RACE_DESC AS RACE,
-    'END' As DATE_TYPE,
-    PEOP.EMP_END As DATE,
-    PEOP.LEAVING_REASON,
-    PEOP.LEAVE_REASON_DESCRIP,
-    PEOP.LOCATION_DESCRIPTION AS CAMPUS,
-    PEOP.ACAD_SUPP,
-    CASE
-        WHEN PEOP.FACULTY <> '' THEN PEOP.FACULTY
-        ELSE 'SUPPORT'
-    END AS FACULTY,
-    PEOP.EMPLOYMENT_CATEGORY AS PERM_TEMP,
-    PEOP.DIVISION,
-    PEOP.GRADE,
-    Substr(PEOP.GRADE_CALC,1,3) As GRADE_CALC,
-    PEOP.POSITION_NAME,
-    PEOP.JOB_NAME,
-    PEOP.PERSON_TYPE,
-    Strftime('%m', PEOP.EMP_END) As MONTH,
-    Cast(-1 As Int) As COUNT
-From
-    PEOPLE.X002_PEOPLE_CURR_YEAR PEOP
-Where
-    Substr(PEOP.LEAVE_REASON_DESCRIP,1,6) <> 'AD HOC' And
-    Substr(PEOP.PERSON_TYPE,1,6) <> 'AD HOC' And
-    Strftime('%Y', PEOP.EMP_END) = '%CYEAR%' And
-    PEOP.EMP_END < Date('%TODAY%')
-"""
-s_sql = s_sql.replace("%CYEAR%", funcdate.cur_year())
-s_sql = s_sql.replace("%TODAY%", funcdate.cur_monthend())
-so_curs.execute(s_sql)
-so_conn.commit()
-funcfile.writelog("%t INSERT TABLE: X001_People_start_end_master")
+funcfile.writelog("%t BUILD TABLE: X002_People_age_master")
 
 """ ****************************************************************************
 END OF SCRIPT
