@@ -5663,7 +5663,7 @@ def People_test_masterfile():
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: "+sr_file)
         # Export findings to previous reported file
-        i_coun = funcsys.tablerowcount(so_curs,sr_file)
+        i_coun = funcsys.tablerowcount(so_curs, sr_file)
         if i_coun > 0:
             print("*** " +str(i_coun)+ " Finding(s) to report ***")    
             sr_filet = sr_file
