@@ -1,7 +1,7 @@
 ﻿Select
-    X000_Documents.DOC_HDR_ID,
-    Count(X000_Documents.DOC_TYP_ID) As Count_DOC_TYP_ID
+    X001ac_Report_payments_approute_curr.*
 From
-    X000_Documents
-Group By
-    X000_Documents.DOC_HDR_ID
+    X001ac_Report_payments_approute_curr
+Where
+    SubStr(X001ac_Report_payments_approute_curr.VENDOR_ID, 1, 8) =
+    X001ac_Report_payments_approute_curr.APPROVE_EMP_NO
