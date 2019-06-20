@@ -1132,7 +1132,6 @@ def Kfs_lists():
     print("BUILD PREVIOUS YEAR PAYMENTS")
     funcfile.writelog("BUILD PREVIOUS YEAR PAYMENTS")
 
-
     # BUILD PAYMENTS WITH LAST INITIATOR AND APPROVER
     print("Build previous year payments...")
     sr_file = "X001aa_Report_payments_prev"
