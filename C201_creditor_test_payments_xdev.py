@@ -59,26 +59,26 @@ print("BEGIN OF SCRIPT")
 funcfile.writelog("BEGIN OF SCRIPT")
 
 """ ****************************************************************************
-TEST EMPLOYEE APPROVE OWN PAYMENT
+TEST EMPLOYEE INITIATE OWN PAYMENT
 *****************************************************************************"""
-print("EMPLOYEE APPROVE OWN PAYMENT")
-funcfile.writelog("EMPLOYEE APPROVE OWN PAYMENT")
+print("EMPLOYEE INITIATE OWN PAYMENT")
+funcfile.writelog("EMPLOYEE INITIATE OWN PAYMENT")
 
 # DECLARE VARIABLES
 i_coun: int = 0
 
 # OBTAIN TEST DATA
 print("Obtain test data...")
-sr_file: str = "X003aa_empl_approve_own_payment"
+sr_file: str = "X003ba_empl_initiate_own_payment"
 s_sql = "CREATE TABLE " + sr_file + " AS " + """
 Select
     PAYMENT.*
 From
-    X001ac_Report_payments_approute_curr PAYMENT
+    X001ad_Report_payments_initroute_curr PAYMENT
 Where
-    SubStr(PAYMENT.VENDOR_ID, 1, 8) = PAYMENT.APPROVE_EMP_NO
+    SubStr(PAYMENT.VENDOR_ID, 1, 8) = PAYMENT.INIT_EMP_NO
 Order By
-    PAYMENT.APPROVE_DATE
+    PAYMENT.INIT_DATE
 ;"""
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 so_curs.execute(s_sql)
@@ -87,24 +87,30 @@ funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
 # IDENTIFY FINDINGS
 print("Identify findings...")
-sr_file = "X003ab_findings"
+sr_file = "X003bb_findings"
 s_sql = "CREATE TABLE " + sr_file + " AS " + """
 Select
     CASE
+        WHEN PAYMENT.DOC_TYPE = 'CDV' THEN PAYMENT.DOC_TYPE
+        WHEN PAYMENT.DOC_TYPE = 'CM' THEN PAYMENT.DOC_TYPE
+        WHEN PAYMENT.DOC_TYPE = 'NEDV' THEN PAYMENT.DOC_TYPE
+        WHEN PAYMENT.DOC_TYPE = 'PREQ' THEN PAYMENT.DOC_TYPE
+        WHEN PAYMENT.DOC_TYPE = 'RV' THEN PAYMENT.DOC_TYPE
+        WHEN PAYMENT.DOC_TYPE = 'SPDV' THEN PAYMENT.DOC_TYPE
         WHEN PAYMENT.DOC_TYPE = 'PDV' THEN PAYMENT.DOC_TYPE
         WHEN PAYMENT.DOC_TYPE = 'DV' THEN PAYMENT.DOC_TYPE
         ELSE 'OTHER'
     END As DOC_TYPE,
     PAYMENT.VENDOR_ID,
     PAYMENT.CUST_PMT_DOC_NBR,
-    PAYMENT.APPROVE_EMP_NAME,
-    PAYMENT.APPROVE_DATE,
+    PAYMENT.INIT_EMP_NAME,
+    PAYMENT.INIT_DATE,
     PAYMENT.NET_PMT_AMT,
     PAYMENT.ACC_DESC
 From
-    X003aa_empl_approve_own_payment PAYMENT
+    X003ba_empl_initiate_own_payment PAYMENT
 Where
-    PAYMENT.APPROVE_STATUS = "APPROVED"    
+    PAYMENT.INIT_STATUS = "COMPLETED"    
 ;"""
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 so_curs.execute(s_sql)
@@ -114,10 +120,10 @@ funcfile.writelog("%t BUILD TABLE: " + sr_file)
 # COUNT THE NUMBER OF FINDINGS
 i_find: int = funcsys.tablerowcount(so_curs, sr_file)
 print("*** Found " + str(i_find) + " exceptions ***")
-funcfile.writelog("%t FINDING: " + str(i_find) + " EMPL APPROVE OWN PAYMENT invalid finding(s)")
+funcfile.writelog("%t FINDING: " + str(i_find) + " EMPL INITIATE OWN PAYMENT invalid finding(s)")
 
 # GET PREVIOUS FINDINGS
-sr_file = "X003ac_get_previous"
+sr_file = "X003bc_get_previous"
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 if i_find > 0:
     print("Import previously reported findings...")
@@ -141,7 +147,7 @@ if i_find > 0:
         # Populate the column variables
         if row[0] == "PROCESS":
             continue
-        elif row[0] != "employee_approve_own_payment":
+        elif row[0] != "employee_initiate_own_payment":
             continue
         else:
             s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "','" + \
@@ -155,14 +161,14 @@ if i_find > 0:
     funcfile.writelog("%t IMPORT TABLE: " + ed_path + "001_reported.txt (" + sr_file + ")")
 
 # ADD PREVIOUS FINDINGS
-sr_file = "X003ad_add_previous"
+sr_file = "X003bd_add_previous"
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 if i_find > 0:
     print("Join previously reported to current findings...")
     s_sql = "CREATE TABLE " + sr_file + " AS" + """
     Select
         FIND.*,
-        'employee_approve_own_payment' AS PROCESS,
+        'employee_initiate_own_payment' AS PROCESS,
         '%TODAY%' AS DATE_REPORTED,
         '%DAYS%' AS DATE_RETEST,
         PREV.PROCESS AS PREV_PROCESS,
@@ -170,8 +176,8 @@ if i_find > 0:
         PREV.DATE_RETEST AS PREV_DATE_RETEST,
         PREV.DATE_MAILED
     From
-        X003ab_findings FIND Left Join
-        X003ac_get_previous PREV ON PREV.FIELD1 = FIND.VENDOR_ID And
+        X003bb_findings FIND Left Join
+        X003bc_get_previous PREV ON PREV.FIELD1 = FIND.VENDOR_ID And
             PREV.FIELD2 = FIND.CUST_PMT_DOC_NBR And
             PREV.DATE_RETEST >= Date('%TODAY%')
     ;"""
@@ -184,7 +190,7 @@ if i_find > 0:
 
 # BUILD LIST TO UPDATE FINDINGS
 # NOTE ADD CODE
-sr_file = "X003ae_new_previous"
+sr_file = "X003be_new_previous"
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 if i_find > 0:
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -199,7 +205,7 @@ if i_find > 0:
         PREV.DATE_RETEST,
         PREV.DATE_MAILED
     From
-        X003ad_add_previous PREV
+        X003bd_add_previous PREV
     Where
         PREV.PREV_PROCESS Is Null
     ;"""
@@ -225,7 +231,7 @@ if i_find > 0:
         funcfile.writelog("%t FINDING: No new findings to export")
 
 # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
-sr_file = "X003af_officer"
+sr_file = "X003bf_officer"
 so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
 if i_find > 0 and i_coun > 0:
     print("Import reporting officers for mail purposes...")
@@ -240,7 +246,7 @@ if i_find > 0 and i_coun > 0:
       PEOPLE.X000_OWN_HR_LOOKUPS LOOKUP
       LEFT JOIN PEOPLE.X002_PEOPLE_CURR PERSON ON PERSON.EMPLOYEE_NUMBER = LOOKUP.LOOKUP_DESCRIPTION
     WHERE
-      LOOKUP.LOOKUP = 'TEST_EMPL_APPROVE_OWN_PAYMENT_OFFICER'
+      LOOKUP.LOOKUP = 'TEST_EMPL_INITIATE_OWN_PAYMENT_OFFICER'
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -248,7 +254,7 @@ if i_find > 0 and i_coun > 0:
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
 # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
-sr_file = "X003ag_supervisor"
+sr_file = "X003bg_supervisor"
 so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
 if i_find > 0 and i_coun > 0:
     print("Import reporting supervisors for mail purposes...")
@@ -263,7 +269,7 @@ if i_find > 0 and i_coun > 0:
       PEOPLE.X000_OWN_HR_LOOKUPS LOOKUP
       LEFT JOIN PEOPLE.X002_PEOPLE_CURR PERSON ON PERSON.EMPLOYEE_NUMBER = LOOKUP.LOOKUP_DESCRIPTION
     WHERE
-      LOOKUP.LOOKUP = 'TEST_EMPL_APPROVE_OWN_PAYMENT_SUPERVISOR'
+      LOOKUP.LOOKUP = 'TEST_EMPL_INITIATE_OWN_PAYMENT_SUPERVISOR'
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -271,7 +277,7 @@ if i_find > 0 and i_coun > 0:
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
 # ADD CONTACT DETAILS TO FINDINGS
-sr_file = "X003ah_contact"
+sr_file = "X003bh_contact"
 so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
 if i_find > 0 and i_coun > 0:
     print("Add contact details to findings...")
@@ -280,8 +286,8 @@ if i_find > 0 and i_coun > 0:
         FIND.DOC_TYPE,
         FIND.VENDOR_ID,
         FIND.CUST_PMT_DOC_NBR,
-        FIND.APPROVE_EMP_NAME,
-        FIND.APPROVE_DATE,
+        FIND.INIT_EMP_NAME,
+        FIND.INIT_DATE,
         FIND.NET_PMT_AMT,
         FIND.ACC_DESC,
         CAMP_OFF.EMP As CAMP_OFF_NUMB,
@@ -297,11 +303,11 @@ if i_find > 0 and i_coun > 0:
         ORG_SUP.NAME As ORG_SUP_NAME,
         ORG_SUP.MAIL As ORG_SUP_MAIL
     From
-        X003ad_add_previous FIND Left Join
-        X003af_officer CAMP_OFF On CAMP_OFF.TYPE = FIND.DOC_TYPE Left Join
-        X003af_officer ORG_OFF On ORG_OFF.TYPE = 'NWU' Left Join
-        X003ag_supervisor CAMP_SUP On CAMP_SUP.TYPE = FIND.DOC_TYPE Left Join
-        X003ag_supervisor ORG_SUP On ORG_SUP.TYPE = 'NWU'
+        X003bd_add_previous FIND Left Join
+        X003bf_officer CAMP_OFF On CAMP_OFF.TYPE = FIND.DOC_TYPE Left Join
+        X003bf_officer ORG_OFF On ORG_OFF.TYPE = 'NWU' Left Join
+        X003bg_supervisor CAMP_SUP On CAMP_SUP.TYPE = FIND.DOC_TYPE Left Join
+        X003bg_supervisor ORG_SUP On ORG_SUP.TYPE = 'NWU'
     Where
         FIND.PREV_PROCESS IS NULL
     ;"""
@@ -311,17 +317,17 @@ if i_find > 0 and i_coun > 0:
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
 # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
-sr_file = "X003ax_empl_approve_own_payment"
+sr_file = "X003bx_empl_initiate_own_payment"
 so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
 if i_find > 0 and i_coun > 0:
     print("Build the final report")
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
-        'EMPLOYEE APPROVE OWN PAYMENT' As Audit_finding,
+        'EMPLOYEE INITIATE OWN PAYMENT' As Audit_finding,
         FIND.VENDOR_ID As Vendor_id,
-        FIND.APPROVE_EMP_NAME As Employee_name,
+        FIND.INIT_EMP_NAME As Employee_name,
         FIND.CUST_PMT_DOC_NBR As Edoc,
-        FIND.APPROVE_DATE As Approve_date,
+        FIND.INIT_DATE As Initiation_date,
         FIND.NET_PMT_AMT As Amount,
         FIND.ACC_DESC As Note,
         FIND.CAMP_OFF_NAME AS Responsible_Officer,
@@ -337,7 +343,7 @@ if i_find > 0 and i_coun > 0:
         FIND.ORG_SUP_NUMB AS Org_Supervisor_Numb,
         FIND.ORG_SUP_MAIL AS Org_Supervisor_Mail
     From
-        X003ah_contact FIND
+        X003bh_contact FIND
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
