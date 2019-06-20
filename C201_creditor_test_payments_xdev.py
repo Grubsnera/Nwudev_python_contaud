@@ -31,7 +31,7 @@ so_path = "W:/Kfs/"  # Source database path
 so_file = "Kfs_test_creditor.sqlite"  # Source database
 re_path = "R:/Kfs/"  # Results path
 ed_path = "S:/_external_data/"  # External data path
-l_export = False
+l_export = True
 l_mail = False
 l_record = False
 
@@ -69,7 +69,7 @@ i_coun: int = 0
 
 # OBTAIN TEST DATA
 print("Obtain test data...")
-sr_file: str = "X003aa_employee_approve_own_payment"
+sr_file: str = "X003aa_empl_approve_own_payment"
 s_sql = "CREATE TABLE " + sr_file + " AS " + """
 Select
     PAYMENT.*
@@ -102,7 +102,7 @@ Select
     PAYMENT.NET_PMT_AMT,
     PAYMENT.ACC_DESC
 From
-    X003aa_employee_approve_own_payment PAYMENT
+    X003aa_empl_approve_own_payment PAYMENT
 Where
     PAYMENT.APPROVE_STATUS = "APPROVED"    
 ;"""
@@ -317,6 +317,7 @@ if i_find > 0 and i_coun > 0:
     print("Build the final report")
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
+        'EMPLOYEE APPROVE OWN PAYMENT' As Audit_finding,
         FIND.VENDOR_ID As Vendor_id,
         FIND.APPROVE_EMP_NAME As Employee_name,
         FIND.CUST_PMT_DOC_NBR As Edoc,
@@ -343,15 +344,14 @@ if i_find > 0 and i_coun > 0:
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     # Export findings
-    if l_export == True and funcsys.tablerowcount(so_curs,sr_file) > 0:
+    if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
         print("Export findings...")
-        sr_filet = sr_file
         sx_path = re_path + funcdate.cur_year() + "/"
         sx_file = "People_test_007cx_grade_invalid_"
-        sx_filet = sx_file + funcdate.today_file()
-        s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
+        sx_file_date = sx_file + funcdate.today_file()
+        s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
+        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_date, s_head)
         funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 else:
     s_sql = "CREATE TABLE " + sr_file + " (" + """
@@ -361,6 +361,34 @@ else:
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+""" ****************************************************************************
+TEST EMPLOYEE INITIATE OWN PAYMENT
+*****************************************************************************"""
+print("EMPLOYEE INITIATE OWN PAYMENT")
+funcfile.writelog("EMPLOYEE INITIATE OWN PAYMENT")
+
+# DECLARE VARIABLES
+i_coun: int = 0
+
+# OBTAIN TEST DATA
+print("Obtain test data...")
+sr_file: str = "X003ba_employee_initiate_own_payment"
+s_sql = "CREATE TABLE " + sr_file + " AS " + """
+Select
+    PAYMENT.*
+From
+    X001ad_Report_payments_initroute_curr PAYMENT
+Where
+    SubStr(PAYMENT.VENDOR_ID, 1, 8) = PAYMENT.INIT_EMP_NO
+Order By
+    PAYMENT.INIT_DATE
+;"""
+so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+so_curs.execute(s_sql)
+so_conn.commit()
+funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
 
 """ ****************************************************************************
 END OF SCRIPT
