@@ -1126,6 +1126,53 @@ def Kfs_lists():
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
+    # BUILD PAYMENT LIST WITH ALL INITIATORS
+    print("Build current payment full initiators list...")
+    sr_file = "X001ad_Report_payments_initroute_curr"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        PAYMENT.PMT_GRP_ID,
+        PAYMENT.VENDOR_ID,
+        PAYMENT.PAYEE_NAME,
+        PAYMENT.VENDOR_NAME,
+        PAYMENT.VENDOR_REG_NR,
+        PAYMENT.VENDOR_TAX_NR,
+        PAYMENT.VENDOR_BANK_NR,
+        PAYMENT.VENDOR_TYPE,
+        PAYMENT.PAYEE_TYP_DESC,
+        PAYMENT.DISB_NBR,
+        PAYMENT.DISB_TS,
+        PAYMENT.PMT_DT,
+        PAYMENT.PMT_STAT_CD,
+        PAYMENT.PAYMENT_STATUS,
+        PAYMENT.CUST_PMT_DOC_NBR,
+        PAYMENT.INV_NBR,
+        PAYMENT.REQS_NBR,
+        PAYMENT.PO_NBR,
+        PAYMENT.INV_DT,
+        PAYMENT.ORIG_INV_AMT,
+        PAYMENT.NET_PMT_AMT,
+        DOC.DOC_TYP_NM As DOC_TYPE,
+        Upper(DOC.LBL) As DOC_LABEL,        
+        INIT.PRNCPL_ID AS INIT_EMP_NO,
+        INIT.NAME_ADDR AS INIT_EMP_NAME,
+        INIT.ACTN_DT AS INIT_DATE,
+        INIT.ACTN AS INIT_STATUS,
+        INIT.ANNOTN AS NOTE,
+        ACC.COST_STRING As ACC_COST_STRING,
+        ACC.FDOC_LINE_DESC As ACC_DESC,
+        ACC.COUNT_LINES As ACC_LINE_COUNT        
+    From
+        X001aa_Report_payments_curr PAYMENT Left Join
+        X000_Documents DOC On DOC.DOC_HDR_ID = PAYMENT.CUST_PMT_DOC_NBR Left Join
+        X000_Account_line_unique ACC On ACC.FDOC_NBR = PAYMENT.CUST_PMT_DOC_NBR Left Join       
+        X000_Completed_curr INIT On INIT.DOC_HDR_ID = PAYMENT.CUST_PMT_DOC_NBR
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
     """ ****************************************************************************
     BUILD PREVIOUS YEAR PAYMENTS
     *****************************************************************************"""
