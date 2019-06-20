@@ -5831,7 +5831,7 @@ def People_test_masterfile():
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
-    # IMPORT GRADE BENCHMARK
+    # IMPORT LEAVE BENCHMARK
     sr_file = "X007_leave_master"
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     print("Import leave benchmark...")
@@ -5923,7 +5923,8 @@ def People_test_masterfile():
     From
         X007da_leave FIND
     Where
-        FIND.VALID = 'FALSE'
+        FIND.VALID = 'FALSE' And
+        FIND.PERSON_TYPE <> 'EXTRAORDINARY APPOINTMENT'
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     so_curs.execute(s_sql)
@@ -6162,7 +6163,7 @@ def People_test_masterfile():
             print("Export findings...")
             sr_filet = sr_file
             sx_path = re_path + funcdate.cur_year() + "/"
-            sx_file = "People_test_007dx_grade_invalid_"
+            sx_file = "People_test_007dx_leave_invalid_"
             sx_filet = sx_file + funcdate.today_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
