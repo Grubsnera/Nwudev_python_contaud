@@ -4922,10 +4922,54 @@ def People_test_masterfile():
     GRADE LEAVE MASTER FILE
     *****************************************************************************"""
 
+    # OBTAIN LIST OF LONG SERVICE AWARD DATES
+    # BUILD THE CURRENT ELEMENT LIST
+    print("Obtain long service awards...")
+    sr_file = "X007_long_service_date"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select Distinct
+        per.employee_number,
+        per.full_name,
+        Upper(petf.element_name) As ELEMENT_NAME,
+        Upper(pivf.name) As INPUT_VALUE,
+        Date(Substr(peevf.screen_entry_value,1,4)||'-'||
+            Substr(peevf.screen_entry_value,6,2)||'-'||
+            Substr(peevf.screen_entry_value,9,2)) As DATE_LONG_SERVICE
+    From
+        PAYROLL.PAY_ELEMENT_ENTRIES_F_CURR peef,
+        PEOPLE.PER_ALL_PEOPLE_F per,
+        PEOPLE.PER_ALL_ASSIGNMENTS_F paaf,
+        PAYROLL.PAY_ELEMENT_TYPES_F petf,
+        PAYROLL.PAY_ELEMENT_ENTRY_VALUES_F_CURR peevf,
+        PAYROLL.PAY_INPUT_VALUES_F pivf
+    Where
+        per.person_id = paaf.person_id And
+        paaf.assignment_id = peef.assignment_id And
+        peef.element_type_id = petf.element_type_id And
+        peevf.element_entry_id = peef.element_entry_id And
+        pivf.element_type_id = petf.element_type_id And
+        pivf.input_value_id = peevf.input_value_id And
+        Date('%TODAY%') Between peef.effective_start_date And peef.effective_end_date And
+        Date('%TODAY%') Between per.effective_start_date And per.effective_end_date And
+        Date('%TODAY%') Between paaf.effective_start_date And paaf.effective_end_date And
+        Date('%TODAY%') Between petf.effective_start_date And petf.effective_end_date And
+        paaf.primary_flag = 'Y' And
+        peevf.screen_entry_value > 0 And
+        Upper(petf.element_name) = 'NWU LONG SERVICE AWARD' And
+        Upper(pivf.name) = 'LONG SERVICE DATE'
+    Order By
+        per.employee_number    
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = s_sql.replace("%TODAY%", funcdate.today())
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
     # BUILD GRADE AND LEAVE MASTER TABLE
     print("Obtain master list of all grades and leave codes...")
     sr_file = "X007_grade_leave_master"
-    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         'NWU' As ORG,
         CASE LOCATION_DESCRIPTION
@@ -4936,6 +4980,7 @@ def People_test_masterfile():
         END AS LOC,
         PEOPLE.EMPLOYEE_NUMBER,
         PEOPLE.EMP_START,
+        LONG.DATE_LONG_SERVICE As SERVICE_START,
         PEOPLE.ACAD_SUPP,
         PEOPLE.EMPLOYMENT_CATEGORY,
         PEOPLE.PERSON_TYPE,
@@ -4944,18 +4989,20 @@ def People_test_masterfile():
         PEOPLE.GRADE,
         PEOPLE.GRADE_CALC,
         CASE
-            WHEN PEOPLE.EMP_START < Date('2017-05-01') THEN 'OLD'
+            WHEN LONG.DATE_LONG_SERVICE Is Null And PEOPLE.EMP_START < Date('2017-05-01') THEN 'OLD'
+            WHEN LONG.DATE_LONG_SERVICE < Date('2017-05-01') THEN 'OLD'
             ELSE '2017'
         END As PERIOD
     From
-        PEOPLE.X002_PEOPLE_CURR PEOPLE
+        PEOPLE.X002_PEOPLE_CURR PEOPLE Left Join
+        X007_long_service_date LONG On LONG.EMPLOYEE_NUMBER = PEOPLE.EMPLOYEE_NUMBER
     Where
         Substr(PEOPLE.PERSON_TYPE,1,6) <> 'AD HOC'
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """ ****************************************************************************
     TEST PERMANENT TEMPORARY CATEGORY
@@ -5828,14 +5875,15 @@ def People_test_masterfile():
     funcfile.writelog("LEAVE CODE INVALID")
 
     # DECLARE TEST VARIABLES
-    i_find = 0 # Number of findings before previous reported findings
-    i_coun = 0 # Number of new findings to report
+    i_find = 0  # Number of findings before previous reported findings
+    i_coun = 0  # Number of new findings to report
 
     # IMPORT LEAVE BENCHMARK
     sr_file = "X007_leave_master"
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     print("Import leave benchmark...")
-    so_curs.execute("CREATE TABLE " + sr_file + "(CATEGORY TEXT,ACADSUPP TEXT,PERIOD TEXT,WEEK TEXT, GRADE TEXT, LEAVE TEXT)")
+    so_curs.execute(
+        "CREATE TABLE " + sr_file + "(CATEGORY TEXT,ACADSUPP TEXT,PERIOD TEXT,WEEK TEXT, GRADE TEXT, LEAVE TEXT)")
     s_cols = ""
     co = open(ed_path + "001_employee_leave.csv", "r")
     co_reader = csv.reader(co)
@@ -5845,17 +5893,18 @@ def People_test_masterfile():
         if row[0] == "CATEGORY":
             continue
         else:
-            s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "','" + row[3] + "','" + row[4] + "','" + row[5] + "')"
+            s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "','" + row[
+                3] + "','" + row[4] + "','" + row[5] + "')"
             so_curs.execute(s_cols)
     so_conn.commit()
     # Close the impoted data file
     co.close()
     funcfile.writelog("%t IMPORT TABLE: " + ed_path + "001_employee_leave.csv (" + sr_file + ")")
 
-    # IDENTIFY FINDING 
+    # IDENTIFY FINDING
     print("Identify incorrect data...")
     sr_file = "X007da_leave"
-    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         MASTER.ORG,
         MASTER.LOC,
@@ -5867,6 +5916,7 @@ def People_test_masterfile():
         MASTER.PERSON_TYPE,
         MASTER.ASS_WEEK_LEN,
         MASTER.EMP_START,
+        MASTER.SERVICE_START,
         MASTER.PERIOD,
         CASE
             WHEN MASTER.EMPLOYMENT_CATEGORY = 'PERMANENT' And Instr(PERM.GRADE,'.'||Trim(MASTER.GRADE)||'~') > 0 And Instr(PERM.LEAVE,'.'||Trim(MASTER.LEAVE_CODE)||'~') > 0 Then 'TRUE'
@@ -5891,10 +5941,10 @@ def People_test_masterfile():
             TEMP.GRADE = MASTER.PERSON_TYPE And
             TEMP.CATEGORY = 'TEMPORARY'
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
     # EXPORT TEST DATA
     if l_export == True:
         sr_filet = sr_file
@@ -5911,7 +5961,7 @@ def People_test_masterfile():
     # ADD DETAILS
     print("Add data details...")
     sr_file = "X007db_detail"
-    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         FIND.ORG,
         FIND.LOC,
@@ -5919,29 +5969,31 @@ def People_test_masterfile():
         CASE
             WHEN FIND.LEAVEP Is Null THEN FIND.LEAVET
             ELSE FIND.LEAVEP
-        END As LEAVE_PROP
+        END As LEAVE_PROP,
+        FIND.SERVICE_START
     From
         X007da_leave FIND
     Where
         FIND.VALID = 'FALSE' And
         FIND.PERSON_TYPE <> 'EXTRAORDINARY APPOINTMENT'
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # COUNT THE NUMBER OF FINDINGS
-    i_find = funcsys.tablerowcount(so_curs,sr_file)
-    print("*** Found "+str(i_find)+" exceptions ***")
-    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL LEAVE CODE invalid finding(s)")
+    i_find = funcsys.tablerowcount(so_curs, sr_file)
+    print("*** Found " + str(i_find) + " exceptions ***")
+    funcfile.writelog("%t FINDING: " + str(i_find) + " EMPL LEAVE CODE invalid finding(s)")
 
     # GET PREVIOUS FINDINGS
     sr_file = "X007dc_getprev"
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_find > 0:
         print("Import previously reported findings...")
-        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,DATE_MAILED TEXT)")
+        so_curs.execute(
+            "CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,DATE_MAILED TEXT)")
         s_cols = ""
         co = open(ed_path + "001_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -5953,7 +6005,10 @@ def People_test_masterfile():
             elif row[0] != "empl_leave_invalid":
                 continue
             else:
-                s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "','" + row[3] + "','" + row[4] + "','" + row[5] + "','" + row[6] + "','" + row[7] + "','" + row[8] + "')"
+                s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "','" + \
+                         row[
+                             3] + "','" + row[4] + "','" + row[5] + "','" + row[6] + "','" + row[7] + "','" + row[
+                             8] + "')"
                 so_curs.execute(s_cols)
         so_conn.commit()
         # Close the impoted data file
@@ -5962,7 +6017,7 @@ def People_test_masterfile():
 
     # ADD PREVIOUS FINDINGS
     sr_file = "X007dd_addprev"
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_find > 0:
         print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
@@ -5981,17 +6036,17 @@ def People_test_masterfile():
               PREV.DATE_RETEST >= Date('%TODAY%')          
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%",funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(10))
+        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%TODAYPLUS%", funcdate.today_plusdays(10))
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD LIST TO UPDATE FINDINGS
     sr_file = "X007de_newprev"
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_find > 0:
-        s_sql = "CREATE TABLE "+sr_file+" AS " + """
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
           FIND.PROCESS,
           FIND.EMPLOYEE_NUMBER As FIELD1,
@@ -6007,14 +6062,14 @@ def People_test_masterfile():
         Where
           FIND.PREV_PROCESS Is Null
         ;"""
-        so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
         so_conn.commit()
-        funcfile.writelog("%t BUILD TABLE: "+sr_file)
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
         # Export findings to previous reported file
-        i_coun = funcsys.tablerowcount(so_curs,sr_file)
+        i_coun = funcsys.tablerowcount(so_curs, sr_file)
         if i_coun > 0:
-            print("*** " +str(i_coun)+ " Finding(s) to report ***")    
+            print("*** " + str(i_coun) + " Finding(s) to report ***")
             sr_filet = sr_file
             sx_path = ed_path
             sx_file = "001_reported"
@@ -6022,16 +6077,16 @@ def People_test_masterfile():
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             # Write the data
             if l_record == True:
-                funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head,"a",".txt")
-                funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
-                funcfile.writelog("%t EXPORT DATA: "+sr_file)
+                funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head, "a", ".txt")
+                funcfile.writelog("%t FINDING: " + str(i_coun) + " new finding(s) to export")
+                funcfile.writelog("%t EXPORT DATA: " + sr_file)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
 
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
     sr_file = "X007df_officer"
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_find > 0 and i_coun > 0:
         print("Import reporting officers for mail purposes...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -6054,7 +6109,7 @@ def People_test_masterfile():
 
     # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
     sr_file = "X007dg_supervisor"
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_find > 0 and i_coun > 0:
         print("Import reporting supervisors for mail purposes...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -6077,7 +6132,7 @@ def People_test_masterfile():
 
     # ADD CONTACT DETAILS TO FINDINGS
     sr_file = "X007dh_contact"
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_find > 0 and i_coun > 0:
         print("Add contact details to findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -6094,6 +6149,7 @@ def People_test_masterfile():
             PEOP.GRADE As PGRADE,
             PEOP.ASS_WEEK_LEN,
             PEOP.EMP_START,
+            FIND.SERVICE_START,
             CAMP_OFF.EMP As CAMP_OFF_NUMB,
             CAMP_OFF.NAME As CAMP_OFF_NAME,
             CAMP_OFF.MAIL As CAMP_OFF_MAIL,
@@ -6123,7 +6179,7 @@ def People_test_masterfile():
 
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
     sr_file = "X007dx_leavecode_invalid"
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_find > 0 and i_coun > 0:
         print("Build the final report")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -6134,6 +6190,7 @@ def People_test_masterfile():
             FIND.LEAVE_CODE As Invalid_leave_code,
             FIND.LEAVE_PROP As Proposed_leave_code,
             FIND.EMP_START As Start_date,
+            FIND.SERVICE_START As Service_start_date,
             FIND.PGRADE As Grade,
             FIND.EMPLOYMENT_CATEGORY As Category,
             FIND.PERSON_TYPE As Person_type,
@@ -6159,7 +6216,7 @@ def People_test_masterfile():
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
         # Export findings
-        if l_export == True and funcsys.tablerowcount(so_curs,sr_file) > 0:
+        if l_export == True and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
             sr_filet = sr_file
             sx_path = re_path + funcdate.cur_year() + "/"
@@ -6168,7 +6225,7 @@ def People_test_masterfile():
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
-            funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
+            funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
     else:
         s_sql = "CREATE TABLE " + sr_file + " (" + """
         BLANK TEXT
