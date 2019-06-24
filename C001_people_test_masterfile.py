@@ -110,6 +110,8 @@ def People_test_masterfile():
     # ATTACH DATA SOURCES
     so_curs.execute("ATTACH DATABASE '" + so_path + "People.sqlite' AS 'PEOPLE'")
     funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
+    so_curs.execute("ATTACH DATABASE 'W:/People_payroll/People_payroll.sqlite' AS 'PAYROLL'")
+    funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
 
     """ ****************************************************************************
     TEMPORARY SCRIPT (Delete after one run) 2019-05-31

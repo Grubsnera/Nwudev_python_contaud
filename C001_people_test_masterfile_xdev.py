@@ -39,7 +39,7 @@ so_file = "People_test_masterfile.sqlite"  # Source database
 re_path = "R:/People/"  # Results path
 l_export: bool = False
 l_mail: bool = False
-l_record: bool = False
+l_record: bool = True
 
 """*****************************************************************************
 OPEN THE DATABASES
@@ -54,6 +54,8 @@ funcfile.writelog("%t OPEN DATABASE: PEOPLE_TEST_MASTERFILE.SQLITE")
 
 # ATTACH DATA SOURCES
 so_curs.execute("ATTACH DATABASE '" + so_path + "People.sqlite' AS 'PEOPLE'")
+funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
+so_curs.execute("ATTACH DATABASE 'W:/People_payroll/People_payroll.sqlite' AS 'PAYROLL'")
 funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
 
 """ ****************************************************************************
