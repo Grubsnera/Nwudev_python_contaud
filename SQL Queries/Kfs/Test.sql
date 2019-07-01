@@ -1,7 +1,7 @@
 ﻿Select
-    X001ac_Report_payments_approute_curr.*
+    X001ad_Report_payments_initroute_curr.DOC_TYPE,
+    Count(X001ad_Report_payments_initroute_curr.DISB_NBR) As Count_DISB_NBR
 From
-    X001ac_Report_payments_approute_curr
-Where
-    SubStr(X001ac_Report_payments_approute_curr.VENDOR_ID, 1, 8) =
-    X001ac_Report_payments_approute_curr.APPROVE_EMP_NO
+    X001ad_Report_payments_initroute_curr
+Group By
+    X001ad_Report_payments_initroute_curr.DOC_TYPE
