@@ -4,6 +4,16 @@ Created on: 11 Mar 2018
 Copyright: Albert J v Rensburg
 """
 
+# IMPORT PYTHON MODULES
+import datetime
+import sqlite3
+import sys
+
+# IMPORT OWN MODULES
+from _my_modules import funcdate
+from _my_modules import funccsv
+from _my_modules import funcfile
+
 """ INDEX **********************************************************************
 ENVIRONMENT
 OPEN THE DATABASES
@@ -19,24 +29,16 @@ BUILD PAYMENT TYPE SUMMARY PER MONTH
 END OF SCRIPT
 *****************************************************************************"""
 
-def Kfs_lists():
+
+def kfs_lists():
+    """
+    Script to build standard KFS lists
+    :return: Nothing
+    """
 
     """*****************************************************************************
     ENVIRONMENT
     *****************************************************************************"""
-
-    # Import python modules
-    import datetime
-    import sqlite3
-    import sys
-
-    # Add own module path
-    sys.path.append('S:\\_my_modules')
-
-    # Import own modules
-    import funcdate
-    import funccsv
-    import funcfile
 
     # Open the script log file ******************************************************
 
@@ -75,53 +77,6 @@ def Kfs_lists():
     print("BEGIN OF SCRIPT")
     funcfile.writelog("BEGIN OF SCRIPT")
 
-    # Add calculated fields to the current gl transaction list *********************
-
-    print("Calculate current gl columns...")
-
-    # Calc combined cost string
-    if "CALC_COST_STRING" not in funccsv.get_colnames_sqlite(so_curs,"GL_ENTRY_T_CURR"):
-        so_curs.execute("ALTER TABLE GL_ENTRY_T_CURR ADD COLUMN CALC_COST_STRING TEXT;")
-        so_curs.execute("UPDATE GL_ENTRY_T_CURR SET CALC_COST_STRING = Trim(FIN_COA_CD) || '.' || Trim(ACCOUNT_NBR) || '.' || Trim(FIN_OBJECT_CD);")
-        so_conn.commit()
-        funcfile.writelog("%t CALC COLUMNS: Combined cost string")
-
-    # Calc amount
-    if "CALC_AMOUNT" not in funccsv.get_colnames_sqlite(so_curs,"GL_ENTRY_T_CURR"):
-        so_curs.execute("ALTER TABLE GL_ENTRY_T_CURR ADD COLUMN CALC_AMOUNT REAL;")
-        so_curs.execute("UPDATE GL_ENTRY_T_CURR " + """
-                        SET CALC_AMOUNT = 
-                        CASE
-                           WHEN TRN_DEBIT_CRDT_CD = "C" THEN TRN_LDGR_ENTR_AMT * -1
-                           ELSE TRN_LDGR_ENTR_AMT
-                        END
-                        ;""")
-        so_conn.commit()
-        funcfile.writelog("%t CALC COLUMNS: Amount")
-
-    # Add calculated fields to the previous gl transaction list ********************
-
-    print("Calculate previous gl columns...")
-
-    # Calc combined cost string
-    if "CALC_COST_STRING" not in funccsv.get_colnames_sqlite(so_curs,"GL_ENTRY_T_PREV"):
-        so_curs.execute("ALTER TABLE GL_ENTRY_T_PREV ADD COLUMN CALC_COST_STRING TEXT;")
-        so_curs.execute("UPDATE GL_ENTRY_T_PREV SET CALC_COST_STRING = Trim(FIN_COA_CD) || '.' || Trim(ACCOUNT_NBR) || '.' || Trim(FIN_OBJECT_CD);")
-        so_conn.commit()
-        funcfile.writelog("%t CALC COLUMNS: Combined prev cost string")
-
-    # Calc amount
-    if "CALC_AMOUNT" not in funccsv.get_colnames_sqlite(so_curs,"GL_ENTRY_T_PREV"):
-        so_curs.execute("ALTER TABLE GL_ENTRY_T_PREV ADD COLUMN CALC_AMOUNT REAL;")
-        so_curs.execute("UPDATE GL_ENTRY_T_PREV " + """
-                        SET CALC_AMOUNT = 
-                        CASE
-                           WHEN TRN_DEBIT_CRDT_CD = "C" THEN TRN_LDGR_ENTR_AMT * -1
-                           ELSE TRN_LDGR_ENTR_AMT
-                        END
-                        ;""")
-        so_conn.commit()
-        funcfile.writelog("%t CALC COLUMNS: Prev amount")
 
     # Build organization list ******************************************************
 
