@@ -5,13 +5,10 @@ Copyright: Albert J v Rensburg
 """
 
 # IMPORT PYTHON MODULES
-import datetime
 import sqlite3
-import sys
 
 # IMPORT OWN MODULES
 from _my_modules import funcdate
-from _my_modules import funccsv
 from _my_modules import funcfile
 
 """ INDEX **********************************************************************
@@ -40,21 +37,19 @@ def kfs_lists():
     ENVIRONMENT
     *****************************************************************************"""
 
-    # Open the script log file ******************************************************
-
+    # OPEN THE LOG WRITER
     funcfile.writelog("Now")
     funcfile.writelog("SCRIPT: B002_KFS_LISTS")
     funcfile.writelog("----------------------")
     print("--------------")
     print("B002_KFS_LISTS")
     print("--------------")
-    ilog_severity = 1
 
-    # Declare variables
-    so_path = "W:/Kfs/" #Source database path
-    so_file = "Kfs.sqlite" #Source database
-    s_sql = "" #SQL statements
-    l_vacuum = False # Vacuum database
+    # DECLARE VARIABLES
+    so_path = "W:/Kfs/"  # Source database path
+    so_file = "Kfs.sqlite"  # Source database
+    s_sql = ""  # SQL statements
+    l_vacuum = False  # Vacuum database
 
     """*****************************************************************************
     OPEN THE DATABASES

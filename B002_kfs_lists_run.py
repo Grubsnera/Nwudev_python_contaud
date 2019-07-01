@@ -1,32 +1,24 @@
+"""
+Script to EXECUTE the KFS LISTS script.
+"""
 
-import sys
+# IMPORT OWN MODULES
+from _my_modules import funcfile
+from _my_modules import funcsys
+import B002_kfs_lists
 
-# Add own module path
-sys.path.append('S:/_my_modules')
-sys.path.append('S:/')
-
-import funcfile
-import funcmail
-import funcsys
-
+# OPEN THE LOG WRITER
 funcfile.writelog("Now")
 funcfile.writelog("SCRIPT: A000_RUN_ALL")
 funcfile.writelog("--------------------")
 
-import B002_kfs_lists
-
-# Environment
-l_mail = True
-
-# Kfs lists
+# RUN KFS LISTS
 try:
     B002_kfs_lists.kfs_lists()
 except Exception as e:
     funcsys.ErrMessage(e)
 
-# Close the log writer
+# CLOSE THE LOG WRITER
 funcfile.writelog("Now")
 funcfile.writelog("COMPLETED: A000_RUN_ALL")
 funcfile.writelog("-----------------------")
-
-
