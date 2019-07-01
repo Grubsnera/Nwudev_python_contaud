@@ -20,7 +20,7 @@ l_mail = True
 
 # Kfs lists
 try:
-    B002_kfs_lists.Kfs_lists()
+    B002_kfs_lists.kfs_lists()
 except Exception as e:
     funcsys.ErrMessage(e)
 

@@ -72,7 +72,7 @@ KFS LISTS
 if funcdate.today_dayname() in "TueWedThuFriSat":
     import B002_kfs_lists
     try:
-        B002_kfs_lists.Kfs_lists()
+        B002_kfs_lists.kfs_lists()
     except Exception as e:
         funcsys.ErrMessage(e)
 else:
