@@ -1,7 +1,7 @@
 ﻿Select
-    X001ad_Report_payments_initroute_curr.DOC_TYPE,
-    Count(X001ad_Report_payments_initroute_curr.DISB_NBR) As Count_DISB_NBR
+    X000_Account.ACCOUNT_NBR,
+    Count(X000_Account.VER_NBR) As Count_VER_NBR
 From
-    X001ad_Report_payments_initroute_curr
+    X000_Account
 Group By
-    X001ad_Report_payments_initroute_curr.DOC_TYPE
+    X000_Account.ACCOUNT_NBR
