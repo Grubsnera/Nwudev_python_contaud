@@ -32,9 +32,9 @@ so_path = "W:/Kfs/"  # Source database path
 so_file = "Kfs_test_gl_transaction.sqlite"  # Source database
 re_path = "R:/Kfs/"  # Results path
 ed_path = "S:/_external_data/"  # External data path
-l_export = True
-l_mail = True
-l_record = False
+l_export = False
+l_mail = False
+l_record = True
 
 """*****************************************************************************
 OPEN THE DATABASES
@@ -103,6 +103,7 @@ Select
     PAY.VENDOR_ID,
     PAY.PAYEE_NAME As STUDENT_NAME,
     PAY.INV_NBR,
+    PAY.PAYEE_TYP_DESC,
     PAY.COMPLETE_EMP_NO As EMP_INI,
     PAY.APPROVE_EMP_NO As EMP_APP
 From
@@ -347,31 +348,47 @@ if i_finding_before > 0 and i_finding_after > 0:
         MASTER.TRANSACTION_DT,
         MASTER.CALC_AMOUNT,
         MASTER.TRN_LDGR_ENTR_DESC,
+        MASTER.PAYEE_TYP_DESC,
+        MASTER.INV_NBR,
         PREV.CALC_COST_STRING,
         MASTER.ORG_NM,
         MASTER.ACCOUNT_NM,
         CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
         CAMP_OFF.NAME As CAMP_OFF_NAME,
-        CAMP_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za' As CAMP_OFF_MAIL,
+        CASE
+            WHEN  CAMP_OFF.EMPLOYEE_NUMBER <> '' THEN CAMP_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
+            ELSE CAMP_OFF.EMAIL_ADDRESS
+        END As CAMP_OFF_MAIL,
         CAMP_OFF.EMAIL_ADDRESS As CAMP_OFF_MAIL2,
         CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
         CAMP_SUP.NAME As CAMP_SUP_NAME,
-        CAMP_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za' As CAMP_SUP_MAIL,
+        CASE
+            WHEN CAMP_SUP.EMPLOYEE_NUMBER <> '' THEN CAMP_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
+            ELSE CAMP_SUP.EMAIL_ADDRESS
+        END As CAMP_SUP_MAIL,
         CAMP_SUP.EMAIL_ADDRESS As CAMP_SUP_MAIL2,
         ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
         ORG_OFF.NAME As ORG_OFF_NAME,
-        ORG_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za' As ORG_OFF_MAIL,
+        CASE
+            WHEN ORG_OFF.EMPLOYEE_NUMBER <> '' THEN ORG_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
+            ELSE ORG_OFF.EMAIL_ADDRESS
+        END As ORG_OFF_MAIL,
         ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL2,
         ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
         ORG_SUP.NAME As ORG_SUP_NAME,
-        ORG_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za' As ORG_SUP_MAIL,
+        CASE
+            WHEN ORG_SUP.EMPLOYEE_NUMBER <> '' THEN ORG_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
+            ELSE ORG_SUP.EMAIL_ADDRESS
+        END As ORG_SUP_MAIL,
         ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL2,
         PREV.EMP_INI,
         INI.NAME_ADDR As INAME,
-        INI.EMAIL_ADDRESS As IMAIL,
+        PREV.EMP_INI||'@nwu.ac.za' As IMAIL,
+        INI.EMAIL_ADDRESS As IMAIL2,
         PREV.ACC_MGR,
         ACCM.NAME_ADDR As ANAME,
-        ACCM.EMAIL_ADDRESS As AMAIL
+        PREV.ACC_MGR||'@nwu.ac.za' As AMAIL,
+        ACCM.EMAIL_ADDRESS As AMAIL2
     From
         X001ad_add_previous PREV
         Left Join X001af_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.LOC
@@ -403,7 +420,9 @@ if i_finding_before > 0 and i_finding_after > 0:
         FIND.STUDENT_NAME As Name,
         FIND.FDOC_NBR As Edoc,
         FIND.TRANSACTION_DT As Date,
+        FIND.INV_NBR As Invoice,
         FIND.CALC_AMOUNT As Amount,
+        FIND.PAYEE_TYP_DESC As Vendor_type,
         CASE
             WHEN Instr(FIND.TRN_LDGR_ENTR_DESC,'<VATI-0>') > 0 THEN Substr(FIND.TRN_LDGR_ENTR_DESC,9) 
             ELSE FIND.TRN_LDGR_ENTR_DESC
