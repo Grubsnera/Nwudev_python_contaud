@@ -7,6 +7,20 @@
 ***
 *****************************************************************************"""
 
+# Import python modules
+import sqlite3
+import sys
+
+# Add own module path
+sys.path.append('S:/_my_modules')
+
+# Import own modules
+from _my_modules import funcdate
+from _my_modules import funccsv
+from _my_modules import funcfile
+from _my_modules import funcsys
+from _my_modules import funcmysql
+
 """ CONTENTS *******************************************************************
 ENVIRONMENT
 OPEN DATABASES
@@ -42,23 +56,6 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     ENVIRONMENT
     *************************************************************************"""
 
-    # Import python modules
-    import csv
-    import datetime
-    import sqlite3
-    import sys
-
-    # Add own module path
-    sys.path.append('S:/_my_modules')
-
-    # Import own modules
-    import funcdate
-    import funccsv
-    import funcfile
-    import funcmail
-    import funcsys
-    import funcmysql
-    
     # Open the script log file ******************************************************
     print("-------------------------")
     print("C200_REPORT_STUDDEB_RECON")
