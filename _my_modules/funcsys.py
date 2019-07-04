@@ -1,4 +1,5 @@
 from _my_modules import funcfile
+from _my_modules import funcmail
 
 
 def ResultIter(cursor, size=10000):
@@ -16,11 +17,14 @@ def ResultIter(cursor, size=10000):
             yield result
 
 
-def ErrMessage(e):
+def ErrMessage(e, l_mail=False, s_subject='', s_body=''):
     print(type(e))
     print(e)
     template = "An exception of type {0} occurred. Arguments:\n{1!r}"
     message = template.format(type(e).__name__, e.args)
+    if l_mail and s_subject != '' and s_body != '':
+        s_body = s_body + '\n' + type(e).__name__ + '\n' + "".join(e.args)
+        funcmail.Mail('std_fail_gmail', s_subject, s_body)
     funcfile.writelog("%t ERROR: " + type(e).__name__)
     funcfile.writelog("%t ERROR: " + "".join(e.args))
     return
