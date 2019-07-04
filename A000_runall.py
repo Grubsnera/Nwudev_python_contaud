@@ -155,6 +155,22 @@ else:
     funcfile.writelog("SCRIPT: C201_CREDITOR_TEST_PAYMENTS: DO NOT RUN ON SATURDAYS AND SUNDAYS")
 
 """****************************************************************************
+GL TEST TRANSACTIONS TESTS
+****************************************************************************"""
+
+if funcdate.today_dayname() in "MonTueWedThuFri":
+    import C202_gl_test_transactions
+    try:
+        C202_gl_test_transactions.gl_test_transactions()
+        if l_mail:
+            funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:C202_GL_TEST_TRANSACTIONS', 'NWUIAPython: Success: C202_GL_TEST_TRANSACTIONS')
+    except Exception as e:
+        funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:C202_GL_TEST_TRANSACTIONS', 'NWUIAPython: Fail: C202_GL_TEST_TRANSACTIONS')
+else:
+    print("GL TEST TRANSACTIONS TESTS do not run on Saturdays and Sundays")
+    funcfile.writelog("SCRIPT: C202_gl_test_transactions: DO NOT RUN ON SATURDAYS AND SUNDAYS")
+
+"""****************************************************************************
 KFS VSS STUDENT DEBTOR RECONCILIATION AND TESTS
 ****************************************************************************"""
 
