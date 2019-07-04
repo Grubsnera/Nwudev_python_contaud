@@ -29,6 +29,9 @@ ENVIRONMENT
 # DECLARE VARIABLES
 l_mail = True
 
+if l_mail:
+    funcmail.Mail('std_success_gmail', 'Python:Runall:Start', 'NWUIAPython: Runall: Started')
+
 # OPEN THE SCRIPT LOG FILE
 print("------------")
 print("A000_RUN_ALL")
@@ -45,8 +48,12 @@ if funcdate.today_dayname() in "TueWedThuFriSat":
     import A001_oracle_to_sqlite
     try:
         A001_oracle_to_sqlite.Oracle_to_sqlite()
+        if l_mail:
+            funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:A001_oracle_to_sqlite',
+                          'NWUIAPython: Success: A001_oracle_to_sqlite')
     except Exception as e:
-        funcsys.ErrMessage(e)
+        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:A001_oracle_to_sqlite',
+                           'NWUIAPython: Fail: A001_oracle_to_sqlite')
 else:
     print("ORACLE to SQLITE do not run on Sundays and Mondays")
     funcfile.writelog("SCRIPT: A001_ORACLE_TO_SQLITE: DO NOT RUN ON SUNDAYS AND MONDAYS")
@@ -59,8 +66,12 @@ if funcdate.today_dayname() in "TueWedThuFriSat":
     import B001_people_lists
     try:
         B001_people_lists.people_lists()
+        if l_mail:
+            funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:B001_people_lists',
+                          'NWUIAPython: Success: B001_people_lists')
     except Exception as e:
-        funcsys.ErrMessage(e)
+        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:B001_people_lists',
+                           'NWUIAPython: Fail: B001_people_lists')
 else:
     print("PEOPLE lists do not run on Sundays and Mondays")
     funcfile.writelog("SCRIPT: B001_PEOPLE_LISTS: DO NOT RUN ON SUNDAYS AND MONDAYS")
@@ -73,8 +84,12 @@ if funcdate.today_dayname() in "TueWedThuFriSat":
     import B002_kfs_lists
     try:
         B002_kfs_lists.kfs_lists()
+        if l_mail:
+            funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:B002_kfs_lists',
+                          'NWUIAPython: Success: B002_kfs_lists')
     except Exception as e:
-        funcsys.ErrMessage(e)
+        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:B002_kfs_lists',
+                           'NWUIAPython: Fail: B002_kfs_lists')
 else:
     print("KFS lists do not run on Sundays and Mondays")
     funcfile.writelog("SCRIPT: B002_KFS_LISTS: DO NOT RUN ON SUNDAYS AND MONDAYS")
@@ -87,8 +102,12 @@ if funcdate.today_dayname() in "TueWedThuFriSat":
     import B003_vss_lists
     try:
         B003_vss_lists.Vss_lists()
+        if l_mail:
+            funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:B003_vss_lists',
+                          'NWUIAPython: Success: B003_vss_lists')
     except Exception as e:
-        funcsys.ErrMessage(e)
+        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:B003_vss_lists',
+                           'NWUIAPython: Fail: B003_vss_lists')
 else:
     print("VSS lists do not run on Sundays and Mondays")
     funcfile.writelog("SCRIPT: B003_VSS_LISTS: DO NOT RUN ON SUNDAYS AND MONDAYS")
@@ -217,5 +236,5 @@ funcfile.writelog("COMPLETED: A000_RUN_ALL")
 funcfile.writelog("-----------------------")
 
 # SEND MAIL TO INDICATE THE SUCCESSFUL COMPLETION OF ALL PYTHON SCRIPTS
-if l_mail is True:
+if l_mail:
     funcmail.Mail("python_log")
