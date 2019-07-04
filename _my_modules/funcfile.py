@@ -8,8 +8,7 @@ Create: 24 Jan 2018
 import datetime
 
 
-def writelog(s_entry="\n",
-             s_path="S:/Logs/",
+def writelog(s_entry="\n", s_path="S:/Logs/",
              s_file="Python_log_" + datetime.datetime.now().strftime("%Y%m%d") + ".txt"):
     """
     Function to create log file
