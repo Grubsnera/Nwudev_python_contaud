@@ -272,7 +272,7 @@ def kfs_lists():
 
     print("Build current yr transaction list...")
 
-    s_sql = "CREATE VIEW X000_GL_trans_curr AS " + """
+    s_sql = "CREATE TABLE X000_GL_trans_curr AS " + """
     SELECT
       GL_ENTRY_T_CURR.UNIV_FISCAL_YR,
       GL_ENTRY_T_CURR.UNIV_FISCAL_PRD_CD,
@@ -313,11 +313,10 @@ def kfs_lists():
       GL_ENTRY_T_CURR.CALC_COST_STRING,
       GL_ENTRY_T_CURR.UNIV_FISCAL_PRD_CD
     """
-    so_curs.execute("DROP VIEW IF EXISTS X000_GL_trans_curr")
+    so_curs.execute("DROP TABLE IF EXISTS X000_GL_trans_curr")
     so_curs.execute(s_sql)
     so_conn.commit()
-
-    funcfile.writelog("%t BUILD VIEW: Current yr transaction list")
+    funcfile.writelog("%t BUILD TABLE: Current yr transaction list")
 
     # Build current transaction list ***********************************************
 
