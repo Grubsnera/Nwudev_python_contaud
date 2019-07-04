@@ -1,27 +1,22 @@
-""" FUNCFILE.PY ****************************************************************
+"""
 Functions to handle file functions
-Copyright (c) AB Janse v Rensburg 24 March 2018
+Author: AB Janse v Rensburg
+Create: 24 Jan 2018
 """
 
-# IMPORT OBJECTS ***************************************************************
-
-# Import the system objects
+# IMPORT SYSTEM OBJECTS
 import datetime
-import calendar
-import time
-import sys
 
-# Import own modules
-from _my_modules import funcdate
 
-# FUNCTION TO WRITE INTO LOG FILE **********************************************
-
-def writelog(s_entry="\n",s_path="S:/Logs/",s_file="Python_log_" + datetime.datetime.now().strftime("%Y%m%d") + ".txt"):
-
-    """ Parameter
-    s_entry = Text to write
-    s_path = Path of the log file (Deafault to
-    s_file = Log file name
+def writelog(s_entry="\n",
+             s_path="S:/Logs/",
+             s_file="Python_log_" + datetime.datetime.now().strftime("%Y%m%d") + ".txt"):
+    """
+    Function to create log file
+    :param s_entry: Log file entry
+    :param s_path: Log file path
+    :param s_file: Log file name
+    :return: Nothing
     """
 
     try:
@@ -32,7 +27,7 @@ def writelog(s_entry="\n",s_path="S:/Logs/",s_file="Python_log_" + datetime.date
                 fl.write("----------------\n")
                 s_entry = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")+"\n"
             elif "%t" in s_entry:
-                s_entry = s_entry.replace("%t",datetime.datetime.now().strftime("%H:%M:%S"))
+                s_entry = s_entry.replace("%t", datetime.datetime.now().strftime("%H:%M:%S"))
                 s_entry += "\n"
             else:
                 s_entry += "\n"
@@ -40,12 +35,6 @@ def writelog(s_entry="\n",s_path="S:/Logs/",s_file="Python_log_" + datetime.date
             fl.close()
             pass
     except IOError as x:
-        print('error ',x.errno,',', x.strerror)
-        """
-        if x.errno == errno.EACCES:
-            print( s_file, 'no perms')
-        elif x.errno == errno.EISDIR:
-            print( s_file, 'is directory')
-        """
+        print('error ', x.errno, ',', x.strerror)
 
     return
