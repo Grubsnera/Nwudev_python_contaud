@@ -1,14 +1,20 @@
+"""
+Script to obtain large databases from oracle
+Author: Albert Janse van Rensburg
+Created: 5 Jul 2019
+"""
 
-import sys
+# IMPORT OWN MODULES
+from _my_modules import funcdate
+from _my_modules import funcfile
+from _my_modules import funcmail
+from _my_modules import funcsys
 
-# Add own module path
-sys.path.append('S:/_my_modules')
-sys.path.append('S:/')
+# DECLARE VARIABLES
+l_mail = True
 
-import funcdate
-import funcfile
-import funcmail
-import funcsys
+if l_mail:
+    funcmail.Mail('std_success_gmail', 'Python:Start:A001_oracle_to_sqlite_large', 'NWUIAPython: Started: A001_oracle_to_sqlite_large')
 
 funcfile.writelog("Now")
 funcfile.writelog("SCRIPT: A001_ORACLE_TO_SQLITE_RUN_LARGE")
@@ -16,13 +22,12 @@ funcfile.writelog("---------------------------------------")
 
 if funcdate.today_dayname() in "MonTueWedThuFri":
     import A001_oracle_to_sqlite
-    # Environment
-    l_mail = True
-    # Extract data from oracle
     try:
         A001_oracle_to_sqlite.Oracle_to_sqlite("000b_Table - large.csv")
+        if l_mail:
+            funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:A001_oracle_to_sqlite_large', 'NWUIAPython: Success: A001_oracle_to_sqlite_large')
     except Exception as e:
-        funcsys.ErrMessage(e)
+        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:A001_oracle_to_sqlite_large', 'NWUIAPython: Fail: A001_oracle_to_sqlite_large')
 else:
     print("ORACLE to SQLITE LARGE do not run on Saturdays and Sundays")
     funcfile.writelog("SCRIPT: A001_ORACLE_TO_SQLITE_LARGE: DO NOT RUN ON SATURDAYS AND SUNDAYS")
