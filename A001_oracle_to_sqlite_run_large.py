@@ -36,3 +36,8 @@ else:
 funcfile.writelog("Now")
 funcfile.writelog("COMPLETED: A001_ORACLE_TO_SQLITE_RUN_LARGE")
 funcfile.writelog("------------------------------------------")
+
+# SEND MAIL TO INDICATE THE SUCCESSFUL COMPLETION OF ALL PYTHON SCRIPTS
+if l_mail:
+    funcmail.Mail("python_log")
+
