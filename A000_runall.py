@@ -30,7 +30,7 @@ ENVIRONMENT
 l_mail = True
 
 if l_mail:
-    funcmail.Mail('std_success_gmail', 'Python:Runall:Start', 'NWUIAPython: Runall: Started')
+    funcmail.Mail('std_success_gmail', 'Python:Success:Start_runall', 'NWUIAPython: Success: Start runall')
 
 # OPEN THE SCRIPT LOG FILE
 print("------------")
@@ -175,9 +175,9 @@ if funcdate.today_dayname() in "MonTueWedThuFri":
     try:
         C202_gl_test_transactions.gl_test_transactions()
         if l_mail:
-            funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:C202_GL_TEST_TRANSACTIONS', 'NWUIAPython: Success: C202_GL_TEST_TRANSACTIONS')
+            funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:C202_gl_test_transactions', 'NWUIAPython: Success: C202_gl_test_transactions')
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:C202_GL_TEST_TRANSACTIONS', 'NWUIAPython: Fail: C202_GL_TEST_TRANSACTIONS')
+        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:C202_gl_test_transactions', 'NWUIAPython: Fail: C202_gl_test_transactions')
 else:
     print("GL TEST TRANSACTIONS TESTS do not run on Saturdays and Sundays")
     funcfile.writelog("SCRIPT: C202_gl_test_transactions: DO NOT RUN ON SATURDAYS AND SUNDAYS")

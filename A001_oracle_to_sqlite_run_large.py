@@ -14,7 +14,7 @@ from _my_modules import funcsys
 l_mail = True
 
 if l_mail:
-    funcmail.Mail('std_success_gmail', 'Python:Start:A001_oracle_to_sqlite_large', 'NWUIAPython: Started: A001_oracle_to_sqlite_large')
+    funcmail.Mail('std_success_gmail', 'Python:Success:Start A001_oracle_to_sqlite_large', 'NWUIAPython: Success: Start A001_oracle_to_sqlite_large')
 
 funcfile.writelog("Now")
 funcfile.writelog("SCRIPT: A001_ORACLE_TO_SQLITE_RUN_LARGE")
