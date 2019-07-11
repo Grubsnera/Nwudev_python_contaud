@@ -44,6 +44,8 @@ funcfile.writelog("--------------------")
 ORACLE TO SQLITE
 ****************************************************************************"""
 
+# Test
+
 if funcdate.today_dayname() in "TueWedThuFriSat":
     import A001_oracle_to_sqlite
     try:
