@@ -511,6 +511,7 @@ def mysql_lists():
     ia_find6_diff DECIMAL(20,2),
     ia_find6_matched VARCHAR(2),
     ia_find6_period VARCHAR(7),
+    ia_find6_current VARCHAR(1),
     PRIMARY KEY (ia_find6_auto),
     INDEX fb_order_ia_find6_campus_INDEX (ia_find6_campus),
     INDEX fb_order_ia_find6_month_INDEX (ia_find6_month)
