@@ -1348,7 +1348,11 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
       CAST(X003aa_vss_gl_join.AMOUNT AS REAL) AS GL_AMOUNT,
       X003aa_vss_gl_join.DIFF,
       X003aa_vss_gl_join.MATCHED,
-      X003aa_vss_gl_join.PERIOD
+      X003aa_vss_gl_join.PERIOD,
+      CASE
+          WHEN X003aa_vss_gl_join.MONTH_VSS = '%CMONTH%' THEN 'Y'
+          ELSE 'N'
+      END As CURRENT
     FROM
       X003aa_vss_gl_join
     ORDER BY
@@ -1357,6 +1361,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
       TRANCODE
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    s_sql = s_sql.replace("%CMONTH%",funcdate.cur_month())
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)    
@@ -1426,7 +1431,8 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
       X003aa_vss_gl_join
     WHERE
       X003aa_vss_gl_join.AMOUNT IS NOT NULL AND
-      X003aa_vss_gl_join.MATCHED = 'X'
+      X003aa_vss_gl_join.MATCHED = 'X' AND
+      X003aa_vss_gl_join.CURRENT = 'N'
     ORDER BY
       X003aa_vss_gl_join.MONTH_VSS,
       X003aa_vss_gl_join.CAMPUS_VSS,
@@ -1445,7 +1451,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
       VSS.X000_OWN_LOOKUPS.LOOKUP,
       VSS.X000_OWN_LOOKUPS.LOOKUP_CODE AS CAMPUS,
       VSS.X000_OWN_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-      PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
+      PEOPLE.X002_PEOPLE_CURR.NAME_ADDR AS KNOWN_NAME,
       PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
     FROM
       VSS.X000_OWN_LOOKUPS
@@ -1466,7 +1472,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
       VSS.X000_OWN_LOOKUPS.LOOKUP,
       VSS.X000_OWN_LOOKUPS.LOOKUP_CODE AS CAMPUS,
       VSS.X000_OWN_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-      PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
+      PEOPLE.X002_PEOPLE_CURR.NAME_ADDR AS KNOWN_NAME,
       PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
     FROM
       VSS.X000_OWN_LOOKUPS
