@@ -534,8 +534,9 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     # Export the data
-    if funcsys.tablerowcount(so_curs,sr_file) > 0:
+    if funcsys.tablerowcount(so_curs,sr_file) == 3:
         gl_month = funcdate.prev_month()
+        """
         # Export the data
         print("Export gl post month...")
         sr_filet = sr_file
@@ -546,6 +547,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
         funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
         funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
         #print(gl_month)
+        """
     else:
         p_month = str(int(funcdate.prev_month())-1)
         if int(p_month) < 10:
@@ -1412,30 +1414,31 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     *************************************************************************"""
     print("TEST NON MATCHING TRANSACTION TYPES")
     funcfile.writelog("TEST NON MATCHING TRANSACTION TYPES")
-    
+
     # Identify transaction types that did not match ********************************
     print("Identify non matching transaction types...")
     sr_file = "X004ba_nomatch_trantype"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     SELECT
-      UPPER(SUBSTR(TRAN.CAMPUS_VSS,1,3))||TRIM(TRAN.MONTH_VSS)||TRIM(TRAN.TRANSCODE_VSS) AS ROWID,
+      UPPER(SUBSTR(TRAN.CAMPUS,1,3))||TRIM(TRAN.MONTH)||TRIM(TRAN.TRANCODE) AS ROWID,
       'NWU' AS ORG,
-      TRAN.CAMPUS_VSS AS CAMPUS,
-      TRAN.MONTH_VSS AS MONTH,
-      TRAN.TRANSCODE_VSS AS TRAN_TYPE,
-      TRAN.TEMP_DESC_E AS TRAN_DESCRIPTION,
-      TRAN.AMOUNT_VSS AS AMOUNT_VSS,
-      TRAN.AMOUNT AS AMOUNT_GL,
-      TRAN.AMOUNT_VSS-TRAN.AMOUNT AS DIFF
+      TRAN.CAMPUS,
+      TRAN.MONTH,
+      TRAN.TRANCODE AS TRAN_TYPE,
+      TRAN.VSS_DESCRIPTION AS TRAN_DESCRIPTION,
+      TRAN.VSS_AMOUNT AS AMOUNT_VSS,
+      TRAN.GL_AMOUNT AS AMOUNT_GL,
+      TRAN.DIFF
     FROM
-      X003aa_vss_gl_join TRAN
+      X003ax_vss_gl_join TRAN
     WHERE
-      TRAN.AMOUNT IS NOT NULL AND
-      TRAN.MATCHED = 'X'
+      TRAN.GL_AMOUNT IS NOT NULL AND
+      TRAN.MATCHED = 'X' AND
+      TRAN.CURRENT = 'N'
     ORDER BY
-      TRAN.MONTH_VSS,
-      TRAN.CAMPUS_VSS,
-      TRAN.TRANSCODE_VSS
+      TRAN.MONTH,
+      TRAN.CAMPUS,
+      TRAN.TRANCODE
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
