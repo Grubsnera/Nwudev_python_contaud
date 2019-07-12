@@ -1418,25 +1418,24 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     sr_file = "X004ba_nomatch_trantype"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     SELECT
-      UPPER(SUBSTR(X003aa_vss_gl_join.CAMPUS_VSS,1,3))||TRIM(X003aa_vss_gl_join.MONTH_VSS)||TRIM(X003aa_vss_gl_join.TRANSCODE_VSS) AS ROWID,
+      UPPER(SUBSTR(TRAN.CAMPUS_VSS,1,3))||TRIM(TRAN.MONTH_VSS)||TRIM(TRAN.TRANSCODE_VSS) AS ROWID,
       'NWU' AS ORG,
-      X003aa_vss_gl_join.CAMPUS_VSS AS CAMPUS,
-      X003aa_vss_gl_join.MONTH_VSS AS MONTH,
-      X003aa_vss_gl_join.TRANSCODE_VSS AS TRAN_TYPE,
-      X003aa_vss_gl_join.TEMP_DESC_E AS TRAN_DESCRIPTION,
-      X003aa_vss_gl_join.AMOUNT_VSS AS AMOUNT_VSS,
-      X003aa_vss_gl_join.AMOUNT AS AMOUNT_GL,
-      X003aa_vss_gl_join.AMOUNT_VSS-X003aa_vss_gl_join.AMOUNT AS DIFF
+      TRAN.CAMPUS_VSS AS CAMPUS,
+      TRAN.MONTH_VSS AS MONTH,
+      TRAN.TRANSCODE_VSS AS TRAN_TYPE,
+      TRAN.TEMP_DESC_E AS TRAN_DESCRIPTION,
+      TRAN.AMOUNT_VSS AS AMOUNT_VSS,
+      TRAN.AMOUNT AS AMOUNT_GL,
+      TRAN.AMOUNT_VSS-TRAN.AMOUNT AS DIFF
     FROM
-      X003aa_vss_gl_join
+      X003aa_vss_gl_join TRAN
     WHERE
-      X003aa_vss_gl_join.AMOUNT IS NOT NULL AND
-      X003aa_vss_gl_join.MATCHED = 'X' AND
-      X003aa_vss_gl_join.CURRENT = 'N'
+      TRAN.AMOUNT IS NOT NULL AND
+      TRAN.MATCHED = 'X'
     ORDER BY
-      X003aa_vss_gl_join.MONTH_VSS,
-      X003aa_vss_gl_join.CAMPUS_VSS,
-      X003aa_vss_gl_join.TRANSCODE_VSS
+      TRAN.MONTH_VSS,
+      TRAN.CAMPUS_VSS,
+      TRAN.TRANSCODE_VSS
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
