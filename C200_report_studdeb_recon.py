@@ -8,6 +8,7 @@
 *****************************************************************************"""
 
 # Import python modules
+import csv
 import sqlite3
 import sys
 
@@ -30,6 +31,8 @@ LIST VSS TRANSACTIONS ROUND 2
 JOIN VSS & GL MONTHLY TOTALS
 JOIN VSS & GL TRANSACTIONS
 TEST MATCHED TRANSACTION TYPES
+TEST VSS GL DIFFERENCE TRANSACTION SUMMARY
+
 TEST TRANSACTION TYPES IN VSS BUT NOT IN GL
 TEST TRANSACTION TYPES IN GL BUT NOT IN VSS
 BURSARY VSS GL RECON
@@ -75,7 +78,9 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     s_sql = "" #SQL statements
     l_mail = True
     l_export = True
+    l_record = True
     l_vacuum = False
+    s_burs_code = '042z052z381z500' # Current bursary transaction codes
 
     """*************************************************************************
     OPEN DATABASES
@@ -1226,7 +1231,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     #  X002cc_vss_summtype.MONTH_VSS <= '%PMONTH%'
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     s_sql = s_sql.replace("%CYEAR%",funcdate.cur_year())
-    s_sql = s_sql.replace("%PMONTH%",gl_month)    
+    # s_sql = s_sql.replace("%PMONTH%",gl_month)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
@@ -1290,7 +1295,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     #  X001cc_gl_summtype.MONTH <= '%PMONTH%'
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     s_sql = s_sql.replace("%CYEAR%",funcdate.cur_year())
-    s_sql = s_sql.replace("%PMONTH%",gl_month)    
+    # s_sql = s_sql.replace("%PMONTH%",gl_month)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
@@ -1341,22 +1346,22 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     sr_file = "X003ax_vss_gl_join"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     SELECT
-      X003aa_vss_gl_join.CAMPUS_VSS AS CAMPUS,
-      X003aa_vss_gl_join.MONTH_VSS AS MONTH,
-      X003aa_vss_gl_join.TRANSCODE_VSS AS TRANCODE,
-      X003aa_vss_gl_join.TEMP_DESC_E AS VSS_DESCRIPTION,
-      CAST(X003aa_vss_gl_join.AMOUNT_VSS AS REAL) AS VSS_AMOUNT,
-      X003aa_vss_gl_join.DESC_VSS AS GL_DESCRIPTION,
-      CAST(X003aa_vss_gl_join.AMOUNT AS REAL) AS GL_AMOUNT,
-      X003aa_vss_gl_join.DIFF,
-      X003aa_vss_gl_join.MATCHED,
-      X003aa_vss_gl_join.PERIOD,
+      TRAN.CAMPUS_VSS AS CAMPUS,
+      TRAN.MONTH_VSS AS MONTH,
+      TRAN.TRANSCODE_VSS AS TRANCODE,
+      TRAN.TEMP_DESC_E AS VSS_DESCRIPTION,
+      CAST(TRAN.AMOUNT_VSS AS REAL) AS VSS_AMOUNT,
+      TRAN.DESC_VSS AS GL_DESCRIPTION,
+      CAST(TRAN.AMOUNT AS REAL) AS GL_AMOUNT,
+      TRAN.DIFF,
+      TRAN.MATCHED,
+      TRAN.PERIOD,
       CASE
-          WHEN X003aa_vss_gl_join.MONTH_VSS = '%CMONTH%' THEN 'Y'
+          WHEN TRAN.MONTH_VSS = '%CMONTH%' THEN 'Y'
           ELSE 'N'
       END As CURRENT
     FROM
-      X003aa_vss_gl_join
+      X003aa_vss_gl_join TRAN
     ORDER BY
       CAMPUS,
       MONTH,
@@ -1366,16 +1371,17 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     s_sql = s_sql.replace("%CMONTH%",funcdate.cur_month())
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: "+sr_file)    
-    print("Export vss gl recon...")
-    sr_filet = sr_file
-    sx_path = re_path + funcdate.cur_year() + "/"
-    sx_file = "Debtor_003_vss_gl_recon_"
-    sx_filet = sx_file + funcdate.cur_monthendfile()
-    s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
-    funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+    if l_export:
+        print("Export vss gl recon...")
+        sr_filet = sr_file
+        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_file = "Debtor_003_vss_gl_recon_"
+        sx_filet = sx_file + funcdate.cur_monthendfile()
+        s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
+        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
+        funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 
     """*************************************************************************
     TEST MATCHED TRANSACTION TYPES
@@ -1388,21 +1394,21 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     sr_file = "X004aa_matched_summary"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     SELECT
-      X003aa_vss_gl_join.CAMPUS_VSS AS CAMPUS,
-      X003aa_vss_gl_join.MONTH_VSS AS MONTH,
-      Total(X003aa_vss_gl_join.AMOUNT_VSS) AS AMOUNT_VSS,
-      Total(X003aa_vss_gl_join.AMOUNT) AS AMOUNT_GL
+        TRAN.CAMPUS,
+        TRAN.MONTH,
+        Total(TRAN.VSS_AMOUNT) AS VSS_AMOUNT,
+        Total(TRAN.GL_AMOUNT) AS GL_AMOUNT
     FROM
-      X003aa_vss_gl_join
+        X003ax_vss_gl_join TRAN
     WHERE
-      X003aa_vss_gl_join.MATCHED = 'C'
+        TRAN.MATCHED = 'C'
     GROUP BY
-      X003aa_vss_gl_join.CAMPUS_VSS,
-      X003aa_vss_gl_join.MONTH_VSS,
-      X003aa_vss_gl_join.MATCHED
+        TRAN.CAMPUS,
+        TRAN.MONTH,
+        TRAN.MATCHED
     ORDER BY
-      X003aa_vss_gl_join.MONTH_VSS,
-      X003aa_vss_gl_join.CAMPUS_VSS
+        TRAN.MONTH,
+        TRAN.CAMPUS
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -1410,120 +1416,341 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """*************************************************************************
-    TEST NON MATCHING TRANSACTION TYPES
+    TEST VSS GL DIFFERENCE TRANSACTION SUMMARY
     *************************************************************************"""
-    print("TEST NON MATCHING TRANSACTION TYPES")
-    funcfile.writelog("TEST NON MATCHING TRANSACTION TYPES")
+    print("VSS GL DIFFERENCE TRANSACTION SUMMARY")
+    funcfile.writelog("VSS GL DIFFERENCE TRANSACTION SUMMARY")
 
-    # Identify transaction types that did not match ********************************
-    print("Identify non matching transaction types...")
+    # TODO: DELETE OLD AND UNUSED TABLES
     sr_file = "X004ba_nomatch_trantype"
-    s_sql = "CREATE TABLE " + sr_file + " AS " + """
-    SELECT
-      UPPER(SUBSTR(TRAN.CAMPUS,1,3))||TRIM(TRAN.MONTH)||TRIM(TRAN.TRANCODE) AS ROWID,
-      'NWU' AS ORG,
-      TRAN.CAMPUS,
-      TRAN.MONTH,
-      TRAN.TRANCODE AS TRAN_TYPE,
-      TRAN.VSS_DESCRIPTION AS TRAN_DESCRIPTION,
-      TRAN.VSS_AMOUNT AS AMOUNT_VSS,
-      TRAN.GL_AMOUNT AS AMOUNT_GL,
-      TRAN.DIFF
-    FROM
-      X003ax_vss_gl_join TRAN
-    WHERE
-      TRAN.GL_AMOUNT IS NOT NULL AND
-      TRAN.MATCHED = 'X' AND
-      TRAN.CURRENT = 'N'
-    ORDER BY
-      TRAN.MONTH,
-      TRAN.CAMPUS,
-      TRAN.TRANCODE
-    ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
-    # Import the reporting officers ************************************************
-    print("Import reporting officers from VSS.SQLITE...")
     sr_file = "X004bb_impo_report_officer"
-    s_sql = "CREATE TABLE " + sr_file + " AS " + """
-    SELECT
-      VSS.X000_OWN_LOOKUPS.LOOKUP,
-      VSS.X000_OWN_LOOKUPS.LOOKUP_CODE AS CAMPUS,
-      VSS.X000_OWN_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-      PEOPLE.X002_PEOPLE_CURR.NAME_ADDR AS KNOWN_NAME,
-      PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
-    FROM
-      VSS.X000_OWN_LOOKUPS
-      LEFT JOIN PEOPLE.X002_PEOPLE_CURR ON PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = VSS.X000_OWN_LOOKUPS.LOOKUP_DESCRIPTION
-    WHERE
-      VSS.X000_OWN_LOOKUPS.LOOKUP = 'stud_debt_recon_test_amount_differ_officer'
-    ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
-    # Import the reporting supervisors *********************************************
-    print("Import reporting supervisors from VSS.SQLITE...")
     sr_file = "X004bc_impo_report_supervisor"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sr_file = "X004bx_nomatch_trantype"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+
+    # DECLARE VARIABLES
+    i_finding_after: int = 0
+
+    # OBTAIN TEST DATA
+    print("Identify vss gl differences...")
+    sr_file = "X004ba_vss_gl_difference"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     SELECT
-      VSS.X000_OWN_LOOKUPS.LOOKUP,
-      VSS.X000_OWN_LOOKUPS.LOOKUP_CODE AS CAMPUS,
-      VSS.X000_OWN_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-      PEOPLE.X002_PEOPLE_CURR.NAME_ADDR AS KNOWN_NAME,
-      PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
+        'NWU' AS ORG,
+        Upper(TRAN.CAMPUS) As CAMPUS,
+        TRAN.MONTH,
+        TRAN.TRANCODE AS TRAN_TYPE,
+        TRAN.VSS_DESCRIPTION AS TRAN_DESCRIPTION,
+        TRAN.VSS_AMOUNT AS AMOUNT_VSS,
+        TRAN.GL_AMOUNT AS AMOUNT_GL,
+        TRAN.DIFF
     FROM
-      VSS.X000_OWN_LOOKUPS
-      LEFT JOIN PEOPLE.X002_PEOPLE_CURR ON PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = VSS.X000_OWN_LOOKUPS.LOOKUP_DESCRIPTION
+        X003ax_vss_gl_join TRAN
     WHERE
-      VSS.X000_OWN_LOOKUPS.LOOKUP = 'stud_debt_recon_test_amount_differ_supervisor'
+        TRAN.MATCHED = 'X' AND
+        TRAN.TRANCODE <> 'X' AND
+        INSTR('%BURSARY%', TRAN.TRANCODE) = 0 AND
+        TRAN.MONTH <= '%PMONTH%' AND
+        TRAN.GL_AMOUNT Is Not Null
+    ORDER BY
+        TRAN.MONTH,
+        TRAN.CAMPUS,
+        TRAN.TRANCODE
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = s_sql.replace("%BURSARY%", s_burs_code)
+    s_sql = s_sql.replace("%PMONTH%", gl_month)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # IDENTIFY FINDINGS
+    print("Identify findings...")
+    sr_file = "X004bb_findings"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        *
+    From
+        X004ba_vss_gl_difference CURR
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-    # Add the reporting officer and supervisor *************************************
-    print("Add the reporting officer and supervisor...")
-    sr_file = "X004bx_nomatch_trantype"
-    s_sql = "CREATE TABLE " + sr_file + " AS " + """
-    SELECT
-      X004ba_nomatch_trantype."ROWID",
-      X004ba_nomatch_trantype.ORG,
-      X004ba_nomatch_trantype.CAMPUS,
-      X004ba_nomatch_trantype.MONTH,
-      X004ba_nomatch_trantype.TRAN_TYPE,
-      X004ba_nomatch_trantype.TRAN_DESCRIPTION,
-      X004ba_nomatch_trantype.AMOUNT_VSS,
-      X004ba_nomatch_trantype.AMOUNT_GL,
-      X004ba_nomatch_trantype.DIFF,
-      CAMP_OFFICER.EMPLOYEE_NUMBER AS OFFICER_CAMP,
-      CAMP_OFFICER.KNOWN_NAME AS OFFICER_NAME_CAMP,
-      CAMP_OFFICER.EMAIL_ADDRESS AS OFFICER_MAIL_CAMP,
-      ORG_OFFICER.EMPLOYEE_NUMBER AS OFFICER_ORG,
-      ORG_OFFICER.KNOWN_NAME AS OFFICER_NAME_ORG,
-      ORG_OFFICER.EMAIL_ADDRESS AS OFFICER_MAIL_ORG,
-      CAMP_SUPERVISOR.EMPLOYEE_NUMBER AS SUPERVISOR_CAMP,
-      CAMP_SUPERVISOR.KNOWN_NAME AS SUPERVISOR_NAME_CAMP,
-      CAMP_SUPERVISOR.EMAIL_ADDRESS AS SUPERVISOR_MAIL_CAMP,
-      ORG_SUPERVISOR.EMPLOYEE_NUMBER AS SUPERVISOR_ORG,
-      ORG_SUPERVISOR.KNOWN_NAME AS SUPERVISOR_NAME_ORG,
-      ORG_SUPERVISOR.EMAIL_ADDRESS AS SUPERVISOR_MAIL_ORG
-    FROM
-      X004ba_nomatch_trantype
-      LEFT JOIN X004bb_impo_report_officer CAMP_OFFICER ON CAMP_OFFICER.CAMPUS = X004ba_nomatch_trantype.CAMPUS
-      LEFT JOIN X004bb_impo_report_officer ORG_OFFICER ON ORG_OFFICER.CAMPUS = X004ba_nomatch_trantype.ORG
-      LEFT JOIN X004bc_impo_report_supervisor CAMP_SUPERVISOR ON CAMP_SUPERVISOR.CAMPUS = X004ba_nomatch_trantype.CAMPUS
-      LEFT JOIN X004bc_impo_report_supervisor ORG_SUPERVISOR ON ORG_SUPERVISOR.CAMPUS = X004ba_nomatch_trantype.ORG
-    ;"""
+    # COUNT THE NUMBER OF FINDINGS
+    i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
+    print("*** Found " + str(i_finding_before) + " exceptions ***")
+    funcfile.writelog("%t FINDING: " + str(i_finding_before) + " VSS GL DIFFERENCE finding(s)")
+
+    # GET PREVIOUS FINDINGS
+    sr_file = "X004bc_get_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    if i_finding_before > 0:
+        print("Import previously reported findings...")
+        so_curs.execute(
+            "CREATE TABLE " + sr_file + """
+            (PROCESS TEXT,
+            FIELD1 INT,
+            FIELD2 TEXT,
+            FIELD3 TEXT,
+            FIELD4 TEXT,
+            FIELD5 TEXT,
+            DATE_REPORTED TEXT,
+            DATE_RETEST TEXT,
+            DATE_MAILED TEXT)
+            """)
+        s_cols = ""
+        co = open(ed_path + "200_reported.txt", "r")
+        co_reader = csv.reader(co)
+        # Read the COLUMN database data
+        for row in co_reader:
+            # Populate the column variables
+            if row[0] == "PROCESS":
+                continue
+            elif row[0] != "vss gl difference":
+                continue
+            else:
+                s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[
+                    2] + "','" + row[3] + "','" + row[4] + "','" + row[5] + "','" + row[6] + "','" + row[
+                             7] + "','" + row[8] + "')"
+                so_curs.execute(s_cols)
+        so_conn.commit()
+        # Close the imported data file
+        co.close()
+        funcfile.writelog("%t IMPORT TABLE: " + ed_path + "200_reported.txt (" + sr_file + ")")
+
+    # ADD PREVIOUS FINDINGS
+    sr_file = "X004bd_add_previous"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        print("Join previously reported to current findings...")
+        s_sql = "CREATE TABLE " + sr_file + " AS" + """
+        Select
+            FIND.*,
+            'vss gl difference' AS PROCESS,
+            '%TODAY%' AS DATE_REPORTED,
+            '%DAYS%' AS DATE_RETEST,
+            PREV.PROCESS AS PREV_PROCESS,
+            PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
+            PREV.DATE_RETEST AS PREV_DATE_RETEST,
+            PREV.DATE_MAILED
+        From
+            X004bb_findings FIND Left Join
+            X004bc_get_previous PREV ON PREV.FIELD1 = FIND.CAMPUS AND
+                PREV.FIELD2 = FIND.MONTH And
+                PREV.FIELD3 = FIND.TRAN_TYPE And
+                PREV.FIELD4 = FIND.AMOUNT_VSS And
+                PREV.FIELD5 = FIND.AMOUNT_GL And
+                PREV.DATE_RETEST >= Date('%TODAY%')
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%DAYS%", funcdate.today_plusdays(20000))
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD LIST TO UPDATE FINDINGS
+    # NOTE ADD CODE
+    sr_file = "X004be_new_previous"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            PREV.PROCESS,
+            PREV.CAMPUS AS FIELD1,
+            PREV.MONTH AS FIELD2,
+            PREV.TRAN_TYPE AS FIELD3,
+            PREV.AMOUNT_VSS AS FIELD4,
+            PREV.AMOUNT_GL AS FIELD5,
+            PREV.DATE_REPORTED,
+            PREV.DATE_RETEST,
+            PREV.DATE_MAILED
+        From
+            X004bd_add_previous PREV
+        Where
+            PREV.PREV_PROCESS Is Null
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+        # Export findings to previous reported file
+        i_finding_after = funcsys.tablerowcount(so_curs, sr_file)
+        if i_finding_after > 0:
+            print("*** " + str(i_finding_after) + " Finding(s) to report ***")
+            sx_path = ed_path
+            sx_file = "200_reported"
+            # Read the header data
+            s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+            # Write the data
+            if l_record:
+                funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
+                funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
+                funcfile.writelog("%t EXPORT DATA: " + sr_file)
+        else:
+            print("*** No new findings to report ***")
+            funcfile.writelog("%t FINDING: No new findings to export")
+
+    # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
+    sr_file = "X004bf_officer"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        if i_finding_after > 0:
+            print("Import reporting officers for mail purposes...")
+            s_sql = "CREATE TABLE " + sr_file + " AS " + """
+            Select
+                OFFICER.LOOKUP,
+                Upper(OFFICER.LOOKUP_CODE) AS CAMPUS,
+                OFFICER.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
+                PEOP.NAME_ADDR As NAME,
+                PEOP.EMAIL_ADDRESS
+            From
+                VSS.X000_OWN_LOOKUPS OFFICER Left Join
+                PEOPLE.X002_PEOPLE_CURR PEOP ON
+                    PEOP.EMPLOYEE_NUMBER = OFFICER.LOOKUP_DESCRIPTION
+            Where
+                OFFICER.LOOKUP = 'stud_debt_recon_test_amount_differ_officer'
+            ;"""
+            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+            so_curs.execute(s_sql)
+            so_conn.commit()
+            funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
+    sr_file = "X004bg_supervisor"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0 and i_finding_after > 0:
+        print("Import reporting supervisors for mail purposes...")
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            SUPERVISOR.LOOKUP,
+            Upper(SUPERVISOR.LOOKUP_CODE) AS CAMPUS,
+            SUPERVISOR.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
+            PEOP.NAME_ADDR As NAME,
+            PEOP.EMAIL_ADDRESS
+        From
+            VSS.X000_OWN_LOOKUPS SUPERVISOR Left Join
+            PEOPLE.X002_PEOPLE_CURR PEOP ON 
+                PEOP.EMPLOYEE_NUMBER = SUPERVISOR.LOOKUP_DESCRIPTION
+        Where
+            SUPERVISOR.LOOKUP = 'stud_debt_recon_test_amount_differ_supervisor'
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # ADD CONTACT DETAILS TO FINDINGS
+    sr_file = "X004bh_detail"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0 and i_finding_after > 0:
+        print("Add contact details to findings...")
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            PREV.ORG,
+            PREV.CAMPUS,
+            PREV.MONTH,
+            PREV.TRAN_TYPE,
+            PREV.TRAN_DESCRIPTION,
+            PREV.AMOUNT_VSS,
+            PREV.AMOUNT_GL,
+            PREV.DIFF,    
+            CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
+            CAMP_OFF.NAME As CAMP_OFF_NAME,
+            CASE
+                WHEN  CAMP_OFF.EMPLOYEE_NUMBER <> '' THEN CAMP_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                ELSE CAMP_OFF.EMAIL_ADDRESS
+            END As CAMP_OFF_MAIL,
+            CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
+            CAMP_SUP.NAME As CAMP_SUP_NAME,
+            CASE
+                WHEN CAMP_SUP.EMPLOYEE_NUMBER <> '' THEN CAMP_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                ELSE CAMP_SUP.EMAIL_ADDRESS
+            END As CAMP_SUP_MAIL,
+            ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
+            ORG_OFF.NAME As ORG_OFF_NAME,
+            CASE
+                WHEN ORG_OFF.EMPLOYEE_NUMBER <> '' THEN ORG_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                ELSE ORG_OFF.EMAIL_ADDRESS
+            END As ORG_OFF_MAIL,
+            ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
+            ORG_SUP.NAME As ORG_SUP_NAME,
+            CASE
+                WHEN ORG_SUP.EMPLOYEE_NUMBER <> '' THEN ORG_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                ELSE ORG_SUP.EMAIL_ADDRESS
+            END As ORG_SUP_MAIL
+        From
+            X004bd_add_previous PREV
+            Left Join X004bf_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.CAMPUS
+            Left Join X004bf_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG
+            Left Join X004bg_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.CAMPUS
+            Left Join X004bg_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG
+        Where
+          PREV.PREV_PROCESS IS NULL
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
+    sr_file = "X004bx_vss_gl_difference"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    print("Build the final report")
+    if i_finding_before > 0 and i_finding_after > 0:
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            'VSS GL DIFFERENCE' As Audit_finding,
+            FIND.ORG As Organization,
+            FIND.CAMPUS As Campus,
+            FIND.MONTH As Month,
+            FIND.TRAN_TYPE As Tran_type,
+            FIND.TRAN_DESCRIPTION As Tran_description,
+            FIND.AMOUNT_VSS As Amount_vss,
+            FIND.AMOUNT_GL As Amount_gl,
+            FIND.DIFF As Amount_difference,    
+            FIND.CAMP_OFF_NAME AS Responsible_Officer,
+            FIND.CAMP_OFF_NUMB AS Responsible_Officer_Numb,
+            FIND.CAMP_OFF_MAIL AS Responsible_Officer_Mail,
+            FIND.CAMP_SUP_NAME AS Supervisor,
+            FIND.CAMP_SUP_NUMB AS Supervisor_Numb,
+            FIND.CAMP_SUP_MAIL AS Supervisor_Mail,
+            FIND.ORG_OFF_NAME AS Org_Officer,
+            FIND.ORG_OFF_NUMB AS Org_Officer_Numb,
+            FIND.ORG_OFF_MAIL AS Org_Officer_Mail,
+            FIND.ORG_SUP_NAME AS Org_Supervisor,
+            FIND.ORG_SUP_NUMB AS Org_Supervisor_Numb,
+            FIND.ORG_SUP_MAIL AS Org_Supervisor_Mail            
+        From
+            X004bh_detail FIND
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+        # Export findings
+        if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
+            print("Export findings...")
+            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_file = "Vssgl_test_004bx_vss_gl_difference_"
+            sx_file_dated = sx_file + funcdate.today_file()
+            s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+            funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
+            funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
+            funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
+    else:
+        s_sql = "CREATE TABLE " + sr_file + " (" + """
+        BLANK TEXT
+        );"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """*************************************************************************
     TEST TRANSACTION TYPES IN VSS BUT NOT IN GL
@@ -1536,7 +1763,9 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     sr_file = "X004ca_invss_nogl"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     SELECT
-      UPPER(SUBSTR(X003aa_vss_gl_join.CAMPUS_VSS,1,3))||TRIM(X003aa_vss_gl_join.MONTH_VSS)||TRIM(X003aa_vss_gl_join.TRANSCODE_VSS) AS ROWID,
+      UPPER(SUBSTR(X003aa_vss_gl_join.CAMPUS_VSS,1,3))||
+        TRIM(X003aa_vss_gl_join.MONTH_VSS)||
+        TRIM(X003aa_vss_gl_join.TRANSCODE_VSS) AS ROWID,
       'NWU' AS ORG,
       X003aa_vss_gl_join.CAMPUS_VSS AS CAMPUS,
       X003aa_vss_gl_join.MONTH_VSS AS MONTH,
@@ -1568,8 +1797,8 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
       PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
       PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
     FROM
-      VSS.X000_OWN_LOOKUPS
-      LEFT JOIN PEOPLE.X002_PEOPLE_CURR ON PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = VSS.X000_OWN_LOOKUPS.LOOKUP_DESCRIPTION
+      VSS.X000_OWN_LOOKUPS Left Join
+      PEOPLE.X002_PEOPLE_CURR ON PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = VSS.X000_OWN_LOOKUPS.LOOKUP_DESCRIPTION
     WHERE
       VSS.X000_OWN_LOOKUPS.LOOKUP = 'stud_debt_recon_test_invss_nogl_officer'
     ;"""
@@ -1589,8 +1818,8 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
       PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
       PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
     FROM
-      VSS.X000_OWN_LOOKUPS
-      LEFT JOIN PEOPLE.X002_PEOPLE_CURR ON PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = VSS.X000_OWN_LOOKUPS.LOOKUP_DESCRIPTION
+      VSS.X000_OWN_LOOKUPS Left Join
+      PEOPLE.X002_PEOPLE_CURR ON PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = VSS.X000_OWN_LOOKUPS.LOOKUP_DESCRIPTION
     WHERE
       VSS.X000_OWN_LOOKUPS.LOOKUP = 'stud_debt_recon_test_invss_nogl_supervisor'
     ;"""
