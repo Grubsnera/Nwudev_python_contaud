@@ -642,7 +642,7 @@ def People_test_conflict():
         so_conn.commit()
         # Close the impoted data file
         co.close()
-        funcfile.writelog("%t IMPORT TABLE: " + ed_path + "001_reported.txt (" + sr_file + ")")
+        funcfile.writelog("%t IMPORT TABLE: " + ed_path + "002_reported.txt (" + sr_file + ")")
 
     # ADD PREVIOUS FINDINGS
     sr_file = "X100ad_bank_addprev"
@@ -772,7 +772,7 @@ def People_test_conflict():
             PERSON.ACC_TYPE AS BANKACC_TYPE,
             PERSON.ACC_BRANCH AS BANKACC_BRANCH,
             PERSON.ACC_RELATION AS BANKACC_RELATION,
-            PERSON.POSITION_FULL,
+            PERSON.PERSON_TYPE,
             VENDOR.VNDR_NM AS VENDOR_NAME,
             DECLARE.DECLARATION_DATE AS DECLARE_DATE,
             DECLARE.STATUS AS DECLARE_STATUS,
@@ -822,7 +822,7 @@ def People_test_conflict():
             FINDING.LOC AS LOCATION,
             FINDING.EMP AS EMPLOYEE_NUMBER,
             FINDING.EMP_NAME AS EMPLOYEE_NAME,
-            FINDING.POSITION_FULL,
+            FINDING.PERSON_TYPE,
             FINDING.EMP_BANK AS EMPLOYEE_BANK,
             FINDING.BANKACC_TYPE,
             FINDING.BANKACC_BRANCH,
