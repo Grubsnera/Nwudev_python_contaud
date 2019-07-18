@@ -1,19 +1,18 @@
-
-import sys
-
-# OWN MODULE PATH
-sys.path.append('S:/_my_modules')
-sys.path.append('S:/')
+"""
+Script to run C002_people_test_conflict
+"""
 
 # IMPORT MODULES
-import funcfile
+from _my_modules import funcfile
+from _my_modules import funcsys
+
+import C002_people_test_conflict
 
 # OPEN THE LOG WRITER
 funcfile.writelog("Now")
 funcfile.writelog("SCRIPT: C002_PEOPLE_TEST_CONFLICT_RUN")
 funcfile.writelog("-------------------------------------")
 
-import C002_people_test_conflict
 try:
     C002_people_test_conflict.People_test_conflict()
 except Exception as e:
@@ -23,4 +22,3 @@ except Exception as e:
 funcfile.writelog("Now")
 funcfile.writelog("COMPLETED: C002_PEOPLE_TEST_CONFLICT_RUN")
 funcfile.writelog("----------------------------------------")
-
