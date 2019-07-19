@@ -30,7 +30,7 @@ ed_path = "S:/_external_data/"  # External data
 gl_month = '06'
 l_mail = True
 l_export = True
-l_record = False
+l_record = True
 s_burs_code = '042z052z381z500'
 
 # OPEN THE SOURCE
@@ -53,43 +53,39 @@ BEGIN
 *****************************************************************************"""
 
 """*************************************************************************
-TEST IN VSS NO GL TRANSACTIONS
+TEST IN GL NO VSS TRANSACTIONS
 *************************************************************************"""
-print("IN VSS NO GL TRANSACTIONS")
-funcfile.writelog("IN VSS NO GL TRANSACTIONS")
+print("IN GL NO VSS TRANSACTIONS")
+funcfile.writelog("IN GL NO VSS TRANSACTIONS")
 
 # TODO: DELETE OLD AND UNUSED TABLES
-sr_file = "X004ca_invss_nogl"
+sr_file = "X004da_ingl_novss"
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-sr_file = "X004cb_impo_report_officer"
+sr_file = "X004db_impo_report_officer"
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-sr_file = "X004cc_impo_report_supervisor"
+sr_file = "X004dc_impo_report_supervisor"
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-sr_file = "X004cx_invss_nogl"
+sr_file = "X004dx_ingl_novss"
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 
 # DECLARE VARIABLES
 i_finding_after: int = 0
 
 # OBTAIN TEST DATA
-print("Identify vss gl differences...")
-sr_file = "X004ca_invss_nogl"
+print("Identify transactions in the gl but not in vss...")
+sr_file = "X004da_ingl_novss"
 s_sql = "CREATE TABLE " + sr_file + " AS " + """
 SELECT
     'NWU' AS ORG,
     Upper(TRAN.CAMPUS) As CAMPUS,
     TRAN.MONTH,
-    TRAN.TRANCODE AS TRAN_TYPE,
-    TRAN.VSS_DESCRIPTION AS TRAN_DESCRIPTION,
-    TRAN.VSS_AMOUNT AS AMOUNT_VSS
+    TRAN.GL_DESCRIPTION,
+    TRAN.GL_AMOUNT
 FROM
     X003ax_vss_gl_join TRAN
 WHERE
     TRAN.MATCHED = 'X' AND
-    TRAN.TRANCODE <> 'X' AND
-    INSTR('%BURSARY%', TRAN.TRANCODE) = 0 AND
-    TRAN.MONTH <= '%PMONTH%' AND
-    TRAN.GL_AMOUNT Is Null
+    TRAN.TRANCODE = 'X'
 ORDER BY
     TRAN.MONTH,
     TRAN.CAMPUS,
@@ -104,12 +100,12 @@ funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
 # IDENTIFY FINDINGS
 print("Identify findings...")
-sr_file = "X004cb_findings"
+sr_file = "X004db_findings"
 s_sql = "CREATE TABLE " + sr_file + " AS " + """
 Select
     *
 From
-    X004ca_invss_nogl CURR
+    X004da_ingl_novss CURR
 ;"""
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 so_curs.execute(s_sql)
@@ -119,10 +115,10 @@ funcfile.writelog("%t BUILD TABLE: " + sr_file)
 # COUNT THE NUMBER OF FINDINGS
 i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
 print("*** Found " + str(i_finding_before) + " exceptions ***")
-funcfile.writelog("%t FINDING: " + str(i_finding_before) + " IN VSS NO GL finding(s)")
+funcfile.writelog("%t FINDING: " + str(i_finding_before) + " IN GL NO VSS finding(s)")
 
 # GET PREVIOUS FINDINGS
-sr_file = "X004cc_get_previous"
+sr_file = "X004dc_get_previous"
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 if i_finding_before > 0:
     print("Import previously reported findings...")
@@ -146,7 +142,7 @@ if i_finding_before > 0:
         # Populate the column variables
         if row[0] == "PROCESS":
             continue
-        elif row[0] != "in vss no gl":
+        elif row[0] != "in gl no vss":
             continue
         else:
             s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[
@@ -159,14 +155,14 @@ if i_finding_before > 0:
     funcfile.writelog("%t IMPORT TABLE: " + ed_path + "200_reported.txt (" + sr_file + ")")
 
 # ADD PREVIOUS FINDINGS
-sr_file = "X004cd_add_previous"
+sr_file = "X004dd_add_previous"
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 if i_finding_before > 0:
     print("Join previously reported to current findings...")
     s_sql = "CREATE TABLE " + sr_file + " AS" + """
     Select
         FIND.*,
-        'in vss no gl' AS PROCESS,
+        'in gl no vss' AS PROCESS,
         '%TODAY%' AS DATE_REPORTED,
         '%DAYS%' AS DATE_RETEST,
         PREV.PROCESS AS PREV_PROCESS,
@@ -174,11 +170,11 @@ if i_finding_before > 0:
         PREV.DATE_RETEST AS PREV_DATE_RETEST,
         PREV.DATE_MAILED
     From
-        X004cb_findings FIND Left Join
-        X004cc_get_previous PREV ON PREV.FIELD1 = FIND.CAMPUS AND
+        X004db_findings FIND Left Join
+        X004dc_get_previous PREV ON PREV.FIELD1 = FIND.CAMPUS AND
             PREV.FIELD2 = FIND.MONTH And
-            PREV.FIELD3 = FIND.TRAN_TYPE And
-            PREV.FIELD4 = FIND.AMOUNT_VSS And
+            PREV.FIELD3 = FIND.GL_DESCRIPTION And
+            PREV.FIELD4 = FIND.GL_AMOUNT And
             PREV.DATE_RETEST >= Date('%TODAY%')
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -190,7 +186,7 @@ if i_finding_before > 0:
 
 # BUILD LIST TO UPDATE FINDINGS
 # NOTE ADD CODE
-sr_file = "X004ce_new_previous"
+sr_file = "X004de_new_previous"
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 if i_finding_before > 0:
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -198,14 +194,14 @@ if i_finding_before > 0:
         PREV.PROCESS,
         PREV.CAMPUS AS FIELD1,
         PREV.MONTH AS FIELD2,
-        PREV.TRAN_TYPE AS FIELD3,
-        PREV.AMOUNT_VSS AS FIELD4,
+        PREV.GL_DESCRIPTION AS FIELD3,
+        PREV.GL_AMOUNT AS FIELD4,
         '' AS FIELD5,
         PREV.DATE_REPORTED,
         PREV.DATE_RETEST,
         PREV.DATE_MAILED
     From
-        X004cd_add_previous PREV
+        X004dd_add_previous PREV
     Where
         PREV.PREV_PROCESS Is Null
     ;"""
@@ -231,7 +227,7 @@ if i_finding_before > 0:
         funcfile.writelog("%t FINDING: No new findings to export")
 
 # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
-sr_file = "X004cf_officer"
+sr_file = "X004df_officer"
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 if i_finding_before > 0:
     if i_finding_after > 0:
@@ -248,7 +244,7 @@ if i_finding_before > 0:
             PEOPLE.X002_PEOPLE_CURR PEOP ON
                 PEOP.EMPLOYEE_NUMBER = OFFICER.LOOKUP_DESCRIPTION
         Where
-            OFFICER.LOOKUP = 'stud_debt_recon_test_invss_nogl_officer'
+            OFFICER.LOOKUP = 'stud_debt_recon_test_ingl_novss_officer'
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -256,7 +252,7 @@ if i_finding_before > 0:
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
 # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
-sr_file = "X004cg_supervisor"
+sr_file = "X004dg_supervisor"
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 if i_finding_before > 0 and i_finding_after > 0:
     print("Import reporting supervisors for mail purposes...")
@@ -272,7 +268,7 @@ if i_finding_before > 0 and i_finding_after > 0:
         PEOPLE.X002_PEOPLE_CURR PEOP ON 
             PEOP.EMPLOYEE_NUMBER = SUPERVISOR.LOOKUP_DESCRIPTION
     Where
-        SUPERVISOR.LOOKUP = 'stud_debt_recon_test_invss_nogl_supervisor'
+        SUPERVISOR.LOOKUP = 'stud_debt_recon_test_ingl_novss_supervisor'
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -280,7 +276,7 @@ if i_finding_before > 0 and i_finding_after > 0:
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
 # ADD CONTACT DETAILS TO FINDINGS
-sr_file = "X004ch_detail"
+sr_file = "X004dh_detail"
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 if i_finding_before > 0 and i_finding_after > 0:
     print("Add contact details to findings...")
@@ -289,9 +285,8 @@ if i_finding_before > 0 and i_finding_after > 0:
         PREV.ORG,
         PREV.CAMPUS,
         PREV.MONTH,
-        PREV.TRAN_TYPE,
-        PREV.TRAN_DESCRIPTION,
-        PREV.AMOUNT_VSS,
+        PREV.GL_DESCRIPTION,
+        PREV.GL_AMOUNT,
         CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
         CAMP_OFF.NAME As CAMP_OFF_NAME,
         CASE
@@ -317,13 +312,17 @@ if i_finding_before > 0 and i_finding_after > 0:
             ELSE ORG_SUP.EMAIL_ADDRESS
         END As ORG_SUP_MAIL
     From
-        X004cd_add_previous PREV
-        Left Join X004cf_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.CAMPUS
-        Left Join X004cf_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG
-        Left Join X004cg_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.CAMPUS
-        Left Join X004cg_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG
+        X004dd_add_previous PREV
+        Left Join X004df_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.CAMPUS
+        Left Join X004df_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG
+        Left Join X004dg_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.CAMPUS
+        Left Join X004dg_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG
     Where
-      PREV.PREV_PROCESS IS NULL
+        PREV.PREV_PROCESS IS NULL
+    Order By
+        PREV.CAMPUS,
+        PREV.MONTH,
+        PREV.GL_DESCRIPTION
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -331,19 +330,18 @@ if i_finding_before > 0 and i_finding_after > 0:
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
 # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
-sr_file = "X004cx_invss_nogl"
+sr_file = "X004dx_ingl_novss"
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 print("Build the final report")
 if i_finding_before > 0 and i_finding_after > 0:
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
-        'IN VSS NO GL' As Audit_finding,
+        'IN GL NO VSS' As Audit_finding,
         FIND.ORG As Organization,
         FIND.CAMPUS As Campus,
         FIND.MONTH As Month,
-        FIND.TRAN_TYPE As Tran_type,
-        FIND.TRAN_DESCRIPTION As Tran_description,
-        FIND.AMOUNT_VSS As Amount_vss,
+        FIND.GL_DESCRIPTION As Gl_description,
+        FIND.GL_AMOUNT As Amount_gl,
         FIND.CAMP_OFF_NAME AS Responsible_Officer,
         FIND.CAMP_OFF_NUMB AS Responsible_Officer_Numb,
         FIND.CAMP_OFF_MAIL AS Responsible_Officer_Mail,
@@ -357,7 +355,7 @@ if i_finding_before > 0 and i_finding_after > 0:
         FIND.ORG_SUP_NUMB AS Org_Supervisor_Numb,
         FIND.ORG_SUP_MAIL AS Org_Supervisor_Mail            
     From
-        X004ch_detail FIND
+        X004dh_detail FIND
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -367,7 +365,7 @@ if i_finding_before > 0 and i_finding_after > 0:
     if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
         print("Export findings...")
         sx_path = re_path + funcdate.cur_year() + "/"
-        sx_file = "Vssgl_test_004cx_invss_nogl_"
+        sx_file = "Vssgl_test_004dx_ingl_novss_"
         sx_file_dated = sx_file + funcdate.today_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
         funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
