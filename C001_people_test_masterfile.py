@@ -6334,7 +6334,7 @@ def People_test_masterfile():
     # COUNT THE NUMBER OF FINDINGS
     i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
     print("*** Found " + str(i_finding_before) + " exceptions ***")
-    funcfile.writelog("%t FINDING: " + str(i_finding_before) + " EMPL PHONE WORK invalid finding(s)")
+    funcfile.writelog("%t FINDING: " + str(i_finding_before) + " EMPL PHONE WORK SARS invalid finding(s)")
 
     # GET PREVIOUS FINDINGS
     sr_file = "X008ac_get_previous"
@@ -6638,7 +6638,7 @@ def People_test_masterfile():
     # COUNT THE NUMBER OF FINDINGS
     i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
     print("*** Found " + str(i_finding_before) + " exceptions ***")
-    funcfile.writelog("%t FINDING: " + str(i_finding_before) + " EMPL ADDRESS PRIMARY invalid finding(s)")
+    funcfile.writelog("%t FINDING: " + str(i_finding_before) + " EMPL ADDRESS PRIMARY SARS invalid finding(s)")
 
     # GET PREVIOUS FINDINGS
     sr_file = "X008bc_get_previous"
