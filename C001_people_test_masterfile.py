@@ -91,10 +91,10 @@ def People_test_masterfile():
     ed_path = "S:/_external_data/" #external data path
     so_file = "People_test_masterfile.sqlite" # Source database
     s_sql = "" # SQL statements
+    l_record = True
     l_export = True
     l_mail = False
-    l_record = True
-    l_vacuum = True
+    l_vacuum = False
 
     """*****************************************************************************
     OPEN THE DATABASES
