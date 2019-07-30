@@ -2070,16 +2070,6 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     print("IN GL NO VSS TRANSACTIONS")
     funcfile.writelog("IN GL NO VSS TRANSACTIONS")
 
-    # TODO: DELETE OLD AND UNUSED TABLES
-    sr_file = "X004da_ingl_novss"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    sr_file = "X004db_impo_report_officer"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    sr_file = "X004dc_impo_report_supervisor"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    sr_file = "X004dx_ingl_novss"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-
     # DECLARE VARIABLES
     i_finding_after: int = 0
 
