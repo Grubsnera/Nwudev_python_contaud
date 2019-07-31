@@ -4963,7 +4963,58 @@ def People_test_masterfile():
         per.employee_number    
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD PART TIME SECONDARY ASSIGNMENTS
+    print("Obtain a list of part time secondary assignments...")
+    sr_file = "X007_part_sec_assignments"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        SEC.ASSIGNMENT_EXTRA_INFO_ID,
+        SEC.ASSIGNMENT_ID,
+        SEC.SEC_FULLPART_FLAG,
+        SEC.SEC_HOURS_FORECAST,
+        SEC.SEC_DATE_FROM,
+        SEC.SEC_DATE_TO,
+        SEC.SEC_TYPE,
+        SEC.SEC_UNIT,
+        (JulianDay(SEC.SEC_DATE_TO) - JulianDay(SEC.SEC_DATE_FROM)) / 30.4167 As CALC_DUR_MONTH,
+        SEC.SEC_HOURS_FORECAST / ((JulianDay(SEC.SEC_DATE_TO) - JulianDay(SEC.SEC_DATE_FROM)) / 30.4167) As CALC_HOUR_MONTH
+    From
+        X001_ASSIGNMENT_SEC_CURR_YEAR SEC
+    Where
+        SEC.SEC_FULLPART_FLAG = 'P' And
+        SEC.SEC_DATE_FROM <= Date('%TODAY%') And
+        SEC.SEC_DATE_TO >= Date('%TODAY%') And
+        SEC.SEC_TYPE = 'SALARY' And
+        SEC.SEC_UNIT = 'MS'
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = s_sql.replace("%TODAY%", funcdate.today())
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD PART TIME SECONDARY ASSIGNMENTS
+    print("Calculate part time secondary assignments...")
+    sr_file = "X007_part_sec_assignments_summ"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        SEC.ASSIGNMENT_ID,
+        Count(SEC.ASSIGNMENT_EXTRA_INFO_ID) As SEC_COUNT,
+        SEC.SEC_FULLPART_FLAG,
+        Sum(SEC.CALC_HOUR_MONTH) As CALC_HOUR_MONTH_SUM
+    From
+        X007_part_sec_assignments SEC
+    Group By
+        SEC.ASSIGNMENT_ID,
+        SEC.SEC_FULLPART_FLAG
+    Having
+        Sum(SEC.CALC_HOUR_MONTH) < 24
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -4990,6 +5041,14 @@ def People_test_masterfile():
         PEOPLE.LEAVE_CODE,
         PEOPLE.GRADE,
         PEOPLE.GRADE_CALC,
+        SEC.SEC_FULLPART_FLAG,
+        CASE
+            WHEN PEOPLE.PERSON_TYPE = 'TEMP FIXED TERM CONTRACT' And SEC.SEC_FULLPART_FLAG = 'P' THEN 'TEMP FIXED TERM CONTRACT(P)'
+            WHEN PEOPLE.PERSON_TYPE = 'TEMP FIXED TERM CONTRACT' THEN 'TEMP FIXED TERM CONTRACT(F)'
+            WHEN PEOPLE.PERSON_TYPE = 'TEMPORARY APPOINTMENT' And SEC.SEC_FULLPART_FLAG = 'P' THEN 'TEMPORARY APPOINTMENT(P)'
+            WHEN PEOPLE.PERSON_TYPE = 'TEMPORARY APPOINTMENT' THEN 'TEMPORARY APPOINTMENT(F)'
+            ELSE PEOPLE.PERSON_TYPE
+        END As PERSON_TYPE_LEAVE,
         CASE
             WHEN LONG.DATE_LONG_SERVICE Is Null And PEOPLE.EMP_START < Date('2017-05-01') THEN 'OLD'
             WHEN LONG.DATE_LONG_SERVICE < Date('2017-05-01') THEN 'OLD'
@@ -4997,7 +5056,8 @@ def People_test_masterfile():
         END As PERIOD
     From
         PEOPLE.X002_PEOPLE_CURR PEOPLE Left Join
-        X007_long_service_date LONG On LONG.EMPLOYEE_NUMBER = PEOPLE.EMPLOYEE_NUMBER
+        X007_long_service_date LONG On LONG.EMPLOYEE_NUMBER = PEOPLE.EMPLOYEE_NUMBER Left Join
+        X007_part_sec_assignments_summ SEC On SEC.ASSIGNMENT_ID = PEOPLE.ASS_ID
     Where
         Substr(PEOPLE.PERSON_TYPE,1,6) <> 'AD HOC'
     ;"""
@@ -5915,7 +5975,7 @@ def People_test_masterfile():
         MASTER.GRADE,
         MASTER.EMPLOYMENT_CATEGORY,
         MASTER.ACAD_SUPP,
-        MASTER.PERSON_TYPE,
+        MASTER.PERSON_TYPE_LEAVE,
         MASTER.ASS_WEEK_LEN,
         MASTER.EMP_START,
         MASTER.SERVICE_START,
@@ -5940,7 +6000,7 @@ def People_test_masterfile():
             Instr(PERM.GRADE,'.'||Trim(MASTER.GRADE)||'~') > 0 And
             PERM.CATEGORY = 'PERMANENT' Left Join
         X007_leave_master TEMP On TEMP.CATEGORY = MASTER.EMPLOYMENT_CATEGORY And
-            TEMP.GRADE = MASTER.PERSON_TYPE And
+            TEMP.GRADE = MASTER.PERSON_TYPE_LEAVE And
             TEMP.CATEGORY = 'TEMPORARY'
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -5972,12 +6032,13 @@ def People_test_masterfile():
             WHEN FIND.LEAVEP Is Null THEN FIND.LEAVET
             ELSE FIND.LEAVEP
         END As LEAVE_PROP,
-        FIND.SERVICE_START
+        FIND.SERVICE_START,
+        FIND.PERSON_TYPE_LEAVE
     From
         X007da_leave FIND
     Where
         FIND.VALID = 'FALSE' And
-        FIND.PERSON_TYPE <> 'EXTRAORDINARY APPOINTMENT'
+        FIND.PERSON_TYPE_LEAVE <> 'EXTRAORDINARY APPOINTMENT'
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -6146,7 +6207,7 @@ def People_test_masterfile():
             PEOP.LEAVE_CODE,
             FIND.LEAVE_PROP,
             PEOP.EMPLOYMENT_CATEGORY,
-            PEOP.PERSON_TYPE,
+            FIND.PERSON_TYPE_LEAVE,
             PEOP.ACAD_SUPP,
             PEOP.GRADE As PGRADE,
             PEOP.ASS_WEEK_LEN,
@@ -6195,7 +6256,7 @@ def People_test_masterfile():
             FIND.SERVICE_START As Service_start_date,
             FIND.PGRADE As Grade,
             FIND.EMPLOYMENT_CATEGORY As Category,
-            FIND.PERSON_TYPE As Person_type,
+            FIND.PERSON_TYPE_LEAVE As Person_type,
             FIND.ACAD_SUPP As Acad_supp,
             FIND.ASS_WEEK_LEN As Workdays,
             FIND.CAMP_OFF_NAME AS Responsible_Officer,
