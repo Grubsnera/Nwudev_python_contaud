@@ -175,7 +175,7 @@ def mysql_lists():
     people_acc_number VARCHAR(30),
     people_acc_sars VARCHAR(1),
     people_acc_relation VARCHAR(30),
-    people_full_part_flag VARCHAR(1),
+    people_sec_fullpart_flag VARCHAR(1),
     people_initials VARCHAR(30),
     people_age INT(3),
     people_month INT(2),
