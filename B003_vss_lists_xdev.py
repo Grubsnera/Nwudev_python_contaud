@@ -36,92 +36,28 @@ with sqlite3.connect(so_path+so_file) as so_conn:
 
 funcfile.writelog("%t OPEN DATABASE: VSS.SQLITE")
 
+# Import OWN LOOKUPS table *************************************************
+print("Import own lookups...")
+tb_name = "X000_OWN_LOOKUPS"
+so_curs.execute("DROP TABLE IF EXISTS " + tb_name)
+so_curs.execute("CREATE TABLE " + tb_name + "(LOOKUP TEXT,LOOKUP_CODE TEXT,LOOKUP_DESCRIPTION TEXT)")
+s_cols = ""
+co = open(ed_path + "001_own_vss_lookups.csv", "rU")
+co_reader = csv.reader(co)
+for row in co_reader:
+    if row[0] == "LOOKUP":
+        continue
+    else:
+        s_cols = "INSERT INTO " + tb_name + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "')"
+        so_curs.execute(s_cols)
+so_conn.commit()
+# Close the impoted data file
+co.close()
+funcfile.writelog("%t IMPORT TABLE: " + tb_name)
+
 """*****************************************************************************
 BEGIN
 *****************************************************************************"""
-
-so_curs.execute("DROP TABLE IF EXISTS STUDYTRANS_2017")
-so_curs.execute("DROP TABLE IF EXISTS X001ax_Student_curr")
-so_curs.execute("DROP TABLE IF EXISTS X001cx_Stud_qual_curr")
-so_curs.execute("DROP TABLE IF EXISTS X001cx_Stud_qual_peri")
-so_curs.execute("DROP VIEW IF EXISTS X000_Student_qual_result_curr")
-so_curs.execute("DROP VIEW IF EXISTS X000_Student_qual_result_peri")
-so_curs.execute("DROP VIEW IF EXISTS X001aa_Qualification")
-so_curs.execute("DROP VIEW IF EXISTS X001ba_Qualification_level")
-so_curs.execute("DROP VIEW IF EXISTS X001ca_Stud_qual_curr")
-so_curs.execute("DROP VIEW IF EXISTS X001ca_Stud_qual_peri")
-so_curs.execute("DROP VIEW IF EXISTS X001cb_Stud_qual_curr")
-so_curs.execute("DROP VIEW IF EXISTS X001cb_Stud_qual_peri")
-so_curs.execute("DROP VIEW IF EXISTS X001cc_Stud_qual_curr")
-so_curs.execute("DROP VIEW IF EXISTS X001cc_Stud_qual_peri")
-so_curs.execute("DROP VIEW IF EXISTS X001cd_Stud_qual_curr")
-so_curs.execute("DROP VIEW IF EXISTS X001cd_Stud_qual_peri")
-
-
-# BUILD PERIOD TRANSACTIONS *****************************************
-print("Build period transactions...")
-sr_file = "X010_Studytrans_peri"
-s_sql = "CREATE TABLE " + sr_file + " AS " + """
-SELECT
-  TRAN.KACCTRANSID,
-  TRAN.FACCID,
-  STUDACC.FBUSENTID,
-  TRAN.FSERVICESITE,
-  TRAN.FDEBTCOLLECTIONSITE,
-  TRAN.TRANSDATE,
-  TRAN.AMOUNT,
-  TRAN.FTRANSMASTERID,
-  TRANMAST.TRANSCODE,
-  TRANMAST.DESCRIPTION_E,
-  TRANMAST.DESCRIPTION_A,
-  TRAN.TRANSDATETIME,
-  TRAN.MONTHENDDATE,
-  TRAN.POSTDATEDTRANSDATE,
-  TRAN.FFINAIDSITEID,
-  BURS.FINAIDCODE,
-  BURS.FINAIDNAAM,
-  TRAN.FRESIDENCELOGID,
-  TRAN.FLEVYLOGID,
-  TRAN.FMODAPID,
-  TRAN.FQUALLEVELAPID,
-  TRAN.FPROGAPID,
-  TRAN.FENROLPRESID,
-  TRAN.FRESIDENCEID,
-  TRAN.FRECEIPTID,
-  TRAN.FROOMTYPECODEID,
-  TRAN.REFERENCENO,
-  TRAN.FSUBACCTYPECODEID,
-  TRAN.FDEPOSITCODEID,
-  TRAN.FDEPOSITTYPECODEID,
-  TRAN.FVARIABLEAMOUNTTYPECODEID,
-  TRAN.FDEPOSITTRANSTYPECODEID,
-  TRAN.RESIDENCETRANSTYPE,
-  TRAN.FSTUDYTRANSTYPECODEID,
-  TRAN.ISSHOWN,
-  TRAN.ISCREATEDMANUALLY,
-  TRAN.FTRANSINSTID,
-  TRAN.FMONTHENDORGUNITNO,
-  TRAN.LOCKSTAMP,
-  TRAN.AUDITDATETIME,
-  TRAN.FAUDITSYSTEMFUNCTIONID,
-  TRAN.FAUDITUSERCODE,
-  USER.FUSERBUSINESSENTITYID,
-  TRAN.FORIGINSYSTEMFUNCTIONID,
-  TRAN.FPAYMENTREQUESTID
-FROM
-  STUDYTRANS_PERI TRAN
-  LEFT JOIN STUDACC ON STUDACC.KACCID = TRAN.FACCID
-  LEFT JOIN X000_Transmaster TRANMAST ON TRANMAST.KTRANSMASTERID = TRAN.FTRANSMASTERID
-  LEFT JOIN X004_Bursaries BURS ON BURS.KFINAIDSITEID = TRAN.FFINAIDSITEID
-  LEFT JOIN SYSTEMUSER USER ON USER.KUSERCODE = TRAN.FAUDITUSERCODE
-ORDER BY
-  TRAN.TRANSDATETIME
-"""
-so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-so_curs.execute(s_sql)
-so_conn.commit()
-funcfile.writelog("%t BUILD VIEW: " + sr_file)    
-
 
 """*****************************************************************************
 END
