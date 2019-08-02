@@ -5,6 +5,7 @@ Author: Albert J v Rensburg (NWU21162395)
 """
 
 # IMPORT PYTHON MODULES
+import csv
 import sqlite3
 import sys
 
@@ -40,7 +41,7 @@ re_path = "R:/People/"  # Results path
 ed_path = "S:/_external_data/"  # external data path
 so_file = "People_conflict.sqlite"  # Source database
 s_sql = ""  # SQL statements
-l_export = True
+l_export = False
 l_mail = False
 l_record = False
 
