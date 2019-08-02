@@ -2658,7 +2658,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     if i_finding_before > 0 and i_finding_after > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
-            'VSS GL DIFFERENCE' As Audit_finding,
+            'VSS GL BURSARY DIFFERENCE' As Audit_finding,
             FIND.ORG As Organization,
             FIND.CAMPUS As Campus,
             FIND.MONTH As Month,
