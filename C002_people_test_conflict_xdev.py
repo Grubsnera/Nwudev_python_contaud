@@ -1,7 +1,18 @@
-""" Script to test PEOPLE conflict of interest *********************************
+"""
+Script to test PEOPLE conflict of interest
 Created on: 8 Apr 2019
 Author: Albert J v Rensburg (NWU21162395)
-*****************************************************************************"""
+"""
+
+# IMPORT PYTHON MODULES
+import sqlite3
+import sys
+
+# IMPORT OWN MODULES
+from _my_modules import funccsv
+from _my_modules import funcdate
+from _my_modules import funcfile
+from _my_modules import funcsys
 
 """ INDEX **********************************************************************
 ENVIRONMENT
@@ -14,25 +25,6 @@ END OF SCRIPT
 ENVIRONMENT
 *****************************************************************************"""
 
-# IMPORT PYTHON MODULES
-import csv
-#import datetime
-import sqlite3
-import sys
-
-# ADD OWN MODULE PATH
-sys.path.append('S:/_my_modules')
-
-# IMPORT OWN MODULES
-import funccsv
-import funcdate
-import funcfile
-#import funcmail
-#import funcmysql
-#import funcpeople
-#import funcstr
-import funcsys
-
 # OPEN THE SCRIPT LOG FILE
 print("-----------------------------")    
 print("C002_PEOPLE_TEST_CONFLICT_DEV")
@@ -43,11 +35,11 @@ funcfile.writelog("-------------------------------------")
 ilog_severity = 1
 
 # DECLARE VARIABLES
-so_path = "W:/People_conflict/" #Source database path
-re_path = "R:/People/" # Results path
-ed_path = "S:/_external_data/" #external data path
-so_file = "People_conflict.sqlite" # Source database
-s_sql = "" # SQL statements
+so_path = "W:/People_conflict/"  # Source database path
+re_path = "R:/People/"  # Results path
+ed_path = "S:/_external_data/"  # external data path
+so_file = "People_conflict.sqlite"  # Source database
+s_sql = ""  # SQL statements
 l_export = True
 l_mail = False
 l_record = False
@@ -74,14 +66,6 @@ BEGIN OF SCRIPT
 *****************************************************************************"""
 print("BEGIN OF SCRIPT")
 funcfile.writelog("BEGIN OF SCRIPT")
-
-""" ****************************************************************************
-BUILD DASHBOARD TABLES
-*****************************************************************************"""
-print("BUILD DASHBOARD TABLES")
-funcfile.writelog("BUILD DASHBOARD TABLES")
-
-
 
 """ ****************************************************************************
 END OF SCRIPT

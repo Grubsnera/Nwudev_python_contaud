@@ -1,7 +1,19 @@
-""" Script to test PEOPLE conflict of interest *********************************
+"""
+Script to test PEOPLE conflict of interest
 Created on: 8 Apr 2019
 Author: Albert J v Rensburg (NWU21162395)
-*****************************************************************************"""
+"""
+
+# IMPORT PYTHON MODULES
+import csv
+import sqlite3
+import sys
+
+# IMPORT OWN MODULES
+from _my_modules import funccsv
+from _my_modules import funcdate
+from _my_modules import funcfile
+from _my_modules import funcsys
 
 """ INDEX **********************************************************************
 ENVIRONMENT
@@ -15,30 +27,16 @@ TEST EMPLOYEE VENDOR SHARE BANK ACCOUNT
 END OF SCRIPT
 *****************************************************************************"""
 
-def People_test_conflict():
+
+def people_test_conflict():
+    """
+    Cript to test PEOPLE conflict of interest
+    :return:
+    """
 
     """*****************************************************************************
     ENVIRONMENT
     *****************************************************************************"""
-
-    # IMPORT PYTHON MODULES
-    import csv
-    #import datetime
-    import sqlite3
-    import sys
-
-    # ADD OWN MODULE PATH
-    sys.path.append('S:/_my_modules')
-
-    # IMPORT OWN MODULES
-    import funccsv
-    import funcdate
-    import funcfile
-    #import funcmail
-    #import funcmysql
-    #import funcpeople
-    #import funcstr
-    import funcsys
 
     # OPEN THE SCRIPT LOG FILE
     print("-----------------------------")    

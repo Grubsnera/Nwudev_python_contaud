@@ -14,7 +14,7 @@ funcfile.writelog("SCRIPT: C002_PEOPLE_TEST_CONFLICT_RUN")
 funcfile.writelog("-------------------------------------")
 
 try:
-    C002_people_test_conflict.People_test_conflict()
+    C002_people_test_conflict.people_test_conflict()
 except Exception as e:
     funcsys.ErrMessage(e)
 

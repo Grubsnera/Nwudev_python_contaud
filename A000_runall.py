@@ -137,7 +137,7 @@ PEOPLE CONFLICT TESTS
 if funcdate.today_dayname() in "MonTueWedThuFri":
     import C002_people_test_conflict
     try:
-        C002_people_test_conflict.People_test_conflict()
+        C002_people_test_conflict.people_test_conflict()
         if l_mail:
             funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:C002_people_test_conflict',
                           'NWUIAPython: Success: C002_people_test_conflict')
