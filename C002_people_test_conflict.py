@@ -53,9 +53,9 @@ def people_test_conflict():
     ed_path = "S:/_external_data/" #external data path
     so_file = "People_conflict.sqlite" # Source database
     s_sql = "" # SQL statements
-    l_export = False
-    l_mail = False
-    l_record = False
+    l_export: bool = False
+    l_mail: bool = False
+    l_record: bool = True
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -574,25 +574,25 @@ def people_test_conflict():
     funcfile.writelog("TEST EMPLOYEE VENDOR COMMON BANK")
 
     # DECLARE TEST VARIABLES
-    l_record = True # Record the findings in the previous reported findings file
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
     # BUILD TABLE WITH VENDOR BANK ACCOUNT NUMBERS
     print("Merge employees and vendors on bank account...")
     sr_file = "X100aa_bank_empven"
-    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
-        X100_bank_emp.*,
-        X100_bank_ven.*   
+        BANK.*,
+        VEND.*   
     From
-        X100_bank_emp Inner Join
-        X100_bank_ven On X100_bank_ven.VENDOR_BANK = X100_bank_emp.EMP_BANK
+        X100_bank_emp BANK Inner Join
+        X100_bank_ven VEND On VEND.VENDOR_BANK = BANK.EMP_BANK And
+            Instr(VEND.VENDOR_ID, BANK.EMP) = 0
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD TABLE WITH VENDOR BANK ACCOUNT NUMBERS
     print("Compile list of shared bank accounts...")
@@ -704,7 +704,7 @@ def people_test_conflict():
             # Read the header data
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             # Write the data
-            if l_record == True:
+            if l_record:
                 funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head,"a",".txt")
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
