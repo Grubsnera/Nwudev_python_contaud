@@ -39,6 +39,8 @@ BURSARY VSS GL RECON
 TEST BURSARY INGL NOVSS
 TEST BURSARY INVSS NOGL
 TEST BURSARY POST TO DIFF CAMPUS IN GL
+BALANCE ON MORE THAN ONE CAMPUS
+TEST STUDENT BALANCE ON MORE THAN ONE CAMPUS 
 END OF SCRIPT
 *****************************************************************************"""
 
@@ -3336,6 +3338,70 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     else:
         print("No final test burs to diff gl campus results...")
         funcfile.writelog("%t EXPORT DATA: No new data to export")
+
+    """*************************************************************************
+    TEST STUDENT BALANCE ON MORE THAN ONE CAMPUS 
+    *************************************************************************"""
+    print("TEST STUDENT BALANCE ON MORE THAN ONE CAMPUS")
+    funcfile.writelog("TEST STUDENT BALANCE ON MORE THAN ONE CAMPUS")
+
+    # BUILD A LIST OF STUDENT BALANCES PER CAMPUS
+    print("Build balance per campus list...")
+    sr_file = "X020_Balance_per_campus"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        TRAN.STUDENT_VSS,
+        TRAN.CAMPUS_VSS,
+        Round(Total(TRAN.AMOUNT_VSS),2) As BALANCE
+    From
+        X002ab_vss_transort TRAN
+    Group By
+        TRAN.STUDENT_VSS,
+        TRAN.CAMPUS_VSS
+    Having
+        Round(Total(TRAN.AMOUNT_VSS),2) <> 0.00    
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # COUNT THE NUMBER OF BALANCES PER CAMPUS
+    print("Build count per campus list...")
+    sr_file = "X020_Count_per_campus"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        STUD.STUDENT_VSS,
+        Count(STUD.CAMPUS_VSS) As COUNT
+    From
+        X020_Balance_per_campus STUD
+    Group By
+        STUD.STUDENT_VSS
+    Having
+        Count(STUD.CAMPUS_VSS) > 1
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # LIST THE STUDENTS
+    print("Build students list...")
+    sr_file = "X020_Students"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        COUNT.STUDENT_VSS,
+        COUNT.COUNT,
+        CAMP.CAMPUS_VSS,
+        CAMP.BALANCE
+    From
+        X020_Count_per_campus COUNT Inner Join
+        X020_Balance_per_campus CAMP On CAMP.STUDENT_VSS = COUNT.STUDENT_VSS
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """*************************************************************************
     END OF SCRIPT
