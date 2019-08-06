@@ -658,8 +658,8 @@ def people_test_conflict():
           PREVIOUS.DATE_RETEST AS PREV_DATE_RETEST,
           PREVIOUS.DATE_MAILED
         FROM
-          X100ab_bank_empven FINDING
-          LEFT JOIN X100ac_bank_getprev PREVIOUS ON PREVIOUS.FIELD1 = FINDING.EMP AND
+          X100ab_bank_empven FINDING Left Join
+          X100ac_bank_getprev PREVIOUS ON PREVIOUS.FIELD1 = FINDING.EMP AND
               PREVIOUS.DATE_RETEST >= Date('%TODAY%') AND
               PREVIOUS.FIELD2 = FINDING.EMP_BANK
         ;"""
