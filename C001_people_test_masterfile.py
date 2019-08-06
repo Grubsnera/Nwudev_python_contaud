@@ -4967,57 +4967,103 @@ def People_test_masterfile():
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-    # BUILD PART TIME SECONDARY ASSIGNMENTS
-    print("Obtain a list of part time secondary assignments...")
-    sr_file = "X007_part_sec_assignments"
+    # LIST OF CURRENT SECONDARY ASSIGNMENTS (TEMPORARY ASSIGNMENT and TEMP FIXED TERM CONTRACT)
+    print("Obtain a list of secondary assignments...")
+    sr_file = "X007_leave01_secass_all"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
-        SEC.ASSIGNMENT_EXTRA_INFO_ID,
-        SEC.ASSIGNMENT_ID,
-        SEC.SEC_FULLPART_FLAG,
+        PEOP.EMPLOYEE_NUMBER,
+        PEOP.ASS_ID,
+        PEOP.NAME_LIST,
+        PEOP.PERSON_TYPE,
         SEC.SEC_HOURS_FORECAST,
         SEC.SEC_DATE_FROM,
         SEC.SEC_DATE_TO,
         SEC.SEC_TYPE,
+        SEC.SEC_RATE,
         SEC.SEC_UNIT,
+        SEC.SEC_FULLPART_FLAG,
+        CASE
+            WHEN SEC.SEC_UNIT = 'MS' And SEC.SEC_TYPE = 'SALARY' And SEC.SEC_FULLPART_FLAG = 'F' THEN PEOP.PERSON_TYPE||'(F)'
+            WHEN SEC.SEC_UNIT = 'MS' And SEC.SEC_TYPE = 'SALARY' And SEC.SEC_FULLPART_FLAG <> 'F' THEN 'C'
+            ELSE PEOP.PERSON_TYPE||'(P)'    
+        END As PERSON_TYPE_CALC,
         (JulianDay(SEC.SEC_DATE_TO) - JulianDay(SEC.SEC_DATE_FROM)) / 30.4167 As CALC_DUR_MONTH,
         SEC.SEC_HOURS_FORECAST / ((JulianDay(SEC.SEC_DATE_TO) - JulianDay(SEC.SEC_DATE_FROM)) / 30.4167) As CALC_HOUR_MONTH
     From
-        X001_ASSIGNMENT_SEC_CURR_YEAR SEC
+        PEOPLE.X002_PEOPLE_CURR PEOP Inner Join
+        PEOPLE.X001_ASSIGNMENT_SEC_CURR_YEAR SEC On SEC.ASSIGNMENT_ID = PEOP.ASS_ID
     Where
-        SEC.SEC_FULLPART_FLAG = 'P' And
-        SEC.SEC_DATE_FROM <= Date('%TODAY%') And
-        SEC.SEC_DATE_TO >= Date('%TODAY%') And
-        SEC.SEC_TYPE = 'SALARY' And
-        SEC.SEC_UNIT = 'MS'
+        (PEOP.PERSON_TYPE = 'TEMPORARY APPOINTMENT' And
+        SEC_DATE_FROM <= Date('%TODAY%') And
+        SEC_DATE_TO >= Date('%TODAY%')) Or
+        (PEOP.PERSON_TYPE = 'TEMP FIXED TERM CONTRACT' And
+        SEC_DATE_FROM <= Date('%TODAY%') And
+        SEC_DATE_TO >= Date('%TODAY%'))
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = s_sql.replace("%TODAY%", funcdate.today())
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-    # BUILD PART TIME SECONDARY ASSIGNMENTS
-    print("Calculate part time secondary assignments...")
-    sr_file = "X007_part_sec_assignments_summ"
+    # ISOLATE RECORDS WITHOUT FURTHER CALCULATION
+    print("Isolate records without further calculations...")
+    sr_file = "X007_leave02_ms_list"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
-        SEC.ASSIGNMENT_ID,
-        Count(SEC.ASSIGNMENT_EXTRA_INFO_ID) As SEC_COUNT,
-        SEC.SEC_FULLPART_FLAG,
-        Sum(SEC.CALC_HOUR_MONTH) As CALC_HOUR_MONTH_SUM
+        SEC.EMPLOYEE_NUMBER,
+        SEC.PERSON_TYPE_CALC,
+        Count(SEC.ASS_ID) As COUNT
     From
-        X007_part_sec_assignments SEC
+        X007_leave01_secass_all SEC
+    Where
+        SEC.PERSON_TYPE_CALC <> 'C'
     Group By
-        SEC.ASSIGNMENT_ID,
-        SEC.SEC_FULLPART_FLAG
-    Having
-        Sum(SEC.CALC_HOUR_MONTH) < 24
+        SEC.EMPLOYEE_NUMBER,
+        SEC.PERSON_TYPE_CALC
+    Order By
+        SEC.PERSON_TYPE_CALC
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD UNIQUE LIST OF RECORDS WITHOUT FURTHER CALCULATION
+    print("Build unique list of records...")
+    sr_file = "X007_leave03_ms_empl"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        SEC.EMPLOYEE_NUMBER,
+        SEC.PERSON_TYPE_CALC
+    From
+        X007_leave02_ms_list SEC
+    Group By
+        SEC.EMPLOYEE_NUMBER
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+
+    # BUILD HOURS PER MONTH SUMMARY LIST
+    print("Build hours per month list...")
+    sr_file = "X007_leave04_hoursum"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        SEC.EMPLOYEE_NUMBER,
+        Count(SEC.ASS_ID) As SEC_COUNT,
+        Sum(SEC.CALC_HOUR_MONTH) As CALC_HOUR_MONTH_SUM,
+        CASE
+            WHEN Sum(SEC.CALC_HOUR_MONTH) < 24 THEN SEC.PERSON_TYPE||'(P)'
+            ELSE SEC.PERSON_TYPE||'(F)'
+        END As PERSON_TYPE_CALC
+    From
+        X007_leave01_secass_all SEC
+    Group By
+        SEC.EMPLOYEE_NUMBER
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
 
     # BUILD GRADE AND LEAVE MASTER TABLE
     print("Obtain master list of all grades and leave codes...")
@@ -5041,12 +5087,9 @@ def People_test_masterfile():
         PEOPLE.LEAVE_CODE,
         PEOPLE.GRADE,
         PEOPLE.GRADE_CALC,
-        SEC.SEC_FULLPART_FLAG,
         CASE
-            WHEN PEOPLE.PERSON_TYPE = 'TEMP FIXED TERM CONTRACT' And SEC.SEC_FULLPART_FLAG = 'P' THEN 'TEMP FIXED TERM CONTRACT(P)'
-            WHEN PEOPLE.PERSON_TYPE = 'TEMP FIXED TERM CONTRACT' THEN 'TEMP FIXED TERM CONTRACT(F)'
-            WHEN PEOPLE.PERSON_TYPE = 'TEMPORARY APPOINTMENT' And SEC.SEC_FULLPART_FLAG = 'P' THEN 'TEMPORARY APPOINTMENT(P)'
-            WHEN PEOPLE.PERSON_TYPE = 'TEMPORARY APPOINTMENT' THEN 'TEMPORARY APPOINTMENT(F)'
+            WHEN LIST2.PERSON_TYPE_CALC IS NOT NULL THEN LIST2.PERSON_TYPE_CALC
+            WHEN LIST1.PERSON_TYPE_CALC IS NOT NULL THEN LIST1.PERSON_TYPE_CALC 
             ELSE PEOPLE.PERSON_TYPE
         END As PERSON_TYPE_LEAVE,
         CASE
@@ -5057,7 +5100,8 @@ def People_test_masterfile():
     From
         PEOPLE.X002_PEOPLE_CURR PEOPLE Left Join
         X007_long_service_date LONG On LONG.EMPLOYEE_NUMBER = PEOPLE.EMPLOYEE_NUMBER Left Join
-        X007_part_sec_assignments_summ SEC On SEC.ASSIGNMENT_ID = PEOPLE.ASS_ID
+        X007_leave03_ms_empl LIST1 On LIST1.EMPLOYEE_NUMBER = PEOPLE.EMPLOYEE_NUMBER Left Join
+        X007_leave04_hoursum LIST2 On LIST2.EMPLOYEE_NUMBER = PEOPLE.EMPLOYEE_NUMBER     
     Where
         Substr(PEOPLE.PERSON_TYPE,1,6) <> 'AD HOC'
     ;"""
