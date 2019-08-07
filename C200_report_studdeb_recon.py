@@ -39,7 +39,7 @@ TEST VSS GL BURSARY DIFFERENCE TRANSACTION SUMMARY
 BURSARY VSS GL RECON
 TEST BURSARY INGL NOVSS (UNCOMPLETE)
 TEST BURSARY INVSS NOGL
-TEST BURSARY POST TO DIFF CAMPUS IN GL
+TEST BURSARY VSS GL DIFFERENT CAMPUS
 BALANCE ON MORE THAN ONE CAMPUS
 TEST STUDENT BALANCE ON MORE THAN ONE CAMPUS 
 END OF SCRIPT
@@ -2441,7 +2441,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     # COUNT THE NUMBER OF FINDINGS
     i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
     print("*** Found " + str(i_finding_before) + " exceptions ***")
-    funcfile.writelog("%t FINDING: " + str(i_finding_before) + " VSS GL BURSARY DIFFERENCE finding(s)")
+    funcfile.writelog("%t FINDING: " + str(i_finding_before) + " VSS GL DIFFERENCE BURSARY finding(s)")
 
     # GET PREVIOUS FINDINGS
     sr_file = "X004ec_get_previous"
@@ -2661,7 +2661,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     if i_finding_before > 0 and i_finding_after > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
-            'VSS GL BURSARY DIFFERENCE' As Audit_finding,
+            'VSS GL DIFFERENCE BURSARY' As Audit_finding,
             FIND.ORG As Organization,
             FIND.CAMPUS As Campus,
             FIND.MONTH As Month,
@@ -3473,155 +3473,340 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """*************************************************************************
-    TEST BURSARY POST TO DIFF CAMPUS IN GL
-        X010fa Identify bursary transactions posted to a different campus in gl
-        X010fb Import reporting officers from VSS.SQLITE
-        X010fc Import reporting supervisors from VSS.SQLITE
-        X010fx Final test burs to diff gl campus results
+    TEST BURSARY VSS GL DIFFERENT CAMPUS
     *************************************************************************"""
-    print("TEST BURSARY VSS DIFF CAMPUS GL")
-    funcfile.writelog("TEST BURSARY VSS DIFF CAMPUS GL")
+    print("TEST BURSARY VSS GL DIFFERENT CAMPUS")
+    funcfile.writelog("TEST BURSARY VSS GL DIFFERENT CAMPUS")
 
-    #*** TEST BURSARY POST TO DIFF CAMPUS IN GL Identify bursary transactions posted to different campus in gl ***************
+    # DECLARE VARIABLES
+    i_finding_after: int = 0
+
+    # IDENTIFY TRANSACTIONS
     print("Test bursary transactions posted to different campus in gl...")
-    sr_file = "X010fa_test_burs_gl_diffcampus"
+    sr_file = "X010fa_burs_gl_diffcampus"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     SELECT
-      UPPER(SUBSTR(X010cb_join_vss_gl_matched.CAMPUS_VSS,1,3))||TRIM(X010cb_join_vss_gl_matched.TRANSDATE_VSS)||TRIM(X010cb_join_vss_gl_matched.STUDENT_VSS)||TRIM(X010cb_join_vss_gl_matched.TRANSCODE_VSS)||TRIM(X010cb_join_vss_gl_matched.BURSCODE_VSS)||TRIM(X010cb_join_vss_gl_matched.AMOUNT_VSS) AS ROWID,
-      'NWU' AS ORG,
-      X010cb_join_vss_gl_matched.CAMPUS_VSS,
-      X010cb_join_vss_gl_matched.MONTH_VSS,
-      X010cb_join_vss_gl_matched.STUDENT_VSS,
-      X010cb_join_vss_gl_matched.TRANSDATE_VSS,
-      X010cb_join_vss_gl_matched.TRANSCODE_VSS,
-      X010cb_join_vss_gl_matched.TRANSDESC_VSS,
-      X010cb_join_vss_gl_matched.AMOUNT_VSS,
-      X010cb_join_vss_gl_matched.BURSCODE_VSS,
-      X010cb_join_vss_gl_matched.BURSNAAM_VSS,
-      X010cb_join_vss_gl_matched.CAMPUS_GL,
-      X010cb_join_vss_gl_matched.TRANSEDOC_GL,
-      X010cb_join_vss_gl_matched.TRANSENTR_GL,
-      X010cb_join_vss_gl_matched.TRANSDESC_GL,
-      X010cb_join_vss_gl_matched.PERIOD,
-      X010cb_join_vss_gl_matched.MATCHED,
-      X010cb_join_vss_gl_matched.TRANSUSER_VSS
+        'NWU' AS ORG,
+        Upper(TRAN.CAMPUS_VSS) As CAMPUS_VSS,
+        TRAN.MONTH_VSS,
+        TRAN.STUDENT_VSS,
+        TRAN.TRANSDATE_VSS,
+        TRAN.TRANSCODE_VSS,
+        TRAN.TRANSDESC_VSS,
+        TRAN.AMOUNT_VSS,
+        TRAN.BURSCODE_VSS,
+        TRAN.BURSNAAM_VSS,
+        Upper(TRAN.CAMPUS_GL) As CAMPUS_GL,
+        TRAN.TRANSEDOC_GL,
+        TRAN.TRANSENTR_GL,
+        TRAN.TRANSDESC_GL,
+        TRAN.PERIOD,
+        TRAN.MATCHED,
+        TRAN.TRANSUSER_VSS
     FROM
-      X010cb_join_vss_gl_matched
+        X010cb_join_vss_gl_matched TRAN
     WHERE
-      X010cb_join_vss_gl_matched.MATCHED = 'A'
+        TRAN.MATCHED = 'A' And
+        TRAN.MONTH_VSS <= '%PMONTH%'
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = s_sql.replace("%PMONTH%", gl_month)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # IDENTIFY FINDINGS
+    print("Identify findings...")
+    sr_file = "X010fb_findings"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        *
+    From
+        X010fa_burs_gl_diffcampus CURR
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-    # *** TEST BURSARY POST TO DIFF CAMPUS IN GL Import the reporting officers ************************************************
-    print("Import reporting officers from VSS.SQLITE...")
-    sr_file = "X010fb_impo_report_officer"
-    s_sql = "CREATE TABLE " + sr_file + " AS " + """
-    SELECT
-      VSS.X000_OWN_LOOKUPS.LOOKUP,
-      VSS.X000_OWN_LOOKUPS.LOOKUP_CODE AS CAMPUS,
-      VSS.X000_OWN_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-      PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
-      PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
-    FROM
-      VSS.X000_OWN_LOOKUPS
-      LEFT JOIN PEOPLE.X002_PEOPLE_CURR ON PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = VSS.X000_OWN_LOOKUPS.LOOKUP_DESCRIPTION
-    WHERE
-      VSS.X000_OWN_LOOKUPS.LOOKUP = 'stud_debt_recon_burs_test_diff_campus_officer'
-    ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    # COUNT THE NUMBER OF FINDINGS
+    i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
+    print("*** Found " + str(i_finding_before) + " exceptions ***")
+    funcfile.writelog("%t FINDING: " + str(i_finding_before) + " VSS GL DIFFERENCE BURSARY CAMPUS finding(s)")
 
-    # *** TEST BURSARY POST TO DIFF CAMPUS IN GL Import the reporting supervisors *********************************************
-    print("Import reporting supervisors from VSS.SQLITE...")
-    sr_file = "X010fc_impo_report_supervisor"
-    s_sql = "CREATE TABLE " + sr_file + " AS " + """
-    SELECT
-      VSS.X000_OWN_LOOKUPS.LOOKUP,
-      VSS.X000_OWN_LOOKUPS.LOOKUP_CODE AS CAMPUS,
-      VSS.X000_OWN_LOOKUPS.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-      PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME,
-      PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS
-    FROM
-      VSS.X000_OWN_LOOKUPS
-      LEFT JOIN PEOPLE.X002_PEOPLE_CURR ON PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = VSS.X000_OWN_LOOKUPS.LOOKUP_DESCRIPTION
-    WHERE
-      VSS.X000_OWN_LOOKUPS.LOOKUP = 'stud_debt_recon_burs_test_diff_campus_supervisor'
-    ;"""
+    # GET PREVIOUS FINDINGS
+    sr_file = "X010fc_get_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    if i_finding_before > 0:
+        print("Import previously reported findings...")
+        so_curs.execute(
+            "CREATE TABLE " + sr_file + """
+            (PROCESS TEXT,
+            FIELD1 INT,
+            FIELD2 TEXT,
+            FIELD3 TEXT,
+            FIELD4 REAL,
+            FIELD5 TEXT,
+            DATE_REPORTED TEXT,
+            DATE_RETEST TEXT,
+            DATE_MAILED TEXT)
+            """)
+        s_cols = ""
+        co = open(ed_path + "200_reported.txt", "r")
+        co_reader = csv.reader(co)
+        # Read the COLUMN database data
+        for row in co_reader:
+            # Populate the column variables
+            if row[0] == "PROCESS":
+                continue
+            elif row[0] != "bursary vss gl different campus":
+                continue
+            else:
+                s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[
+                    2] + "','" + row[3] + "','" + row[4] + "','" + row[5] + "','" + row[6] + "','" + row[
+                             7] + "','" + row[8] + "')"
+                so_curs.execute(s_cols)
+        so_conn.commit()
+        # Close the imported data file
+        co.close()
+        funcfile.writelog("%t IMPORT TABLE: " + ed_path + "200_reported.txt (" + sr_file + ")")
 
-    # *** TEST BURSARY POST TO DIFF CAMPUS IN GL Prepare final burs posted to diff gl campus reporting file *******************
-    print("Final test burs to diff gl campus results...")
-    sr_file = "X010fx_test_burs_gl_diffcampus"
-    s_sql = "CREATE TABLE " + sr_file + " AS " + """
-    SELECT
-      X010fa_test_burs_gl_diffcampus.CAMPUS_VSS AS VSS_CAMPUS,
-      X010fa_test_burs_gl_diffcampus.CAMPUS_GL AS GL_CAMPUS,
-      X010fa_test_burs_gl_diffcampus.STUDENT_VSS AS STUDENT,
-      X010fa_test_burs_gl_diffcampus.TRANSDATE_VSS AS DATE,
-      X010fa_test_burs_gl_diffcampus.MONTH_VSS AS MONTH,
-      Round(X010fa_test_burs_gl_diffcampus.AMOUNT_VSS,2) AS AMOUNT,
-      X010fa_test_burs_gl_diffcampus.TRANSCODE_VSS AS TRANSCODE,
-      X010fa_test_burs_gl_diffcampus.BURSCODE_VSS AS BURSCODE,
-      X010fa_test_burs_gl_diffcampus.BURSNAAM_VSS AS BURSNAME,
-      X010fa_test_burs_gl_diffcampus.TRANSDESC_VSS AS TRANDESC,
-      X010fa_test_burs_gl_diffcampus.TRANSEDOC_GL AS GL_EDOC,
-      X010fa_test_burs_gl_diffcampus.TRANSENTR_GL AS GL_DESC,
-      X010fa_test_burs_gl_diffcampus.ORG,
-      X010fa_test_burs_gl_diffcampus.TRANSUSER_VSS AS USER,
-      PEOPLE.X002_PEOPLE_CURR.KNOWN_NAME AS USER_NAME,
-      PEOPLE.X002_PEOPLE_CURR.EMAIL_ADDRESS AS USER_MAIL,
-      CAMP_OFFICER.EMPLOYEE_NUMBER AS OFFICER_CAMP,
-      CAMP_OFFICER.KNOWN_NAME AS OFFICER_NAME_CAMP,
-      CAMP_OFFICER.EMAIL_ADDRESS AS OFFICER_MAIL_CAMP,
-      ORG_OFFICER.EMPLOYEE_NUMBER AS OFFICER_ORG,
-      ORG_OFFICER.KNOWN_NAME AS OFFICER_NAME_ORG,
-      ORG_OFFICER.EMAIL_ADDRESS AS OFFICER_MAIL_ORG,
-      CAMP_SUPERVISOR.EMPLOYEE_NUMBER AS SUPERVISOR_CAMP,
-      CAMP_SUPERVISOR.KNOWN_NAME AS SUPERVISOR_NAME_CAMP,
-      CAMP_SUPERVISOR.EMAIL_ADDRESS AS SUPERVISOR_MAIL_CAMP,
-      ORG_SUPERVISOR.EMPLOYEE_NUMBER AS SUPERVISOR_ORG,
-      ORG_SUPERVISOR.KNOWN_NAME AS SUPERVISOR_NAME_ORG,
-      ORG_SUPERVISOR.EMAIL_ADDRESS AS SUPERVISOR_MAIL_ORG,
-      X010fa_test_burs_gl_diffcampus.ROWID
-    FROM
-      X010fa_test_burs_gl_diffcampus
-      LEFT JOIN PEOPLE.X002_PEOPLE_CURR ON PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = X010fa_test_burs_gl_diffcampus.TRANSUSER_VSS
-      LEFT JOIN X010fb_impo_report_officer CAMP_OFFICER ON CAMP_OFFICER.CAMPUS = X010fa_test_burs_gl_diffcampus.CAMPUS_VSS
-      LEFT JOIN X010fb_impo_report_officer ORG_OFFICER ON ORG_OFFICER.CAMPUS = X010fa_test_burs_gl_diffcampus.ORG
-      LEFT JOIN X010fc_impo_report_supervisor CAMP_SUPERVISOR ON CAMP_SUPERVISOR.CAMPUS = X010fa_test_burs_gl_diffcampus.CAMPUS_VSS
-      LEFT JOIN X010fc_impo_report_supervisor ORG_SUPERVISOR ON ORG_SUPERVISOR.CAMPUS = X010fa_test_burs_gl_diffcampus.ORG
-    ORDER BY
-      DATE,
-      VSS_CAMPUS,
-      STUDENT,
-      BURSCODE
-    ;"""
+    # ADD PREVIOUS FINDINGS
+    sr_file = "X010fd_add_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
-    # Export the data
-    if funcsys.tablerowcount(so_curs,sr_file) > 0:
-        print("Export final test burs to diff gl campus results...")
-        sr_filet = sr_file
-        sx_path = re_path + funcdate.cur_year() + "/"
-        sx_file = "Debtor_010fx_test_burs_gl_diffcampus_"
-        sx_filet = sx_file + funcdate.today()
-        s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
-        funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
+    if i_finding_before > 0:
+        print("Join previously reported to current findings...")
+        s_sql = "CREATE TABLE " + sr_file + " AS" + """
+        Select
+            FIND.*,
+            'bursary vss gl different campus' AS PROCESS,
+            '%TODAY%' AS DATE_REPORTED,
+            '%DAYS%' AS DATE_RETEST,
+            PREV.PROCESS AS PREV_PROCESS,
+            PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
+            PREV.DATE_RETEST AS PREV_DATE_RETEST,
+            PREV.DATE_MAILED
+        From
+            X010fb_findings FIND Left Join
+            X010fc_get_previous PREV ON PREV.FIELD1 = FIND.CAMPUS_VSS AND
+                PREV.FIELD2 = FIND.MONTH_VSS And
+                PREV.FIELD3 = FIND.STUDENT_VSS And
+                PREV.FIELD4 = FIND.AMOUNT_VSS And
+                PREV.FIELD5 = FIND.BURSCODE_VSS And
+                PREV.DATE_RETEST >= Date('%TODAY%')
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%DAYS%", funcdate.today_plusdays(20000))
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD LIST TO UPDATE FINDINGS
+    # NOTE ADD CODE
+    sr_file = "X010fe_new_previous"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            PREV.PROCESS,
+            PREV.CAMPUS_VSS AS FIELD1,
+            PREV.MONTH_VSS AS FIELD2,
+            PREV.STUDENT_VSS AS FIELD3,
+            Cast(PREV.AMOUNT_VSS As REAL) AS FIELD4,
+            PREV.BURSCODE_VSS AS FIELD5,
+            PREV.DATE_REPORTED,
+            PREV.DATE_RETEST,
+            PREV.DATE_MAILED
+        From
+            X010fd_add_previous PREV
+        Where
+            PREV.PREV_PROCESS Is Null
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+        # Export findings to previous reported file
+        i_finding_after = funcsys.tablerowcount(so_curs, sr_file)
+        if i_finding_after > 0:
+            print("*** " + str(i_finding_after) + " Finding(s) to report ***")
+            sx_path = ed_path
+            sx_file = "200_reported"
+            # Read the header data
+            s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+            # Write the data
+            if l_record:
+                funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
+                funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
+                funcfile.writelog("%t EXPORT DATA: " + sr_file)
+        else:
+            print("*** No new findings to report ***")
+            funcfile.writelog("%t FINDING: No new findings to export")
+
+    # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
+    sr_file = "X010ff_officer"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        if i_finding_after > 0:
+            print("Import reporting officers for mail purposes...")
+            s_sql = "CREATE TABLE " + sr_file + " AS " + """
+            Select
+                OFFICER.LOOKUP,
+                Upper(OFFICER.LOOKUP_CODE) AS CAMPUS,
+                OFFICER.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
+                PEOP.NAME_ADDR As NAME,
+                PEOP.EMAIL_ADDRESS
+            From
+                VSS.X000_OWN_LOOKUPS OFFICER Left Join
+                PEOPLE.X002_PEOPLE_CURR PEOP ON
+                    PEOP.EMPLOYEE_NUMBER = OFFICER.LOOKUP_DESCRIPTION
+            Where
+                OFFICER.LOOKUP = 'stud_debt_recon_test_bursary_vss_gl_diff_campus_officer'
+            ;"""
+            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+            so_curs.execute(s_sql)
+            so_conn.commit()
+            funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
+    sr_file = "X010fg_supervisor"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0 and i_finding_after > 0:
+        print("Import reporting supervisors for mail purposes...")
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            SUPERVISOR.LOOKUP,
+            Upper(SUPERVISOR.LOOKUP_CODE) AS CAMPUS,
+            SUPERVISOR.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
+            PEOP.NAME_ADDR As NAME,
+            PEOP.EMAIL_ADDRESS
+        From
+            VSS.X000_OWN_LOOKUPS SUPERVISOR Left Join
+            PEOPLE.X002_PEOPLE_CURR PEOP ON 
+                PEOP.EMPLOYEE_NUMBER = SUPERVISOR.LOOKUP_DESCRIPTION
+        Where
+            SUPERVISOR.LOOKUP = 'stud_debt_recon_test_bursary_vss_gl_diff_campus_supervisor'
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # ADD CONTACT DETAILS TO FINDINGS
+    sr_file = "X010fh_detail"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0 and i_finding_after > 0:
+        print("Add contact details to findings...")
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            PREV.ORG,
+            PREV.CAMPUS_VSS,
+            PREV.STUDENT_VSS,
+            PREV.MONTH_VSS,
+            PREV.TRANSDATE_VSS,
+            PREV.TRANSCODE_VSS,
+            PREV.TRANSDESC_VSS,
+            PREV.AMOUNT_VSS,
+            PREV.BURSCODE_VSS,
+            PREV.BURSNAAM_VSS,
+            PREV.CAMPUS_GL,
+            PREV.TRANSEDOC_GL,
+            PREV.TRANSUSER_VSS,
+            CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
+            CAMP_OFF.NAME As CAMP_OFF_NAME,
+            CASE
+                WHEN  CAMP_OFF.EMPLOYEE_NUMBER <> '' THEN CAMP_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                ELSE CAMP_OFF.EMAIL_ADDRESS
+            END As CAMP_OFF_MAIL,
+            CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
+            CAMP_SUP.NAME As CAMP_SUP_NAME,
+            CASE
+                WHEN CAMP_SUP.EMPLOYEE_NUMBER <> '' THEN CAMP_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                ELSE CAMP_SUP.EMAIL_ADDRESS
+            END As CAMP_SUP_MAIL,
+            ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
+            ORG_OFF.NAME As ORG_OFF_NAME,
+            CASE
+                WHEN ORG_OFF.EMPLOYEE_NUMBER <> '' THEN ORG_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                ELSE ORG_OFF.EMAIL_ADDRESS
+            END As ORG_OFF_MAIL,
+            ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
+            ORG_SUP.NAME As ORG_SUP_NAME,
+            CASE
+                WHEN ORG_SUP.EMPLOYEE_NUMBER <> '' THEN ORG_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                ELSE ORG_SUP.EMAIL_ADDRESS
+            END As ORG_SUP_MAIL
+        From
+            X010fd_add_previous PREV
+            Left Join X010ff_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.CAMPUS_VSS
+            Left Join X010ff_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG
+            Left Join X010fg_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.CAMPUS_VSS
+            Left Join X010fg_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG
+        Where
+          PREV.PREV_PROCESS IS NULL
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
+    sr_file = "X010fx_burs_gl_diffcampus"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    print("Build the final report")
+    if i_finding_before > 0 and i_finding_after > 0:
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            'VSS GL DIFFERENCE BURSARY CAMPUS' As Audit_finding,
+            FIND.ORG As Organization,
+            FIND.CAMPUS_VSS As Campus_vss,
+            FIND.CAMPUS_GL As Campus_gl,
+            FIND.STUDENT_VSS As Student,
+            FIND.MONTH_VSS As Month,
+            FIND.TRANSDATE_VSS As Tran_date,
+            FIND.TRANSCODE_VSS As Tran_type,
+            FIND.AMOUNT_VSS As Amount_vss,
+            FIND.BURSCODE_VSS As Burs_code,
+            FIND.BURSNAAM_VSS As Burs_name,
+            FIND.TRANSEDOC_GL As Gl_edoc,
+            FIND.CAMP_OFF_NAME AS Responsible_Officer,
+            FIND.CAMP_OFF_NUMB AS Responsible_Officer_Numb,
+            FIND.CAMP_OFF_MAIL AS Responsible_Officer_Mail,
+            FIND.CAMP_SUP_NAME AS Supervisor,
+            FIND.CAMP_SUP_NUMB AS Supervisor_Numb,
+            FIND.CAMP_SUP_MAIL AS Supervisor_Mail,
+            FIND.ORG_OFF_NAME AS Org_Officer,
+            FIND.ORG_OFF_NUMB AS Org_Officer_Numb,
+            FIND.ORG_OFF_MAIL AS Org_Officer_Mail,
+            FIND.ORG_SUP_NAME AS Org_Supervisor,
+            FIND.ORG_SUP_NUMB AS Org_Supervisor_Numb,
+            FIND.ORG_SUP_MAIL AS Org_Supervisor_Mail            
+        From
+            X010fh_detail FIND
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+        # Export findings
+        if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
+            print("Export findings...")
+            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_file = "Vssgl_test_010fx_burs_gl_diffcampus_"
+            sx_file_dated = sx_file + funcdate.today_file()
+            s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+            funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
+            funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
+            funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
     else:
-        print("No final test burs to diff gl campus results...")
-        funcfile.writelog("%t EXPORT DATA: No new data to export")
+        s_sql = "CREATE TABLE " + sr_file + " (" + """
+        BLANK TEXT
+        );"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """*************************************************************************
     TEST STUDENT BALANCE ON MORE THAN ONE CAMPUS 

@@ -53,20 +53,20 @@ BEGIN
 *****************************************************************************"""
 
 """*************************************************************************
-TEST BURSARY INVSS NOGL
+TEST BURSARY VSS GL DIFFERENT CAMPUS
 *************************************************************************"""
-print("TEST BURSARY INVSS NOGL")
-funcfile.writelog("TEST BURSARY INVSS NOGL")
+print("TEST BURSARY VSS GL DIFFERENT CAMPUS")
+funcfile.writelog("TEST BURSARY VSS GL DIFFERENT CAMPUS")
 
 # DECLARE VARIABLES
 i_finding_after: int = 0
 
 # IDENTIFY TRANSACTIONS
-print("Test bursary transactions in vss not in gl...")
-sr_file = "X010ea_test_burs_invss_nogl"
+print("Test bursary transactions posted to different campus in gl...")
+sr_file = "X010fa_burs_gl_diffcampus"
 s_sql = "CREATE TABLE " + sr_file + " AS " + """
 SELECT
-    'NWU' As ORG,
+    'NWU' AS ORG,
     Upper(TRAN.CAMPUS_VSS) As CAMPUS_VSS,
     TRAN.MONTH_VSS,
     TRAN.STUDENT_VSS,
@@ -76,17 +76,18 @@ SELECT
     TRAN.AMOUNT_VSS,
     TRAN.BURSCODE_VSS,
     TRAN.BURSNAAM_VSS,
-    TRAN.TRANSUSER_VSS  
+    Upper(TRAN.CAMPUS_GL) As CAMPUS_GL,
+    TRAN.TRANSEDOC_GL,
+    TRAN.TRANSENTR_GL,
+    TRAN.TRANSDESC_GL,
+    TRAN.PERIOD,
+    TRAN.MATCHED,
+    TRAN.TRANSUSER_VSS
 FROM
-    X010ca_join_vss_gl_burs TRAN
+    X010cb_join_vss_gl_matched TRAN
 WHERE
-    TRAN.MATCHED = 'X' And
+    TRAN.MATCHED = 'A' And
     TRAN.MONTH_VSS <= '%PMONTH%'
-ORDER BY
-    TRAN.CAMPUS_VSS,
-    TRAN.MONTH_VSS,
-    TRAN.TRANSCODE_VSS,
-    TRAN.BURSCODE_VSS
 ;"""
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 s_sql = s_sql.replace("%PMONTH%", gl_month)
@@ -96,12 +97,12 @@ funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
 # IDENTIFY FINDINGS
 print("Identify findings...")
-sr_file = "X010eb_findings"
+sr_file = "X010fb_findings"
 s_sql = "CREATE TABLE " + sr_file + " AS " + """
 Select
     *
 From
-    X010ea_test_burs_invss_nogl CURR
+    X010fa_burs_gl_diffcampus CURR
 ;"""
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 so_curs.execute(s_sql)
@@ -111,10 +112,10 @@ funcfile.writelog("%t BUILD TABLE: " + sr_file)
 # COUNT THE NUMBER OF FINDINGS
 i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
 print("*** Found " + str(i_finding_before) + " exceptions ***")
-funcfile.writelog("%t FINDING: " + str(i_finding_before) + " BURSARY IN VSS NO GL finding(s)")
+funcfile.writelog("%t FINDING: " + str(i_finding_before) + " VSS GL DIFFERENCE BURSARY CAMPUS finding(s)")
 
 # GET PREVIOUS FINDINGS
-sr_file = "X010ec_get_previous"
+sr_file = "X010fc_get_previous"
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 if i_finding_before > 0:
     print("Import previously reported findings...")
@@ -138,7 +139,7 @@ if i_finding_before > 0:
         # Populate the column variables
         if row[0] == "PROCESS":
             continue
-        elif row[0] != "bursary in vss no gl":
+        elif row[0] != "bursary vss gl different campus":
             continue
         else:
             s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[
@@ -151,14 +152,14 @@ if i_finding_before > 0:
     funcfile.writelog("%t IMPORT TABLE: " + ed_path + "200_reported.txt (" + sr_file + ")")
 
 # ADD PREVIOUS FINDINGS
-sr_file = "X010ed_add_previous"
+sr_file = "X010fd_add_previous"
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 if i_finding_before > 0:
     print("Join previously reported to current findings...")
     s_sql = "CREATE TABLE " + sr_file + " AS" + """
     Select
         FIND.*,
-        'bursary in vss no gl' AS PROCESS,
+        'bursary vss gl different campus' AS PROCESS,
         '%TODAY%' AS DATE_REPORTED,
         '%DAYS%' AS DATE_RETEST,
         PREV.PROCESS AS PREV_PROCESS,
@@ -166,10 +167,10 @@ if i_finding_before > 0:
         PREV.DATE_RETEST AS PREV_DATE_RETEST,
         PREV.DATE_MAILED
     From
-        X010eb_findings FIND Left Join
-        X010ec_get_previous PREV ON PREV.FIELD1 = FIND.CAMPUS_VSS AND
+        X010fb_findings FIND Left Join
+        X010fc_get_previous PREV ON PREV.FIELD1 = FIND.CAMPUS_VSS AND
             PREV.FIELD2 = FIND.MONTH_VSS And
-            PREV.FIELD3 = FIND.TRANSDATE_VSS And
+            PREV.FIELD3 = FIND.STUDENT_VSS And
             PREV.FIELD4 = FIND.AMOUNT_VSS And
             PREV.FIELD5 = FIND.BURSCODE_VSS And
             PREV.DATE_RETEST >= Date('%TODAY%')
@@ -183,7 +184,7 @@ if i_finding_before > 0:
 
 # BUILD LIST TO UPDATE FINDINGS
 # NOTE ADD CODE
-sr_file = "X010ee_new_previous"
+sr_file = "X010fe_new_previous"
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 if i_finding_before > 0:
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -191,14 +192,14 @@ if i_finding_before > 0:
         PREV.PROCESS,
         PREV.CAMPUS_VSS AS FIELD1,
         PREV.MONTH_VSS AS FIELD2,
-        PREV.TRANSDATE_VSS AS FIELD3,
+        PREV.STUDENT_VSS AS FIELD3,
         Cast(PREV.AMOUNT_VSS As REAL) AS FIELD4,
         PREV.BURSCODE_VSS AS FIELD5,
         PREV.DATE_REPORTED,
         PREV.DATE_RETEST,
         PREV.DATE_MAILED
     From
-        X010ed_add_previous PREV
+        X010fd_add_previous PREV
     Where
         PREV.PREV_PROCESS Is Null
     ;"""
@@ -224,7 +225,7 @@ if i_finding_before > 0:
         funcfile.writelog("%t FINDING: No new findings to export")
 
 # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
-sr_file = "X010ef_officer"
+sr_file = "X010ff_officer"
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 if i_finding_before > 0:
     if i_finding_after > 0:
@@ -241,7 +242,7 @@ if i_finding_before > 0:
             PEOPLE.X002_PEOPLE_CURR PEOP ON
                 PEOP.EMPLOYEE_NUMBER = OFFICER.LOOKUP_DESCRIPTION
         Where
-            OFFICER.LOOKUP = 'stud_debt_recon_test_bursary_invss_nogl_officer'
+            OFFICER.LOOKUP = 'stud_debt_recon_test_bursary_vss_gl_diff_campus_officer'
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -249,7 +250,7 @@ if i_finding_before > 0:
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
 # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
-sr_file = "X010eg_supervisor"
+sr_file = "X010fg_supervisor"
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 if i_finding_before > 0 and i_finding_after > 0:
     print("Import reporting supervisors for mail purposes...")
@@ -265,7 +266,7 @@ if i_finding_before > 0 and i_finding_after > 0:
         PEOPLE.X002_PEOPLE_CURR PEOP ON 
             PEOP.EMPLOYEE_NUMBER = SUPERVISOR.LOOKUP_DESCRIPTION
     Where
-        SUPERVISOR.LOOKUP = 'stud_debt_recon_test_bursary_invss_nogl_supervisor'
+        SUPERVISOR.LOOKUP = 'stud_debt_recon_test_bursary_vss_gl_diff_campus_supervisor'
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -273,7 +274,7 @@ if i_finding_before > 0 and i_finding_after > 0:
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
 # ADD CONTACT DETAILS TO FINDINGS
-sr_file = "X010eh_detail"
+sr_file = "X010fh_detail"
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 if i_finding_before > 0 and i_finding_after > 0:
     print("Add contact details to findings...")
@@ -289,6 +290,9 @@ if i_finding_before > 0 and i_finding_after > 0:
         PREV.AMOUNT_VSS,
         PREV.BURSCODE_VSS,
         PREV.BURSNAAM_VSS,
+        PREV.CAMPUS_GL,
+        PREV.TRANSEDOC_GL,
+        PREV.TRANSUSER_VSS,
         CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
         CAMP_OFF.NAME As CAMP_OFF_NAME,
         CASE
@@ -314,11 +318,11 @@ if i_finding_before > 0 and i_finding_after > 0:
             ELSE ORG_SUP.EMAIL_ADDRESS
         END As ORG_SUP_MAIL
     From
-        X010ed_add_previous PREV
-        Left Join X010ef_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.CAMPUS_VSS
-        Left Join X010ef_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG
-        Left Join X010eg_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.CAMPUS_VSS
-        Left Join X010eg_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG
+        X010fd_add_previous PREV
+        Left Join X010ff_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.CAMPUS_VSS
+        Left Join X010ff_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG
+        Left Join X010fg_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.CAMPUS_VSS
+        Left Join X010fg_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG
     Where
       PREV.PREV_PROCESS IS NULL
     ;"""
@@ -328,23 +332,24 @@ if i_finding_before > 0 and i_finding_after > 0:
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
 # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
-sr_file = "X010ex_bursary_invss_nogl"
+sr_file = "X010fx_burs_gl_diffcampus"
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 print("Build the final report")
 if i_finding_before > 0 and i_finding_after > 0:
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
-        'IN VSS NO GL BURSARY' As Audit_finding,
+        'VSS GL DIFFERENCE BURSARY CAMPUS' As Audit_finding,
         FIND.ORG As Organization,
-        FIND.CAMPUS_VSS As Campus,
+        FIND.CAMPUS_VSS As Campus_vss,
+        FIND.CAMPUS_GL As Campus_gl,
         FIND.STUDENT_VSS As Student,
         FIND.MONTH_VSS As Month,
         FIND.TRANSDATE_VSS As Tran_date,
         FIND.TRANSCODE_VSS As Tran_type,
-        FIND.TRANSDESC_VSS As Tran_description,
         FIND.AMOUNT_VSS As Amount_vss,
         FIND.BURSCODE_VSS As Burs_code,
         FIND.BURSNAAM_VSS As Burs_name,
+        FIND.TRANSEDOC_GL As Gl_edoc,
         FIND.CAMP_OFF_NAME AS Responsible_Officer,
         FIND.CAMP_OFF_NUMB AS Responsible_Officer_Numb,
         FIND.CAMP_OFF_MAIL AS Responsible_Officer_Mail,
@@ -358,7 +363,7 @@ if i_finding_before > 0 and i_finding_after > 0:
         FIND.ORG_SUP_NUMB AS Org_Supervisor_Numb,
         FIND.ORG_SUP_MAIL AS Org_Supervisor_Mail            
     From
-        X010eh_detail FIND
+        X010fh_detail FIND
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -368,7 +373,7 @@ if i_finding_before > 0 and i_finding_after > 0:
     if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
         print("Export findings...")
         sx_path = re_path + funcdate.cur_year() + "/"
-        sx_file = "Vssgl_test_010ex_bursary_invss_nogl_"
+        sx_file = "Vssgl_test_010fx_burs_gl_diffcampus_"
         sx_file_dated = sx_file + funcdate.today_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
         funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
