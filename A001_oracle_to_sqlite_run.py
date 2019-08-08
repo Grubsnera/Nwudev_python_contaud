@@ -20,7 +20,7 @@ l_mail = True
 
 # Extract data from oracle
 try:
-    A001_oracle_to_sqlite.Oracle_to_sqlite()
+    A001_oracle_to_sqlite.oracle_to_sqlite()
 except Exception as e:
     funcsys.ErrMessage(e)
 

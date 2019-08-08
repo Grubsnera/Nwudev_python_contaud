@@ -23,7 +23,7 @@ funcfile.writelog("---------------------------------------")
 if funcdate.today_dayname() in "MonTueWedThuFri":
     import A001_oracle_to_sqlite
     try:
-        A001_oracle_to_sqlite.Oracle_to_sqlite("000b_Table - large.csv")
+        A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - large.csv")
     except Exception as e:
         funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:A001_oracle_to_sqlite_large', 'NWUIAPython: Fail: A001_oracle_to_sqlite_large')
 else:

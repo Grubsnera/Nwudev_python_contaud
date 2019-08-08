@@ -47,7 +47,7 @@ ORACLE TO SQLITE
 if funcdate.today_dayname() in "TueWedThuFriSat":
     import A001_oracle_to_sqlite
     try:
-        A001_oracle_to_sqlite.Oracle_to_sqlite()
+        A001_oracle_to_sqlite.oracle_to_sqlite()
         if l_mail:
             funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:A001_oracle_to_sqlite',
                           'NWUIAPython: Success: A001_oracle_to_sqlite')
