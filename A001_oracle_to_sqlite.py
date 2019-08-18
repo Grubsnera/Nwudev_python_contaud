@@ -86,11 +86,26 @@ def oracle_to_sqlite(s_table="000b_Table.csv"):
             so_pwd = row[3]
             de_fil = row[4]
             de_pat = row[5]
-            de_sch = row[6]  # Database schema
+            de_sch = row[6]
+            so_dri = row[7]
+            so_dnq = row[8]
 
         # Open the source ORACLE database
         # print("DSN="+so_dsn+";PWD="+so_pwd)
-        with pyodbc.connect("DSN="+so_dsn+";PWD="+so_pwd) as so_con:
+        # Driver={Oracle in OraClient11g_home1}; DBQ=myserver.mydomain.com:1521/mySid; Uid=myUsername; Pwd=myPassword;
+        # with cx_Oracle.connect(so_usr, so_pwd, so_dsn, ) as so_con:
+        # with pyodbc.connect("DSN="+so_dsn+"; PWD="+so_pwd) as so_con:
+        # with cx_Oracle.connect(so_usr, so_pwd, so_dsn, ) as so_con:
+        # print(so_dsn)
+        # print(so_usr)
+        # print(so_pwd)
+        # print(so_dri)
+        # print(so_dnq)
+        # print(de_pat)
+        # print(de_fil)
+        # s_conn = "Driver={"+so_dri+"}; DBQ="+so_dnq+"; UID="+so_usr+"; PWD="+so_pwd+";"
+        s_conn = "DSN="+so_dsn+"; PWD="+so_pwd
+        with pyodbc.connect(s_conn) as so_con:
             so_cur = so_con.cursor()
 
         # Open the destination SQLite database
