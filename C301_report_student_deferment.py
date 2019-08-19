@@ -55,7 +55,7 @@ def Studdeb_deferments(s_period='curr',s_year='2019'):
     so_file = "Vss_deferment.sqlite" #Source database
     ed_path = "S:/_external_data/" # External data path
     s_sql = "" #SQL statements
-    l_export = True
+    l_export: bool = True
     l_mail = False
     l_record = False
     l_vacuum = False
