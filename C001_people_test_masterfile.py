@@ -1706,6 +1706,7 @@ def People_test_masterfile():
             ELSE 'NWU'
         END AS LOC,
         MASTER.EMPLOYEE_NUMBER AS EMP,
+        MASTER.IDNO,
         MASTER.PASSPORT AS NUMB,
         MASTER.PERMIT,
         MASTER.PERMIT_EXPIRE,
@@ -1740,6 +1741,7 @@ def People_test_masterfile():
         X003_pass_master
     Where
         X003_pass_master.NUMB = '' AND
+        X003_pass_master.IDNO = '' AND
         X003_pass_master.NAT <> 'SAF'
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
