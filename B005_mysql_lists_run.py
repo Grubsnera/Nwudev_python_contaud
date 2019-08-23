@@ -1,13 +1,7 @@
 
-import sys
 
-# Add own module path
-sys.path.append('S:/_my_modules')
-sys.path.append('S:/')
-
-import funcfile
-import funcmail
-import funcsys
+from _my_modules import funcfile
+from _my_modules import funcsys
 
 funcfile.writelog("Now")
 funcfile.writelog("SCRIPT: B005_RUN_MYSQL")
@@ -20,7 +14,8 @@ l_mail = True
 
 # People lists
 try:
-    B005_mysql_lists.mysql_lists()
+    B005_mysql_lists.mysql_lists("Web_ia_nwu")
+    # B005_mysql_lists.mysql_lists("Mysql_ia_server")
 except Exception as e:
     funcsys.ErrMessage(e)
 

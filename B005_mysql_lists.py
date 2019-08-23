@@ -3,6 +3,14 @@ Created: 28 May 2019
 Author: Albert J v Rensburg (NWU21162395)
 """
 
+# Import python modules
+import sys
+import sqlite3
+
+# Import own modules
+from _my_modules import funcfile
+from _my_modules import funcmysql
+
 """ INDEX **********************************************************************
 ENVIRONMENT
 OPEN THE MYSQL DATABASES
@@ -16,24 +24,17 @@ EXPORT STUD DEBTOR MONTHLY BALANCES
 END OF SCRIPT
 *****************************************************************************"""
 
-def mysql_lists():
+
+def mysql_lists(s_database):
+    """
+    Function to populate the mysql databases
+    :param s_database:
+    :return:
+    """
 
     """*****************************************************************************
     ENVIRONMENT
     *****************************************************************************"""
-
-    # Import python modules
-    import sys
-
-    # Add own module path
-    sys.path.append('S:/_my_modules')
-
-    # Import python objects
-    import sqlite3    
-
-    # Import own modules
-    import funcfile
-    import funcmysql
 
     # Script log file
     funcfile.writelog("Now")
@@ -44,8 +45,14 @@ def mysql_lists():
     print("-----------------")
     ilog_severity = 1
     
-    # SQLITE Declare variables 
-    s_sql = "" #SQL statements
+    # Declare variables
+    s_schema: str = ""
+    if s_database == "Web_ia_nwu":
+        s_schema = "Ia_nwu"
+    elif s_database == "Web_ia_joomla":
+        s_schema = "Ia_joomla"
+    elif s_database == "Mysql_ia_server":
+        s_schema = "nwuiaca"
     l_export = True
     l_mail = True
     l_vacuum = False
@@ -57,7 +64,6 @@ def mysql_lists():
     funcfile.writelog("OPEN THE MYSQL DATABASES")
 
     # Open the MYSQL DESTINATION table
-    s_database = "Web_ia_nwu"
     ms_cnxn = funcmysql.mysql_open(s_database)
     ms_curs = ms_cnxn.cursor()
     funcfile.writelog("%t OPEN MYSQL DATABASE: " + s_database)
@@ -105,13 +111,13 @@ def mysql_lists():
     people_name_addr VARCHAR(150),    
     people_known_name VARCHAR(150),
     people_position_full VARCHAR(150),
-    people_date_of_birth DATETIME,
+    people_date_of_birth DATE,
     people_nationality VARCHAR(30),
     people_nationality_name VARCHAR(150),
     people_idno VARCHAR(150),
     people_passport VARCHAR(150),
     people_permit VARCHAR(150),
-    people_permit_expire DATETIME,
+    people_permit_expire DATE,
     people_tax_number VARCHAR(150),
     people_sex VARCHAR(30),
     people_marital_status VARCHAR(30),
@@ -124,10 +130,10 @@ def mysql_lists():
     people_email_address VARCHAR(150),
     people_curr_empl_flag VARCHAR(1),
     people_user_person_type VARCHAR(30),
-    people_ass_start DATETIME,
-    people_ass_end DATETIME,
-    people_emp_start DATETIME,
-    people_emp_end DATETIME,
+    people_ass_start DATE,
+    people_ass_end DATE,
+    people_emp_start DATE,
+    people_emp_end DATE,
     people_leaving_reason VARCHAR(30),
     people_leave_reason_descrip VARCHAR(150),
     people_location_description VARCHAR(150),
@@ -163,12 +169,12 @@ def mysql_lists():
     people_count_pos INT(11),
     people_count_ass INT(11),
     people_count_peo INT(11),
-    people_date_ass_lookup DATETIME,
+    people_date_ass_lookup DATE,
     people_ass_active VARCHAR(1),
-    people_date_emp_lookup DATETIME,
+    people_date_emp_lookup DATE,
     people_emp_active VARCHAR(1),
     people_mailto VARCHAR(150),
-    people_proposed_salary_n VARCHAR(30),
+    people_proposed_salary_n DECIMAL(12,2),
     people_person_type VARCHAR(150),
     people_acc_type VARCHAR(30),
     people_acc_branch VARCHAR(30),
@@ -187,17 +193,23 @@ def mysql_lists():
     ENGINE = InnoDB
     CHARSET=utf8mb4
     COLLATE utf8mb4_unicode_ci
-    COMMENT = 'Table to store deatiled people data'
+    COMMENT = 'Table to store detailed people data'
     """ + ";"
     ms_curs.execute(s_sql)
     funcfile.writelog("%t CREATED MYSQL TABLE: PEOPLE (ia_people)")
 
+    # Obtain the new mysql table column types
+    print("Build mysql current people columns types...")
+    funcfile.writelog("%t OPEN DATABASE TARGET: People")
+    a_cols = funcmysql.get_coltypes_mysql_list(ms_curs, s_schema, "ia_people")
+    # print(a_cols)
+
     # Open the SOURCE file to obtain column headings
     print("Build mysql current people columns...")
-    funcfile.writelog("%t OPEN DATABASE: People")
+    funcfile.writelog("%t OPEN DATABASE SOURCE: People")
     s_head = funcmysql.get_colnames_sqlite_text(so_curs,"X002_PEOPLE_CURR","people_")
     s_head = "(`ia_find_auto`, " + s_head.rstrip(", ") + ")"
-    #print(s_head)
+    # print(s_head)
 
     # Open the SOURCE file to obtain the data
     print("Insert mysql current people...")
@@ -209,17 +221,8 @@ def mysql_lists():
     i_tota = 0
     i_coun = 0
     for row in rows:
-        s_data = "(1, "
-        for member in row:
-            if type(member) == str:
-                s_data = s_data + "'" + member + "', "
-            elif type(member) == int:
-                s_data = s_data + str(member) + ", "
-            else:
-                s_data = s_data + "'', "
-        s_data = s_data.rstrip(", ") + ")"
-        #print(s_data)
-        s_sql = "INSERT INTO `ia_people` " + s_head + " VALUES " + s_data + ";"
+        s_data = funcmysql.convert_sqlite_mysql(row, a_cols, 1, 1)
+        s_sql = "INSERT IGNORE INTO `ia_people` " + s_head + " VALUES " + s_data + ";"
         ms_curs.execute(s_sql)
         i_tota = i_tota + 1
         i_coun = i_coun + 1
@@ -234,43 +237,46 @@ def mysql_lists():
     funcfile.writelog("%t POPULATE MYSQL: " + str(i_tota) + " PEOPLE CURRENT rows (ia_people)")
 
     # Update MYSQL PEOPLE TO WEB FINDING mail trigger ******************************
-    print("Update mysql current people mail trigger...")
-    s_sql = """
-    UPDATE `ia_finding` SET
-    `ia_find_updated` = '1',
-    `ia_find_r1_send` = '0',
-    `ia_find_updatedate` = now()
-    WHERE `ia_finding`.`ia_find_auto` = 1
-    """ + ";"
-    ms_curs.execute(s_sql)
-    ms_cnxn.commit()
-    funcfile.writelog("%t UPDATED MYSQL TRIGGER: FINDING 1 (people current)")
+    if s_database == "Web_ia_nwu":
+        print("Update mysql current people mail trigger...")
+        s_sql = """
+        UPDATE `ia_finding` SET
+        `ia_find_updated` = '1',
+        `ia_find_r1_send` = '0',
+        `ia_find_updatedate` = now()
+        WHERE `ia_finding`.`ia_find_auto` = 1
+        """ + ";"
+        ms_curs.execute(s_sql)
+        ms_cnxn.commit()
+        funcfile.writelog("%t UPDATED MYSQL TRIGGER: FINDING 1 (people current)")
 
     # Update MYSQL PEOPLE TO WEB FINDING mail trigger ******************************
-    print("Update mysql current people summary mail trigger...")
-    s_sql = """
-    UPDATE `ia_finding` SET
-    `ia_find_updated` = '1',
-    `ia_find_r1_send` = '0',
-    `ia_find_updatedate` = now()
-    WHERE `ia_finding`.`ia_find_auto` = 2
-    """ + ";"
-    ms_curs.execute(s_sql)
-    ms_cnxn.commit()
-    funcfile.writelog("%t UPDATED MYSQL TRIGGER: FINDING 2 (people current summary)")
+    if s_database == "Web_ia_nwu":
+        print("Update mysql current people summary mail trigger...")
+        s_sql = """
+        UPDATE `ia_finding` SET
+        `ia_find_updated` = '1',
+        `ia_find_r1_send` = '0',
+        `ia_find_updatedate` = now()
+        WHERE `ia_finding`.`ia_find_auto` = 2
+        """ + ";"
+        ms_curs.execute(s_sql)
+        ms_cnxn.commit()
+        funcfile.writelog("%t UPDATED MYSQL TRIGGER: FINDING 2 (people current summary)")
 
     # Update MYSQL PEOPLE TO WEB FINDING mail trigger ******************************
-    print("Update mysql current people birthday mail trigger...")
-    s_sql = """
-    UPDATE `ia_finding` SET
-    `ia_find_updated` = '1',
-    `ia_find_r1_send` = '0',
-    `ia_find_updatedate` = now()
-    WHERE `ia_finding`.`ia_find_auto` = 3
-    """ + ";"
-    ms_curs.execute(s_sql)
-    ms_cnxn.commit()
-    funcfile.writelog("%t UPDATED MYSQL TRIGGER: FINDING 3 (people current birthdays)")
+    if s_database == "Web_ia_nwu":
+        print("Update mysql current people birthday mail trigger...")
+        s_sql = """
+        UPDATE `ia_finding` SET
+        `ia_find_updated` = '1',
+        `ia_find_r1_send` = '0',
+        `ia_find_updatedate` = now()
+        WHERE `ia_finding`.`ia_find_auto` = 3
+        """ + ";"
+        ms_curs.execute(s_sql)
+        ms_cnxn.commit()
+        funcfile.writelog("%t UPDATED MYSQL TRIGGER: FINDING 3 (people current birthdays)")
 
     """*****************************************************************************
     EXPORT CURRENT PEOPLE STRUCTURE
@@ -287,40 +293,40 @@ def mysql_lists():
     CREATE TABLE IF NOT EXISTS ia_people_struct (
     ia_find_auto INT(11) NOT NULL,
     struct_employee_one VARCHAR(20),
-    struct_name_list_one TEXT,
-    struct_known_name_one TEXT,
-    struct_position_full_one TEXT,
-    struct_location_description_one TEXT,
-    struct_division_one TEXT,
-    struct_faculty_one TEXT,
-    struct_email_address_one TEXT,
-    struct_phone_work_one TEXT,
-    struct_phone_mobi_one TEXT,
-    struct_phone_home_one TEXT,
-    struct_org_name_one TEXT,
-    struct_grade_calc_one TEXT,
+    struct_name_list_one VARCHAR(150),
+    struct_known_name_one VARCHAR(150),
+    struct_position_full_one VARCHAR(150),
+    struct_location_description_one VARCHAR(150),
+    struct_division_one VARCHAR(150),
+    struct_faculty_one VARCHAR(150),
+    struct_email_address_one VARCHAR(150),
+    struct_phone_work_one VARCHAR(30),
+    struct_phone_mobi_one VARCHAR(30),
+    struct_phone_home_one VARCHAR(30),
+    struct_org_name_one VARCHAR(150),
+    struct_grade_calc_one VARCHAR(150),
     struct_employee_two VARCHAR(20),
-    struct_name_list_two TEXT,
-    struct_known_name_two TEXT,
-    struct_position_full_two TEXT,
-    struct_location_description_two TEXT,
-    struct_division_two TEXT,
-    struct_faculty_two TEXT,
-    struct_email_address_two TEXT,
-    struct_phone_work_two TEXT,
-    struct_phone_mobi_two TEXT,
-    struct_phone_home_two TEXT,
+    struct_name_list_two VARCHAR(150),
+    struct_known_name_two VARCHAR(150),
+    struct_position_full_two VARCHAR(150),
+    struct_location_description_two VARCHAR(150),
+    struct_division_two VARCHAR(150),
+    struct_faculty_two VARCHAR(150),
+    struct_email_address_two VARCHAR(150),
+    struct_phone_work_two VARCHAR(30),
+    struct_phone_mobi_two VARCHAR(30),
+    struct_phone_home_two VARCHAR(30),
     struct_employee_three VARCHAR(20),
-    struct_name_list_three TEXT,
-    struct_known_name_three TEXT,
-    struct_position_full_three TEXT,
-    struct_location_description_three TEXT,
-    struct_division_three TEXT,
-    struct_faculty_three TEXT,
-    struct_email_address_three TEXT,
-    struct_phone_work_three TEXT,
-    struct_phone_mobi_three TEXT,
-    struct_phone_home_three TEXT,
+    struct_name_list_three VARCHAR(150),
+    struct_known_name_three VARCHAR(150),
+    struct_position_full_three VARCHAR(150),
+    struct_location_description_three VARCHAR(150),
+    struct_division_three VARCHAR(150),
+    struct_faculty_three VARCHAR(150),
+    struct_email_address_three VARCHAR(150),
+    struct_phone_work_three VARCHAR(30),
+    struct_phone_mobi_three VARCHAR(30),
+    struct_phone_home_three VARCHAR(30),
     PRIMARY KEY (struct_employee_one)
     )
     ENGINE = InnoDB
@@ -330,12 +336,17 @@ def mysql_lists():
     """ + ";"
     ms_curs.execute(s_sql)
     funcfile.writelog("%t CREATED MYSQL TABLE: PEOPLE_STRUCT (ia_people_struct)")
+    # Obtain the new mysql table column types
+    print("Build mysql current people structure columns types...")
+    funcfile.writelog("%t OPEN DATABASE TARGET: People")
+    a_cols = funcmysql.get_coltypes_mysql_list(ms_curs, s_schema, "ia_people_struct")
+    # print(a_cols)
     # Open the SOURCE file to obtain column headings
     print("Build mysql current people structure columns...")
     funcfile.writelog("%t OPEN DATABASE: People org structure")
     s_head = funcmysql.get_colnames_sqlite_text(so_curs,"X003_PEOPLE_ORGA_REF","struct_")
     s_head = "(`ia_find_auto`, " + s_head.rstrip(", ") + ")"
-    #print(s_head)
+    # print(s_head)
     # Open the SOURCE file to obtain the data
     print("Insert mysql current people structure...")
     with sqlite3.connect(so_path+so_file) as rs_conn:
@@ -346,22 +357,13 @@ def mysql_lists():
     i_tota = 0
     i_coun = 0
     for row in rows:
-        s_data = "(4, "
-        for member in row:
-            if type(member) == str:
-                s_data = s_data + "'" + member + "', "
-            elif type(member) == int:
-                s_data = s_data + str(member) + ", "
-            else:
-                s_data = s_data + "'', "
-        s_data = s_data.rstrip(", ") + ")"
-        #print(s_data)
-        s_sql = "INSERT INTO `ia_people_struct` " + s_head + " VALUES " + s_data + ";"
+        s_data = funcmysql.convert_sqlite_mysql(row, a_cols, 4, 1)
+        s_sql = "INSERT IGNORE INTO `ia_people_struct` " + s_head + " VALUES " + s_data + ";"
         ms_curs.execute(s_sql)
         i_tota = i_tota + 1
         i_coun = i_coun + 1
         if i_coun == 100:
-            #print(i_coun)
+            # print(i_coun)
             ms_cnxn.commit()
             i_coun = 0
     # Close the ROW Connection
@@ -371,17 +373,18 @@ def mysql_lists():
     funcfile.writelog("%t POPULATE MYSQL: " + str(i_tota) + " PEOPLE STRUCTURE rows (ia_people_struct)")
 
     # Update MYSQL PEOPLE TO WEB FINDING mail trigger ******************************
-    print("Update mysql current people hierarchy mail trigger...")
-    s_sql = """
-    UPDATE `ia_finding` SET
-    `ia_find_updated` = '1',
-    `ia_find_r1_send` = '0',
-    `ia_find_updatedate` = now()
-    WHERE `ia_finding`.`ia_find_auto` = 4
-    """ + ";"
-    ms_curs.execute(s_sql)
-    ms_cnxn.commit()
-    funcfile.writelog("%t UPDATED MYSQL TRIGGER: FINDING 4 (people current hierarchy)")
+    if s_database == "Web_ia_nwu":
+        print("Update mysql current people hierarchy mail trigger...")
+        s_sql = """
+        UPDATE `ia_finding` SET
+        `ia_find_updated` = '1',
+        `ia_find_r1_send` = '0',
+        `ia_find_updatedate` = now()
+        WHERE `ia_finding`.`ia_find_auto` = 4
+        """ + ";"
+        ms_curs.execute(s_sql)
+        ms_cnxn.commit()
+        funcfile.writelog("%t UPDATED MYSQL TRIGGER: FINDING 4 (people current hierarchy)")
 
     # CLOSE PEOPLE DATABASE
     so_conn.commit()
@@ -448,6 +451,11 @@ def mysql_lists():
     """ + ";"
     ms_curs.execute(s_sql)
     funcfile.writelog("%t CREATED MYSQL TABLE: ia_finding_5 (vss gl monthly balances per campus per month)")
+    # Obtain the new mysql table column types
+    print("Build mysql current people structure columns types...")
+    funcfile.writelog("%t OPEN DATABASE TARGET: People")
+    a_cols = funcmysql.get_coltypes_mysql_list(ms_curs, s_schema, "ia_finding_5")
+    # print(a_cols)
     # Open the SOURCE file to obtain column headings
     print("Build mysql vss gl monthly balance columns...")
     funcfile.writelog("%t OPEN DATABASE: ia_finding_5")
@@ -464,20 +472,8 @@ def mysql_lists():
     i_tota = 0
     i_coun = 0
     for row in rows:
-        s_data = "(5, "
-        for member in row:
-            #print(type(member))
-            if type(member) == str:
-                s_data = s_data + "'" + member + "', "
-            elif type(member) == int:
-                s_data = s_data + str(member) + ", "
-            elif type(member) == float:
-                s_data = s_data + str(member) + ", "
-            else:
-                s_data = s_data + "'', "
-        s_data = s_data.rstrip(", ") + ")"
-        #print(s_data)
-        s_sql = "INSERT INTO `ia_finding_5` " + s_head + " VALUES " + s_data + ";"
+        s_data = funcmysql.convert_sqlite_mysql(row, a_cols, 5, 2)
+        s_sql = "INSERT IGNORE INTO `ia_finding_5` " + s_head + " VALUES " + s_data + ";"
         ms_curs.execute(s_sql)
         i_tota = i_tota + 1
         i_coun = i_coun + 1
@@ -524,6 +520,11 @@ def mysql_lists():
     """ + ";"
     ms_curs.execute(s_sql)
     funcfile.writelog("%t CREATED MYSQL TABLE: ia_finding_6 (vss gl comparison per campus per month)")
+    # Obtain the new mysql table column types
+    print("Build mysql current people structure columns types...")
+    funcfile.writelog("%t OPEN DATABASE TARGET: People")
+    a_cols = funcmysql.get_coltypes_mysql_list(ms_curs, s_schema, "ia_finding_6")
+    # print(a_cols)
     # Open the SOURCE file to obtain column headings
     print("Build mysql vss gl comparison columns...")
     funcfile.writelog("%t OPEN DATABASE: ia_finding_6")
@@ -540,20 +541,8 @@ def mysql_lists():
     i_tota = 0
     i_coun = 0
     for row in rows:
-        s_data = "(6, "
-        for member in row:
-            #print(type(member))
-            if type(member) == str:
-                s_data = s_data + "'" + member + "', "
-            elif type(member) == int:
-                s_data = s_data + str(member) + ", "
-            elif type(member) == float:
-                s_data = s_data + str(member) + ", "
-            else:
-                s_data = s_data + "'', "
-        s_data = s_data.rstrip(", ") + ")"
-        #print(s_data)
-        s_sql = "INSERT INTO `ia_finding_6` " + s_head + " VALUES " + s_data + ";"
+        s_data = funcmysql.convert_sqlite_mysql(row, a_cols, 6, 2)
+        s_sql = "INSERT IGNORE INTO `ia_finding_6` " + s_head + " VALUES " + s_data + ";"
         ms_curs.execute(s_sql)
         i_tota = i_tota + 1
         i_coun = i_coun + 1
