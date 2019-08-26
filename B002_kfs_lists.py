@@ -19,7 +19,7 @@ VENDOR MASTER LIST
 DOCUMENTS MASTER LIST
 BUILD ACCOUNTING LINES
 PAYMENT COMPLETED LISTS
-PAYMENT APPROVERS LISTS
+PAYMENT APPROVER LISTS
 BUILD CURRENT YEAR PAYMENTS
 BUILD PREVIOUS YEAR PAYMENTS
 BUILD PAYMENT TYPE SUMMARY PER MONTH
@@ -48,7 +48,6 @@ def kfs_lists():
     # DECLARE VARIABLES
     so_path = "W:/Kfs/"  # Source database path
     so_file = "Kfs.sqlite"  # Source database
-    s_sql = ""  # SQL statements
     l_vacuum = False  # Vacuum database
 
     """*****************************************************************************
@@ -226,41 +225,41 @@ def kfs_lists():
 
     s_sql = "CREATE TABLE X000_Account AS " + """
     SELECT
-      CA_ACCOUNT_T.FIN_COA_CD,
-      CA_ACCOUNT_T.ACCOUNT_NBR,
-      CA_ACCOUNT_TYPE_T.ACCT_TYP_NM,
-      X000_Organization.ORG_NM,
-      CA_ACCOUNT_T.ACCOUNT_NM,
-      CA_ACCOUNT_T.ACCT_FSC_OFC_UID,
-      CA_ACCOUNT_T.ACCT_SPVSR_UNVL_ID,
-      CA_ACCOUNT_T.ACCT_MGR_UNVL_ID,
-      CA_ACCOUNT_T.ORG_CD,
-      CA_ACCOUNT_T.ACCT_TYP_CD,
-      CA_ACCOUNT_T.ACCT_PHYS_CMP_CD,
-      CA_ACCOUNT_T.ACCT_FRNG_BNFT_CD,
-      CA_ACCOUNT_T.FIN_HGH_ED_FUNC_CD,
-      CA_ACCOUNT_T.SUB_FUND_GRP_CD,
-      CA_ACCOUNT_T.ACCT_RSTRC_STAT_CD,
-      CA_ACCOUNT_T.ACCT_RSTRC_STAT_DT,
-      CA_ACCOUNT_T.ACCT_CITY_NM,
-      CA_ACCOUNT_T.ACCT_STATE_CD,
-      CA_ACCOUNT_T.ACCT_STREET_ADDR,
-      CA_ACCOUNT_T.ACCT_ZIP_CD,
-      CA_ACCOUNT_T.RPTS_TO_FIN_COA_CD,
-      CA_ACCOUNT_T.RPTS_TO_ACCT_NBR,
-      CA_ACCOUNT_T.ACCT_CREATE_DT,
-      CA_ACCOUNT_T.ACCT_EFFECT_DT,
-      CA_ACCOUNT_T.ACCT_EXPIRATION_DT,
-      CA_ACCOUNT_T.CONT_FIN_COA_CD,
-      CA_ACCOUNT_T.CONT_ACCOUNT_NBR,
-      CA_ACCOUNT_T.ACCT_CLOSED_IND,
-      CA_ACCOUNT_T.OBJ_ID,
-      CA_ACCOUNT_T.VER_NBR
+      ACC.FIN_COA_CD,
+      ACC.ACCOUNT_NBR,
+      TYP.ACCT_TYP_NM,
+      ORG.ORG_NM,
+      ACC.ACCOUNT_NM,
+      ACC.ACCT_FSC_OFC_UID,
+      ACC.ACCT_SPVSR_UNVL_ID,
+      ACC.ACCT_MGR_UNVL_ID,
+      ACC.ORG_CD,
+      ACC.ACCT_TYP_CD,
+      ACC.ACCT_PHYS_CMP_CD,
+      ACC.ACCT_FRNG_BNFT_CD,
+      ACC.FIN_HGH_ED_FUNC_CD,
+      ACC.SUB_FUND_GRP_CD,
+      ACC.ACCT_RSTRC_STAT_CD,
+      ACC.ACCT_RSTRC_STAT_DT,
+      ACC.ACCT_CITY_NM,
+      ACC.ACCT_STATE_CD,
+      ACC.ACCT_STREET_ADDR,
+      ACC.ACCT_ZIP_CD,
+      ACC.RPTS_TO_FIN_COA_CD,
+      ACC.RPTS_TO_ACCT_NBR,
+      ACC.ACCT_CREATE_DT,
+      ACC.ACCT_EFFECT_DT,
+      ACC.ACCT_EXPIRATION_DT,
+      ACC.CONT_FIN_COA_CD,
+      ACC.CONT_ACCOUNT_NBR,
+      ACC.ACCT_CLOSED_IND,
+      ACC.OBJ_ID,
+      ACC.VER_NBR
     FROM
-      CA_ACCOUNT_T
-      LEFT JOIN X000_Organization ON X000_Organization.FIN_COA_CD = CA_ACCOUNT_T.FIN_COA_CD AND X000_Organization.ORG_CD =
-        CA_ACCOUNT_T.ORG_CD
-      LEFT JOIN CA_ACCOUNT_TYPE_T ON CA_ACCOUNT_TYPE_T.ACCT_TYP_CD = CA_ACCOUNT_T.ACCT_TYP_CD
+      CA_ACCOUNT_T ACC
+      LEFT JOIN X000_Organization ORG ON ORG.FIN_COA_CD = ACC.FIN_COA_CD AND ORG.ORG_CD =
+        ACC.ORG_CD
+      LEFT JOIN CA_ACCOUNT_TYPE_T TYP ON TYP.ACCT_TYP_CD = ACC.ACCT_TYP_CD
     """
     so_curs.execute("DROP TABLE IF EXISTS X000_Account")
     so_curs.execute(s_sql)
@@ -274,44 +273,43 @@ def kfs_lists():
 
     s_sql = "CREATE TABLE X000_GL_trans_curr AS " + """
     SELECT
-      GL_ENTRY_T_CURR.UNIV_FISCAL_YR,
-      GL_ENTRY_T_CURR.UNIV_FISCAL_PRD_CD,
-      GL_ENTRY_T_CURR.CALC_COST_STRING,
-      X000_Account.ORG_NM,
-      X000_Account.ACCOUNT_NM,
-      CA_OBJECT_CODE_T.FIN_OBJ_CD_NM,
-      GL_ENTRY_T_CURR.TRANSACTION_DT,
-      GL_ENTRY_T_CURR.FDOC_NBR,
-      GL_ENTRY_T_CURR.CALC_AMOUNT,
-      GL_ENTRY_T_CURR.TRN_LDGR_ENTR_DESC,
-      X000_Account.ACCT_TYP_NM,
-      GL_ENTRY_T_CURR.TRN_POST_DT,
-      GL_ENTRY_T_CURR."TIMESTAMP",
-      GL_ENTRY_T_CURR.FIN_COA_CD,
-      GL_ENTRY_T_CURR.ACCOUNT_NBR,
-      GL_ENTRY_T_CURR.FIN_OBJECT_CD,
-      GL_ENTRY_T_CURR.FIN_BALANCE_TYP_CD,
-      GL_ENTRY_T_CURR.FIN_OBJ_TYP_CD,
-      GL_ENTRY_T_CURR.FDOC_TYP_CD,
-      GL_ENTRY_T_CURR.FS_ORIGIN_CD,
-      FS_ORIGIN_CODE_T.FS_DATABASE_DESC,
-      GL_ENTRY_T_CURR.TRN_ENTR_SEQ_NBR,
-      GL_ENTRY_T_CURR.FDOC_REF_TYP_CD,
-      GL_ENTRY_T_CURR.FS_REF_ORIGIN_CD,
-      GL_ENTRY_T_CURR.FDOC_REF_NBR,
-      GL_ENTRY_T_CURR.FDOC_REVERSAL_DT,
-      GL_ENTRY_T_CURR.TRN_ENCUM_UPDT_CD
+        GLC.UNIV_FISCAL_YR,
+        GLC.UNIV_FISCAL_PRD_CD,
+        GLC.CALC_COST_STRING,
+        ACC.ORG_NM,
+        ACC.ACCOUNT_NM,
+        OBJ.FIN_OBJ_CD_NM,
+        GLC.TRANSACTION_DT,
+        GLC.FDOC_NBR,
+        GLC.CALC_AMOUNT,
+        GLC.TRN_LDGR_ENTR_DESC,
+        ACC.ACCT_TYP_NM,
+        GLC.TRN_POST_DT,
+        GLC."TIMESTAMP",
+        GLC.FIN_COA_CD,
+        GLC.ACCOUNT_NBR,
+        GLC.FIN_OBJECT_CD,
+        GLC.FIN_BALANCE_TYP_CD,
+        GLC.FIN_OBJ_TYP_CD,
+        GLC.FDOC_TYP_CD,
+        GLC.FS_ORIGIN_CD,
+        ORI.FS_DATABASE_DESC,
+        GLC.TRN_ENTR_SEQ_NBR,
+        GLC.FDOC_REF_TYP_CD,
+        GLC.FS_REF_ORIGIN_CD,
+        GLC.FDOC_REF_NBR,
+        GLC.FDOC_REVERSAL_DT,
+        GLC.TRN_ENCUM_UPDT_CD
     FROM
-      GL_ENTRY_T_CURR
-      LEFT JOIN X000_Account ON X000_Account.FIN_COA_CD = GL_ENTRY_T_CURR.FIN_COA_CD AND X000_Account.ACCOUNT_NBR =
-        GL_ENTRY_T_CURR.ACCOUNT_NBR
-      LEFT JOIN CA_OBJECT_CODE_T ON CA_OBJECT_CODE_T.UNIV_FISCAL_YR = GL_ENTRY_T_CURR.UNIV_FISCAL_YR AND
-        CA_OBJECT_CODE_T.FIN_COA_CD = GL_ENTRY_T_CURR.FIN_COA_CD AND CA_OBJECT_CODE_T.FIN_OBJECT_CD =
-        GL_ENTRY_T_CURR.FIN_OBJECT_CD
-      LEFT JOIN FS_ORIGIN_CODE_T ON FS_ORIGIN_CODE_T.FS_ORIGIN_CD = GL_ENTRY_T_CURR.FS_ORIGIN_CD
+        GL_ENTRY_T_CURR GLC Left Join
+        X000_Account ACC ON ACC.FIN_COA_CD = GLC.FIN_COA_CD AND ACC.ACCOUNT_NBR = GLC.ACCOUNT_NBR Left Join
+        CA_OBJECT_CODE_T OBJ ON OBJ.UNIV_FISCAL_YR = GLC.UNIV_FISCAL_YR AND
+            OBJ.FIN_COA_CD = GLC.FIN_COA_CD AND
+            OBJ.FIN_OBJECT_CD = GLC.FIN_OBJECT_CD Left Join
+        FS_ORIGIN_CODE_T ORI ON ORI.FS_ORIGIN_CD = GLC.FS_ORIGIN_CD
     ORDER BY
-      GL_ENTRY_T_CURR.CALC_COST_STRING,
-      GL_ENTRY_T_CURR.UNIV_FISCAL_PRD_CD
+        GLC.CALC_COST_STRING,
+        GLC.UNIV_FISCAL_PRD_CD
     """
     so_curs.execute("DROP TABLE IF EXISTS X000_GL_trans_curr")
     so_curs.execute(s_sql)
@@ -333,7 +331,7 @@ def kfs_lists():
       GL_ENTRY_T_PREV.TRANSACTION_DT,
       GL_ENTRY_T_PREV.FDOC_NBR,
       GL_ENTRY_T_PREV.CALC_AMOUNT,
-      GL_ENTRY_T_PREV.TRN_LDGR_ENTR_DESC,
+      GL_ENTRY_T_PREV.TRN7_LDGR_ENTR_DESC,
       X000_Account.ACCT_TYP_NM,
       GL_ENTRY_T_PREV.TRN_POST_DT,
       GL_ENTRY_T_PREV."TIMESTAMP",
@@ -610,17 +608,64 @@ def kfs_lists():
             Else LINE.FDOC_LINE_AMT
         End As AMOUNT,
         LINE.VATABLE,
-        LINE.FDOC_LINE_DESC
+        LINE.FDOC_LINE_DESC,
+        ACC.ORG_NM,
+        ACC.ACCOUNT_NM,
+        OBJ.FIN_OBJ_CD_NM,
+        ACC.ACCT_TYP_NM
     From
-        FP_ACCT_LINES_T LINE
+        FP_ACCT_LINES_T LINE Left Join
+        X000_Account ACC ON ACC.FIN_COA_CD = LINE.FIN_COA_CD And
+            ACC.ACCOUNT_NBR = LINE.ACCOUNT_NBR Left Join
+        CA_OBJECT_CODE_T OBJ ON OBJ.UNIV_FISCAL_YR = %CYEAR% And
+            OBJ.FIN_COA_CD = LINE.FIN_COA_CD And
+            OBJ.FIN_OBJECT_CD = LINE.FIN_OBJECT_CD        
     Where
-        LINE.FDOC_POST_YR >= %PYEAR%
+        LINE.FDOC_POST_YR = %CYEAR%
     Order By
         LINE.FDOC_NBR,
         LINE.FDOC_LINE_AMT
     """
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = s_sql.replace("%PYEAR%",funcdate.prev_year())
+    s_sql = s_sql.replace("%CYEAR%", funcdate.cur_year())
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD ACCOUNTING LINES
+    print("Build previous account lines...")
+    sr_file = "X000_Account_line_prev"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        LINE.FDOC_NBR,
+        LINE.FDOC_LINE_NBR,
+        LINE.FDOC_POST_YR,
+        Trim(LINE.FIN_COA_CD)||'.'||Trim(LINE.ACCOUNT_NBR)||'.'||Trim(LINE.FIN_OBJECT_CD) As COST_STRING,
+        Case
+            When LINE.FDOC_LINE_DBCR_CD = "C" Then LINE.FDOC_LINE_AMT * -1
+            Else LINE.FDOC_LINE_AMT
+        End As AMOUNT,
+        LINE.VATABLE,
+        LINE.FDOC_LINE_DESC,
+        ACC.ORG_NM,
+        ACC.ACCOUNT_NM,
+        OBJ.FIN_OBJ_CD_NM,
+        ACC.ACCT_TYP_NM
+    From
+        FP_ACCT_LINES_T LINE Left Join
+        X000_Account ACC ON ACC.FIN_COA_CD = LINE.FIN_COA_CD And
+            ACC.ACCOUNT_NBR = LINE.ACCOUNT_NBR Left Join
+        CA_OBJECT_CODE_T OBJ ON OBJ.UNIV_FISCAL_YR = %PYEAR% And
+            OBJ.FIN_COA_CD = LINE.FIN_COA_CD And
+            OBJ.FIN_OBJECT_CD = LINE.FIN_OBJECT_CD        
+    Where
+        LINE.FDOC_POST_YR = %PYEAR%
+    Order By
+        LINE.FDOC_NBR,
+        LINE.FDOC_LINE_AMT
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = s_sql.replace("%PYEAR%", funcdate.prev_year())
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -1122,6 +1167,64 @@ def kfs_lists():
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
+    # BUILD PAYMENT LIST WITH ALL INITIATORS
+    print("Build current payment full initiators list...")
+    sr_file = "X001ae_Report_payments_accroute_curr"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        PAYMENT.CUST_PMT_DOC_NBR As EDOC,
+        PAYMENT.PMT_GRP_ID,
+        PAYMENT.VENDOR_ID,
+        PAYMENT.PAYEE_NAME,
+        PAYMENT.VENDOR_NAME,
+        PAYMENT.VENDOR_REG_NR,
+        PAYMENT.VENDOR_TAX_NR,
+        PAYMENT.VENDOR_BANK_NR,
+        PAYMENT.VENDOR_TYPE,
+        PAYMENT.PAYEE_TYP_DESC,
+        PAYMENT.DISB_NBR,
+        PAYMENT.DISB_TS,
+        PAYMENT.PMT_DT,
+        PAYMENT.PMT_STAT_CD,
+        PAYMENT.PAYMENT_STATUS,
+        PAYMENT.INV_NBR,
+        PAYMENT.REQS_NBR,
+        PAYMENT.PO_NBR,
+        PAYMENT.INV_DT,
+        PAYMENT.ORIG_INV_AMT,
+        PAYMENT.NET_PMT_AMT,
+        DOC.DOC_TYP_NM As DOC_TYPE,
+        Upper(DOC.LBL) As DOC_LABEL,        
+        INIT.PRNCPL_ID AS INIT_EMP_NO,
+        INIT.NAME_ADDR AS INIT_EMP_NAME,
+        INIT.ACTN_DT AS INIT_DATE,
+        INIT.ACTN AS INIT_STATUS,
+        INIT.ANNOTN AS NOTE,
+        ACC.FDOC_LINE_NBR As ACC_LINE,
+        ACC.COST_STRING As ACC_COST_STRING,
+        ACC.AMOUNT As ACC_AMOUNT,
+        ACC.FDOC_LINE_DESC As ACC_DESC,
+        ACC.ORG_NM,
+        ACC.ACCOUNT_NM,
+        ACC.FIN_OBJ_CD_NM,
+        ACC.ACCT_TYP_NM
+    From
+        X001aa_Report_payments_curr PAYMENT Left Join
+        X000_Documents DOC On DOC.DOC_HDR_ID = PAYMENT.CUST_PMT_DOC_NBR Left Join
+        X000_Account_line ACC On ACC.FDOC_NBR = PAYMENT.CUST_PMT_DOC_NBR Left Join       
+        X000_Completed_curr_last INIT On INIT.DOC_HDR_ID = PAYMENT.CUST_PMT_DOC_NBR
+    Order By
+        VENDOR_NAME,
+        PAYEE_NAME,
+        PMT_DT,
+        CUST_PMT_DOC_NBR,
+        FDOC_LINE_NBR     
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
     """ ****************************************************************************
     BUILD PREVIOUS YEAR PAYMENTS
     *****************************************************************************"""
@@ -1247,6 +1350,64 @@ def kfs_lists():
         X000_Documents DOC On DOC.DOC_HDR_ID = PAYMENT.CUST_PMT_DOC_NBR Left Join
         X000_Account_line_unique ACC On ACC.FDOC_NBR = PAYMENT.CUST_PMT_DOC_NBR Left Join       
         X000_Approvers_curr APPROVE On APPROVE.DOC_HDR_ID = PAYMENT.CUST_PMT_DOC_NBR
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD PAYMENT LIST WITH ALL ACCOUNTING LINES
+    print("Build previous payment full accounting list...")
+    sr_file = "X001ae_Report_payments_accroute_prev"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        PAYMENT.CUST_PMT_DOC_NBR As EDOC,
+        PAYMENT.PMT_GRP_ID,
+        PAYMENT.VENDOR_ID,
+        PAYMENT.PAYEE_NAME,
+        PAYMENT.VENDOR_NAME,
+        PAYMENT.VENDOR_REG_NR,
+        PAYMENT.VENDOR_TAX_NR,
+        PAYMENT.VENDOR_BANK_NR,
+        PAYMENT.VENDOR_TYPE,
+        PAYMENT.PAYEE_TYP_DESC,
+        PAYMENT.DISB_NBR,
+        PAYMENT.DISB_TS,
+        PAYMENT.PMT_DT,
+        PAYMENT.PMT_STAT_CD,
+        PAYMENT.PAYMENT_STATUS,
+        PAYMENT.INV_NBR,
+        PAYMENT.REQS_NBR,
+        PAYMENT.PO_NBR,
+        PAYMENT.INV_DT,
+        PAYMENT.ORIG_INV_AMT,
+        PAYMENT.NET_PMT_AMT,
+        DOC.DOC_TYP_NM As DOC_TYPE,
+        Upper(DOC.LBL) As DOC_LABEL,        
+        INIT.PRNCPL_ID AS INIT_EMP_NO,
+        INIT.NAME_ADDR AS INIT_EMP_NAME,
+        INIT.ACTN_DT AS INIT_DATE,
+        INIT.ACTN AS INIT_STATUS,
+        INIT.ANNOTN AS NOTE,
+        ACC.FDOC_LINE_NBR As ACC_LINE,
+        ACC.COST_STRING As ACC_COST_STRING,
+        ACC.AMOUNT As ACC_AMOUNT,
+        ACC.FDOC_LINE_DESC As ACC_DESC,
+        ACC.ORG_NM,
+        ACC.ACCOUNT_NM,
+        ACC.FIN_OBJ_CD_NM,
+        ACC.ACCT_TYP_NM
+    From
+        X001aa_Report_payments_prev PAYMENT Left Join
+        X000_Documents DOC On DOC.DOC_HDR_ID = PAYMENT.CUST_PMT_DOC_NBR Left Join
+        X000_Account_line_prev ACC On ACC.FDOC_NBR = PAYMENT.CUST_PMT_DOC_NBR Left Join       
+        X000_Completed_prev_last INIT On INIT.DOC_HDR_ID = PAYMENT.CUST_PMT_DOC_NBR
+    Order By
+        VENDOR_NAME,
+        PAYEE_NAME,
+        PMT_DT,
+        CUST_PMT_DOC_NBR,
+        FDOC_LINE_NBR     
     """
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
