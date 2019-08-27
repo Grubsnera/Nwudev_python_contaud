@@ -9,8 +9,8 @@ import B002_kfs_lists
 
 # OPEN THE LOG WRITER
 funcfile.writelog("Now")
-funcfile.writelog("SCRIPT: A000_RUN_ALL")
-funcfile.writelog("--------------------")
+funcfile.writelog("SCRIPT: B002_RUN_KFS_LIST")
+funcfile.writelog("-------------------------")
 
 # RUN KFS LISTS
 try:
@@ -20,5 +20,5 @@ except Exception as e:
 
 # CLOSE THE LOG WRITER
 funcfile.writelog("Now")
-funcfile.writelog("COMPLETED: A000_RUN_ALL")
-funcfile.writelog("-----------------------")
+funcfile.writelog("COMPLETED: B002_RUN_KFS_LIST")
+funcfile.writelog("----------------------------")

@@ -1,7 +1,7 @@
-""" Script to build standard KFS lists *****************************************
-Created on: 11 Mar 2018
+"""
+Script to build standard KFS lists
 Author: Albert J v Rensburg (NWU21162395)
-*************************************************************************** """
+"""
 
 # IMPORT PYTHON MODULES
 import sqlite3
@@ -28,7 +28,6 @@ print("------------------")
 funcfile.writelog("Now")
 funcfile.writelog("SCRIPT: B002_KFS_LISTS_DEV")
 funcfile.writelog("--------------------------")
-ilog_severity = 1
 
 # DECLARE VARIABLES
 so_path = "W:/Kfs/"  # Source database path
