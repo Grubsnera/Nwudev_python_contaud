@@ -67,6 +67,8 @@ def gl_test_transactions():
     # ATTACH DATA SOURCES
     so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs.sqlite' AS 'KFS'")
     funcfile.writelog("%t ATTACH DATABASE: KFS.SQLITE")
+    so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs_curr.sqlite' AS 'KFSCURR'")
+    funcfile.writelog("%t ATTACH DATABASE: KFS_CURR.SQLITE")
     so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
     funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
     so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss.sqlite' AS 'VSS'")
@@ -100,7 +102,7 @@ def gl_test_transactions():
             ELSE 'NWU'
         END As ACC_CAMPUS 
     From
-        KFS.X000_GL_trans_curr GL Left Join
+        KFSCURR.X000_GL_trans GL Left Join
         KFS.X000_Account ACC On ACC.ACCOUNT_NBR = GL.ACCOUNT_NBR
     Where
         GL.FS_DATABASE_DESC = 'KFS' And
@@ -125,7 +127,7 @@ def gl_test_transactions():
         PAY.APPROVE_EMP_NO As EMP_APP
     From
         X001_gl_professional_fee GL Inner Join
-        KFS.X001aa_Report_payments_curr PAY On PAY.CUST_PMT_DOC_NBR = GL.FDOC_NBR And
+        KFSCURR.X001aa_Report_payments PAY On PAY.CUST_PMT_DOC_NBR = GL.FDOC_NBR And
             PAY.NET_PMT_AMT = GL.CALC_AMOUNT      
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)

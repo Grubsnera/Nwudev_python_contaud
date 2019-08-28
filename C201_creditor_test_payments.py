@@ -69,6 +69,10 @@ def Creditor_test_payments():
     # ATTACH DATA SOURCES
     so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs.sqlite' AS 'KFS'")
     funcfile.writelog("%t ATTACH DATABASE: KFS.SQLITE")
+    so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs_curr.sqlite' AS 'KFSCURR'")
+    funcfile.writelog("%t ATTACH DATABASE: KFS_CURR.SQLITE")
+    so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs_prev.sqlite' AS 'KFSPREV'")
+    funcfile.writelog("%t ATTACH DATABASE: KFS_PREV.SQLITE")
     so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
     funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
 
@@ -109,7 +113,7 @@ def Creditor_test_payments():
         '' As INV_CALC2,
         '' As INV_CALC3
     From
-        KFS.X001aa_Report_payments_curr PAYMENT
+        KFSCURR.X001aa_Report_payments PAYMENT
     Where
         StrfTime('%Y-%m-%d',PAYMENT.PMT_DT) >= StrfTime('%Y-%m-%d','now','%DAYS%') And
         PAYMENT.PMT_STAT_CD = 'EXTR'
@@ -226,7 +230,7 @@ def Creditor_test_payments():
         '' As INV_CALC2,
         '' As INV_CALC3
     From
-        KFS.X001aa_Report_payments_prev PAYMENT
+        KFSPREV.X001aa_Report_payments PAYMENT
     Where
         PAYMENT.PMT_STAT_CD = 'EXTR'
     """
@@ -338,7 +342,7 @@ def Creditor_test_payments():
         '' As INV_CALC2,
         '' As INV_CALC3
     From
-        KFS.X001aa_Report_payments_curr PAYMENT
+        KFSCURR.X001aa_Report_payments PAYMENT
     Where
         PAYMENT.PMT_STAT_CD = 'EXTR'
     """
@@ -733,10 +737,10 @@ def Creditor_test_payments():
             Left Join X001af_paym_officer ORG_OFF On ORG_OFF.TYPE = FIND.ORG
             Left Join X001ag_paym_supervisor CAMP_SUP On CAMP_SUP.TYPE = FIND.TYP
             Left Join X001ag_paym_supervisor ORG_SUP On ORG_SUP.TYPE = FIND.ORG
-            Left Join KFS.X001aa_Report_payments_curr PAYMENT on PAYMENT.CUST_PMT_DOC_NBR = FIND.EDOC
-            Left Join KFS.X000_Documents DOC on DOC.DOC_HDR_ID = FIND.EDOC
-            Left Join KFS.X000_Account_line_unique LINE on LINE.FDOC_NBR = FIND.EDOC
-            Left Join KFS.X000_Account_line_unique DLINE on DLINE.FDOC_NBR = FIND.DUP_EDOC
+            Left Join KFSCURR.X001aa_Report_payments PAYMENT on PAYMENT.CUST_PMT_DOC_NBR = FIND.EDOC
+            Left Join KFS.X000_Document DOC on DOC.DOC_HDR_ID = FIND.EDOC
+            Left Join KFSCURR.X000_Account_line_unique LINE on LINE.FDOC_NBR = FIND.EDOC
+            Left Join KFSCURR.X000_Account_line_unique DLINE on DLINE.FDOC_NBR = FIND.DUP_EDOC
         Where
             FIND.PREV_PROCESS IS NULL
         ;"""
@@ -828,7 +832,7 @@ def Creditor_test_payments():
         VEND.VEND_BANK,
         VEND.VEND_BRANCH
     From
-        KFS.X000_Vendor_master VEND
+        KFS.X000_Vendor VEND
     Where
         VEND.VEND_BANK <> ''
     """
@@ -1099,7 +1103,7 @@ def Creditor_test_payments():
             Left Join X002af_officer ORG_OFF On ORG_OFF.TYPE = 'NWU'
             Left Join X002ag_supervisor CAMP_SUP On CAMP_SUP.TYPE = 'VEN'
             Left Join X002ag_supervisor ORG_SUP On ORG_SUP.TYPE = 'NWU'
-            Left Join KFS.X000_Vendor_master VEND On VEND.VENDOR_ID = FIND.VENDOR_ID
+            Left Join KFS.X000_Vendor VEND On VEND.VENDOR_ID = FIND.VENDOR_ID
         Where
             FIND.PREV_PROCESS IS NULL
         ;"""
@@ -1185,7 +1189,7 @@ def Creditor_test_payments():
     Select
         PAYMENT.*
     From
-        X001ac_Report_payments_approute_curr PAYMENT
+        X001ac_Report_payments_approve PAYMENT
     Where
         SubStr(PAYMENT.VENDOR_ID, 1, 8) = PAYMENT.APPROVE_EMP_NO
     Order By
@@ -1489,7 +1493,7 @@ def Creditor_test_payments():
     Select
         PAYMENT.*
     From
-        X001ad_Report_payments_initroute_curr PAYMENT
+        X001ab_Report_payments_initiate PAYMENT
     Where
         SubStr(PAYMENT.VENDOR_ID, 1, 8) = PAYMENT.INIT_EMP_NO
     Order By

@@ -99,8 +99,8 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     # Attach data sources
     so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
     funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
-    so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs.sqlite' AS 'KFS'")
-    funcfile.writelog("%t ATTACH DATABASE: KFS.SQLITE")
+    so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs_curr.sqlite' AS 'KFSCURR'")
+    funcfile.writelog("%t ATTACH DATABASE: KFS_CURR.SQLITE")
     so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss.sqlite' AS 'VSS'")
     funcfile.writelog("%t ATTACH DATABASE: VSS.SQLITE")
     so_curs.execute("ATTACH DATABASE 'W:/Kfs_vss_studdeb/Kfs_vss_studdeb_prev.sqlite' AS 'PREV'")
@@ -210,7 +210,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     funcfile.writelog("LIST GL TRANSACTIONS")
 
     # Import gl transactions **************************************************
-    print("Import gl transactions from KFS.SQLITE...")
+    print("Import gl transactions from KFS_CURR.SQLITE...")
     sr_file = "X001aa_gl_tranlist"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     SELECT
@@ -243,11 +243,11 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
       TRIM(TRN_LDGR_ENTR_DESC) AS TEMP,
       '' AS DESCRIPTION
     FROM
-      KFS.X000_GL_trans_curr
+      KFSCURR.X000_GL_trans
     WHERE
-      (KFS.X000_GL_trans_curr.FIN_OBJECT_CD = '7551') OR
-      (KFS.X000_GL_trans_curr.FIN_OBJECT_CD = '7552') OR
-      (KFS.X000_GL_trans_curr.FIN_OBJECT_CD = '7553')
+      (KFSCURR.X000_GL_trans.FIN_OBJECT_CD = '7551') OR
+      (KFSCURR.X000_GL_trans.FIN_OBJECT_CD = '7552') OR
+      (KFSCURR.X000_GL_trans.FIN_OBJECT_CD = '7553')
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     so_curs.execute(s_sql)

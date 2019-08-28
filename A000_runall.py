@@ -95,6 +95,24 @@ else:
     funcfile.writelog("SCRIPT: B002_KFS_LISTS: DO NOT RUN ON SUNDAYS AND MONDAYS")
 
 """****************************************************************************
+KFS GL AND PAYMENT LISTS
+****************************************************************************"""
+
+if funcdate.today_dayname() in "TueWedThuFriSat":
+    import B006_kfs_period_list
+    try:
+        B006_kfs_period_list.kfs_period_list("curr")
+        if l_mail:
+            funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:B006_kfs_period_list',
+                          'NWUIAPython: Success: B006_kfs_period_list')
+    except Exception as e:
+        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:B006_kfs_period_list',
+                           'NWUIAPython: Fail: B006_kfs_period_list')
+else:
+    print("KFS GL and Payment lists do not run on Sundays and Mondays")
+    funcfile.writelog("SCRIPT: B006_KFS_PERIOD_LIST: DO NOT RUN ON SUNDAYS AND MONDAYS")
+
+"""****************************************************************************
 VSS LISTS
 ****************************************************************************"""
 

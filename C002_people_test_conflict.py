@@ -73,6 +73,8 @@ def people_test_conflict():
     funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
     so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs.sqlite' AS 'KFS'")
     funcfile.writelog("%t ATTACH DATABASE: KFS.SQLITE")
+    so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs_curr.sqlite' AS 'KFSCURR'")
+    funcfile.writelog("%t ATTACH DATABASE: KFS_CURR.SQLITE")
 
     """ ****************************************************************************
     BEGIN OF SCRIPT
@@ -554,13 +556,13 @@ def people_test_conflict():
     sr_file = "X100_bank_ven"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     Select
-        KFS.X000_VENDOR_MASTER.VENDOR_ID,
-        KFS.X000_VENDOR_MASTER.VEND_BANK AS VENDOR_BANK
+        KFS.X000_Vendor.VENDOR_ID,
+        KFS.X000_Vendor.VEND_BANK AS VENDOR_BANK
     From
-        KFS.X000_VENDOR_MASTER
+        KFS.X000_Vendor
     Where
-        KFS.X000_VENDOR_MASTER.VEND_BANK <> '' AND
-        KFS.X000_VENDOR_MASTER.DOBJ_MAINT_CD_ACTV_IND = 'Y'
+        KFS.X000_Vendor.VEND_BANK <> '' AND
+        KFS.X000_Vendor.DOBJ_MAINT_CD_ACTV_IND = 'Y'
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     so_curs.execute(s_sql)
@@ -793,8 +795,8 @@ def people_test_conflict():
         From
             X100ad_bank_addprev FINDING
             Left Join PEOPLE.X002_PEOPLE_CURR PERSON On PERSON.EMPLOYEE_NUMBER = FINDING.EMP
-            Left Join KFS.X000_VENDOR_MASTER VENDOR On VENDOR.VENDOR_ID = FINDING.VENDOR_ID
-            Left Join KFS.X001ab_Report_payments_curr_summ PAYMENTS On PAYMENTS.VENDOR_ID = FINDING.VENDOR_ID
+            Left Join KFS.X000_Vendor VENDOR On VENDOR.VENDOR_ID = FINDING.VENDOR_ID
+            Left Join KFS.X002aa_Report_payments_summary PAYMENTS On PAYMENTS.VENDOR_ID = FINDING.VENDOR_ID
             Left Join X001_declarations_curr DECLARE On DECLARE.EMPLOYEE = FINDING.EMP
             Left Join X100af_bank_offi CAMP_OFF On CAMP_OFF.CAMPUS = FINDING.LOC
             Left Join X100af_bank_offi ORG_OFF On ORG_OFF.CAMPUS = FINDING.ORG

@@ -14,7 +14,7 @@ funcfile.writelog("--------------------------------")
 
 # RUN KFS LISTS
 try:
-    B006_kfs_period_list.kfs_period_list("curr")
+    B006_kfs_period_list.kfs_period_list("prev")
 except Exception as e:
     funcsys.ErrMessage(e)
 
