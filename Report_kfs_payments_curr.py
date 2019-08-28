@@ -16,6 +16,18 @@ from _my_modules import funcfile
 ENVIRONMENT
 *****************************************************************************"""
 
+# ASK QUESTIONS
+print("")
+s_year = input("For which period? (yyyy) ")
+print("")
+s_period: str = ""
+if s_year == funcdate.cur_year():
+    s_period = "curr"
+elif s_year == funcdate.prev_year():
+    s_period = "prev"
+else:
+    s_period = s_year
+
 # OPEN THE LOG WRITER
 funcfile.writelog("Now")
 funcfile.writelog("SCRIPT: REPORT KFS PAYMENTS CURRENT")
@@ -26,9 +38,8 @@ print("---------------------------")
 
 # DECLARE VARIABLES
 so_path = "W:/Kfs/"  # Source database path
-so_file = "Kfs.sqlite"  # Source database
+so_file = "Kfs_" + s_period + ".sqlite"  # Source database
 l_export: bool = True
-s_period: str = "curr"  # prev or year
 s_sql = ""  # SQL statements
 
 """*****************************************************************************
@@ -49,7 +60,7 @@ print("BEGIN OF SCRIPT")
 funcfile.writelog("BEGIN OF SCRIPT")
 
 # Export the declaration data
-sr_file = "X001ad_Report_payments_initroute_curr"
+sr_file = "X001ad_Report_payments_accroute"
 if l_export == True:
     if s_period == "curr":
         sx_path = "R:/Kfs/" + funcdate.cur_year() + "/"
@@ -57,7 +68,7 @@ if l_export == True:
         sx_path = "R:/Kfs/" + funcdate.prev_year() + "/"
     else:
         sx_path = "R:/Kfs/" + s_period + "/"
-    sx_file = "Creditor_report_payments_001ad_initroute_"
+    sx_file = "Creditor_report_payments_001ad_accroute_"
     print("Export data..." + sx_path + sx_file)
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
     funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
