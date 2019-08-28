@@ -275,22 +275,40 @@ else:
     funcfile.writelog("SCRIPT: C003_PEOPLE_LIST_MASTERFILE_RUN: DO NOT RUN ON SATURDAYS AND SUNDAYS")
 
 """****************************************************************************
-MYSQL LISTS
+MYSQL LISTS WEB SERVER
 ****************************************************************************"""
 
 if funcdate.today_dayname() in "TueWedThuFriSat":
     import B005_mysql_lists
     try:
-        B005_mysql_lists.mysql_lists()
+        B005_mysql_lists.mysql_lists("Web_ia_nwu")
         if l_mail:
-            funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:B005_mysql_lists',
-                          'NWUIAPython: Success: B005_mysql_lists')
+            funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:B005_mysql_lists(Web_ia_nwu)',
+                          'NWUIAPython: Success: B005_mysql_lists (Web_ia_nwu)')
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:B005_mysql_lists',
-                           'NWUIAPython: Fail: B005_mysql_lists')
+        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:B005_mysql_lists(Web_ia_nwu)',
+                           'NWUIAPython: Fail: B005_mysql_lists (Web_ia_nwu)')
 else:
     print("MYSQL lists do not run on Sundays and Mondays")
-    funcfile.writelog("SCRIPT: B005_MYSQL_LISTS: DO NOT RUN ON SUNDAYS AND MONDAYS")
+    funcfile.writelog("SCRIPT: B005_MYSQL_LISTS (Web_ia_nwu): DO NOT RUN ON SUNDAYS AND MONDAYS")
+
+"""****************************************************************************
+MYSQL LISTS ACL SERVER
+****************************************************************************"""
+
+if funcdate.today_dayname() in "TueWedThuFriSat":
+    import B005_mysql_lists
+    try:
+        B005_mysql_lists.mysql_lists("Mysql_ia_server")
+        if l_mail:
+            funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:B005_mysql_lists(Mysql_ia_server)',
+                          'NWUIAPython: Success: B005_mysql_lists (Mysql_ia_server)')
+    except Exception as e:
+        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:B005_mysql_lists(Mysql_ia_server)',
+                           'NWUIAPython: Fail: B005_mysql_lists (Mysql_ia_server)')
+else:
+    print("MYSQL lists do not run on Sundays and Mondays")
+    funcfile.writelog("SCRIPT: B005_MYSQL_LISTS (Mysql_ia_server): DO NOT RUN ON SUNDAYS AND MONDAYS")
 
 """ ****************************************************************************
 END OF SCRIPT

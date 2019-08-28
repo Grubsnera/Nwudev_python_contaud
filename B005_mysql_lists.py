@@ -222,6 +222,7 @@ def mysql_lists(s_database):
     i_coun = 0
     for row in rows:
         s_data = funcmysql.convert_sqlite_mysql(row, a_cols, 1, 1)
+        # print(s_data)
         s_sql = "INSERT IGNORE INTO `ia_people` " + s_head + " VALUES " + s_data + ";"
         ms_curs.execute(s_sql)
         i_tota = i_tota + 1
