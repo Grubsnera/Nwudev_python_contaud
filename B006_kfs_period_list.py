@@ -642,7 +642,7 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
     sr_file = "X002ab_Report_payments_typemon"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
-        'CURRENT' As YEAR,
+        '%PERIOD_TEXT%' As YEAR,
         PAYM.PAYEE_TYP_DESC As TYPE,
         PAYM.DOC_LABEL,
         SubStr(PAYM.PMT_DT, 6, 2) As MONTH,
@@ -655,30 +655,37 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
         SubStr(PAYM.PMT_DT, 6, 2)
     """
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if s_period == "curr":
+        s_sql = s_sql.replace("%PERIOD_TEXT%",'CURRENT')
+    elif s_period == "prev":
+        s_sql = s_sql.replace("%PERIOD_TEXT%",'PREVIOUS')
+    else:
+        s_sql = s_sql.replace("%PERIOD_TEXT%", 'PERIOD')
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD SUMMARY OF PAYMENTS
-    print("Combine payee type payments summary per month...")
-    sr_file = "X002ac_Report_typemon_summary"
-    s_sql = "CREATE TABLE " + sr_file + " AS " + """
-    Select
-        PREV.TYPE As TYPE,
-        PREV.DOC_LABEL As TYPE_DOC,
-        PREV.MONTH As MONTH,
-        PREV.Sum_NET_PMT_AMT As 'PREVIOUS',
-        CURR.Sum_NET_PMT_AMT As 'CURRENT'
-    From
-        KFSPREV.X002ab_Report_payments_typemon PREV Left Join
-        X002ab_Report_payments_typemon CURR On CURR.TYPE = PREV.TYPE And
-            CURR.DOC_LABEL = PREV.DOC_LABEL And
-            CURR.MONTH = PREV.MONTH
-    """
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    if s_period == "curr":
+        print("Combine payee type payments summary per month...")
+        sr_file = "X002ac_Report_typemon_summary"
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            PREV.TYPE As TYPE,
+            PREV.DOC_LABEL As TYPE_DOC,
+            PREV.MONTH As MONTH,
+            PREV.Sum_NET_PMT_AMT As 'PREVIOUS',
+            CURR.Sum_NET_PMT_AMT As 'CURRENT'
+        From
+            KFSPREV.X002ab_Report_payments_typemon PREV Left Join
+            X002ab_Report_payments_typemon CURR On CURR.TYPE = PREV.TYPE And
+                CURR.DOC_LABEL = PREV.DOC_LABEL And
+                CURR.MONTH = PREV.MONTH
+        """
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """ ****************************************************************************
     END OF SCRIPT
