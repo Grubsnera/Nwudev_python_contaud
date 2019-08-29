@@ -11,6 +11,12 @@ import sqlite3
 from _my_modules import funcdate
 from _my_modules import funcfile
 
+""" IMPORTANT NOTE *************************************************************
+1. This script rely on data from the previous year payments. This script for the
+    previous year must be run before running this script for the current year.
+    Refer to Kfs_prev.sqlite
+*****************************************************************************"""
+
 """ INDEX **********************************************************************
 ENVIRONMENT
 OPEN THE DATABASES
@@ -20,6 +26,7 @@ PAYMENT INITIATE LIST
 PAYMENT APPROVE LIST
 BUILD ACCOUNTING LINE
 BUILD PAYMENTS
+BUILD PAYMENTS SUMMARY
 END OF SCRIPT
 *****************************************************************************"""
 
@@ -72,6 +79,8 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
     # ATTACH DATA SOURCES
     so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs.sqlite' AS 'KFS'")
     funcfile.writelog("%t ATTACH DATABASE: KFS.SQLITE")
+    so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs_prev.sqlite' AS 'KFSPREV'")
+    funcfile.writelog("%t ATTACH DATABASE: KFS_PREV.SQLITE")
     so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
     funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
 
@@ -603,25 +612,68 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-    """ ****************************************************************************
+    """*****************************************************************************
     BUILD PAYMENTS SUMMARY
     *****************************************************************************"""
     print("BUILD PAYMENTS SUMMARY")
     funcfile.writelog("BUILD PAYMENTS SUMMARY")
 
-    # BUILD PAYMENTS SUMMARY
-    print("Build payments summary...")
+    # BUILD VENDOR PAYMENTS SUMMARY
+    print("Build vendor payments summary...")
     sr_file = "X002aa_Report_payments_summary"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
-        X001aa_Report_payments.VENDOR_ID,
-        Max(X001aa_Report_payments.PMT_DT) As Max_PMT_DT,
-        Sum(X001aa_Report_payments.NET_PMT_AMT) As Sum_NET_PMT_AMT,
-        Count(X001aa_Report_payments.VENDOR_ID) As Count_TRAN
+        PAY.VENDOR_ID,
+        Max(PAY.PMT_DT) As Max_PMT_DT,
+        Sum(PAY.NET_PMT_AMT) As Sum_NET_PMT_AMT,
+        Count(PAY.VENDOR_ID) As Count_TRAN
     From
-        X001aa_Report_payments
+        X001aa_Report_payments PAY
     Group By
-        X001aa_Report_payments.VENDOR_ID
+        PAY.VENDOR_ID
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD PAYEE TYPE SUMMARY OF PAYMENTS
+    print("Build payee type payment summary per month...")
+    sr_file = "X002ab_Report_payments_typemon"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        'CURRENT' As YEAR,
+        PAYM.PAYEE_TYP_DESC As TYPE,
+        PAYM.DOC_LABEL,
+        SubStr(PAYM.PMT_DT, 6, 2) As MONTH,
+        Sum(PAYM.NET_PMT_AMT) As Sum_NET_PMT_AMT
+    From
+        X001aa_Report_payments PAYM
+    Group By
+        PAYM.PAYEE_TYP_DESC,
+        PAYM.DOC_LABEL,    
+        SubStr(PAYM.PMT_DT, 6, 2)
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD SUMMARY OF PAYMENTS
+    print("Combine payee type payments summary per month...")
+    sr_file = "X002ac_Report_typemon_summary"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        PREV.TYPE As TYPE,
+        PREV.DOC_LABEL As TYPE_DOC,
+        PREV.MONTH As MONTH,
+        PREV.Sum_NET_PMT_AMT As 'PREVIOUS',
+        CURR.Sum_NET_PMT_AMT As 'CURRENT'
+    From
+        KFSPREV.X002ab_Report_payments_typemon PREV Left Join
+        X002ab_Report_payments_typemon CURR On CURR.TYPE = PREV.TYPE And
+            CURR.DOC_LABEL = PREV.DOC_LABEL And
+            CURR.MONTH = PREV.MONTH
     """
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
