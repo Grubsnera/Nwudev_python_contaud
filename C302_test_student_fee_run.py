@@ -1,28 +1,19 @@
-
-import sys
-
-# OWN MODULE PATH
-sys.path.append('S:/_my_modules')
-sys.path.append('S:/')
-
 # IMPORT MODULES
-import funcdate
-import funcfile
-import funcsys
+import C302_test_student_fee
+from _my_modules import funcfile
+from _my_modules import funcsys
 
 # OPEN THE LOG WRITER
 funcfile.writelog("Now")
-funcfile.writelog("SCRIPT: C301_REPORT_STUDENT_DEFERMENT_RUN")
-funcfile.writelog("-----------------------------------------")
+funcfile.writelog("SCRIPT: C302_TEST_STUDENT_FEE_RUN")
+funcfile.writelog("---------------------------------")
 
-import C301_report_student_deferment
 try:
-    C301_report_student_deferment.Studdeb_deferments('curr',funcdate.cur_year())
+    C302_test_student_fee.student_fee("curr", "2019")
 except Exception as e:
     funcsys.ErrMessage(e)
 
 # CLOSE THE LOG WRITER
 funcfile.writelog("Now")
-funcfile.writelog("COMPLETED: C301_REPORT_STUDENT_DEFERMENT_RUN")
-funcfile.writelog("--------------------------------------------")
-
+funcfile.writelog("COMPLETED: C302_TEST_STUDENT_FEE_RUN")
+funcfile.writelog("------------------------------------")
