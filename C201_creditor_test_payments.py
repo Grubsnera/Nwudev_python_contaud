@@ -207,7 +207,7 @@ def Creditor_test_payments():
     """
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t ADD COLUMNS: INVOICE NUMBER")
+    funcfile.writelog("%t ADD COLUMN: INVOICE NUMBER")
     s_sql = "Update " + sr_file + " Set INV_CALC = " + """
     Cast(INV_CALC3 As INT)
     """
@@ -319,7 +319,7 @@ def Creditor_test_payments():
     """
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t ADD COLUMNS: INVOICE NUMBER")
+    funcfile.writelog("%t ADD COLUMN: INVOICE NUMBER")
     s_sql = "Update " + sr_file + " Set INV_CALC = " + """
     Cast(INV_CALC3 As INT)
     """
@@ -431,7 +431,7 @@ def Creditor_test_payments():
     """
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t ADD COLUMNS: INVOICE NUMBER")
+    funcfile.writelog("%t ADD COLUMN: INVOICE NUMBER")
     s_sql = "Update " + sr_file + " Set INV_CALC = " + """
     Cast(INV_CALC3 As INT)
     """
@@ -1798,7 +1798,7 @@ def Creditor_test_payments():
         print("Vacuum the database...")
         so_conn.commit()
         so_conn.execute('VACUUM')
-        funcfile.writelog("%t DATABASE: Vacuum kfs")    
+        funcfile.writelog("%t VACUUM DATABASE: " + so_file)
     so_conn.commit()
     so_conn.close()
 

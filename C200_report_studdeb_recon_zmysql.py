@@ -82,7 +82,7 @@ funcfile.writelog("%t OPEN MYSQL DATABASE: " + s_database)
 # Create MYSQL VSS GL MONTHLY BALANCES TO WEB table ****************************
 print("Build mysql vss gl monthly balances...")
 ms_curs.execute("DROP TABLE IF EXISTS ia_finding_5")
-funcfile.writelog("%t DROPPED MYSQL TABLE: ia_finding_5")
+funcfile.writelog("%t DROP MYSQL TABLE: ia_finding_5")
 s_sql = """
 CREATE TABLE IF NOT EXISTS ia_finding_5 (
 ia_find_auto INT(11),
@@ -119,7 +119,7 @@ COLLATE utf8mb4_unicode_ci
 COMMENT = 'Table to store vss and gl monthly balances'
 """ + ";"
 ms_curs.execute(s_sql)
-funcfile.writelog("%t CREATED MYSQL TABLE: ia_finding_5 (vss gl monthly balances per campus per month)")
+funcfile.writelog("%t CREATE MYSQL TABLE: ia_finding_5 (vss gl monthly balances per campus per month)")
 # Open the SOURCE file to obtain column headings
 print("Build mysql vss gl monthly balance columns...")
 funcfile.writelog("OPEN DATABASE: ia_finding_5")
@@ -175,7 +175,7 @@ funcfile.writelog("%t POPULATE MYSQL TABLE: ia_finding_5 with " + str(i_tota) + 
 # Create MYSQL VSS GL COMPARISON PER CAMPUS PER MONTH TO WEB table *************
 print("Build mysql vss gl comparison campus month...")
 ms_curs.execute("DROP TABLE IF EXISTS ia_finding_6")
-funcfile.writelog("%t DROPPED MYSQL TABLE: ia_finding_6")
+funcfile.writelog("%t DROP MYSQL TABLE: ia_finding_6")
 s_sql = """
 CREATE TABLE IF NOT EXISTS ia_finding_6 (
 ia_find_auto INT(11),
@@ -200,7 +200,7 @@ COLLATE utf8mb4_unicode_ci
 COMMENT = 'Table to store vss and gl monthly comparisons'
 """ + ";"
 ms_curs.execute(s_sql)
-funcfile.writelog("%t CREATED MYSQL TABLE: ia_finding_6 (vss gl comparison per campus per month)")
+funcfile.writelog("%t CREATE MYSQL TABLE: ia_finding_6 (vss gl comparison per campus per month)")
 # Open the SOURCE file to obtain column headings
 print("Build mysql vss gl comparison columns...")
 funcfile.writelog("OPEN DATABASE: ia_finding_6")

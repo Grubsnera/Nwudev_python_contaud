@@ -50,7 +50,7 @@ if "CALC_COST_STRING" not in funccsv.get_colnames_sqlite(so_curs,"GL_ENTRY_T_201
     so_curs.execute("ALTER TABLE GL_ENTRY_T_2017 ADD COLUMN CALC_COST_STRING TEXT;")
     so_curs.execute("UPDATE GL_ENTRY_T_2017 SET CALC_COST_STRING = Trim(FIN_COA_CD) || '.' || Trim(ACCOUNT_NBR) || '.' || Trim(FIN_OBJECT_CD);")
     so_conn.commit()
-    funcfile.writelog("%t CALC COLUMNS: Combined cost string")
+    funcfile.writelog("%t CALC COLUMN: Combined cost string")
 
 # Calc amount
 if "CALC_AMOUNT" not in funccsv.get_colnames_sqlite(so_curs,"GL_ENTRY_T_2017"):
@@ -63,7 +63,7 @@ if "CALC_AMOUNT" not in funccsv.get_colnames_sqlite(so_curs,"GL_ENTRY_T_2017"):
                     END
                     ;""")
     so_conn.commit()
-    funcfile.writelog("%t CALC COLUMNS: Amount")
+    funcfile.writelog("%t CALC COLUMN: Amount")
 
 # BUILD PERIOD TRANSACTION LIST ************************************************
 print("Build period transaction list...")

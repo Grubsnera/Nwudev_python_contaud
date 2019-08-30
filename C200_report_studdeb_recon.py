@@ -278,7 +278,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'ë','E');")
     so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'?','E');")
     so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,' ','');")
-    funcfile.writelog("%t ADD COLUMNS: Temp description")
+    funcfile.writelog("%t ADD COLUMN: Temp description")
 
     # Calc transaction description
     print("Add column gl description link...")
@@ -294,7 +294,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
                     END
                     ;""")
     so_conn.commit()
-    funcfile.writelog("%t ADD COLUMNS: Description link")
+    funcfile.writelog("%t ADD COLUMN: Description link")
 
     # Join the transaction languages to the gl transaction file ********************
     print("Join the gl transactions with transaction code languages...")
@@ -437,7 +437,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
         s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`,`MONTH`,`BALANCE`) VALUES ('Vaal Triangle','00','"+dOpenVaa+"');"
         so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t ADD ROWS: GL Opening balances (temporary)")
+    funcfile.writelog("%t ADD ROW: GL Opening balances (temporary)")
 
     # Calculate the running gl balance ********************************************
     print("Calculate the running gl balance...")
@@ -1306,7 +1306,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     # Transfer GL transactions to the VSS file *********************************
     # Open the SOURCE file to obtain column headings
     print("Transfer gl data to the vss table...")
-    funcfile.writelog("%t GET COLUMN HEADINGS: X003aa_vss_gl_join")
+    funcfile.writelog("%t GET COLUMN NAME: X003aa_vss_gl_join")
     s_head = funcmysql.get_colnames_sqlite_text(so_curs,"X003aa_vss_gl_join","")
     s_head = "(" + s_head.rstrip(", ") + ")"
     #print(s_head)
@@ -1342,7 +1342,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
             i_coun = 0
     so_conn.commit()        
     print("Inserted " + str(i_tota) + " rows...")
-    funcfile.writelog("%t POPULATE TABLE: X003aa_vss_gl_join with " + str(i_tota) + " rows")
+    funcfile.writelog("%t BUILD TABLE: X003aa_vss_gl_join with " + str(i_tota) + " rows")
 
     # Report on VSS and GL comparison per campus per month *********************
     print("Report vss gl join transaction type...")
@@ -3881,7 +3881,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
         print("Vacuum the database...")
         so_conn.commit()
         so_conn.execute('VACUUM')
-        funcfile.writelog("%t DATABASE: Vacuum")
+        funcfile.writelog("%t VACUUM DATABASE: " + so_file)
     so_conn.commit()
     so_conn.close()
 

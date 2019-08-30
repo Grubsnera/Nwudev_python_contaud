@@ -252,7 +252,7 @@ so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'&','');")
 so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'ë','E');")
 so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'?','E');")
 so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,' ','');")
-funcfile.writelog("%t ADD COLUMNS: Temp description")
+funcfile.writelog("%t ADD COLUMN: Temp description")
 
 # Calc transaction description
 print("Add column gl description link...")
@@ -268,7 +268,7 @@ so_curs.execute("UPDATE X001aa_gl_tranlist " + """
                 END
                 ;""")
 so_conn.commit()
-funcfile.writelog("%t ADD COLUMNS: Description link")
+funcfile.writelog("%t ADD COLUMN: Description link")
 
 # Join the transaction languages to the gl transaction file ********************
 print("Join the gl transactions with transaction code languages...")
@@ -1185,7 +1185,7 @@ funcfile.writelog("%t BUILD TABLE: "+sr_file)
 # Transfer GL transactions to the VSS file *********************************
 # Open the SOURCE file to obtain column headings
 print("Transfer gl data to the vss table...")
-funcfile.writelog("%t GET COLUMN HEADINGS: X003aa_vss_gl_join")
+funcfile.writelog("%t GET COLUMN NAME: X003aa_vss_gl_join")
 s_head = funcmysql.get_colnames_sqlite_text(so_curs,"X003aa_vss_gl_join","")
 s_head = "(" + s_head.rstrip(", ") + ")"
 #print(s_head)
@@ -1221,7 +1221,7 @@ for row in rows:
         i_coun = 0
 so_conn.commit()        
 print("Inserted " + str(i_tota) + " rows...")
-funcfile.writelog("%t POPULATE TABLE: X003aa_vss_gl_join with " + str(i_tota) + " rows")
+funcfile.writelog("%t BUILD TABLE: X003aa_vss_gl_join with " + str(i_tota) + " rows")
 
 # Report on VSS and GL comparison per campus per month *********************
 print("Report vss gl join transaction type...")

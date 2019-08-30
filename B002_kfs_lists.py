@@ -494,7 +494,7 @@ def kfs_lists():
         print("Vacuum the database...")
         so_conn.commit()
         so_conn.execute('VACUUM')
-        funcfile.writelog("%t DATABASE: Vacuum kfs")
+        funcfile.writelog("%t VACUUM DATABASE: " + so_file)
     so_conn.commit()
     so_conn.close()
 

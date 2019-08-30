@@ -96,7 +96,7 @@ def mysql_lists(s_database):
     # EXPORT CURRENT PEOPLE TO MYSQL
     print("Build mysql current people...")
     ms_curs.execute("DROP TABLE IF EXISTS ia_people")
-    funcfile.writelog("%t DROPPED MYSQL TABLE: PEOPLE (ia_people)")
+    funcfile.writelog("%t DROP MYSQL TABLE: PEOPLE (ia_people)")
     #ia_find_1_auto INT(11) NOT NULL AUTO_INCREMENT,
     s_sql = """
     CREATE TABLE IF NOT EXISTS ia_people (
@@ -196,17 +196,17 @@ def mysql_lists(s_database):
     COMMENT = 'Table to store detailed people data'
     """ + ";"
     ms_curs.execute(s_sql)
-    funcfile.writelog("%t CREATED MYSQL TABLE: PEOPLE (ia_people)")
+    funcfile.writelog("%t CREATE MYSQL TABLE: PEOPLE (ia_people)")
 
     # Obtain the new mysql table column types
     print("Build mysql current people columns types...")
-    funcfile.writelog("OPEN DATABASE TARGET: People")
+    funcfile.writelog("GET COLUMN TYPE: People")
     a_cols = funcmysql.get_coltypes_mysql_list(ms_curs, s_schema, "ia_people")
     # print(a_cols)
 
     # Open the SOURCE file to obtain column headings
     print("Build mysql current people columns...")
-    funcfile.writelog("OPEN DATABASE SOURCE: People")
+    funcfile.writelog("GET COLUMN NAME: People")
     s_head = funcmysql.get_colnames_sqlite_text(so_curs,"X002_PEOPLE_CURR","people_")
     s_head = "(`ia_find_auto`, " + s_head.rstrip(", ") + ")"
     # print(s_head)
@@ -249,7 +249,7 @@ def mysql_lists(s_database):
         """ + ";"
         ms_curs.execute(s_sql)
         ms_cnxn.commit()
-        funcfile.writelog("%t UPDATED MYSQL TRIGGER: FINDING 1 (people current)")
+        funcfile.writelog("%t UPDATE MYSQL TRIGGER: FINDING 1 (people current)")
 
     # Update MYSQL PEOPLE TO WEB FINDING mail trigger ******************************
     if s_database == "Web_ia_nwu":
@@ -263,7 +263,7 @@ def mysql_lists(s_database):
         """ + ";"
         ms_curs.execute(s_sql)
         ms_cnxn.commit()
-        funcfile.writelog("%t UPDATED MYSQL TRIGGER: FINDING 2 (people current summary)")
+        funcfile.writelog("%t UPDATE MYSQL TRIGGER: FINDING 2 (people current summary)")
 
     # Update MYSQL PEOPLE TO WEB FINDING mail trigger ******************************
     if s_database == "Web_ia_nwu":
@@ -277,7 +277,7 @@ def mysql_lists(s_database):
         """ + ";"
         ms_curs.execute(s_sql)
         ms_cnxn.commit()
-        funcfile.writelog("%t UPDATED MYSQL TRIGGER: FINDING 3 (people current birthdays)")
+        funcfile.writelog("%t UPDATE MYSQL TRIGGER: FINDING 3 (people current birthdays)")
 
     """*****************************************************************************
     EXPORT CURRENT PEOPLE STRUCTURE
@@ -288,7 +288,7 @@ def mysql_lists(s_database):
     # EXPORT CURRENT PEOPLE STRUCTURE
     print("Build mysql current people structure...")
     ms_curs.execute("DROP TABLE IF EXISTS ia_people_struct")
-    funcfile.writelog("%t DROPPED MYSQL TABLE: PEOPLE_STRUCT (ia_people_struct)")
+    funcfile.writelog("%t DROP MYSQL TABLE: PEOPLE_STRUCT (ia_people_struct)")
     #ia_find_1_auto INT(11) NOT NULL AUTO_INCREMENT,
     s_sql = """
     CREATE TABLE IF NOT EXISTS ia_people_struct (
@@ -336,15 +336,15 @@ def mysql_lists(s_database):
     COMMENT = 'Table to store detailed people structure data'
     """ + ";"
     ms_curs.execute(s_sql)
-    funcfile.writelog("%t CREATED MYSQL TABLE: PEOPLE_STRUCT (ia_people_struct)")
+    funcfile.writelog("%t CREATE MYSQL TABLE: PEOPLE_STRUCT (ia_people_struct)")
     # Obtain the new mysql table column types
     print("Build mysql current people structure columns types...")
-    funcfile.writelog("OPEN DATABASE TARGET: People")
+    funcfile.writelog("GET COLUMN TYPE: People")
     a_cols = funcmysql.get_coltypes_mysql_list(ms_curs, s_schema, "ia_people_struct")
     # print(a_cols)
     # Open the SOURCE file to obtain column headings
     print("Build mysql current people structure columns...")
-    funcfile.writelog("OPEN DATABASE SOURCE: People org structure")
+    funcfile.writelog("GET COLUMN NAME: People org structure")
     s_head = funcmysql.get_colnames_sqlite_text(so_curs,"X003_PEOPLE_ORGA_REF","struct_")
     s_head = "(`ia_find_auto`, " + s_head.rstrip(", ") + ")"
     # print(s_head)
@@ -385,7 +385,7 @@ def mysql_lists(s_database):
         """ + ";"
         ms_curs.execute(s_sql)
         ms_cnxn.commit()
-        funcfile.writelog("%t UPDATED MYSQL TRIGGER: FINDING 4 (people current hierarchy)")
+        funcfile.writelog("%t UPDATE MYSQL TRIGGER: FINDING 4 (people current hierarchy)")
 
     # CLOSE PEOPLE DATABASE
     so_conn.commit()
@@ -413,7 +413,7 @@ def mysql_lists(s_database):
     # Create MYSQL VSS GL MONTHLY BALANCES TO WEB table ****************************
     print("Build mysql vss gl monthly balances...")
     ms_curs.execute("DROP TABLE IF EXISTS ia_finding_5")
-    funcfile.writelog("%t DROPPED MYSQL TABLE: ia_finding_5")
+    funcfile.writelog("%t DROP MYSQL TABLE: ia_finding_5")
     s_sql = """
     CREATE TABLE IF NOT EXISTS ia_finding_5 (
     ia_find_auto INT(11),
@@ -451,15 +451,15 @@ def mysql_lists(s_database):
     COMMENT = 'Table to store vss and gl monthly balances'
     """ + ";"
     ms_curs.execute(s_sql)
-    funcfile.writelog("%t CREATED MYSQL TABLE: ia_finding_5 (vss gl monthly balances per campus per month)")
+    funcfile.writelog("%t CREATE MYSQL TABLE: ia_finding_5 (vss gl monthly balances per campus per month)")
     # Obtain the new mysql table column types
     print("Build mysql current people structure columns types...")
-    funcfile.writelog("OPEN DATABASE TARGET: People")
+    funcfile.writelog("GET COLUMN TYPE: People")
     a_cols = funcmysql.get_coltypes_mysql_list(ms_curs, s_schema, "ia_finding_5")
     # print(a_cols)
     # Open the SOURCE file to obtain column headings
     print("Build mysql vss gl monthly balance columns...")
-    funcfile.writelog("OPEN DATABASE SOURCE: ia_finding_5")
+    funcfile.writelog("GET COLUMN NAME: ia_finding_5")
     s_head = funcmysql.get_colnames_sqlite_text(so_curs,"X002ex_vss_gl_balance_month","ia_find5_")
     s_head = "(`ia_find_auto`, " + s_head.rstrip(", ") + ")"
     #print(s_head)
@@ -494,7 +494,7 @@ def mysql_lists(s_database):
     # EXPORT MYSQL VSS GL COMPARISON PER CAMPUS PER MONTH TO WEB
     print("Build mysql vss gl comparison campus month...")
     ms_curs.execute("DROP TABLE IF EXISTS ia_finding_6")
-    funcfile.writelog("%t DROPPED MYSQL TABLE: ia_finding_6")
+    funcfile.writelog("%t DROP MYSQL TABLE: ia_finding_6")
     s_sql = """
     CREATE TABLE IF NOT EXISTS ia_finding_6 (
     ia_find_auto INT(11),
@@ -520,15 +520,15 @@ def mysql_lists(s_database):
     COMMENT = 'Table to store vss and gl monthly comparisons'
     """ + ";"
     ms_curs.execute(s_sql)
-    funcfile.writelog("%t CREATED MYSQL TABLE: ia_finding_6 (vss gl comparison per campus per month)")
+    funcfile.writelog("%t CREATE MYSQL TABLE: ia_finding_6 (vss gl comparison per campus per month)")
     # Obtain the new mysql table column types
     print("Build mysql current people structure columns types...")
-    funcfile.writelog("OPEN DATABASE TARGET: People")
+    funcfile.writelog("GET COLUMN TYPE: People")
     a_cols = funcmysql.get_coltypes_mysql_list(ms_curs, s_schema, "ia_finding_6")
     # print(a_cols)
     # Open the SOURCE file to obtain column headings
     print("Build mysql vss gl comparison columns...")
-    funcfile.writelog("OPEN DATABASE SOURCE: ia_finding_6")
+    funcfile.writelog("GET COLUMN NAME: ia_finding_6")
     s_head = funcmysql.get_colnames_sqlite_text(so_curs,"X003ax_vss_gl_join","ia_find6_")
     s_head = "(ia_find_auto, " + s_head.rstrip(", ") + ")"
     #print(s_head)

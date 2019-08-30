@@ -753,7 +753,7 @@ def Studdeb_deferments(s_period='curr',s_year='2019'):
         print("Vacuum the database...")
         so_conn.commit()
         so_conn.execute('VACUUM')
-        funcfile.writelog("%t DATABASE: Vacuum Vss_deferment")    
+        funcfile.writelog("%t VACUUM DATABASE: " + so_file)
     so_conn.commit()
     so_conn.close()
 

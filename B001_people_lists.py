@@ -230,7 +230,7 @@ def people_lists():
                         END
                         ;""")
         so_conn.commit()
-        funcfile.writelog("%t ADD COLUMNS: ACAD_SUPP")
+        funcfile.writelog("%t ADD COLUMN: ACAD_SUPP")
 
     """ ****************************************************************************
     BUILD JOBS
@@ -273,7 +273,7 @@ def people_lists():
         so_curs.execute("ALTER TABLE X000_JOBS ADD JOB_SEGMENT_NAME TEXT;")
         so_curs.execute("UPDATE X000_JOBS SET JOB_SEGMENT_NAME = SUBSTR(JOB_COMB,INSTR(JOB_COMB,'~')+1,60);")
         so_conn.commit()
-        funcfile.writelog("%t ADD COLUMNS: JOB_SEGMENT_NAME")
+        funcfile.writelog("%t ADD COLUMN: JOB_SEGMENT_NAME")
 
     """ ****************************************************************************
     BUILD ORGANIZATION
@@ -572,7 +572,7 @@ def people_lists():
                         END
                         ;""")
         so_conn.commit()
-        funcfile.writelog("%t ADD COLUMNS: FACULTY")
+        funcfile.writelog("%t ADD COLUMN: FACULTY")
 
     if "DIVISION" not in funccsv.get_colnames_sqlite(so_curs, sr_file):
         so_curs.execute("ALTER TABLE " + sr_file + " ADD COLUMN DIVISION TEXT;")
@@ -591,7 +591,7 @@ def people_lists():
                         END
                         ;""")
         so_conn.commit()
-        funcfile.writelog("%t ADD COLUMNS: DIVISION")
+        funcfile.writelog("%t ADD COLUMN: DIVISION")
 
     """ ****************************************************************************
     BUILD BANK ACCOUNTS
@@ -1762,7 +1762,7 @@ def people_lists():
                     END
                     ;""")
     so_conn.commit()
-    funcfile.writelog("%t CALC COLUMNS: CALC_PARTY_ID")
+    funcfile.writelog("%t CALC COLUMN: CALC_PARTY_ID")
 
     # BUILD CURRENT USERS
     print("Build current users...")
@@ -1934,7 +1934,7 @@ def people_lists():
         print("Vacuum the database...")
         so_conn.commit()
         so_conn.execute('VACUUM')
-        funcfile.writelog("%t DATABASE: Vacuum people")
+        funcfile.writelog("%t VACUUM DATABASE: " + so_file)
     so_conn.commit()
     so_conn.close()
 

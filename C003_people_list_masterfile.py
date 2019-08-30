@@ -158,7 +158,7 @@ def people_list_masterfile():
     s_sql = s_sql.replace("%TODAY%", funcdate.cur_monthend())
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t INSERT TABLE: X001_People_start_end_master")
+    funcfile.writelog("%t BUILD TABLE: X001_People_start_end_master")
 
     """ ****************************************************************************
     LIST AGE MASTER

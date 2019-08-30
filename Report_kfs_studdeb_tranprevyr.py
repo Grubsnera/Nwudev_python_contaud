@@ -77,7 +77,7 @@ so_curs.execute("UPDATE X010_Studdeb_tranlist_prevyr " + """
                 END
                 ;""")
 so_conn.commit()
-fl.write(datetime.datetime.now().strftime("%H:%M:%S") + " CALC COLUMNS: Campus\r\n")
+fl.write(datetime.datetime.now().strftime("%H:%M:%S") + " CALC COLUMN: Campus\r\n")
 
 # Calc campus code
 so_curs.execute("ALTER TABLE X010_Studdeb_tranlist_prevyr ADD COLUMN CAMPUS_VSS TEXT;")
@@ -90,7 +90,7 @@ so_curs.execute("UPDATE X010_Studdeb_tranlist_prevyr " + """
                 END
                 ;""")
 so_conn.commit()
-fl.write(datetime.datetime.now().strftime("%H:%M:%S") + " CALC COLUMNS: Campus code\r\n")
+fl.write(datetime.datetime.now().strftime("%H:%M:%S") + " CALC COLUMN: Campus code\r\n")
 
 # Calc bursary code ************************************************************
 so_curs.execute("ALTER TABLE X010_Studdeb_tranlist_prevyr ADD COLUMN BURSARY_CODE TEXT;")
@@ -104,7 +104,7 @@ so_curs.execute("UPDATE X010_Studdeb_tranlist_prevyr " + """
                 END
                 ;""")
 so_conn.commit()
-fl.write(datetime.datetime.now().strftime("%H:%M:%S") + " CALC COLUMNS: Bursary code\r\n")
+fl.write(datetime.datetime.now().strftime("%H:%M:%S") + " CALC COLUMN: Bursary code\r\n")
 
 # Calc student number **********************************************************
 so_curs.execute("ALTER TABLE X010_Studdeb_tranlist_prevyr ADD COLUMN STUDENT TEXT;")
@@ -117,7 +117,7 @@ so_curs.execute("UPDATE X010_Studdeb_tranlist_prevyr " + """
                 END
                 ;""")
 so_conn.commit()
-fl.write(datetime.datetime.now().strftime("%H:%M:%S") + " CALC COLUMNS: Student number\r\n")
+fl.write(datetime.datetime.now().strftime("%H:%M:%S") + " CALC COLUMN: Student number\r\n")
 
 # Temp description - Remove characters from description ************************
 so_curs.execute("ALTER TABLE X010_Studdeb_tranlist_prevyr ADD COLUMN TEMP TEXT;")
@@ -139,7 +139,7 @@ so_curs.execute("UPDATE X010_Studdeb_tranlist_prevyr SET TEMP = REPLACE(TEMP,':'
 so_curs.execute("UPDATE X010_Studdeb_tranlist_prevyr SET TEMP = REPLACE(TEMP,'/','');")
 
 so_conn.commit()
-fl.write(datetime.datetime.now().strftime("%H:%M:%S") + " CALC COLUMNS: Temp description\r\n")
+fl.write(datetime.datetime.now().strftime("%H:%M:%S") + " CALC COLUMN: Temp description\r\n")
 
 # Calc transaction description *************************************************
 so_curs.execute("ALTER TABLE X010_Studdeb_tranlist_prevyr ADD COLUMN DESCRIPTION TEXT;")
@@ -154,7 +154,7 @@ so_curs.execute("UPDATE X010_Studdeb_tranlist_prevyr " + """
                 END
                 ;""")
 so_conn.commit()
-fl.write(datetime.datetime.now().strftime("%H:%M:%S") + " CALC COLUMNS: Description\r\n")
+fl.write(datetime.datetime.now().strftime("%H:%M:%S") + " CALC COLUMN: Description\r\n")
 
 # Build transactions ***********************************************************
 
