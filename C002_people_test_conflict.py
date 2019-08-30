@@ -796,7 +796,7 @@ def people_test_conflict():
             X100ad_bank_addprev FINDING
             Left Join PEOPLE.X002_PEOPLE_CURR PERSON On PERSON.EMPLOYEE_NUMBER = FINDING.EMP
             Left Join KFS.X000_Vendor VENDOR On VENDOR.VENDOR_ID = FINDING.VENDOR_ID
-            Left Join KFS.X002aa_Report_payments_summary PAYMENTS On PAYMENTS.VENDOR_ID = FINDING.VENDOR_ID
+            Left Join KFSCURR.X002aa_Report_payments_summary PAYMENTS On PAYMENTS.VENDOR_ID = FINDING.VENDOR_ID
             Left Join X001_declarations_curr DECLARE On DECLARE.EMPLOYEE = FINDING.EMP
             Left Join X100af_bank_offi CAMP_OFF On CAMP_OFF.CAMPUS = FINDING.LOC
             Left Join X100af_bank_offi ORG_OFF On ORG_OFF.CAMPUS = FINDING.ORG
