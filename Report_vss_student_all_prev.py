@@ -41,7 +41,7 @@ l_export = False
 # Open the SOURCE file
 with sqlite3.connect(so_path+so_file) as so_conn:
     so_curs = so_conn.cursor()
-funcfile.writelog("OPEN DATABASE: VSS.SQLITE")
+funcfile.writelog("OPEN DATABASE: " + so_file)
 
 """*************************************************************************
 BUILD STUDENT LIST

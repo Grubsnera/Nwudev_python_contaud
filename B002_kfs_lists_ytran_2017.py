@@ -36,7 +36,7 @@ s_sql = "" #SQL statements
 with sqlite3.connect(so_path+so_file) as so_conn:
     so_curs = so_conn.cursor()
 
-funcfile.writelog("%t OPEN DATABASE: KFS")
+funcfile.writelog("OPEN DATABASE: " + so_file)
 
 """*****************************************************************************
 BEGIN

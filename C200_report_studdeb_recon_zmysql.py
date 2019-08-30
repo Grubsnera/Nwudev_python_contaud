@@ -61,7 +61,7 @@ l_export = True
 # Open the SOURCE file
 with sqlite3.connect(so_path+so_file) as so_conn:
     so_curs = so_conn.cursor()
-funcfile.writelog("%t OPEN DATABASE: Kfs_vss_studdeb")
+funcfile.writelog("OPEN DATABASE: " + so_file)
 
 # Attach data sources
 so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
@@ -122,7 +122,7 @@ ms_curs.execute(s_sql)
 funcfile.writelog("%t CREATED MYSQL TABLE: ia_finding_5 (vss gl monthly balances per campus per month)")
 # Open the SOURCE file to obtain column headings
 print("Build mysql vss gl monthly balance columns...")
-funcfile.writelog("%t OPEN DATABASE: ia_finding_5")
+funcfile.writelog("OPEN DATABASE: ia_finding_5")
 s_head = funcmysql.get_colnames_sqlite_text(so_curs,"X002ex_vss_gl_balance_month","ia_find5_")
 s_head = "(`ia_find_auto`, " + s_head.rstrip(", ") + ")"
 #print(s_head)
@@ -203,7 +203,7 @@ ms_curs.execute(s_sql)
 funcfile.writelog("%t CREATED MYSQL TABLE: ia_finding_6 (vss gl comparison per campus per month)")
 # Open the SOURCE file to obtain column headings
 print("Build mysql vss gl comparison columns...")
-funcfile.writelog("%t OPEN DATABASE: ia_finding_6")
+funcfile.writelog("OPEN DATABASE: ia_finding_6")
 s_head = funcmysql.get_colnames_sqlite_text(so_curs,"X003ax_vss_gl_join","ia_find6_")
 s_head = "(ia_find_auto, " + s_head.rstrip(", ") + ")"
 #print(s_head)

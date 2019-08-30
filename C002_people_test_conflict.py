@@ -66,7 +66,7 @@ def people_test_conflict():
     # OPEN THE WORKING DATABASE
     with sqlite3.connect(so_path+so_file) as so_conn:
         so_curs = so_conn.cursor()
-    funcfile.writelog("%t OPEN DATABASE: "+so_file)
+    funcfile.writelog("OPEN DATABASE: " + so_file)
 
     # ATTACH DATA SOURCES
     so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")

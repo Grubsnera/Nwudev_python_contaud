@@ -70,7 +70,7 @@ def Studdeb_deferments(s_period='curr',s_year='2019'):
     print("Open sqlite database...")
     with sqlite3.connect(so_path+so_file) as so_conn:
         so_curs = so_conn.cursor()
-    funcfile.writelog("%t OPEN SQLITE DATABASE: VSS_DEFERMENT.SQLITE")
+    funcfile.writelog("OPEN DATABASE: " + so_file)
 
     # ATTACH VSS DATABASE
     print("Attach vss database...")

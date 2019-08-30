@@ -94,7 +94,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     # Open the SOURCE file
     with sqlite3.connect(so_path+so_file) as so_conn:
         so_curs = so_conn.cursor()
-    funcfile.writelog("%t OPEN DATABASE: Kfs_vss_studdeb")
+    funcfile.writelog("OPEN DATABASE: " + so_file)
 
     # Attach data sources
     so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")

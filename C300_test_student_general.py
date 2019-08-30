@@ -46,7 +46,7 @@ def Test_student_general():
     with sqlite3.connect(so_path+so_file) as so_conn:
         so_curs = so_conn.cursor()
 
-    funcfile.writelog("%t OPEN DATABASE: VSS_GENERAL")
+    funcfile.writelog("OPEN DATABASE: " + so_file)
 
     so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss.sqlite' AS 'VSS'")
     funcfile.writelog("%t ATTACH DATABASE: Vss.sqlite")

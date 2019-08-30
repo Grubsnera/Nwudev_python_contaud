@@ -37,7 +37,7 @@ sd_acti = "Y"
 with sqlite3.connect(so_path+so_file) as so_conn:
     so_curs = so_conn.cursor()
 
-funcfile.writelog("%t OPEN DATABASE: PEOPLE.SQLITE")
+funcfile.writelog("OPEN DATABASE: " + so_file)
 
 # Ask the questions
 

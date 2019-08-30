@@ -47,7 +47,7 @@ funcfile.writelog("OPEN THE DATABASES")
 # OPEN THE WORKING DATABASE
 with sqlite3.connect(so_path + so_file) as so_conn:
     so_curs = so_conn.cursor()
-funcfile.writelog("%t OPEN DATABASE: PEOPLE.SQLITE")
+funcfile.writelog("OPEN DATABASE: " + so_file)
 
 # Import the X000_OWN_HR_LOOKUPS table
 print("Import own lookups...")

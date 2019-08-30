@@ -105,7 +105,7 @@ def People_test_masterfile():
     # OPEN THE WORKING DATABASE
     with sqlite3.connect(so_path+so_file) as so_conn:
         so_curs = so_conn.cursor()
-    funcfile.writelog("%t OPEN DATABASE: PEOPLE_TEST_MASTERFILE.SQLITE")
+    funcfile.writelog("OPEN DATABASE: " + so_file)
 
     # ATTACH DATA SOURCES
     so_curs.execute("ATTACH DATABASE '" + so_path + "People.sqlite' AS 'PEOPLE'")

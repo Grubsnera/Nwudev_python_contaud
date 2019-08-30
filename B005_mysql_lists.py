@@ -85,7 +85,7 @@ def mysql_lists(s_database):
     so_file = "People.sqlite" #Source database
     with sqlite3.connect(so_path+so_file) as so_conn:
         so_curs = so_conn.cursor()
-    funcfile.writelog("%t OPEN SQLITE DATABASE: PEOPLE.SQLITE")
+    funcfile.writelog("OPEN DATABASE: " + so_file)
 
     """*****************************************************************************
     EXPORT CURRENT PEOPLE
@@ -200,13 +200,13 @@ def mysql_lists(s_database):
 
     # Obtain the new mysql table column types
     print("Build mysql current people columns types...")
-    funcfile.writelog("%t OPEN DATABASE TARGET: People")
+    funcfile.writelog("OPEN DATABASE TARGET: People")
     a_cols = funcmysql.get_coltypes_mysql_list(ms_curs, s_schema, "ia_people")
     # print(a_cols)
 
     # Open the SOURCE file to obtain column headings
     print("Build mysql current people columns...")
-    funcfile.writelog("%t OPEN DATABASE SOURCE: People")
+    funcfile.writelog("OPEN DATABASE SOURCE: People")
     s_head = funcmysql.get_colnames_sqlite_text(so_curs,"X002_PEOPLE_CURR","people_")
     s_head = "(`ia_find_auto`, " + s_head.rstrip(", ") + ")"
     # print(s_head)
@@ -339,12 +339,12 @@ def mysql_lists(s_database):
     funcfile.writelog("%t CREATED MYSQL TABLE: PEOPLE_STRUCT (ia_people_struct)")
     # Obtain the new mysql table column types
     print("Build mysql current people structure columns types...")
-    funcfile.writelog("%t OPEN DATABASE TARGET: People")
+    funcfile.writelog("OPEN DATABASE TARGET: People")
     a_cols = funcmysql.get_coltypes_mysql_list(ms_curs, s_schema, "ia_people_struct")
     # print(a_cols)
     # Open the SOURCE file to obtain column headings
     print("Build mysql current people structure columns...")
-    funcfile.writelog("%t OPEN DATABASE: People org structure")
+    funcfile.writelog("OPEN DATABASE SOURCE: People org structure")
     s_head = funcmysql.get_colnames_sqlite_text(so_curs,"X003_PEOPLE_ORGA_REF","struct_")
     s_head = "(`ia_find_auto`, " + s_head.rstrip(", ") + ")"
     # print(s_head)
@@ -402,7 +402,7 @@ def mysql_lists(s_database):
     so_file = "Kfs_vss_studdeb.sqlite" #Source database
     with sqlite3.connect(so_path+so_file) as so_conn:
         so_curs = so_conn.cursor()
-    funcfile.writelog("%t OPEN SQLITE DATABASE: KFS_VSS_STUDDEB.SQLITE")    
+    funcfile.writelog("OPEN DATABASE: " + so_file)
 
     """*****************************************************************************
     EXPORT STUD DEBTOR MONTHLY BALANCES
@@ -454,12 +454,12 @@ def mysql_lists(s_database):
     funcfile.writelog("%t CREATED MYSQL TABLE: ia_finding_5 (vss gl monthly balances per campus per month)")
     # Obtain the new mysql table column types
     print("Build mysql current people structure columns types...")
-    funcfile.writelog("%t OPEN DATABASE TARGET: People")
+    funcfile.writelog("OPEN DATABASE TARGET: People")
     a_cols = funcmysql.get_coltypes_mysql_list(ms_curs, s_schema, "ia_finding_5")
     # print(a_cols)
     # Open the SOURCE file to obtain column headings
     print("Build mysql vss gl monthly balance columns...")
-    funcfile.writelog("%t OPEN DATABASE: ia_finding_5")
+    funcfile.writelog("OPEN DATABASE SOURCE: ia_finding_5")
     s_head = funcmysql.get_colnames_sqlite_text(so_curs,"X002ex_vss_gl_balance_month","ia_find5_")
     s_head = "(`ia_find_auto`, " + s_head.rstrip(", ") + ")"
     #print(s_head)
@@ -523,12 +523,12 @@ def mysql_lists(s_database):
     funcfile.writelog("%t CREATED MYSQL TABLE: ia_finding_6 (vss gl comparison per campus per month)")
     # Obtain the new mysql table column types
     print("Build mysql current people structure columns types...")
-    funcfile.writelog("%t OPEN DATABASE TARGET: People")
+    funcfile.writelog("OPEN DATABASE TARGET: People")
     a_cols = funcmysql.get_coltypes_mysql_list(ms_curs, s_schema, "ia_finding_6")
     # print(a_cols)
     # Open the SOURCE file to obtain column headings
     print("Build mysql vss gl comparison columns...")
-    funcfile.writelog("%t OPEN DATABASE: ia_finding_6")
+    funcfile.writelog("OPEN DATABASE SOURCE: ia_finding_6")
     s_head = funcmysql.get_colnames_sqlite_text(so_curs,"X003ax_vss_gl_join","ia_find6_")
     s_head = "(ia_find_auto, " + s_head.rstrip(", ") + ")"
     #print(s_head)

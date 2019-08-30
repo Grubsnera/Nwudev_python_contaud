@@ -32,7 +32,7 @@ s_sql = "" #SQL statements
 # Open the SOURCE file
 with sqlite3.connect(so_path+so_file) as so_conn:
     so_curs = so_conn.cursor()
-funcfile.writelog("%t OPEN DATABASE: People_conflict.sqlite")
+funcfile.writelog("OPEN DATABASE: " + so_file)
 
 so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
 funcfile.writelog("%t ATTACH DATABASE: People.sqlite")

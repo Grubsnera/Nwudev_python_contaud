@@ -36,7 +36,7 @@ s_burs_code = '042z052z381z500'
 # OPEN THE SOURCE
 with sqlite3.connect(so_path + so_file) as so_conn:
     so_curs = so_conn.cursor()
-funcfile.writelog("%t OPEN DATABASE: Kfs_vss_studdeb")
+funcfile.writelog("OPEN DATABASE: " + so_file)
 
 # ATTACH DATA FILES
 so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")

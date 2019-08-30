@@ -74,7 +74,7 @@ def people_lists():
     # Open the SQLITE SOURCE file
     with sqlite3.connect(so_path + so_file) as so_conn:
         so_curs = so_conn.cursor()
-    funcfile.writelog("%t OPEN SQLITE DATABASE: PEOPLE.SQLITE")
+    funcfile.writelog("OPEN DATABASE: " + so_file)
 
     """ ****************************************************************************
     BEGIN OF SCRIPT
@@ -1812,7 +1812,7 @@ def people_lists():
     # Open the SOURCE file
     with sqlite3.connect(so_path + so_file) as so_conn:
         so_curs = so_conn.cursor()
-    funcfile.writelog("%t OPEN DATABASE: PEOPLE_LEAVE.SQLITE")
+    funcfile.writelog("OPEN DATABASE: " + so_file)
     so_curs.execute("ATTACH DATABASE 'W:/PEOPLE/People.sqlite' AS 'PEOPLE'")
     funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
 

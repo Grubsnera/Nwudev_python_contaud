@@ -31,7 +31,7 @@ ed_path = "S:/_external_data/"
 # OPEN THE SOURCE FILE
 with sqlite3.connect(so_path + so_file) as so_conn:
     so_curs = so_conn.cursor()
-funcfile.writelog("OPEN DATABASE: PEOPLE_PAYROLL.SQLITE")
+funcfile.writelog("OPEN DATABASE: " + so_file)
 
 # ATTACH DATA SOURCES
 so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
