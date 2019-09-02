@@ -1,64 +1,61 @@
-""" Script to extract STUDENT DEFERMENTS FOR THE CURRENT AND PREVIOUS YEAR *****
-Created on: 19 MAR 2018
+"""
+Script to test STUDENT FEES
+Created on: 28 Aug 2019
 Author: Albert J v Rensburg (NWU21162395)
-*****************************************************************************"""
+"""
+
+# IMPORT PYTHON MODULES
+import sqlite3
+import csv
+
+# IMPORT OWN MODULES
+from _my_modules import funccsv
+from _my_modules import funcdate
+from _my_modules import funcfile
+from _my_modules import funcstat
+from _my_modules import funcsys
 
 """ INDEX **********************************************************************
 ENVIRONMENT
 OPEN THE DATABASES
 TEMPORARY AREA
 BEGIN OF SCRIPT
-BUILD DEFERMENTS
 OBTAIN STUDENTS
-OBTAIN STUDENT TRANSACTIONS AND CALCULATE BALANCES
-ADD BALANCES TO STUDENTS
-CALCULATE DEFERMENT STATUS
+OBTAIN STUDENT TRANSACTIONS AND ISOLATE FEES
+TEST REGISTRATION FEE ABNORMAL
 END OF SCRIPT
 *****************************************************************************"""
 
-def Studdeb_deferments(s_period='curr',s_year='2019'):
+
+def student_fee(s_period='curr', s_year='2019'):
+    """
+    Script to test STUDENT FEE INCOME
+    :param s_period: str: The financial period
+    :param s_year: str: The financial year
+    :return: Nothing
+    """
 
     """*****************************************************************************
     ENVIRONMENT
     *****************************************************************************"""
 
-    # IMPORT PYTHON MODULES
-    import sys
-
-    # ADD OWN MODULE PATH
-    sys.path.append('S:/_my_modules')
-
-    # IMPORT PYTHON OBJECTS
-    import csv
-    import datetime
-    import sqlite3
-
-    # IMPORT OWN MODULES
-    import funcdate
-    import funccsv
-    import funcfile
-
     # SCRIPT LOG FILE
     funcfile.writelog("Now")
-    funcfile.writelog("SCRIPT: REPORT_VSS_DEFERMENTS")
+    funcfile.writelog("SCRIPT: C302_TEST_STUDENT_FEE")
     funcfile.writelog("-----------------------------")
     print("---------------------")    
-    print("REPORT_VSS_DEFERMENTS")
+    print("C302_TEST_STUDENT_FEE")
     print("---------------------")
-    ilog_severity = 1
 
     # DECLARE VARIABLES
-    # s_period = "prev"
-    # s_year = "2018"
-    so_path = "W:/Vss_deferment/" #Source database path
+    ed_path = "S:/_external_data/"  # External data path
+    so_path = "W:/Vss_fee/"  # Source database path
+    so_file = "Vss_test_fee.sqlite"  # Source database
     re_path = "R:/Vss/"
-    so_file = "Vss_deferment.sqlite" #Source database
-    ed_path = "S:/_external_data/" # External data path
-    s_sql = "" #SQL statements
     l_export: bool = True
-    l_mail = False
-    l_record = False
-    l_vacuum = False
+    l_mail: bool = False
+    l_record: bool = False
+    l_vacuum: bool = False
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -70,12 +67,14 @@ def Studdeb_deferments(s_period='curr',s_year='2019'):
     print("Open sqlite database...")
     with sqlite3.connect(so_path+so_file) as so_conn:
         so_curs = so_conn.cursor()
-    funcfile.writelog("%t OPEN SQLITE DATABASE: VSS_DEFERMENT.SQLITE")
+    funcfile.writelog("OPEN DATABASE: " + so_file)
 
     # ATTACH VSS DATABASE
     print("Attach vss database...")
     so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss.sqlite' AS 'VSS'")
     funcfile.writelog("%t ATTACH DATABASE: Vss.sqlite")
+    so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
+    funcfile.writelog("%t ATTACH DATABASE: People.sqlite")
 
     """ ****************************************************************************
     TEMPORARY AREA
@@ -83,121 +82,11 @@ def Studdeb_deferments(s_period='curr',s_year='2019'):
     print("TEMPORARY AREA")
     funcfile.writelog("TEMPORARY AREA")
 
-    so_curs.execute("DROP TABLE IF EXISTS X000_Deferments_curr")
-    so_curs.execute("DROP TABLE IF EXISTS X000_Deferments_prev")
-    so_curs.execute("DROP TABLE IF EXISTS X000_Students_curr")
-    so_curs.execute("DROP TABLE IF EXISTS X000_Tran_balopen_curr")
-    so_curs.execute("DROP TABLE IF EXISTS X000_Tran_feereg_curr")
-    so_curs.execute("DROP TABLE IF EXISTS X001_DEFERMENTS_CURR")
-    so_curs.execute("DROP TABLE IF EXISTS X001_DEFERMENTS_PREV")
-
     """ ****************************************************************************
     BEGIN OF SCRIPT
     *****************************************************************************"""
     print("BEGIN OF SCRIPT")
     funcfile.writelog("BEGIN OF SCRIPT")      
-
-    """ ****************************************************************************
-    BUILD DEFERMENTS
-    *****************************************************************************"""
-    print("BUILD DEFERMENTS")
-    funcfile.writelog("BUILD DEFERMENTS")      
-
-    # ADD DESCRIPTIONS TO DEFERMENTS
-    print("Build deferments...")
-    sr_file = "X000_Deferments"
-    s_sql = "CREATE TABLE " + sr_file + " AS" + """
-    SELECT
-      DEFER.KACCDEFERMENTID,
-      DEFER.FACCID,
-      STUDACC.FBUSENTID,
-      DEFER.DATEARRANGED,
-      USER.FUSERBUSINESSENTITYID,
-      DEFER.STARTDATE,
-      DEFER.ENDDATE,
-      DEFER.TOTALAMOUNT,
-      SUBACC.CODESHORTDESCRIPTION AS SUBACCOUNTTYPE,
-      TYPE.CODESHORTDESCRIPTION AS DEFERMENTTYPE,
-      REAS.CODESHORTDESCRIPTION AS DEFERMENTREASON,
-      DEFER.NOTE,
-      DEFER.FAUDITUSERCODE,
-      DEFER.AUDITDATETIME,
-      DEFER.FAUDITSYSTEMFUNCTIONID
-    FROM
-      ACCDEFERMENT DEFER
-      LEFT JOIN VSS.CODEDESCRIPTION SUBACC ON SUBACC.KCODEDESCID = DEFER.FSUBACCTYPECODEID
-      LEFT JOIN VSS.CODEDESCRIPTION TYPE ON TYPE.KCODEDESCID = DEFER.FDEFERMENTTYPECODEID
-      LEFT JOIN VSS.CODEDESCRIPTION REAS ON REAS.KCODEDESCID = DEFER.FDEFERMENTREASONCODEID
-      LEFT JOIN VSS.STUDACC STUDACC ON STUDACC.KACCID = DEFER.FACCID
-      LEFT JOIN VSS.SYSTEMUSER USER ON USER.KUSERCODE = DEFER.FAUDITUSERCODE
-    WHERE
-      SUBACC.KSYSTEMLANGUAGECODEID = 3 AND
-      TYPE.KSYSTEMLANGUAGECODEID = 3 AND
-      REAS.KSYSTEMLANGUAGECODEID = 3
-    ORDER BY
-      STUDACC.FBUSENTID,
-      DEFER.AUDITDATETIME
-    """
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
-    # BUILD THE PERIOD DEFERMENT LIST
-    print("Select the deferment period...")
-    sr_file = "X000_Deferments_select"
-    s_sql = "CREATE TABLE " + sr_file + " AS" + """
-    SELECT
-      DEFER.KACCDEFERMENTID,
-      DEFER.FBUSENTID AS 'STUDENT',
-      SITE.FDEBTCOLLECTIONSITE AS 'CAMPUS',
-      DEFER.DATEARRANGED,
-      DEFER.FUSERBUSINESSENTITYID AS 'EMPLOYEE',
-      DEFER.STARTDATE AS 'DATESTART',
-      DEFER.ENDDATE AS 'DATEEND',
-      DEFER.TOTALAMOUNT,
-      DEFER.SUBACCOUNTTYPE,
-      DEFER.DEFERMENTTYPE,
-      DEFER.DEFERMENTREASON,
-      DEFER.NOTE,
-      DEFER.FAUDITUSERCODE,
-      DEFER.AUDITDATETIME,
-      DEFER.FAUDITSYSTEMFUNCTIONID,
-      SITE.FADMISSIONSITE,
-      SITE.FMAINQUALSITE
-    FROM
-      X000_DEFERMENTS DEFER
-      LEFT JOIN STUDENTSITE SITE ON SITE.KSTUDENTBUSENTID = DEFER.FBUSENTID
-    WHERE
-      SITE.KSTARTDATETIME <= DEFER.DATEARRANGED AND
-      SITE.ENDDATETIME > DEFER.DATEARRANGED AND
-      DEFER.STARTDATE >= Date('%YEARB%') AND
-      DEFER.ENDDATE <= Date('%YEARE%')
-    """
-    if s_period == "curr":
-        s_sql = s_sql.replace("%YEARB%",funcdate.cur_yearbegin())
-        s_sql = s_sql.replace("%YEARE%",funcdate.cur_yearend())
-    elif s_period == "prev":
-        s_sql = s_sql.replace("%YEARB%",funcdate.prev_yearbegin())
-        s_sql = s_sql.replace("%YEARE%",funcdate.prev_yearend())
-    else:
-        s_sql = s_sql.replace("%YEARB%",s_year + "-01-01")
-        s_sql = s_sql.replace("%YEARE%",s_year + "-12-31")
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
-    # Export the declaration data
-    if l_export == True:
-        if s_period == "curr":
-            sx_path = "R:/Debtorstud/" + funcdate.cur_year() + "/"
-        elif s_period == "prev":
-            sx_path = "R:/Debtorstud/" + funcdate.prev_year() + "/"
-        else:
-            sx_path = "R:/Debtorstud/" + s_year + "/"
-        sx_file = "Deferment_000_list_"
-        print("Export data..." + sx_path + sx_file)
-        s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
-        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
-        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
 
     """ ****************************************************************************
     OBTAIN STUDENTS
@@ -207,8 +96,8 @@ def Studdeb_deferments(s_period='curr',s_year='2019'):
 
     # OBTAIN THE LIST STUDENTS
     print("Obtain the registered students...")
-    sr_file = "X000_Students"
-    s_sql = "CREATE TABLE " + sr_file+ " AS" + """
+    sr_file = "X000_Student"
+    s_sql = "CREATE TABLE " + sr_file + " AS" + """
     SELECT
       STUD.*,
       CASE
@@ -222,13 +111,13 @@ def Studdeb_deferments(s_period='curr',s_year='2019'):
       STUD.ISMAINQUALLEVEL = 1 AND
       UPPER(STUD.ACTIVE_IND) = 'ACTIVE'
     """
-    s_sql = s_sql.replace("%PERIOD%",s_period)
+    s_sql = s_sql.replace("%PERIOD%", s_period)
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """ ****************************************************************************
-    OBTAIN STUDENT TRANSACTIONS AND CALCULATE BALANCES
+    OBTAIN STUDENT TRANSACTIONS AND ISOLATE FEES
     *****************************************************************************"""
     print("OBTAIN STUDENT TRANSACTIONS")
     funcfile.writelog("OBTAIN STUDENT TRANSACTIONS")      
@@ -236,7 +125,7 @@ def Studdeb_deferments(s_period='curr',s_year='2019'):
     # OBTAIN STUDENT ACCOUNT TRANSACTIONS
     print("Import student transactions...")
     sr_file = "X000_Transaction"
-    s_sql = "CREATE TABLE " + sr_file+ " AS" + """
+    s_sql = "CREATE TABLE " + sr_file + " AS" + """
     Select
       TRAN.FBUSENTID As STUDENT,
       CASE
@@ -268,32 +157,14 @@ def Studdeb_deferments(s_period='curr',s_year='2019'):
       TRAN.TRANSCODE <> ''
     """
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = s_sql.replace("%PERIOD%",s_period)
+    s_sql = s_sql.replace("%PERIOD%", s_period)
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-    # CALCULATE THE STUDENT ACCOUNT OPENING BALANCE
-    print("Calculate the account opening balance...")
-    sr_file = "X001aa_Trans_balopen"
-    s_sql = "CREATE VIEW " + sr_file+ " AS" + """
-    SELECT
-      TRAN.STUDENT,
-      CAST(TOTAL(TRAN.AMOUNT) AS REAL) AS BAL_OPEN
-    FROM
-      X000_Transaction TRAN
-    WHERE
-      TRAN.MONTH = '00'
-    GROUP BY
-      TRAN.STUDENT
-    """
-    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    funcfile.writelog("%t BUILD VIEW: " + sr_file)
-
     # CALCULATE THE REGISTRATION FEES LEVIED
     print("Calculate the registration fee transactions...")
-    sr_file = "X001ab_Trans_feereg"
-    s_sql = "CREATE VIEW " + sr_file+ " AS" + """
+    sr_file = "X001aa_Trans_feereg"
+    s_sql = "CREATE VIEW " + sr_file + " AS" + """
     SELECT
       TRAN.STUDENT,
       CAST(TOTAL(TRAN.AMOUNT) AS REAL) AS FEE_REG
@@ -309,438 +180,339 @@ def Studdeb_deferments(s_period='curr',s_year='2019'):
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
-    # ADD THE REGISTRATION DATE TO THE LIST OF TRANSACTIONS
-    print("Add the registration date to the list of transactions...")
-    sr_file = "X001ac_Trans_addreg"
-    s_sql = "CREATE VIEW " + sr_file+ " AS" + """
-    SELECT
-      TRAN.*,
-      STUD.DATEENROL_CALC
-    FROM
-      X000_Transaction TRAN
-      INNER JOIN X000_Students STUD ON STUD.KSTUDBUSENTID = TRAN.STUDENT
-    """
-    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    funcfile.writelog("%t BUILD VIEW: " + sr_file)
+    """*****************************************************************************
+    TEST REGISTRATION FEE ABNORMAL
+    *****************************************************************************"""
+    print("TEST REGISTRATION FEE ABNORMAL")
+    funcfile.writelog("TEST REGISTRATION FEE ABNORMAL")
 
-    # CALCULATE THE STUDENT ACCOUNT BALANCE ON REGISTRATION DATE
-    print("Calculate the account balance on registration date...")
-    sr_file = "X001ad_Trans_balreg"
-    s_sql = "CREATE VIEW " + sr_file+ " AS" + """
-    SELECT
-      TRAN.STUDENT,
-      CAST(TOTAL(TRAN.AMOUNT) AS REAL) AS BAL_REG
-    FROM
-      X001ac_Trans_addreg TRAN
-    WHERE
-      TRAN.TRANSDATE <= TRAN.DATEENROL_CALC
-    GROUP BY
-      TRAN.STUDENT
-    """
-    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    funcfile.writelog("%t BUILD VIEW: " + sr_file)
+    # DECLARE VARIABLES
+    i_finding_after: int = 0
 
-    # CALCULATE THE STUDENT ACCOUNT CREDIT TRANSACTIONS BEFORE REGISTRATION
-    print("Calculate the credits after registration date...")
-    sr_file = "X001ae_Trans_crebefreg"
-    s_sql = "CREATE VIEW " + sr_file+ " AS" + """
-    SELECT
-      TRAN.STUDENT,
-      CAST(TOTAL(TRAN.AMOUNT_CR) AS REAL) AS CRE_REG_BEFORE
-    FROM
-      X001ac_Trans_addreg TRAN
-    WHERE
-      TRAN.MONTH <> '00' AND
-      TRAN.TRANSDATE <= TRAN.DATEENROL_CALC
-    GROUP BY
-      TRAN.STUDENT
-    """
-    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
-    so_curs.execute("DROP VIEW IF EXISTS X001ae_Trans_crereg")
-    so_curs.execute(s_sql)
-    funcfile.writelog("%t BUILD VIEW: " + sr_file)
+    # CALCULATE THE REGISTRATION FEE MODE
+    i_calc = funcstat.stat_mode(so_curs, "X001aa_Trans_feereg", "FEE_REG")
+    funcfile.writelog("%t STATISTIC MODE: " + str(i_calc))
+    print(i_calc)
 
-    # CALCULATE THE STUDENT ACCOUNT CREDIT TRANSACTIONS AFTER REGISTRATION
-    print("Calculate the credits after registration date...")
-    sr_file = "X001af_Trans_creaftreg"
-    s_sql = "CREATE VIEW " + sr_file+ " AS" + """
-    SELECT
-      TRAN.STUDENT,
-      CAST(TOTAL(TRAN.AMOUNT_CR) AS REAL) AS CRE_REG_AFTER
-    FROM
-      X001ac_Trans_addreg TRAN
-    WHERE
-      TRAN.MONTH <> '00' AND
-      TRAN.TRANSDATE > TRAN.DATEENROL_CALC
-    GROUP BY
-      TRAN.STUDENT
-    """
-    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
-    so_curs.execute("DROP VIEW IF EXISTS X001ae_Trans_crereg")
-    so_curs.execute(s_sql)
-    funcfile.writelog("%t BUILD VIEW: " + sr_file)
-
-    # CALCULATE THE STUDENT ACCOUNT BALANCE
-    print("Calculate the account balance...")
-    sr_file = "X001ag_Trans_balance"
-    s_sql = "CREATE VIEW " + sr_file+ " AS" + """
-    SELECT
-      TRAN.STUDENT,
-      CAST(TOTAL(TRAN.AMOUNT) AS REAL) AS BAL_CUR
-    FROM
-      X000_Transaction TRAN
-    GROUP BY
-      TRAN.STUDENT
-    """
-    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    funcfile.writelog("%t BUILD VIEW: " + sr_file)
-
-    # CALCULATE THE DEFERMENT DATE
-    print("Calculate the deferment date per student...")
-    sr_file = "X002aa_Defer_date"
-    s_sql = "CREATE VIEW " + sr_file+ " AS" + """
+    # IDENTIFY REGISTRATION FEE AMOUNTS NOT MODE
+    print("Identify abnormal registration fees...")
+    sr_file = "X010aa_Regfee_abnormal"
+    s_sql = "CREATE TABLE " + sr_file + " AS" + """
     Select
-        DEFER.STUDENT,
-        DEFER.DATEEND
+        'NWU' As ORG,
+        CASE
+            WHEN STUD.FSITEORGUNITNUMBER = -1 THEN 'POTCHEFSTROOM'
+            WHEN STUD.FSITEORGUNITNUMBER = -2 THEN 'VAAL TRIANGLE'
+            WHEN STUD.FSITEORGUNITNUMBER = -9 THEN 'MAFIKENG'
+            ELSE 'OTH'
+        END As LOC, 
+        FEE.STUDENT,
+        FEE.FEE_REG
     From
-        X000_Deferments_select DEFER
-    Group By
-        DEFER.STUDENT
-    Order By
-        DEFER.DATEEND
-    """
-    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    funcfile.writelog("%t BUILD VIEW: " + sr_file)
-
-    # CALCULATE THE STUDENT ACCOUNT CREDIT TRANSACTIONS BEFORE DEFERMENT DATE
-    print("Calculate the credits up to deferment date...")
-    sr_file = "X002ab_Trans_crebefdef"
-    s_sql = "CREATE VIEW " + sr_file+ " AS" + """
-    Select
-        TRAN.STUDENT,
-        Cast(Total(TRAN.AMOUNT_CR) As REAL) As CRE_DEF_BEFORE
-    From
-        X000_Transaction TRAN Inner Join
-        X002aa_Defer_date DDATE On DDATE.STUDENT = TRAN.STUDENT
+        X001aa_Trans_feereg FEE Left Join
+        X000_Student STUD On STUD.KSTUDBUSENTID = FEE.STUDENT
     Where
-        TRAN.MONTH <> '00' And
-        TRAN.TRANSDATE <= DDATE.DATEEND
-    Group By
-        TRAN.STUDENT
-    """
-    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
-    so_curs.execute("DROP VIEW IF EXISTS X001ae_Trans_crereg")
-    so_curs.execute(s_sql)
-    funcfile.writelog("%t BUILD VIEW: " + sr_file)
-
-    """ ****************************************************************************
-    ADD BALANCES TO STUDENTS
-    *****************************************************************************"""
-    print("ADD BALANCES TO STUDENTS")
-    funcfile.writelog("ADD BALANCES TO STUDENTS")      
-
-    # ADD THE BALANCES TO THE LIST OF REGISTERED STUDENTS
-    print("Add the calculated balances to the students list...")
-    sr_file = "X001aa_Students"
-    s_sql = "CREATE TABLE " + sr_file+ " AS" + """
-    Select
-      STUD.*,
-      BOPEN.BAL_OPEN,
-      CBREG.CRE_REG_BEFORE,
-      CAST(0 AS REAL) AS BAL_REG_CALC,
-      BREG.BAL_REG,
-      CAREG.CRE_REG_AFTER,
-      CAST(0 AS REAL) AS BAL_CRE_CALC,
-      BAL.BAL_CUR,
-      FEE.FEE_REG,
-      CBDEF.CRE_DEF_BEFORE,
-      CAST(0 AS REAL) AS BAL_DEF_CALC
-    From
-      X000_Students STUD Left Join
-      X001aa_Trans_balopen BOPEN ON BOPEN.STUDENT = STUD.KSTUDBUSENTID Left Join
-      X001ad_Trans_balreg BREG ON BREG.STUDENT = STUD.KSTUDBUSENTID Left Join
-      X001ae_Trans_crebefreg CBREG ON CBREG.STUDENT = STUD.KSTUDBUSENTID Left Join
-      X001af_Trans_creaftreg CAREG ON CAREG.STUDENT = STUD.KSTUDBUSENTID Left Join
-      X001ab_Trans_feereg FEE ON FEE.STUDENT = STUD.KSTUDBUSENTID Left Join
-      X001ag_Trans_balance BAL ON BAL.STUDENT = STUD.KSTUDBUSENTID Left Join
-      X002ab_Trans_crebefdef CBDEF ON CBDEF.STUDENT = STUD.KSTUDBUSENTID  
-    """
+        FEE.FEE_REG != 0 And 
+        FEE.FEE_REG != %AMOUNT% 
+    ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = s_sql.replace("%AMOUNT%", str(i_calc))
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
-    # Calc balance after credits up to registration
-    print("Add column bal_reg_calc...")
-    so_curs.execute("UPDATE " + sr_file + """
-                    SET BAL_REG_CALC =
-                    CASE
-                        WHEN TYPEOF(BAL_OPEN) = "null" AND TYPEOF(CRE_REG_BEFORE) = "null" THEN 0
-                        WHEN TYPEOF(BAL_OPEN) = "null" THEN CRE_REG_BEFORE
-                        WHEN TYPEOF(CRE_REG_BEFORE) = "null"  THEN BAL_OPEN
-                        ELSE BAL_OPEN + CRE_REG_BEFORE
-                    END
-                    ;""")
-    so_conn.commit()
-    funcfile.writelog("%t ADD COLUMN: bal_reg_calc")
-    # Calc balance including all credits
-    print("Add column bal_cre_calc...")
-    so_curs.execute("UPDATE " + sr_file + """
-                    SET BAL_CRE_CALC =
-                    CASE
-                        WHEN TYPEOF(CRE_REG_AFTER) = "null"  THEN BAL_REG_CALC
-                        ELSE BAL_REG_CALC + CRE_REG_AFTER
-                    END
-                    ;""")
-    so_conn.commit()
-    funcfile.writelog("%t ADD COLUMN: bal_cre_calc")
-    # Calc balance after credits up to registration
-    print("Add column bal_def_calc...")
-    so_curs.execute("UPDATE " + sr_file + """
-                    SET BAL_DEF_CALC =
-                    CASE
-                        WHEN TYPEOF(BAL_OPEN) = "null" AND TYPEOF(CRE_DEF_BEFORE) = "null" THEN BAL_CRE_CALC
-                        WHEN TYPEOF(BAL_OPEN) = "null" THEN CRE_DEF_BEFORE
-                        WHEN TYPEOF(CRE_DEF_BEFORE) = "null"  THEN BAL_CRE_CALC
-                        ELSE BAL_CRE_CALC
-                    END
-                    ;""")
-    so_conn.commit()
-    funcfile.writelog("%t ADD COLUMN: bal_def_calc")
 
-    # CALCULATE THE STUDENT ACCOUNT CREDIT TRANSACTIONS BEFORE REGISTRATION
-    print("Join students and deferments...")
-    sr_file = "X001ab_Students_deferment"
-    s_sql = "CREATE TABLE " + sr_file+ " AS" + """
+    # IDENTIFY FINDINGS
+    print("Identify findings...")
+    sr_file = "X010ab_findings"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
-        X001aa_Students.*,
-        X000_Deferments_select.*
+        FIND.*
     From
-        X001aa_Students Left Join
-        X000_Deferments_select On X000_Deferments_select.STUDENT = X001aa_Students.KSTUDBUSENTID
-    """
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    funcfile.writelog("%t BUILD VIEW: " + sr_file)
-
-    """ ****************************************************************************
-    CALCULATE DEFERMENT STATUS
-    *****************************************************************************"""
-    print("CALCULATE DEFERMENT STATUS")
-    funcfile.writelog("CALCULATE DEFERMENT STATUS") 
-
-    # CALCULATE THE DEFERMENT TYPE
-    print("Calculate the deferment type...")
-    so_curs.execute("ALTER TABLE "+sr_file+" ADD COLUMN DEFER_TYPE INT;")
-    s_sql = "UPDATE " + sr_file + """
-    SET DEFER_TYPE =
-    CASE
-        WHEN BAL_REG_CALC <= 0 THEN 0
-        WHEN BAL_REG_CALC > 0 And BAL_REG_CALC <= 1000 THEN 1
-        WHEN BAL_REG_CALC > 1000 And BAL_DEF_CALC <= 0 THEN 2
-        WHEN BAL_REG_CALC > 1000 And STUDENT IS NULL THEN 3
-        WHEN BAL_REG_CALC > 1000 And DATEEND = '%YEARE%' THEN 6
-        WHEN BAL_REG_CALC > 1000 And DATEEND >= '%TODAY%' THEN 5
-        WHEN BAL_REG_CALC > 1000 And BAL_DEF_CALC > 0 THEN 4
-        WHEN BAL_REG_CALC > 1000 THEN 7
-        ELSE 8
-    END;"""
-    if s_period == "curr":
-        s_sql = s_sql.replace("%YEARE%",funcdate.cur_yearend())
-    elif s_period == "prev":
-        s_sql = s_sql.replace("%YEARE%",funcdate.prev_yearend())
-    else:
-        s_sql = s_sql.replace("%YEARE%",s_year + "-12-31")
-    s_sql = s_sql.replace("%TODAY%",funcdate.today())    
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t ADD COLUMN: DEFER_TYPE")
-
-    # CALCULATE THE DEFERMENT TYPE
-    print("Calculate the deferment type description...")
-    so_curs.execute("ALTER TABLE "+sr_file+" ADD COLUMN DEFER_TYPE_DESC TEXT;")
-    s_sql = "UPDATE " + sr_file + """
-    SET DEFER_TYPE_DESC =
-    CASE
-        WHEN DEFER_TYPE = 0 THEN 'CREDIT ACCOUNT WITH REGISTRATION'
-        WHEN DEFER_TYPE = 1 THEN 'ACCOUNT LESS THAN R1000 WITH REGISTRATION'
-        WHEN DEFER_TYPE = 2 THEN 'ACCOUNT SETTLED ON AGREEMENT DATE'
-        WHEN DEFER_TYPE = 3 THEN 'REGISTERED WITHOUT AGREEMENT'
-        WHEN DEFER_TYPE = 4 THEN 'ACCOUNT IN ARREARS ON AGREEMENT DATE'
-        WHEN DEFER_TYPE = 5 THEN 'FUTURE AGREEMENT DATE'
-        WHEN DEFER_TYPE = 6 THEN 'FULL YEAR DEFERMENT'
-        ELSE 'OTHER'
-    END;"""
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t ADD COLUMN: DEFER_TYPE_DESC")
-
-    """ ****************************************************************************
-    BUILD THE FINAL DEFERMENTS
-    *****************************************************************************"""
-    print("BUILD THE FINAL DEFERMENTS")
-    funcfile.writelog("BUILD THE FINAL DEFERMENTS") 
-
-    # FINAL DEFERMENTS TABLE
-    print("Build the final deferments table...")
-    sr_file = "X001ax_Deferments_final_"+s_period
-    s_sql = "CREATE TABLE " + sr_file+ " AS" + """
-    Select
-        Case
-            When DEFER.FSITEORGUNITNUMBER = -9 Then 'MAFIKENG'
-            When DEFER.FSITEORGUNITNUMBER = -2 Then 'VAAL TRIANGLE'
-            Else 'POTCHEFSTROOM'
-        End As CAMPUS,
-        DEFER.KSTUDBUSENTID As STUDENT_VSS,
-        DEFER.DATEQUALLEVELSTARTED As DATEQUALSTART,
-        DEFER.DATEENROL_CALC AS DATEENROL,
-        DEFER.DEFER_TYPE,
-        DEFER.DEFER_TYPE_DESC,
-        DEFER.BAL_OPEN,
-        DEFER.CRE_REG_BEFORE,
-        DEFER.BAL_REG_CALC,
-        DEFER.CRE_DEF_BEFORE,
-        DEFER.BAL_DEF_CALC,
-        DEFER.CRE_REG_AFTER,
-        DEFER.BAL_CRE_CALC,
-        DEFER.BAL_CUR,
-        Upper(DEFER.QUALIFICATIONCODE || ' ' || DEFER.QUALIFICATIONFIELDOFSTUDY || ' ' || DEFER.QUALIFICATIONLEVEL) As
-        QUALIFICATION,
-        DEFER.PROGRAMCODE,
-        Upper(DEFER.QUAL_TYPE) As QUAL_TYPE,
-        DEFER.ISMAINQUALLEVEL As MAIN_IND,
-        DEFER.ENROLACADEMICYEAR As YEAR_ACAD,
-        DEFER.ENROLHISTORYYEAR As YEAR_HIST,
-        Upper(DEFER.ENTRY_LEVEL) As ENTRY_LEVEL,
-        Upper(DEFER.ENROL_CAT) As ENROL_CAT,
-        Upper(DEFER.PRESENT_CAT) As PRESENT_CAT,
-        Upper(DEFER.STATUS_FINAL) As STATUS_FINAL,
-        Upper(DEFER.LEVY_CATEGORY) As LEVY_CATEGORY,
-        Upper(DEFER.ORGUNIT_NAME) As ORGUNIT_NAME,
-        DEFER.FSITEORGUNITNUMBER As CAMPUS_CODE,
-        DEFER.STUDENT As STUDENT_DEF,
-        DEFER.DATEARRANGED,
-        DEFER.DATESTART,
-        DEFER.DATEEND,
-        DEFER.TOTALAMOUNT,
-        Upper(DEFER.SUBACCOUNTTYPE) As SUBACCOUNTTYPE,
-        Upper(DEFER.DEFERMENTTYPE) As DEFERMENTTYPE,
-        Upper(DEFER.DEFERMENTREASON) As DEFERMENTREASON,
-        Upper(DEFER.NOTE) As NOTE,
-        DEFER.FADMISSIONSITE,
-        DEFER.FMAINQUALSITE,
-        DEFER.EMPLOYEE,
-        DEFER.FAUDITUSERCODE,
-        DEFER.AUDITDATETIME,
-        DEFER.DISCONTINUEDATE,
-        Upper(DEFER.DISCONTINUE_REAS) As DISCONTINUE_REAS
-    From
-        X001ab_Students_deferment DEFER
-    Order By
-        DEFER.FSITEORGUNITNUMBER,
-        DEFER.DEFER_TYPE,    
-        BAL_CUR
-    """
-    """ DEFER COLUMNS AVAILABLE BUT NOT USED ***********************************
-        DEFER.DATEENROL,
-        DEFER.STARTDATE,
-        DEFER.ENDDATE,
-        Upper(DEFER.ACTIVE_IND) As ACTIVE_IND,
-        DEFER.BAL_REG,        
-    *************************************************************************"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
-    # Export the declaration data
-    if l_export == True:      
-        if s_period == "curr":
-            sx_path = "R:/Debtorstud/" + funcdate.cur_year() + "/"
-        elif s_period == "prev":
-            sx_path = "R:/Debtorstud/" + funcdate.prev_year() + "/"
-        else:
-            sx_path = "R:/Debtorstud/" + s_year + "/"
-        sx_file = "Deferment_001_student_"
-        print("Export data..." + sx_path + sx_file)
-        s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
-        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
-        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
-
-    # SUMMARIZE
-    print("Summarize registrations with accounts...")
-    sr_file = "X001ac_Students_deferment_summ_"+s_period
-    s_sql = "CREATE TABLE " + sr_file+ " AS" + """
-    Select
-        '%YEAR%' As YEAR,
-        DEFER.CAMPUS,
-        DEFER.DEFER_TYPE,
-        DEFER.DEFER_TYPE_DESC,
-        Count(DEFER.STUDENT_VSS) As STUD_COUNT,
-        Sum(DEFER.BAL_REG_CALC) As BAL_REG_DATE,
-        Sum(DEFER.BAL_DEF_CALC) As BAL_DEF_DATE,
-        Sum(DEFER.BAL_CUR) As BAL_CUR
-    From
-        X001ax_Deferments_final_%PERIOD% DEFER
-    Group By
-        DEFER.DEFER_TYPE,
-        DEFER.DEFER_TYPE_DESC,
-        DEFER.CAMPUS
-    Order By
-        DEFER.CAMPUS,
-        DEFER.DEFER_TYPE
-    """
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = s_sql.replace("%PERIOD%",s_period)
-    s_sql = s_sql.replace("%YEAR%",s_year)
-    so_curs.execute(s_sql)
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
-    # Export the summary
-    if l_export == True:      
-        if s_period == "curr":
-            sx_path = "R:/Debtorstud/" + funcdate.cur_year() + "/"
-        elif s_period == "prev":
-            sx_path = "R:/Debtorstud/" + funcdate.prev_year() + "/"
-        else:
-            sx_path = "R:/Debtorstud/" + s_year + "/"
-        sx_file = "Deferment_001_summary_"
-        print("Export data..." + sx_path + sx_file)
-        s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
-        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
-        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
-
-    # CREATE DUPLICATE SUMMARY FILE TO RECEIVE SUMMARY FOR PREVIOUS YEARS
-    print("Summ previous years...")
-    sr_file = "X001ad_Deferment_summ"
-    s_sql = "Create Table " + sr_file + " As " + """
-    Select
-        X001ac_Students_deferment_summ_curr.*
-    From
-        X001ac_Students_deferment_summ_curr
+        X010aa_Regfee_abnormal FIND
+    Where
+        FIND.LOC != "OTH"    
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-    # GET PREVIOUS YEAR SUMMARIES
-    sr_file = "X001ad_Deferment_summ"
-    print("Import previous deferment summaries...")
-    s_cols = ""
-    co = open(ed_path + "301_Deferment_summ.csv", "r")
-    co_reader = csv.reader(co)
-    # Read the COLUMN database data
-    for row in co_reader:
-        # Populate the column variables
-        if row[0] == "YEAR":
-            continue
+    # COUNT THE NUMBER OF FINDINGS
+    i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
+    print("*** Found " + str(i_finding_before) + " exceptions ***")
+    funcfile.writelog("%t FINDING: " + str(i_finding_before) + " REGISTRATION FEE ABNORMAL finding(s)")
+
+    # GET PREVIOUS FINDINGS
+    sr_file = "X010ac_get_previous"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        print("Import previously reported findings...")
+        so_curs.execute(
+            "CREATE TABLE " + sr_file + """
+            (PROCESS TEXT,
+            FIELD1 INT,
+            FIELD2 TEXT,
+            FIELD3 TEXT,
+            FIELD4 TEXT,
+            FIELD5 TEXT,
+            DATE_REPORTED TEXT,
+            DATE_RETEST TEXT,
+            DATE_MAILED TEXT)
+            """)
+        s_cols = ""
+        co = open(ed_path + "302_reported.txt", "r")
+        co_reader = csv.reader(co)
+        # Read the COLUMN database data
+        for row in co_reader:
+            # Populate the column variables
+            if row[0] == "PROCESS":
+                continue
+            elif row[0] != "registration fee abnormal":
+                continue
+            else:
+                s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "','" + \
+                         row[
+                             3] + "','" + row[4] + "','" + row[5] + "','" + row[6] + "','" + row[7] + "','" + row[
+                             8] + "')"
+                so_curs.execute(s_cols)
+        so_conn.commit()
+        # Close the imported data file
+        co.close()
+        funcfile.writelog("%t IMPORT TABLE: " + ed_path + "302_reported.txt (" + sr_file + ")")
+
+    # ADD PREVIOUS FINDINGS
+    sr_file = "X010ad_add_previous"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        print("Join previously reported to current findings...")
+        s_sql = "CREATE TABLE " + sr_file + " AS" + """
+        Select
+            FIND.*,
+            'registration fee abnormal' AS PROCESS,
+            '%TODAY%' AS DATE_REPORTED,
+            '%DAYS%' AS DATE_RETEST,
+            PREV.PROCESS AS PREV_PROCESS,
+            PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
+            PREV.DATE_RETEST AS PREV_DATE_RETEST,
+            PREV.DATE_MAILED
+        From
+            X010ab_findings FIND Left Join
+            X010ac_get_previous PREV ON PREV.FIELD1 = FIND.STUDENT
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_yearend())
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD LIST TO UPDATE FINDINGS
+    # NOTE ADD CODE
+    sr_file = "X010ae_new_previous"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            PREV.PROCESS,
+            PREV.STUDENT AS FIELD1,
+            '' AS FIELD2,
+            '' AS FIELD3,
+            '' AS FIELD4,
+            '' AS FIELD5,
+            PREV.DATE_REPORTED,
+            PREV.DATE_RETEST,
+            PREV.DATE_MAILED
+        From
+            X010ad_add_previous PREV
+        Where
+            PREV.PREV_PROCESS Is Null
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+        # Export findings to previous reported file
+        i_finding_after = funcsys.tablerowcount(so_curs, sr_file)
+        if i_finding_after > 0:
+            print("*** " + str(i_finding_after) + " Finding(s) to report ***")
+            sx_path = ed_path
+            sx_file = "302_reported"
+            # Read the header data
+            s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+            # Write the data
+            if l_record:
+                funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
+                funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
+                funcfile.writelog("%t EXPORT DATA: " + sr_file)
         else:
-            s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "','" + row[3] + "','" + row[4] + "','" + row[5] + "','" + row[6] + "','" + row[7] + "')"
-            so_curs.execute(s_cols)
-    so_conn.commit()
-    # Close the impoted data file
-    co.close()
-    funcfile.writelog("%t IMPORT TABLE: " + ed_path + "301_Deferment_summ.csv (" + sr_file + ")")
+            print("*** No new findings to report ***")
+            funcfile.writelog("%t FINDING: No new findings to export")
+
+    # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
+    sr_file = "X010af_officer"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        if i_finding_after > 0:
+            print("Import reporting officers for mail purposes...")
+            s_sql = "CREATE TABLE " + sr_file + " AS " + """
+            Select
+                OFFICER.LOOKUP,
+                Upper(OFFICER.LOOKUP_CODE) AS CAMPUS,
+                OFFICER.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
+                PEOP.NAME_ADDR As NAME,
+                PEOP.EMAIL_ADDRESS
+            From
+                VSS.X000_OWN_LOOKUPS OFFICER Left Join
+                PEOPLE.X002_PEOPLE_CURR PEOP ON
+                    PEOP.EMPLOYEE_NUMBER = OFFICER.LOOKUP_DESCRIPTION
+            Where
+                OFFICER.LOOKUP = 'stud_fee_test_reg_fee_abnormal_officer'
+            ;"""
+            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+            so_curs.execute(s_sql)
+            so_conn.commit()
+            funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
+    sr_file = "X010ag_supervisor"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0 and i_finding_after > 0:
+        print("Import reporting supervisors for mail purposes...")
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            SUPERVISOR.LOOKUP,
+            Upper(SUPERVISOR.LOOKUP_CODE) AS CAMPUS,
+            SUPERVISOR.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
+            PEOP.NAME_ADDR As NAME,
+            PEOP.EMAIL_ADDRESS
+        From
+            VSS.X000_OWN_LOOKUPS SUPERVISOR Left Join
+            PEOPLE.X002_PEOPLE_CURR PEOP ON 
+                PEOP.EMPLOYEE_NUMBER = SUPERVISOR.LOOKUP_DESCRIPTION
+        Where
+            SUPERVISOR.LOOKUP = 'stud_fee_test_reg_fee_abnormal_officer'
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # ADD CONTACT DETAILS TO FINDINGS
+    sr_file = "X010ah_detail"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0 and i_finding_after > 0:
+        print("Add contact details to findings...")
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            PREV.ORG,
+            PREV.LOC,
+            PREV.STUDENT,
+            PREV.FEE_REG,
+            STUD.DATEENROL,
+            Upper(STUD.PRESENT_CAT) As PRESENT_CAT,
+            Upper(STUD.ENROL_CAT) As ENROL_CAT,
+            Upper(STUD.QUAL_TYPE) As QUAL_TYPE,
+            CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
+            CAMP_OFF.NAME As CAMP_OFF_NAME,
+            CASE
+                WHEN  CAMP_OFF.EMPLOYEE_NUMBER <> '' THEN CAMP_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                ELSE CAMP_OFF.EMAIL_ADDRESS
+            END As CAMP_OFF_MAIL,
+            CAMP_OFF.EMAIL_ADDRESS As CAMP_OFF_MAIL2,
+            CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
+            CAMP_SUP.NAME As CAMP_SUP_NAME,
+            CASE
+                WHEN CAMP_SUP.EMPLOYEE_NUMBER <> '' THEN CAMP_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                ELSE CAMP_SUP.EMAIL_ADDRESS
+            END As CAMP_SUP_MAIL,
+            CAMP_SUP.EMAIL_ADDRESS As CAMP_SUP_MAIL2,
+            ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
+            ORG_OFF.NAME As ORG_OFF_NAME,
+            CASE
+                WHEN ORG_OFF.EMPLOYEE_NUMBER <> '' THEN ORG_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                ELSE ORG_OFF.EMAIL_ADDRESS
+            END As ORG_OFF_MAIL,
+            ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL2,
+            ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
+            ORG_SUP.NAME As ORG_SUP_NAME,
+            CASE
+                WHEN ORG_SUP.EMPLOYEE_NUMBER <> '' THEN ORG_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                ELSE ORG_SUP.EMAIL_ADDRESS
+            END As ORG_SUP_MAIL,
+            ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL2
+        From
+            X010ad_add_previous PREV Left Join
+            X010af_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.LOC Left Join
+            X010af_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG Left Join
+            X010ag_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.LOC Left Join
+            X010ag_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG Left Join
+            X000_Student STUD On STUD.KSTUDBUSENTID = PREV.STUDENT
+        Where
+          PREV.PREV_PROCESS IS NULL
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
+    sr_file = "X010ax_Regfee_abnormal"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    print("Build the final report")
+    if i_finding_before > 0 and i_finding_after > 0:
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            'REGISTRATION FEE ABNORMAL' As Audit_finding,
+            FIND.ORG As 'Organization',
+            FIND.LOC As 'Campus',
+            FIND.STUDENT As 'Student',
+            FIND.FEE_REG As 'Registration_fee',
+            FIND.DATEENROL As 'Date_enrol',
+            FIND.PRESENT_CAT As 'Present_cat',
+            FIND.ENROL_CAT As 'Enrol_cat',
+            FIND.QUAL_TYPE As 'Qualification_type',
+            FIND.CAMP_OFF_NAME AS Responsible_Officer,
+            FIND.CAMP_OFF_NUMB AS Responsible_Officer_Numb,
+            FIND.CAMP_OFF_MAIL AS Responsible_Officer_Mail,
+            FIND.CAMP_SUP_NAME AS Supervisor,
+            FIND.CAMP_SUP_NUMB AS Supervisor_Numb,
+            FIND.CAMP_SUP_MAIL AS Supervisor_Mail,
+            FIND.ORG_OFF_NAME AS Org_Officer,
+            FIND.ORG_OFF_NUMB AS Org_Officer_Numb,
+            FIND.ORG_OFF_MAIL AS Org_Officer_Mail,
+            FIND.ORG_SUP_NAME AS Org_Supervisor,
+            FIND.ORG_SUP_NUMB AS Org_Supervisor_Numb,
+            FIND.ORG_SUP_MAIL AS Org_Supervisor_Mail            
+        From
+            X010ah_detail FIND
+        Order by
+            FIND.LOC,
+            FIND.PRESENT_CAT,
+            FIND.ENROL_CAT,
+            FIND.QUAL_TYPE,
+            FIND.STUDENT
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+        # Export findings
+        if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
+            print("Export findings...")
+            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_file = "Student_fee_test_010ax_reg_fee_abnormal_"
+            sx_file_dated = sx_file + funcdate.today_file()
+            s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+            funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
+            funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
+            funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
+    else:
+        s_sql = "CREATE TABLE " + sr_file + " (" + """
+        BLANK TEXT
+        );"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """ ****************************************************************************
     END OF SCRIPT
@@ -749,16 +521,16 @@ def Studdeb_deferments(s_period='curr',s_year='2019'):
     funcfile.writelog("END OF SCRIPT")
 
     # CLOSE THE DATABASE CONNECTION
-    if l_vacuum == True:
+    if l_vacuum:
         print("Vacuum the database...")
         so_conn.commit()
         so_conn.execute('VACUUM')
-        funcfile.writelog("%t DATABASE: Vacuum Vss_deferment")    
+        funcfile.writelog("%t VACUUM DATABASE: " + so_file)
     so_conn.commit()
     so_conn.close()
 
     # CLOSE THE LOG WRITER *********************************************************
     funcfile.writelog("--------------------------------")
-    funcfile.writelog("COMPLETED: REPORT_VSS_DEFERMENTS")
+    funcfile.writelog("COMPLETED: C302_TEST_STUDENT_FEE")
 
     return
