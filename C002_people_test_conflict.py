@@ -557,12 +557,14 @@ def people_test_conflict():
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     Select
         KFS.X000_Vendor.VENDOR_ID,
-        KFS.X000_Vendor.VEND_BANK AS VENDOR_BANK
+        KFS.X000_Vendor.VEND_BANK AS VENDOR_BANK,
+        KFS.X000_Vendor.VNDR_NM
     From
         KFS.X000_Vendor
     Where
         KFS.X000_Vendor.VEND_BANK <> '' AND
-        KFS.X000_Vendor.DOBJ_MAINT_CD_ACTV_IND = 'Y'
+        KFS.X000_Vendor.DOBJ_MAINT_CD_ACTV_IND = 'Y' AND
+        Instr(KFS.X000_Vendor.VNDR_NM, "DT CARD") = 0         
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     so_curs.execute(s_sql)
