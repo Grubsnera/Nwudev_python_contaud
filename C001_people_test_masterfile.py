@@ -4925,6 +4925,8 @@ def People_test_masterfile():
     """ ****************************************************************************
     GRADE LEAVE MASTER FILE
     *****************************************************************************"""
+    print("GRADE LEAVE MASTER FILE")
+    funcfile.writelog("GRADE LEAVE MASTER FILE")
 
     # OBTAIN LIST OF LONG SERVICE AWARD DATES
     # BUILD THE CURRENT ELEMENT LIST
@@ -4965,6 +4967,7 @@ def People_test_masterfile():
         per.employee_number    
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = s_sql.replace("%TODAY%", funcdate.today())
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -5007,6 +5010,7 @@ def People_test_masterfile():
     s_sql = s_sql.replace("%TODAY%", funcdate.today())
     so_curs.execute(s_sql)
     so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # ISOLATE RECORDS WITHOUT FURTHER CALCULATION
     print("Isolate records without further calculations...")
@@ -5029,6 +5033,7 @@ def People_test_masterfile():
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD UNIQUE LIST OF RECORDS WITHOUT FURTHER CALCULATION
     print("Build unique list of records...")
@@ -5045,6 +5050,7 @@ def People_test_masterfile():
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD HOURS PER MONTH SUMMARY LIST
     print("Build hours per month list...")
@@ -5066,6 +5072,7 @@ def People_test_masterfile():
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD GRADE AND LEAVE MASTER TABLE
     print("Obtain master list of all grades and leave codes...")
