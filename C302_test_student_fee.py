@@ -58,7 +58,7 @@ def student_fee(s_period='curr', s_year='2019'):
     so_file = "Vss_test_fee.sqlite"  # Source database
     re_path = "R:/Vss/"
     l_export: bool = False
-    l_record: bool = True
+    l_record: bool = False
     l_vacuum: bool = False
 
     # DECLARE VARIABLES
@@ -484,6 +484,15 @@ def student_fee(s_period='curr', s_year='2019'):
     s_sql = s_sql.replace("%AMOUNT%", str(i_calc))
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
+        print("Export findings...")
+        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_file = "Student_fee_test_010ea_reg_fee_contact_abnormal_"
+        sx_file_dated = sx_file + funcdate.today_file()
+        s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
+        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
+        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
 
     # IDENTIFY FINDINGS
     print("Identify findings...")
@@ -631,7 +640,7 @@ def student_fee(s_period='curr', s_year='2019'):
                 PEOPLE.X002_PEOPLE_CURR PEOP ON
                     PEOP.EMPLOYEE_NUMBER = OFFICER.LOOKUP_DESCRIPTION
             Where
-                OFFICER.LOOKUP = 'stud_fee_test_reg_fee_abnormal_officer'
+                OFFICER.LOOKUP = 'stud_fee_test_reg_fee_abnormal_contact_officer'
             ;"""
             so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
             so_curs.execute(s_sql)
@@ -655,7 +664,7 @@ def student_fee(s_period='curr', s_year='2019'):
             PEOPLE.X002_PEOPLE_CURR PEOP ON 
                 PEOP.EMPLOYEE_NUMBER = SUPERVISOR.LOOKUP_DESCRIPTION
         Where
-            SUPERVISOR.LOOKUP = 'stud_fee_test_reg_fee_abnormal_supervisor'
+            SUPERVISOR.LOOKUP = 'stud_fee_test_reg_fee_abnormal_contact_supervisor'
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -765,7 +774,7 @@ def student_fee(s_period='curr', s_year='2019'):
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
             sx_path = re_path + funcdate.cur_year() + "/"
-            sx_file = "Student_fee_test_010ax_reg_fee_abnormal_"
+            sx_file = "Student_fee_test_010ex_reg_fee_contact_abnormal_"
             sx_file_dated = sx_file + funcdate.today_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
