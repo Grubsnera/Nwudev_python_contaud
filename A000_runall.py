@@ -12,14 +12,28 @@ Author: Albert J van Rensburg (NWU21162395)
 
 """ INDEX *********************************************************************
 ENVIRONMENT
-ORACLE TO SQLITE (Extract data from Oracle system databases to local SQLite)(Run tuesdays to saturdays)
-PEOPLE LISTS (Run tuesdays to saturdays)
-KFS LISTS (Run tuesdays to saturdays)
-VSS LISTS (Run tuesdays to saturdays)
-PEOPLE MASTER FILE TESTS (Run only on weekdays)
-PEOPLE CONFLICT TESTS (Run only on weekdays)
-KFS VSS STUDENT DEBTOR RECONCILIATION AND TESTS
-VSS STUDENT MASTER FILE TESTS
+
+ORACLE TO SQLITE (A001_oracle_to_sqlite) "TueWedThuFriSat"
+
+PEOPLE LISTS (import B001_people_lists) "TueWedThuFriSat"
+KFS LISTS (import B002_kfs_lists) "TueWedThuFriSat"
+KFS GL AND PAYMENT LISTS (B006_kfs_period_list) "TueWedThuFriSat"
+VSS LISTS (B003_vss_lists) "TueWedThuFriSat"
+
+PEOPLE LIST MASTERFILE (C003_people_list_masterfile) "MonTueWedThuFri"
+PEOPLE MASTER FILE TESTS (C001_people_test_masterfile) "MonTueWedThuFri"
+PEOPLE CONFLICT TESTS (C002_people_test_conflict) "MonTueWedThuFri"
+
+KFS CREDITOR PAYMENT TESTS (C201_creditor_test_payments) "MonTueWedThuFri" 
+KFS GL TEST TRANSACTIONS TESTS (C202_gl_test_transactions) "MonTueWedThuFri"
+KFS VSS STUDENT DEBTOR RECONCILIATION AND TESTS (C200_report_studdeb_recon) "MonTueWedThuFri"
+
+VSS STUDENT MASTER FILE TESTS (C300_test_student_general) 
+VSS STUDENT FEE TESTS AND REPORTS (C302_test_student_fee) "MonTueWedThuFri"
+VSS STUDENT DEFERMENT MASTERFILE (C301_report_student_deferment) "MonTueWedThuFri"
+
+MYSQL LISTS WEB SERVER (B005_mysql_lists) "TueWedThuFriSat"
+MYSQL LISTS ACL SERVER (B005_mysql_lists) "TueWedThuFriSat"
 ****************************************************************************"""
 
 """****************************************************************************
@@ -130,6 +144,24 @@ else:
     print("VSS lists do not run on Sundays and Mondays")
     funcfile.writelog("SCRIPT: B003_VSS_LISTS: DO NOT RUN ON SUNDAYS AND MONDAYS")
 
+""" ***************************************************************************
+PEOPLE LIST MASTERFILE
+****************************************************************************"""
+
+if funcdate.today_dayname() in "MonTueWedThuFri":
+    import C003_people_list_masterfile
+    try:
+        C003_people_list_masterfile.people_list_masterfile()
+        if l_mail:
+            funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:C003_people_list_masterfile',
+                          'NWUIAPython: Success: C003_people_list_masterfile')
+    except Exception as e:
+        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:C003_people_list_masterfile',
+                           'NWUIAPython: Fail: C003_people_list_masterfile')
+else:
+    print("PEOPLE MASTERFILE LISTS do not run on Saturdays and Sundays")
+    funcfile.writelog("SCRIPT: C003_PEOPLE_LIST_MASTERFILE_RUN: DO NOT RUN ON SATURDAYS AND SUNDAYS")
+
 """****************************************************************************
 PEOPLE MASTER FILE TESTS
 ****************************************************************************"""
@@ -167,7 +199,7 @@ else:
     funcfile.writelog("SCRIPT: C001_PEOPLE_TEST_CONFLICT: DO NOT RUN ON SATURDAYS AND SUNDAYS")
 
 """****************************************************************************
-CREDITOR PAYMENT TESTS
+KFS CREDITOR PAYMENT TESTS
 ****************************************************************************"""
 
 if funcdate.today_dayname() in "MonTueWedThuFri":
@@ -185,7 +217,7 @@ else:
     funcfile.writelog("SCRIPT: C201_CREDITOR_TEST_PAYMENTS: DO NOT RUN ON SATURDAYS AND SUNDAYS")
 
 """****************************************************************************
-GL TEST TRANSACTIONS TESTS
+KFS GL TEST TRANSACTIONS TESTS
 ****************************************************************************"""
 
 if funcdate.today_dayname() in "MonTueWedThuFri":
@@ -238,6 +270,25 @@ else:
     print("C300_TEST_STUDENT_GENERAL only run on 1st of the month")
     funcfile.writelog("SCRIPT: C300_TEST_STUDENT_GENERAL: ONLY RUN ON 1ST OF THE MONTH")
 
+
+"""****************************************************************************
+VSS STUDENT FEE TESTS AND REPORTS
+****************************************************************************"""
+
+if funcdate.today_dayname() in "MonTueWedThuFri":
+    import C302_test_student_fee
+    try:
+        C302_test_student_fee.student_fee()
+        if l_mail:
+            funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:C302_test_student_fee',
+                          'NWUIAPython: Success: C302_test_student_fee')
+    except Exception as e:
+        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:C302_test_student_fee',
+                           'NWUIAPython: Fail: C302_test_student_fee')
+else:
+    print("VSS STUDENT FEE TESTS do not run on Saturdays and Sundays")
+    funcfile.writelog("SCRIPT: C302_TEST_STUDENT_FEE: DO NOT RUN ON SATURDAYS AND SUNDAYS")
+
 """****************************************************************************
 VSS STUDENT DEFERMENT MASTERFILE
 ****************************************************************************"""
@@ -255,24 +306,6 @@ if funcdate.today_dayname() in "MonTueWedThuFri":
 else:
     print("VSS STUDENT DEFERMENT MASTER FILE do not run on Saturdays and Sundays")
     funcfile.writelog("SCRIPT: C301_REPORT_STUDENT_DEFERMENT_RUN: DO NOT RUN ON SATURDAYS AND SUNDAYS")
-
-""" ***************************************************************************
-PEOPLE LIST MASTERFILE
-****************************************************************************"""
-
-if funcdate.today_dayname() in "MonTueWedThuFri":
-    import C003_people_list_masterfile
-    try:
-        C003_people_list_masterfile.people_list_masterfile()
-        if l_mail:
-            funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:C003_people_list_masterfile',
-                          'NWUIAPython: Success: C003_people_list_masterfile')
-    except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:C003_people_list_masterfile',
-                           'NWUIAPython: Fail: C003_people_list_masterfile')
-else:
-    print("PEOPLE MASTERFILE LISTS do not run on Saturdays and Sundays")
-    funcfile.writelog("SCRIPT: C003_PEOPLE_LIST_MASTERFILE_RUN: DO NOT RUN ON SATURDAYS AND SUNDAYS")
 
 """****************************************************************************
 MYSQL LISTS WEB SERVER
