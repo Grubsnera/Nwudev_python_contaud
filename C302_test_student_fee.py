@@ -62,7 +62,7 @@ def student_fee(s_period='curr', s_year='2019'):
     l_vacuum: bool = False
 
     # DECLARE VARIABLES
-    s_reg_trancode: str = "002z095"
+    s_reg_trancode: str = "095"
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -106,15 +106,15 @@ def student_fee(s_period='curr', s_year='2019'):
     sr_file = "X000_Student"
     s_sql = "CREATE TABLE " + sr_file + " AS" + """
     SELECT
-      STUD.*,
-      CASE
-          WHEN DATEENROL < STARTDATE THEN STARTDATE
-          ELSE DATEENROL
-      END AS DATEENROL_CALC
+        STUD.*,
+        CASE
+            WHEN DATEENROL < STARTDATE THEN STARTDATE
+            ELSE DATEENROL
+        END AS DATEENROL_CALC
     FROM
-      VSS.X001_Student_%PERIOD% STUD
+        VSS.X001_Student_%PERIOD% STUD
     WHERE
-      UPPER(STUD.QUAL_TYPE) Not Like '%SHORT COURSE%'
+        UPPER(STUD.QUAL_TYPE) Not Like '%SHORT COURSE%'
     """
     """
     To exclude some students
@@ -137,37 +137,43 @@ def student_fee(s_period='curr', s_year='2019'):
     sr_file = "X000_Transaction"
     s_sql = "CREATE TABLE " + sr_file + " AS" + """
     Select
-      TRAN.FBUSENTID As STUDENT,
-      CASE
-        WHEN TRAN.FDEBTCOLLECTIONSITE = '-9' THEN 'MAFIKENG'
-        WHEN TRAN.FDEBTCOLLECTIONSITE = '-2' THEN 'VAAL TRIANGLE'
-        ELSE 'POTCHEFSTROOM'
-      END AS CAMPUS,
-      TRAN.TRANSDATE,
-      TRAN.TRANSDATETIME,
-      CASE
-        WHEN SUBSTR(TRAN.TRANSDATE,6,5)='01-01' AND INSTR('001z031z061',TRAN.TRANSCODE)>0 THEN '00'
-        WHEN strftime('%Y',TRAN.TRANSDATE)>strftime('%Y',TRAN.POSTDATEDTRANSDATE) THEN strftime('%m',TRAN.TRANSDATE)
-        ELSE strftime('%m',TRAN.TRANSDATE)
-      END AS MONTH,
-      TRAN.TRANSCODE,
-      TRAN.AMOUNT,
-      CASE
-        WHEN TRAN.AMOUNT > 0 THEN TRAN.AMOUNT
-        ELSE 0.00
-      END AS AMOUNT_DT,
-      CASE
-        WHEN TRAN.AMOUNT < 0 THEN TRAN.AMOUNT
-        ELSE 0.00
-      END AS AMOUNT_CR,
-      TRAN.DESCRIPTION_E As TRANSDESC
+        TRAN.FBUSENTID As STUDENT,
+        CASE
+            WHEN TRAN.FDEBTCOLLECTIONSITE = '-9' THEN 'MAFIKENG'
+            WHEN TRAN.FDEBTCOLLECTIONSITE = '-2' THEN 'VAAL TRIANGLE'
+            ELSE 'POTCHEFSTROOM'
+        END AS CAMPUS,
+        TRAN.TRANSDATE,
+        TRAN.TRANSDATETIME,
+        CASE
+            WHEN SUBSTR(TRAN.TRANSDATE,6,5)='01-01' AND INSTR('001z031z061',TRAN.TRANSCODE)>0 THEN '00'
+            WHEN strftime('%Y',TRANSDATE)>strftime('%Y',POSTDATEDTRANSDATE) And
+             Strftime('%Y',POSTDATEDTRANSDATE) = '%CYEAR%' THEN strftime('%m',POSTDATEDTRANSDATE)
+            ELSE strftime('%m',TRAN.TRANSDATE)
+        END AS MONTH,
+        TRAN.TRANSCODE,
+        TRAN.AMOUNT,
+        CASE
+            WHEN TRAN.AMOUNT > 0 THEN TRAN.AMOUNT
+            ELSE 0.00
+        END AS AMOUNT_DT,
+        CASE
+            WHEN TRAN.AMOUNT < 0 THEN TRAN.AMOUNT
+            ELSE 0.00
+        END AS AMOUNT_CR,
+        TRAN.DESCRIPTION_E As TRANSDESC,
+        TRAN.FUSERBUSINESSENTITYID,
+        TRAN.AUDITDATETIME
     FROM
-      VSS.X010_Studytrans_%PERIOD% TRAN
+        VSS.X010_Studytrans_%PERIOD% TRAN
     WHERE
-      TRAN.TRANSCODE <> ''
-    """
+        TRAN.TRANSCODE <> ''
+    ORDER BY
+        AUDITDATETIME DESC
+    ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = s_sql.replace("%PERIOD%", s_period)
+    s_sql = s_sql.replace("%CYEAR%",funcdate.cur_year())
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
@@ -183,7 +189,9 @@ def student_fee(s_period='curr', s_year='2019'):
     s_sql = "Create table " + sr_file + " AS" + """
     Select
         TRAN.STUDENT,
-        CAST(TOTAL(TRAN.AMOUNT) AS REAL) AS FEE_REG
+        CAST(TOTAL(TRAN.AMOUNT) AS REAL) AS FEE_REG,
+        COUNT(TRAN.STUDENT) As TRAN_COUNT,
+        TRAN.FUSERBUSINESSENTITYID
     From
         X000_Transaction TRAN
     Where
@@ -209,6 +217,7 @@ def student_fee(s_period='curr', s_year='2019'):
         STUD.KSTUDBUSENTID,
         FEE.FEE_REG,
         CASE
+            When STUD.ENROL_CAT = "POST DOC" Then '9 EXCLUDE FROM TEST'
             When FEE.FEE_REG Is Null Then '1 NO TRANSACTION'
             When FEE.FEE_REG < 0 Then '2 NEGATIVE TRANSACTION'
             When FEE.FEE_REG = 0 Then '3 ZERO TRANSACTION'
@@ -285,7 +294,9 @@ def student_fee(s_period='curr', s_year='2019'):
         STUD.FFIELDOFSTUDYAPID,
         STUD.FPROGRAMAPID,
         STUD.FQUALIFICATIONAPID,
-        STUD.FFIELDOFSTUDYAPID1
+        STUD.FFIELDOFSTUDYAPID1,
+        FEE.TRAN_COUNT,
+        FEE.FUSERBUSINESSENTITYID
     From
         X000_Student STUD Left Join
         X010_Trans_feereg FEE On FEE.STUDENT = STUD.KSTUDBUSENTID
@@ -311,6 +322,7 @@ def student_fee(s_period='curr', s_year='2019'):
     sr_file = "X010_Report_feereg_present"
     s_sql = "CREATE TABLE " + sr_file + " AS" + """
     Select
+        Upper(FEE.CAMPUS) As CAMPUS,
         Upper(FEE.FEE_TYPE) As FEE_TYPE,
         Upper(FEE.PRESENT_CAT) As PRESENT_CAT,
         Count(FEE.FBUSINESSENTITYID) As COUNT,
@@ -318,6 +330,7 @@ def student_fee(s_period='curr', s_year='2019'):
     From
         X010_Student_feereg FEE
     Group By
+        FEE.CAMPUS,
         FEE.FEE_TYPE,
         FEE.PRESENT_CAT
     ;"""
@@ -331,6 +344,7 @@ def student_fee(s_period='curr', s_year='2019'):
     sr_file = "X010_Report_feereg_enrol"
     s_sql = "CREATE TABLE " + sr_file + " AS" + """
     Select
+        Upper(FEE.CAMPUS) As CAMPUS,
         Upper(FEE.FEE_TYPE) As FEE_TYPE,
         Upper(FEE.PRESENT_CAT) As PRESENT_CAT,
         Upper(FEE.ENROL_CAT) As ENROL_CAT,
@@ -339,6 +353,7 @@ def student_fee(s_period='curr', s_year='2019'):
     From
         X010_Student_feereg FEE
     Group By
+        FEE.CAMPUS,
         FEE.FEE_TYPE,
         FEE.PRESENT_CAT,
         FEE.ENROL_CAT
@@ -502,7 +517,8 @@ def student_fee(s_period='curr', s_year='2019'):
         'NWU' As ORG,
         FIND.CAMPUS As LOC,
         FIND.KSTUDBUSENTID As STUDENT,
-        FIND.FEE_CALC
+        FIND.FEE_CALC,
+        FIND.FUSERBUSINESSENTITYID As USER
     From
         X010ea_Regfee_abnormal FIND
     ;"""
@@ -637,8 +653,7 @@ def student_fee(s_period='curr', s_year='2019'):
                 PEOP.EMAIL_ADDRESS
             From
                 VSS.X000_OWN_LOOKUPS OFFICER Left Join
-                PEOPLE.X002_PEOPLE_CURR PEOP ON
-                    PEOP.EMPLOYEE_NUMBER = OFFICER.LOOKUP_DESCRIPTION
+                PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = OFFICER.LOOKUP_DESCRIPTION
             Where
                 OFFICER.LOOKUP = 'stud_fee_test_reg_fee_abnormal_contact_officer'
             ;"""
@@ -661,8 +676,7 @@ def student_fee(s_period='curr', s_year='2019'):
             PEOP.EMAIL_ADDRESS
         From
             VSS.X000_OWN_LOOKUPS SUPERVISOR Left Join
-            PEOPLE.X002_PEOPLE_CURR PEOP ON 
-                PEOP.EMPLOYEE_NUMBER = SUPERVISOR.LOOKUP_DESCRIPTION
+            PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = SUPERVISOR.LOOKUP_DESCRIPTION
         Where
             SUPERVISOR.LOOKUP = 'stud_fee_test_reg_fee_abnormal_contact_supervisor'
         ;"""
@@ -713,17 +727,37 @@ def student_fee(s_period='curr', s_year='2019'):
                 WHEN ORG_SUP.EMPLOYEE_NUMBER <> '' THEN ORG_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
                 ELSE ORG_SUP.EMAIL_ADDRESS
             END As ORG_SUP_MAIL,
-            ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL2
+            ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL2,
+            PREV.USER As USER_NUMB,
+            CASE
+                WHEN PREV.USER != '' THEN PEOP.NAME_ADDR
+                WHEN CAMP_OFF.NAME != '' THEN CAMP_OFF.NAME 
+                ELSE ''
+            END As USER_NAME,
+            CASE
+                WHEN PREV.USER != '' THEN PREV.USER||'@nwu.ac.za'
+                WHEN CAMP_OFF.EMPLOYEE_NUMBER != '' THEN CAMP_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                ELSE ''
+            END As USER_MAIL,
+            CASE
+                WHEN PREV.USER != '' THEN PEOP.EMAIL_ADDRESS
+                WHEN CAMP_OFF.EMPLOYEE_NUMBER != '' THEN CAMP_OFF.EMAIL_ADDRESS
+                ELSE ''
+            END As USER_MAIL2
         From
             X010ed_add_previous PREV Left Join
             X010ef_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.LOC Left Join
             X010ef_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG Left Join
             X010eg_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.LOC Left Join
             X010eg_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG Left Join
-            X000_Student STUD On STUD.KSTUDBUSENTID = PREV.STUDENT
+            X000_Student STUD On STUD.KSTUDBUSENTID = PREV.STUDENT Left Join
+            PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = PREV.USER
         Where
           PREV.PREV_PROCESS IS NULL
         ;"""
+        """
+        WHEN CAMP_OFF.NAME != '' THEN CAMP_OFF.NAME 
+        """
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
         so_conn.commit()
@@ -756,7 +790,10 @@ def student_fee(s_period='curr', s_year='2019'):
             FIND.ORG_OFF_MAIL AS Org_Officer_Mail,
             FIND.ORG_SUP_NAME AS Org_Supervisor,
             FIND.ORG_SUP_NUMB AS Org_Supervisor_Numb,
-            FIND.ORG_SUP_MAIL AS Org_Supervisor_Mail            
+            FIND.ORG_SUP_MAIL AS Org_Supervisor_Mail,
+            FIND.USER_NAME As User,
+            FIND.USER_NUMB As User_Numb,
+            FIND.USER_MAIL As User_Mail
         From
             X010eh_detail FIND
         Order by
