@@ -173,7 +173,7 @@ def student_fee(s_period='curr', s_year='2019'):
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = s_sql.replace("%PERIOD%", s_period)
-    s_sql = s_sql.replace("%CYEAR%",funcdate.cur_year())
+    s_sql = s_sql.replace("%CYEAR%", funcdate.cur_year())
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
@@ -368,6 +368,8 @@ def student_fee(s_period='curr', s_year='2019'):
     *****************************************************************************"""
     print("REGISTRATION FEE CONTACT NULL")
     funcfile.writelog("REGISTRATION FEE CONTACT NULL")
+
+    i_finding_after: int = 0
 
     # IDENTIFY REGISTRATION FEES CONTACT NOT LEVIED
     print("Identify null registration fees...")
