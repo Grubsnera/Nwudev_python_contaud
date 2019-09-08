@@ -4,23 +4,20 @@ Created on: 01 Mar 2018
 Copyright: Albert J v Rensburg
 """
 
+# Import python modules
+import sqlite3
+
+# Import own modules
+from _my_modules import funcdate
+from _my_modules import funccsv
+from _my_modules import funcfile
+
+
 def Payroll_lists():
-    
-    # Import python modules
-    import csv
-    import datetime
-    import sqlite3
-    import sys
-
-    # Add own module path
-    sys.path.append('S:/_my_modules')
-    #print(sys.path)
-
-    # Import own modules
-    import funcdate
-    import funccsv
-    import funcfile
-
+    """
+    Script to build payroll lists
+    :return: Nothing
+    """
 
     """ CONTENTS ***************************************************************
     ELEMENTS
@@ -39,8 +36,8 @@ def Payroll_lists():
     ilog_severity = 1
 
     # Declare variables
-    so_path = "W:/People_payroll/" #Source database path
-    so_file = "People_payroll.sqlite" #Source database
+    so_path: str = "W:/People_payroll/"  # Source database path
+    so_file: str = "People_payroll.sqlite"  # Source database
     re_path = "R:/People/" #Results
     ed_path = "S:/_external_data/"
     s_sql = "" #SQL statements
