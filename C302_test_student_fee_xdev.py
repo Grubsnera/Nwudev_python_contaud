@@ -42,7 +42,7 @@ so_file = "Vss_test_fee.sqlite"  # Source database
 re_path = "R:/Vss/"
 l_export: bool = False
 l_mail: bool = False
-l_record: bool = True
+l_record: bool = False
 l_vacuum: bool = False
 
 """*****************************************************************************
