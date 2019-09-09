@@ -215,6 +215,18 @@ def today_plusdays(i_days=14):
     s_retu += "-" + (datetime.date.today()+timedelta(days=i_days)).strftime("%d") #Current day
     return s_retu
 
+
+# Function YESTERDAY date in YYYYMMDD format ex 20190909
+def yesterday_file():
+    """
+    Yesterdays' date in file format YYYYMMDD
+    :return: str: YYYYMMDD
+    """
+    s_retu = (datetime.date.today()+timedelta(days=-1)).strftime("%Y") #Current year
+    s_retu += (datetime.date.today()+timedelta(days=-1)).strftime("%m") #Current month
+    s_retu += (datetime.date.today()+timedelta(days=-1)).strftime("%d") #Current day
+    return s_retu
+
 """ LOG ***********************************************************************
 20180220 today Add functions
 """	
