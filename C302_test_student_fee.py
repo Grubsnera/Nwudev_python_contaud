@@ -369,6 +369,11 @@ def student_fee(s_period='curr', s_year='2019'):
     print("REGISTRATION FEE CONTACT NULL")
     funcfile.writelog("REGISTRATION FEE CONTACT NULL")
 
+    # EXCLUSIONS
+    # Only 1 NO TRANSACTION
+    # Contact students only
+    # Exclude if conditional registration
+
     i_finding_after: int = 0
 
     # IDENTIFY REGISTRATION FEES CONTACT NOT LEVIED
@@ -414,6 +419,8 @@ def student_fee(s_period='curr', s_year='2019'):
         FIND.FUSERBUSINESSENTITYID As USER
     From
         X010aa_Regfee_null FIND
+    Where
+        FIND.ISCONDITIONALREG != 1
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
