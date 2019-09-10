@@ -24,7 +24,6 @@ def oracle_to_sqlite(s_table="000b_Table.csv"):
     funcfile.writelog("Now")
     funcfile.writelog("SCRIPT: A001_ORACLE_TO_SQLITE")
     funcfile.writelog("-----------------------------")
-    funcfile.writelog("%t OPEN TIME:")
     ilog_severity = 1
 
     # Declare the global variables ************************************************
@@ -408,7 +407,6 @@ def oracle_to_sqlite(s_table="000b_Table.csv"):
     db.close()
 
     # Close the log writer *********************************************************
-    funcfile.writelog("%t CLOSE TIME:")
     funcfile.writelog("--------------------------------")
     funcfile.writelog("COMPLETED: A001_ORACLE_TO_SQLITE")
 
