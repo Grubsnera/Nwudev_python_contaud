@@ -14,6 +14,7 @@ Author: Albert J van Rensburg (NWU21162395)
 ENVIRONMENT
 
 ORACLE TO SQLITE (A001_oracle_to_sqlite) "TueWedThuFriSat"
+LOGS (A002_log) "MonTueWedThuFriSatSun" 
 
 PEOPLE LISTS (import B001_people_lists) "TueWedThuFriSat"
 KFS LISTS (import B002_kfs_lists) "TueWedThuFriSat"
@@ -71,6 +72,24 @@ if funcdate.today_dayname() in "TueWedThuFriSat":
 else:
     print("ORACLE to SQLITE do not run on Sundays and Mondays")
     funcfile.writelog("SCRIPT: A001_ORACLE_TO_SQLITE: DO NOT RUN ON SUNDAYS AND MONDAYS")
+
+"""****************************************************************************
+LOGS
+****************************************************************************"""
+
+if funcdate.today_dayname() in "MonTueWedThuFriSatSun":
+    import A002_log
+    try:
+        A002_log.log_capture(funcdate.yesterday(), True)
+        if l_mail:
+            funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:A002_log',
+                          'NWUIAPython: Success: A002_log')
+    except Exception as e:
+        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:A002_log',
+                           'NWUIAPython: Fail: A002_log')
+else:
+    print("LOGS run every day")
+    funcfile.writelog("SCRIPT: A002_LOG: RUN EVERY DAY")
 
 """****************************************************************************
 PEOPLE LISTS
