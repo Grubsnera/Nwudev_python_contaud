@@ -220,6 +220,10 @@ def People_test_masterfile():
     print("TEST ID NUMBER BLANK")
     funcfile.writelog("TEST ID NUMBER BLANK")
 
+    # TODO:
+    #   Add nationality in the Highbond notification email.
+    #   Remove supervisor and org officer names in the highbond notification email.
+
     # DECLARE TEST VARIABLES
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
@@ -5004,6 +5008,12 @@ def People_test_masterfile():
         SEC_DATE_TO >= Date('%TODAY%')) Or
         (PEOP.PERSON_TYPE = 'TEMP FIXED TERM CONTRACT' And
         SEC_DATE_FROM <= Date('%TODAY%') And
+        SEC_DATE_TO >= Date('%TODAY%')) Or
+        (PEOP.PERSON_TYPE = 'HOUSE PARENT' And
+        SEC_DATE_FROM <= Date('%TODAY%') And
+        SEC_DATE_TO >= Date('%TODAY%')) Or
+        (PEOP.PERSON_TYPE = 'STUDENT ASSISTANT' And
+        SEC_DATE_FROM <= Date('%TODAY%') And
         SEC_DATE_TO >= Date('%TODAY%'))
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -5398,6 +5408,10 @@ def People_test_masterfile():
     *****************************************************************************"""
     print("ACADEMIC SUPPORT INVALID")
     funcfile.writelog("ACADEMIC SUPPORT INVALID")
+
+    # TODO:
+    #   Extend to display current and suggested flag in highbond email to client.
+    #   Too little details.
 
     # DECLARE TEST VARIABLES
     i_find = 0 # Number of findings before previous reported findings
