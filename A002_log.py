@@ -44,8 +44,8 @@ ld_path = "S:/Logs/"
 # DECLARE SCRIPT VARIABLES
 l_record: bool = True
 s_data = ""
-s_date: str = funcdate.today()
-s_date_file: str = funcdate.today_file()
+s_date: str = funcdate.yesterday()
+s_date_file: str = funcdate.yesterday_file()
 s_time: str = ""
 s_script: str = ""
 s_base: str = ""
@@ -106,7 +106,9 @@ for row in co_reader:
 
     # UNRAVEL THE LOF RECORD LINE
     s_data = row[0]
-    if s_data[0:10] == s_date:
+    if s_data.find("ERROR:") >= 0:
+        l_record = False
+    elif s_data[0:10] == s_date:
         l_record = False
     elif s_data[0:1] == "-":
         l_record = False
@@ -146,6 +148,7 @@ for row in co_reader:
                  "'" + s_action + "'," \
                  "'" + s_object + "'" \
                  ")"
+        # print(s_cols)
         so_curs.execute(s_cols)
 
     # RESET VARIABLES
@@ -202,7 +205,7 @@ so_curs.execute(s_sql)
 so_conn.commit()
 funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-# CALCULATE TIMES
+# ISOLATE AUTO TIMES
 print("Isolate auto times...")
 sr_file = "X001ad_auto_time"
 s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -218,6 +221,14 @@ so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 so_curs.execute(s_sql)
 so_conn.commit()
 funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+# ADD CURRENT LOG TO HISTORY
+print("Add current log to history...")
+sr_file = "X002aa_log_history"
+s_sql = "INSERT INTO X002aa_log_history SELECT * FROM X001ad_auto_time;"
+so_curs.execute(s_sql)
+so_conn.commit()
+funcfile.writelog("%t COPY TABLE: " + sr_file)
 
 """*****************************************************************************
 END OF SCRIPT
