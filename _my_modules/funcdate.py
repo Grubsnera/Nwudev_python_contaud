@@ -216,18 +216,23 @@ def today_plusdays(i_days=14):
     return s_retu
 
 
-# Function YESTERDAY date in YYYYMMDD format ex 20190909
-def yesterday_file():
+def yesterday():
     """
-    Yesterdays' date in file format YYYYMMDD
-    :return: str: YYYYMMDD
+    YESTERDAY date ex 2019-09-06
+    :return: str: YYYY-MM-DD
     """
-    s_retu = (datetime.date.today()+timedelta(days=-1)).strftime("%Y") #Current year
-    s_retu += (datetime.date.today()+timedelta(days=-1)).strftime("%m") #Current month
-    s_retu += (datetime.date.today()+timedelta(days=-1)).strftime("%d") #Current day
+    s_retu = (datetime.date.today()+timedelta(days=-1)).strftime("%Y")  # Current year
+    s_retu += "-" + (datetime.date.today()+timedelta(days=-1)).strftime("%m")  # Current month
+    s_retu += "-" + (datetime.date.today()+timedelta(days=-1)).strftime("%d")  # Yesterday
     return s_retu
 
-""" LOG ***********************************************************************
-20180220 today Add functions
-"""	
 
+def yesterday_file():
+    """
+    YESTERDAY date ex 20190906
+    :return: str: YYYYMMDD
+    """
+    s_retu = (datetime.date.today()+timedelta(days=-1)).strftime("%Y")  # Current year
+    s_retu += (datetime.date.today()+timedelta(days=-1)).strftime("%m")  # Current month
+    s_retu += (datetime.date.today()+timedelta(days=-1)).strftime("%d")  # Yesterday
+    return s_retu
