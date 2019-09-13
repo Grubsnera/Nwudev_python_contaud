@@ -4,6 +4,22 @@ Created on: 01 Mar 2018
 Copyright: Albert J v Rensburg
 """
 
+# IMPORT PYTHON MODULES
+import csv
+import sqlite3
+
+# IMPORT OWN MODULES
+from _my_modules import funcdate
+from _my_modules import funcfile
+from _my_modules import funcstudent
+
+
+
+
+
+
+
+
 """ INDEX **********************************************************************
 BUILD STUDENTS
 BUILD MODULES
@@ -11,22 +27,6 @@ BUILD MODULES
 
 def Vss_lists():
     
-    # Import python modules
-    import csv
-    import datetime
-    import sqlite3
-    import sys
-
-    # Add own module path
-    sys.path.append('S:/_my_modules')
-    #print(sys.path)
-
-    # Import own modules
-    import funcdate
-    import funccsv
-    import funcfile
-    import funcstudent
-
     # Open the script log file ******************************************************
 
     print("--------------")
