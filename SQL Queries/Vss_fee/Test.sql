@@ -1,7 +1,11 @@
 ﻿Select
-    Count(X010_Student_feereg.FEE_REG) As Count_FEE_REG,
-    X010_Student_feereg.ENTRY_LEVEL
+    X020_Student_feequal.FEE_TYPE,
+    X020_Student_feequal.PRESENT_CAT,
+    Count(X020_Student_feequal.FEE_CALC) As Count_FEE_CALC,
+    Total(X020_Student_feequal.FEE_QUAL) As Total_FEE_QUAL,
+    Total(X020_Student_feequal.FEE_MODE) As Total_FEE_MODE
 From
-    X010_Student_feereg
+    X020_Student_feequal
 Group By
-    X010_Student_feereg.ENTRY_LEVEL
+    X020_Student_feequal.FEE_TYPE,
+    X020_Student_feequal.PRESENT_CAT
