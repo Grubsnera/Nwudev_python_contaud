@@ -13,16 +13,10 @@ from _my_modules import funcdate
 from _my_modules import funcfile
 from _my_modules import funcstudent
 
-
-
-
-
-
-
-
 """ INDEX **********************************************************************
 BUILD STUDENTS
 BUILD MODULES
+BUILD BURSARIES
 *****************************************************************************"""
 
 def Vss_lists():
@@ -380,100 +374,177 @@ def Vss_lists():
     funcfile.writelog("BUILD MODULES")
 
     # BUILD MODULES
-    funcfile.writelog("STUDENT MODULES")
     print("Build module...")
-    s_sql = "CREATE VIEW X002aa_Module AS " + """
+    sr_file: str = "X002aa_Module"
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
     SELECT
-      MODULE.KACADEMICPROGRAMID AS MODULE_ID,
-      MODULE.STARTDATE,
-      MODULE.ENDDATE,
-      COURSE.COURSECODE,
-      COURSELEVEL.COURSELEVEL,
-      MODULE.COURSEMODULE
+        MODU.KACADEMICPROGRAMID AS MODULE_ID,
+        MODU.STARTDATE,
+        MODU.ENDDATE,
+        COUR.COURSECODE,
+        COUL.COURSELEVEL,
+        MODU.COURSEMODULE
     FROM
-      MODULE
-      LEFT JOIN COURSELEVEL ON COURSELEVEL.KACADEMICPROGRAMID = MODULE.FCOURSELEVELAPID
-      LEFT JOIN COURSE ON COURSE.KACADEMICPROGRAMID = COURSELEVEL.FCOURSEAPID
-    """
-    so_curs.execute("DROP VIEW IF EXISTS X002aa_Module")    
+        MODULE MODU Left Join
+        COURSELEVEL COUL ON COUL.KACADEMICPROGRAMID = MODU.FCOURSELEVELAPID Left Join
+        COURSE COUR ON COUR.KACADEMICPROGRAMID = COUL.FCOURSEAPID
+    ;"""
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
-    funcfile.writelog("%t BUILD VIEW: X002aa_Module")    
-
-    # Build module presenting organization *************************************
+    # BUILD MODULE PRESENTING ORGANIZATION
     print("Build module present organization...")
-    s_sql = "CREATE VIEW X002ba_Module_present_org AS " + """
+    sr_file: str = "X002ba_Module_present_org"
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
     SELECT
-      MODULEPRESENTINGOU.KPRESENTINGOUID,
-      MODULEPRESENTINGOU.STARTDATE,
-      MODULEPRESENTINGOU.ENDDATE,
-      MODULEPRESENTINGOU.FBUSINESSENTITYID,
-      X000_Orgunitinstance.FSITEORGUNITNUMBER,
-      X000_Orgunitinstance.ORGUNIT_TYPE,
-      X000_Orgunitinstance.ORGUNIT_NAME,
-      MODULEPRESENTINGOU.FMODULEAPID,
-      X002aa_Module.COURSECODE,
-      X002aa_Module.COURSELEVEL,
-      X002aa_Module.COURSEMODULE,
-      MODULEPRESENTINGOU.FCOURSEGROUPCODEID,
-      X000_Codedescription_coursegroup.LONG AS NAME_GROUP,
-      X000_Codedescription_coursegroup.LANK AS NAAM_GROEP,
-      MODULEPRESENTINGOU.ISEXAMMODULE,
-      MODULEPRESENTINGOU.LOCKSTAMP,
-      MODULEPRESENTINGOU.AUDITDATETIME,
-      MODULEPRESENTINGOU.FAUDITSYSTEMFUNCTIONID,
-      MODULEPRESENTINGOU.FAUDITUSERCODE
+        PRES.KPRESENTINGOUID,
+        PRES.STARTDATE,
+        PRES.ENDDATE,
+        PRES.FBUSINESSENTITYID,
+        ORGA.FSITEORGUNITNUMBER,
+        ORGA.ORGUNIT_TYPE,
+        ORGA.ORGUNIT_NAME,
+        PRES.FMODULEAPID,
+        MODU.COURSECODE,
+        MODU.COURSELEVEL,
+        MODU.COURSEMODULE,
+        PRES.FCOURSEGROUPCODEID,
+        NAME.LONG AS NAME_GROUP,
+        NAME.LANK AS NAAM_GROEP,
+        PRES.ISEXAMMODULE,
+        PRES.LOCKSTAMP,
+        PRES.AUDITDATETIME,
+        PRES.FAUDITSYSTEMFUNCTIONID,
+        PRES.FAUDITUSERCODE
     FROM
-      MODULEPRESENTINGOU
-      LEFT JOIN X000_Orgunitinstance ON X000_Orgunitinstance.KBUSINESSENTITYID = MODULEPRESENTINGOU.FBUSINESSENTITYID
-      LEFT JOIN X002aa_Module ON X002aa_Module.MODULE_ID = MODULEPRESENTINGOU.FMODULEAPID
-      LEFT JOIN X000_Codedescription X000_Codedescription_coursegroup ON X000_Codedescription_coursegroup.KCODEDESCID =
-        MODULEPRESENTINGOU.FCOURSEGROUPCODEID
-    """
-    so_curs.execute("DROP VIEW IF EXISTS X002ba_Module_present_org")
+        MODULEPRESENTINGOU PRES Left Join
+        X000_Orgunitinstance ORGA ON ORGA.KBUSINESSENTITYID = PRES.FBUSINESSENTITYID Left Join
+        X002aa_Module MODU ON MODU.MODULE_ID = PRES.FMODULEAPID Left Join
+        X000_Codedescription NAME ON NAME.KCODEDESCID = PRES.FCOURSEGROUPCODEID
+    ;"""
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
-    funcfile.writelog("%t BUILD VIEW: X002ba_Module_present_org")
-
-    # Build module presenting enrolment ****************************************
-
-    print("Build module present enrolment...")
-
-    s_sql = "CREATE VIEW X002bb_Module_present_enrol AS " + """
+    # BUILD MODULE ENROLMENT CATEGORY
+    print("Build module enrolment category...")
+    sr_file = "X002bb_Module_present_enrol"
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
     SELECT
-      X000_Present_enrol_category.KENROLMENTPRESENTATIONID,
-      X000_Present_enrol_category.ENROL_CAT_E,
-      X000_Present_enrol_category.ENROL_CAT_A,
-      X000_Present_enrol_category.PRESENT_CAT_E,
-      X000_Present_enrol_category.PRESENT_CAT_A,
-      X000_Present_enrol_category.STARTDATE,
-      X000_Present_enrol_category.ENDDATE,
-      X002ba_Module_present_org.FSITEORGUNITNUMBER,
-      X002ba_Module_present_org.ORGUNIT_TYPE,
-      X002ba_Module_present_org.ORGUNIT_NAME,
-      X002ba_Module_present_org.FMODULEAPID,
-      X002ba_Module_present_org.COURSECODE,
-      X002ba_Module_present_org.COURSELEVEL,
-      X002ba_Module_present_org.COURSEMODULE,
-      X002ba_Module_present_org.FCOURSEGROUPCODEID,
-      X002ba_Module_present_org.NAME_GROUP,
-      X002ba_Module_present_org.NAAM_GROEP,
-      X002ba_Module_present_org.ISEXAMMODULE,
-      X000_Present_enrol_category.EXAMSUBMINIMUM
+        ENRC.KENROLMENTPRESENTATIONID,
+        ENRC.ENROL_CAT_E,
+        ENRC.ENROL_CAT_A,
+        ENRC.PRESENT_CAT_E,
+        ENRC.PRESENT_CAT_A,
+        ENRC.STARTDATE,
+        ENRC.ENDDATE,
+        ENRO.FSITEORGUNITNUMBER,
+        ENRO.ORGUNIT_TYPE,
+        ENRO.ORGUNIT_NAME,
+        ENRO.FMODULEAPID,
+        ENRO.COURSECODE,
+        ENRO.COURSELEVEL,
+        ENRO.COURSEMODULE,
+        ENRO.FCOURSEGROUPCODEID,
+        ENRO.NAME_GROUP,
+        ENRO.NAAM_GROEP,
+        ENRO.ISEXAMMODULE,
+        ENRC.EXAMSUBMINIMUM
     FROM
-      X000_Present_enrol_category
-      INNER JOIN X002ba_Module_present_org ON X002ba_Module_present_org.KPRESENTINGOUID =
-        X000_Present_enrol_category.FMODULEPRESENTINGOUID
-    """
-    so_curs.execute("DROP VIEW IF EXISTS X002bb_Module_present_enrol")
+        X000_Present_enrol_category ENRC Inner Join
+        X002ba_Module_present_org ENRO ON ENRO.KPRESENTINGOUID = ENRC.FMODULEPRESENTINGOUID
+    ;"""
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
-    funcfile.writelog("%t BUILD VIEW: X002bb_Module_present_enrol")
+    # BUILD CURRENT STUDENT MODULE LIST
+    print("Build student module enrolments...")
+    sr_file = "X002_Module_curr"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        STUD.KENROLSTUDID,
+        STUD.KSTUDBUSENTID,
+        MODU.FSITEORGUNITNUMBER,
+        STUD.STARTDATE,
+        STUD.ENDDATE,
+        STUD.DATEENROL,
+        Upper(MODU.COURSECODE) As COURSECODE,
+        MODU.COURSELEVEL,
+        MODU.COURSEMODULE,
+        Upper(MODU.COURSECODE)||' '||MODU.COURSELEVEL||' '||MODU.COURSEMODULE As MODULE,
+        Substr(MODU.COURSEMODULE,1,1) As COURSESEM,
+        CASE
+            When Substr(MODU.COURSEMODULE,1,1) = '2' Then '2'
+            When Substr(MODU.COURSEMODULE,1,1) = '5' Then '2'
+            When Substr(MODU.COURSEMODULE,1,1) = '6' Then '2'
+            Else '1'
+        END As COURSESECS,
+        Upper(MODU.ORGUNIT_TYPE) As ORGUNIT_TYPE,
+        Upper(MODU.ORGUNIT_NAME) As ORGUNIT_NAME,
+        Upper(MODU.NAME_GROUP) As NAME_GROUP,
+        Upper(MODU.NAAM_GROEP) As NAAM_GROEP,
+        STUD.FMODULETYPECODEID,
+        Upper(TYPE.LONG) AS NAME_TYPE,
+        Upper(TYPE.LANK) AS NAAM_TYPE,
+        STUD.DATEDISCONTINUED,
+        STUD.FCOMPLETEREASONCODEID,
+        Upper(REAS.LONG) AS NAME_REAS,
+        Upper(REAS.LANK) AS NAAM_REAS,
+        STUD.FSTUDYCENTREMODAPID,
+        STUD.FQUALLEVELENROLSTUDID,
+        STUD.FENROLMENTPRESENTATIONID,
+        STUD.FEXAMCENTREMODAPID,
+        STUD.FPRESENTATIONLANGUAGEID,
+        STUD.FMODPERIODENROLPRESCATID,
+        STUD.ACADEMICYEAR,
+        STUD.ISNEWENROLMENT,
+        STUD.ISPROCESSEDONLINE,
+        STUD.ISREPEATINGMODULE,
+        STUD.ISEXEMPTION,
+        STUD.FACKTYPECODEID,
+        STUD.FACKSTUDBUSENTID,
+        STUD.FACKENROLSTUDID,
+        STUD.FACKMODENROLSTUDID,
+        STUD.FACKMODSTUDBUSENTID,
+        STUD.ISCONDITIONALREG,
+        STUD.LOCKSTAMP,
+        STUD.AUDITDATETIME,
+        STUD.FAUDITSYSTEMFUNCTIONID,
+        STUD.FAUDITUSERCODE,
+        STUD.REGALLOWED,
+        STUD.ISDISCOUNTED,
+        MODU.KENROLMENTPRESENTATIONID,
+        Upper(MODU.ENROL_CAT_E) As ENROL_CAT_E,
+        Upper(MODU.ENROL_CAT_A) As ENROL_CAT_A,
+        Upper(MODU.PRESENT_CAT_E) As PRESENT_CAT_E,
+        Upper(MODU.PRESENT_CAT_A) As PRESENT_CAT_A,
+        MODU.STARTDATE,
+        MODU.ENDDATE,
+        MODU.FMODULEAPID,
+        MODU.FCOURSEGROUPCODEID,
+        MODU.ISEXAMMODULE,
+        MODU.EXAMSUBMINIMUM
+    From
+        MODULEENROLSTUD_CURR STUD Left Join
+        X002bb_Module_present_enrol MODU On MODU.KENROLMENTPRESENTATIONID = STUD.FENROLMENTPRESENTATIONID Left Join
+        X000_Codedescription TYPE ON TYPE.KCODEDESCID = STUD.FMODULETYPECODEID Left Join
+        X000_Codedescription REAS ON REAS.KCODEDESCID = STUD.FCOMPLETEREASONCODEID
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-    # Build bursary master *****************************************************
+    """*************************************************************************
+    BUILD BURSARIES
+    *************************************************************************"""
+    print("BUILD BURSARIES")
+    funcfile.writelog("BUILD BURSARIES")
 
     funcfile.writelog("STUDENT BURSARIES")
 
