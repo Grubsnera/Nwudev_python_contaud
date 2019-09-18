@@ -85,33 +85,6 @@ BEGIN OF SCRIPT
 print("BEGIN OF SCRIPT")
 funcfile.writelog("BEGIN OF SCRIPT")
 
-# CALCULATE THE REGISTRATION FEES LEVIED
-print("Join presentation and qualification levels...")
-sr_file = "X006aa_present_quallevel"
-s_sql = "Create view " + sr_file + " AS" + """
-Select
-    PRES.KENROLMENTPRESENTATIONID,
-    PRES.FQUALPRESENTINGOUID,
-    PRES.FENROLMENTCATEGORYCODEID,
-    PRES.FPRESENTATIONCATEGORYCODEID,
-    QUAL.FBUSINESSENTITYID,
-    QUAL.FQUALLEVELAPID,
-    PRES.STARTDATE As PRES_STARTDATE,
-    PRES.ENDDATE As PRES_ENDDATE,
-    PRES.AUDITDATETIME As PRES_AUDITDATE,
-    PRES.FAUDITUSERCODE As PRES_AUDITUSER,
-    QUAL.STARTDATE As QUAL_STARTDATE,
-    QUAL.ENDDATE As QUAL_ENDDATE,
-    QUAL.AUDITDATETIME As QUAL_AUDITDATE,
-    QUAL.FAUDITUSERCODE As QUAL_AUDITUSER
-From
-    PRESENTOUENROLPRESENTCAT PRES Left Join
-    QUALLEVELPRESENTINGOU QUAL On QUAL.KPRESENTINGOUID = PRES.FQUALPRESENTINGOUID
-;"""
-so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
-so_curs.execute(s_sql)
-funcfile.writelog("%t BUILD VIEW: " + sr_file)
-
 """*****************************************************************************
 END OF SCRIPT
 *****************************************************************************"""
