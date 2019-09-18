@@ -617,7 +617,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     SELECT
       X002ab_vss_transort.MONTH_VSS,
       X002ab_vss_transort.STUDENT_VSS,
-      '2018' AS YEAR,
+      '%CYEAR%' AS YEAR,
       X002ab_vss_transort.SITE_SERV_VSS,
       X002ab_vss_transort.SITE_DEBT_VSS,
       X002ab_vss_transort.TRANSCODE_VSS,
@@ -632,7 +632,8 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     FROM
       X002ab_vss_transort
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)    
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    s_sql = s_sql.replace("%CYEAR%",funcdate.cur_year())
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
