@@ -61,8 +61,8 @@ def student_fee(s_period='curr', s_year='2019'):
     l_record: bool = True
     l_vacuum: bool = False
 
-    # DECLARE VARIABLES
     s_reg_trancode: str = "095"
+    s_qual_trancode: str = "004"
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -163,7 +163,10 @@ def student_fee(s_period='curr', s_year='2019'):
         END AS AMOUNT_CR,
         TRAN.DESCRIPTION_E As TRANSDESC,
         TRAN.FUSERBUSINESSENTITYID,
-        TRAN.AUDITDATETIME
+        TRAN.AUDITDATETIME,
+        TRAN.FMODAPID,
+        TRAN.FQUALLEVELAPID,
+        TRAN.FENROLPRESID
     FROM
         VSS.X010_Studytrans_%PERIOD% TRAN
     WHERE
@@ -230,28 +233,20 @@ def student_fee(s_period='curr', s_year='2019'):
         End As REAL) As FEE_CALC,
         Upper(STUD.ACTIVE_IND) As ACTIVE_IND,
         Upper(STUD.LEVY_CATEGORY) As LEVY_CATEGORY,
-        Trim(STUD.QUALIFICATIONCODE) || ' ' ||
-            Trim(STUD.QUALIFICATIONFIELDOFSTUDY) || ' ' ||
-            Trim(STUD.QUALIFICATIONLEVEL)
-        As QUALIFICATION,
-        STUD.PROGRAMCODE,
+        STUD.QUALIFICATION,
+        STUD.QUALIFICATION_NAME,
         Upper(STUD.PRESENT_CAT) As PRESENT_CAT,
         Upper(STUD.ENROL_CAT) As ENROL_CAT,
         Upper(STUD.QUAL_TYPE) As QUAL_TYPE,
         Upper(STUD.ENTRY_LEVEL) As ENTRY_LEVEL,
         Upper(STUD.STATUS_FINAL) As STATUS_FINAL,
         STUD.FSITEORGUNITNUMBER,
-        CASE
-            WHEN STUD.FSITEORGUNITNUMBER = -1 THEN 'POTCHEFSTROOM'
-            WHEN STUD.FSITEORGUNITNUMBER = -2 THEN 'VAAL TRIANGLE'
-            WHEN STUD.FSITEORGUNITNUMBER = -9 THEN 'MAFIKENG'
-            ELSE 'OTH'
-        END As CAMPUS, 
+        STUD.CAMPUS,
         STUD.ORGUNIT_NAME,
         STUD.DATEQUALLEVELSTARTED,
+        STUD.STARTDATE,
         STUD.DATEENROL,
         STUD.DATEENROL_CALC,
-        STUD.STARTDATE,
         STUD.DISCONTINUEDATE,
         STUD.RESULTPASSDATE,
         STUD.RESULT,
@@ -263,17 +258,9 @@ def student_fee(s_period='curr', s_year='2019'):
         STUD.MIN_UNIT,
         STUD.MAX,
         STUD.MAX_UNIT,
-        STUD.FSTUDACTIVECODEID,
-        STUD.FENTRYLEVELCODEID,
-        STUD.FENROLMENTCATEGORYCODEID,
-        STUD.FPRESENTATIONCATEGORYCODEID,
-        STUD.FFINALSTATUSCODEID,
-        STUD.FLEVYCATEGORYCODEID,
         STUD.CERT_TYPE,
         STUD.LEVY_TYPE,
-        STUD.FBLACKLISTCODEID,
         STUD.BLACKLIST,
-        STUD.FSELECTIONCODEID,
         STUD.LONG,
         STUD.DISCONTINUE_REAS,
         STUD.POSTPONE_REAS,
@@ -284,17 +271,11 @@ def student_fee(s_period='curr', s_year='2019'):
         STUD.RESULTISSUEDATE,
         STUD.EXAMSUBMINIMUM,
         STUD.ISCUMLAUDE,
-        STUD.FGRADCERTLANGUAGECODEID,
         STUD.ISPOSSIBLEGRADUATE,
-        STUD.FGRADUATIONCEREMONYID,
         STUD.FACCEPTANCETESTCODEID,
         STUD.FENROLMENTPRESENTATIONID,
-        STUD.FQUALPRESENTINGOUID,
         STUD.FQUALLEVELAPID,
-        STUD.FFIELDOFSTUDYAPID,
         STUD.FPROGRAMAPID,
-        STUD.FQUALIFICATIONAPID,
-        STUD.FFIELDOFSTUDYAPID1,
         FEE.TRAN_COUNT,
         FEE.FUSERBUSINESSENTITYID
     From
