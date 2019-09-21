@@ -14,15 +14,28 @@ from _my_modules import funcfile
 from _my_modules import funcstudent
 
 """ INDEX **********************************************************************
+ENVIRONMENT
+BUILD STANDARD LOOKUP TABLES
+BUILD QUALIFICATION MASTER LIST
 BUILD STUDENTS
 BUILD MODULES
+BUILD PROGRAMS
 BUILD BURSARIES
 *****************************************************************************"""
 
-def Vss_lists():
-    
-    # Open the script log file ******************************************************
+def vss_lists():
+    """
+    Function to build vss master lists
+    :return: Nothing
+    """
 
+    """*************************************************************************
+    ENVIRONMENT
+    *************************************************************************"""
+    print("ENVIRONMENT")
+    funcfile.writelog("ENVIRONMENT")
+
+    # LOG
     print("--------------")
     print("B003_VSS_LISTS")
     print("--------------")
@@ -31,23 +44,28 @@ def Vss_lists():
     funcfile.writelog("----------------------")
     ilog_severity = 1
 
-    # Declare variables
-    so_path = "W:/Vss/" #Source database path
-    so_file = "Vss.sqlite" #Source database
-    re_path = "R:/Vss/" #Results
-    ed_path = "S:/_external_data/"
-    s_sql = "" #SQL statements
-    l_export = False
+    # DECLARE VARIABLES
+    so_path: str = "W:/Vss/"  # Source database path
+    so_file: str = "Vss.sqlite"  # Source database
+    re_path: str = "R:/Vss/"  # Results
+    ed_path: str = "S:/_external_data/"  # External data location
+    s_sql: str = ""  # SQL statements
+    l_export: bool = False  # Export files
 
-    # Open the SOURCE file
+    # OPEN DATABASE
     with sqlite3.connect(so_path+so_file) as so_conn:
         so_curs = so_conn.cursor()
-
     funcfile.writelog("OPEN DATABASE: " + so_file)
 
-    # Import OWN LOOKUPS table *************************************************
+    """*************************************************************************
+    BUILD STANDARD LOOKUP TABLES
+    *************************************************************************"""
+    print("BUILD STANDARD LOOKUP TABLES")
+    funcfile.writelog("BUILD STANDARD LOOKUP TABLES")
+
+    # IMPORT OWN LOOKUPS
     print("Import own lookups...")
-    tb_name = "X000_OWN_LOOKUPS"
+    tb_name = "X000_Own_lookups"
     so_curs.execute("DROP TABLE IF EXISTS " + tb_name)
     so_curs.execute("CREATE TABLE " + tb_name + "(LOOKUP TEXT,LOOKUP_CODE TEXT,LOOKUP_DESCRIPTION TEXT)")
     s_cols = ""
@@ -64,298 +82,635 @@ def Vss_lists():
     co.close()
     funcfile.writelog("%t IMPORT TABLE: " + tb_name)
 
-    # Build code descriptions ******************************************************
-
+    # BUILD CODE DESCRIPTIONS
     print("Build code descriptions...")
-
     s_sql = "CREATE TABLE X000_Codedescription AS " + """
     SELECT
-      CODEDESCRIPTION.KCODEDESCID,
-      CODEDESCRIPTION.CODELONGDESCRIPTION AS LANK,
-      CODEDESCRIPTION.CODESHORTDESCRIPTION AS KORT,
-      CODEDESCRIPTION1.CODELONGDESCRIPTION AS LONG,
-      CODEDESCRIPTION1.CODESHORTDESCRIPTION AS SHORT
+        CODE.KCODEDESCID,
+        CODE.CODELONGDESCRIPTION AS LANK,
+        CODE.CODESHORTDESCRIPTION AS KORT,
+        LONG.CODELONGDESCRIPTION AS LONG,
+        LONG.CODESHORTDESCRIPTION AS SHORT
     FROM
-      CODEDESCRIPTION
-      INNER JOIN CODEDESCRIPTION CODEDESCRIPTION1 ON CODEDESCRIPTION1.KCODEDESCID = CODEDESCRIPTION.KCODEDESCID
+        CODEDESCRIPTION CODE Inner Join
+        CODEDESCRIPTION LONG ON LONG.KCODEDESCID = CODE.KCODEDESCID
     WHERE
-      CODEDESCRIPTION.KSYSTEMLANGUAGECODEID = 2 AND
-      CODEDESCRIPTION1.KSYSTEMLANGUAGECODEID = 3
-    """
+        CODE.KSYSTEMLANGUAGECODEID = 2 AND
+        LONG.KSYSTEMLANGUAGECODEID = 3
+    ;"""
     so_curs.execute("DROP TABLE IF EXISTS X000_Codedescription")
     so_curs.execute(s_sql)
     so_conn.commit()
-
     funcfile.writelog("%t BUILD TABLE: X000_Codedescription")
 
-    # Build org unit name **********************************************************
-
+    # BUILD ORGANIZATION UNIT NAME
     print("Build org unit name...")
-
     s_sql = "CREATE VIEW X000_Orgunitname AS " + """
     SELECT
-      ORGUNITNAME.KORGUNITNUMBER,
-      ORGUNITNAME.KSTARTDATE,
-      ORGUNITNAME.ENDDATE,
-      ORGUNITNAME.SHORTNAME AS KORT,
-      ORGUNITNAME.LONGNAME AS LANK,
-      ORGUNITNAME1.SHORTNAME AS SHORT,
-      ORGUNITNAME1.LONGNAME AS LONG
+        NAME.KORGUNITNUMBER,
+        NAME.KSTARTDATE,
+        NAME.ENDDATE,
+        NAME.SHORTNAME AS KORT,
+        NAME.LONGNAME AS LANK,
+        ENGL.SHORTNAME AS SHORT,
+        ENGL.LONGNAME AS LONG
     FROM
-      ORGUNITNAME
-      LEFT JOIN ORGUNITNAME ORGUNITNAME1 ON ORGUNITNAME1.KORGUNITNUMBER = ORGUNITNAME.KORGUNITNUMBER AND
-        ORGUNITNAME1.KSTARTDATE = ORGUNITNAME.KSTARTDATE
+        ORGUNITNAME NAME Left Join
+        ORGUNITNAME ENGL ON ENGL.KORGUNITNUMBER = NAME.KORGUNITNUMBER AND
+            ENGL.KSTARTDATE = NAME.KSTARTDATE
     WHERE
-      ORGUNITNAME.KSYSTEMLANGUAGECODEID = 2 AND
-      ORGUNITNAME1.KSYSTEMLANGUAGECODEID = 3
-    """
+        NAME.KSYSTEMLANGUAGECODEID = 2 AND
+        ENGL.KSYSTEMLANGUAGECODEID = 3
+    ;"""
     so_curs.execute("DROP VIEW IF EXISTS X000_Orgunitname")
     so_curs.execute(s_sql)
     so_conn.commit()
-
     funcfile.writelog("%t BUILD VIEW: X000_Orgunitname")
 
-    # Build org unit ***************************************************************
-
+    # BUILD ORGANIZATION UNIT
     print("Build org unit...")
-
     s_sql = "CREATE VIEW X000_Orgunit AS " + """
     SELECT
-      ORGUNIT.KORGUNITNUMBER,
-      ORGUNIT.STARTDATE,
-      ORGUNIT.ENDDATE,
-      ORGUNIT.FORGUNITTYPECODEID,
-      ORGUNIT.FORGUNITTYPECODE,
-      ORGUNIT.ISSITE,
-      ORGUNIT.LOCKSTAMP,
-      ORGUNIT.AUDITDATETIME,
-      ORGUNIT.FAUDITSYSTEMFUNCTIONID,
-      ORGUNIT.FAUDITUSERCODE,
-      X000_Orgunitname.KSTARTDATE,
-      X000_Orgunitname.ENDDATE AS ENDDATE1,
-      X000_Orgunitname.KORT,
-      X000_Orgunitname.LANK,
-      X000_Orgunitname.SHORT,
-      X000_Orgunitname.LONG,
-      X000_Codedescription.LONG AS UNIT_TYPE
+        ORGU.KORGUNITNUMBER,
+        ORGU.STARTDATE,
+        ORGU.ENDDATE,
+        ORGU.FORGUNITTYPECODEID,
+        ORGU.FORGUNITTYPECODE,
+        ORGU.ISSITE,
+        ORGU.LOCKSTAMP,
+        ORGU.AUDITDATETIME,
+        ORGU.FAUDITSYSTEMFUNCTIONID,
+        ORGU.FAUDITUSERCODE,
+        NAME.KSTARTDATE,
+        NAME.ENDDATE AS ENDDATE1,
+        NAME.KORT,
+        NAME.LANK,
+        NAME.SHORT,
+        NAME.LONG,
+        DESC.LONG AS UNIT_TYPE
     FROM
-      ORGUNIT
-      LEFT JOIN X000_Orgunitname ON X000_Orgunitname.KORGUNITNUMBER = ORGUNIT.KORGUNITNUMBER
-      LEFT JOIN X000_Codedescription ON X000_Codedescription.KCODEDESCID = ORGUNIT.FORGUNITTYPECODEID
+        ORGUNIT ORGU Left Join
+        X000_Orgunitname NAME ON NAME.KORGUNITNUMBER = ORGU.KORGUNITNUMBER Left Join
+        X000_Codedescription DESC ON DESC.KCODEDESCID = ORGU.FORGUNITTYPECODEID
     WHERE
-      X000_Orgunitname.KSTARTDATE <= ORGUNIT.STARTDATE AND
-      X000_Orgunitname.ENDDATE >= ORGUNIT.STARTDATE
+        NAME.KSTARTDATE <= ORGU.STARTDATE AND
+        NAME.ENDDATE >= ORGU.STARTDATE
     ORDER BY
-      ORGUNIT.KORGUNITNUMBER
+        ORGU.KORGUNITNUMBER
     """
     so_curs.execute("DROP VIEW IF EXISTS X000_Orgunit")
     so_curs.execute(s_sql)
     so_conn.commit()
-
     funcfile.writelog("%t BUILD VIEW: X000_Orgunit")
 
-    # Build org unit ***************************************************************
-
+    # BUILD ORGANIZATION UNIT INSTANCE
     print("Build org unit instance...")
-
     s_sql = "CREATE TABLE X000_Orgunitinstance AS " + """
     SELECT
-      ORGUNITINSTANCE.KBUSINESSENTITYID,
-      ORGUNITINSTANCE.FORGUNITNUMBER,  
-      X000_Orgunit.UNIT_TYPE AS ORGUNIT_TYPE,
-      X000_Orgunit.LONG AS ORGUNIT_NAME,
-      ORGUNITINSTANCE.FSITEORGUNITNUMBER,
-      ORGUNITINSTANCE.STARTDATE,  
-      ORGUNITINSTANCE.ENDDATE,
-      ORGUNITINSTANCE.FMANAGERTYPECODEID,
-      X000_Codedescription.LONG AS MANAGER_TYPE,
-      ORGUNITINSTANCE.PLANNEDRESTRUCTUREDATE,
-      ORGUNITINSTANCE.FMANAGERTYPECODE,
-      ORGUNITINSTANCE.LOCKSTAMP,
-      ORGUNITINSTANCE.AUDITDATETIME,
-      ORGUNITINSTANCE.FAUDITSYSTEMFUNCTIONID,
-      ORGUNITINSTANCE.FAUDITUSERCODE,
-      X000_Orgunit.ISSITE,
-      X000_Orgunit.KORT,
-      X000_Orgunit.LANK,
-      X000_Orgunit.SHORT,
-      ORGUNITINSTANCE.FNEWBUSINESSENTITYID  
+        ORGI.KBUSINESSENTITYID,
+        ORGI.FORGUNITNUMBER,  
+        ORGU.UNIT_TYPE AS ORGUNIT_TYPE,
+        ORGU.LONG AS ORGUNIT_NAME,
+        ORGI.FSITEORGUNITNUMBER,
+        ORGI.STARTDATE,  
+        ORGI.ENDDATE,
+        ORGI.FMANAGERTYPECODEID,
+        MANT.LONG AS MANAGER_TYPE,
+        ORGI.PLANNEDRESTRUCTUREDATE,
+        ORGI.FMANAGERTYPECODE,
+        ORGI.LOCKSTAMP,
+        ORGI.AUDITDATETIME,
+        ORGI.FAUDITSYSTEMFUNCTIONID,
+        ORGI.FAUDITUSERCODE,
+        ORGU.ISSITE,
+        ORGU.KORT,
+        ORGU.LANK,
+        ORGU.SHORT,
+        ORGI.FNEWBUSINESSENTITYID  
     FROM
-      ORGUNITINSTANCE
-      LEFT JOIN X000_Orgunit ON X000_Orgunit.KORGUNITNUMBER = ORGUNITINSTANCE.FORGUNITNUMBER
-      LEFT JOIN X000_Codedescription ON X000_Codedescription.KCODEDESCID = ORGUNITINSTANCE.FMANAGERTYPECODEID
+        ORGUNITINSTANCE ORGI Left Join
+        X000_Orgunit ORGU ON ORGU.KORGUNITNUMBER = ORGI.FORGUNITNUMBER Left Join
+        X000_Codedescription MANT ON MANT.KCODEDESCID = ORGI.FMANAGERTYPECODEID
     ORDER BY
-      ORGUNITINSTANCE.KBUSINESSENTITYID
-    """
+        ORGI.KBUSINESSENTITYID
+    ;"""
     so_curs.execute("DROP TABLE IF EXISTS X000_Orgunitinstance")
     so_curs.execute(s_sql)
     so_conn.commit()
-
     funcfile.writelog("%t BUILD TABLE: X000_Orgunitinstance")
 
-    # Build present enrolment category *****************************************
-
-    print("Build present enrol category...")
-
-    s_sql = "CREATE TABLE X000_Present_enrol_category AS " + """
-    SELECT
-      PRESENTOUENROLPRESENTCAT.KENROLMENTPRESENTATIONID,
-      PRESENTOUENROLPRESENTCAT.FENROLMENTCATEGORYCODEID,
-      X000_CODEDESC_ENROLCAT.LONG AS ENROL_CAT_E,
-      PRESENTOUENROLPRESENTCAT.FPRESENTATIONCATEGORYCODEID,
-      X000_CODEDESC_PRESENTCAT.LONG AS PRESENT_CAT_E,
-      PRESENTOUENROLPRESENTCAT.STARTDATE,
-      PRESENTOUENROLPRESENTCAT.ENDDATE,
-      PRESENTOUENROLPRESENTCAT.FQUALPRESENTINGOUID,
-      PRESENTOUENROLPRESENTCAT.FMODULEPRESENTINGOUID,
-      PRESENTOUENROLPRESENTCAT.FPROGRAMPRESENTINGOUID,
-      PRESENTOUENROLPRESENTCAT.EXAMSUBMINIMUM,
-      PRESENTOUENROLPRESENTCAT.FAUDITSYSTEMFUNCTIONID,
-      PRESENTOUENROLPRESENTCAT.AUDITDATETIME,
-      PRESENTOUENROLPRESENTCAT.FAUDITUSERCODE,
-      X000_CODEDESC_ENROLCAT.LANK AS ENROL_CAT_A,
-      X000_CODEDESC_PRESENTCAT.LANK AS PRESENT_CAT_A
-    FROM
-      PRESENTOUENROLPRESENTCAT
-      LEFT JOIN X000_Codedescription X000_CODEDESC_ENROLCAT ON X000_CODEDESC_ENROLCAT.KCODEDESCID =
-        PRESENTOUENROLPRESENTCAT.FENROLMENTCATEGORYCODEID
-      LEFT JOIN X000_Codedescription X000_CODEDESC_PRESENTCAT ON X000_CODEDESC_PRESENTCAT.KCODEDESCID =
-        PRESENTOUENROLPRESENTCAT.FPRESENTATIONCATEGORYCODEID
-    """
-    so_curs.execute("DROP TABLE IF EXISTS X000_Present_enrol_category")
-    so_curs.execute(s_sql)
-    so_conn.commit()
-
-    funcfile.writelog("%t BUILD TABLE: X000_Present_enrol_category")
-
-    # Build student results ********************************************************
-
+    # BUILD STUDENT RESULTS
     funcfile.writelog("STUDENT RESULTS")
-
     print("Build student results...")
-
-    s_sql = "CREATE VIEW X000_Student_qual_result AS " + """
-    SELECT
-      STUDQUALFOSRESULT.KBUSINESSENTITYID,
-      STUDQUALFOSRESULT.KACADEMICPROGRAMID,
-      STUDQUALFOSRESULT.KQUALFOSRESULTCODEID,
-      X000_Codedescription.LONG AS RESULT,
-      STUDQUALFOSRESULT.KRESULTYYYYMM,
-      STUDQUALFOSRESULT.KSTUDQUALFOSRESULTID,
-      STUDQUALFOSRESULT.FGRADUATIONCEREMONYID,
-      STUDQUALFOSRESULT.FPOSTPONEMENTCODEID,
-      X000_Codedescription1.LONG AS POSTPONE_REAS,
-      STUDQUALFOSRESULT.RESULTISSUEDATE,
-      STUDQUALFOSRESULT.DISCONTINUEDATE,
-      STUDQUALFOSRESULT.FDISCONTINUECODEID,
-      X000_Codedescription2.LONG AS DISCONTINUE_REAS,
-      STUDQUALFOSRESULT.RESULTPASSDATE,
-      STUDQUALFOSRESULT.FLANGUAGECODEID,
-      STUDQUALFOSRESULT.ISSUESURNAME,
-      STUDQUALFOSRESULT.CERTIFICATESEQNUMBER,
-      STUDQUALFOSRESULT.AVGMARKACHIEVED,
-      STUDQUALFOSRESULT.PROCESSSEQNUMBER,
-      STUDQUALFOSRESULT.FRECEIPTID,
-      STUDQUALFOSRESULT.FRECEIPTLINEID,
-      STUDQUALFOSRESULT.ISINABSENTIA,
-      STUDQUALFOSRESULT.FPROGRAMAPID,
-      STUDQUALFOSRESULT.FISSUETYPECODEID,
-      X000_Codedescription3.LONG AS ISSUE_TYPE,
-      STUDQUALFOSRESULT.DATEPRINTED,
-      STUDQUALFOSRESULT.LOCKSTAMP,
-      STUDQUALFOSRESULT.AUDITDATETIME,
-      STUDQUALFOSRESULT.FAUDITSYSTEMFUNCTIONID,
-      STUDQUALFOSRESULT.FAUDITUSERCODE,
-      STUDQUALFOSRESULT.FAPPROVEDBYCODEID,
-      STUDQUALFOSRESULT.FAPPROVEDBYUSERCODE,
-      STUDQUALFOSRESULT.DATERESULTAPPROVED,
-      STUDQUALFOSRESULT.FENROLMENTPRESENTATIONID,
-      STUDQUALFOSRESULT.CERTDISPATCHDATE,
-      STUDQUALFOSRESULT.CERTDISPATCHREFNO,
-      STUDQUALFOSRESULT.ISSUEFIRSTNAMES
-    FROM
-      STUDQUALFOSRESULT
-      LEFT JOIN X000_Codedescription ON X000_Codedescription.KCODEDESCID =
-        STUDQUALFOSRESULT.KQUALFOSRESULTCODEID
-      LEFT JOIN X000_Codedescription X000_Codedescription1 ON X000_Codedescription1.KCODEDESCID =
-        STUDQUALFOSRESULT.FPOSTPONEMENTCODEID
-      LEFT JOIN X000_Codedescription X000_Codedescription2 ON X000_Codedescription2.KCODEDESCID =
-        STUDQUALFOSRESULT.FDISCONTINUECODEID
-      LEFT JOIN X000_Codedescription X000_Codedescription3 ON X000_Codedescription3.KCODEDESCID =
-        STUDQUALFOSRESULT.FISSUETYPECODEID
-    ORDER BY
-      STUDQUALFOSRESULT.KBUSINESSENTITYID,
-      STUDQUALFOSRESULT.AUDITDATETIME DESC
-    """
-    so_curs.execute("DROP VIEW IF EXISTS X000_Student_qualification_result")
-    so_curs.execute("DROP VIEW IF EXISTS X000_Student_qual_result")
+    sr_file = "X000_Student_qualfos_result"
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
+    Select
+        RESU.KBUSINESSENTITYID,
+        RESU.KACADEMICPROGRAMID,
+        RESU.KQUALFOSRESULTCODEID,
+        Upper(REAS.LONG) AS RESULT,
+        RESU.KRESULTYYYYMM,
+        RESU.KSTUDQUALFOSRESULTID,
+        RESU.FGRADUATIONCEREMONYID,
+        RESU.FPOSTPONEMENTCODEID,
+        Upper(POST.LONG) AS POSTPONE_REAS,
+        RESU.RESULTISSUEDATE,
+        RESU.DISCONTINUEDATE,
+        RESU.FDISCONTINUECODEID,
+        Upper(DISC.LONG) AS DISCONTINUE_REAS,
+        RESU.RESULTPASSDATE,
+        RESU.FLANGUAGECODEID,
+        RESU.ISSUESURNAME,
+        RESU.CERTIFICATESEQNUMBER,
+        RESU.AVGMARKACHIEVED,
+        RESU.PROCESSSEQNUMBER,
+        RESU.FRECEIPTID,
+        RESU.FRECEIPTLINEID,
+        RESU.ISINABSENTIA,
+        RESU.FPROGRAMAPID,
+        RESU.FISSUETYPECODEID,
+        Upper(TYPE.LONG) AS ISSUE_TYPE,
+        RESU.DATEPRINTED,
+        RESU.LOCKSTAMP,
+        RESU.AUDITDATETIME,
+        RESU.FAUDITSYSTEMFUNCTIONID,
+        RESU.FAUDITUSERCODE,
+        RESU.FAPPROVEDBYCODEID,
+        RESU.FAPPROVEDBYUSERCODE,
+        RESU.DATERESULTAPPROVED,
+        RESU.FENROLMENTPRESENTATIONID,
+        RESU.CERTDISPATCHDATE,
+        RESU.CERTDISPATCHREFNO,
+        RESU.ISSUEFIRSTNAMES
+    From
+        STUDQUALFOSRESULT RESU
+        LEFT JOIN X000_Codedescription REAS ON REAS.KCODEDESCID = RESU.KQUALFOSRESULTCODEID
+        LEFT JOIN X000_Codedescription POST ON POST.KCODEDESCID = RESU.FPOSTPONEMENTCODEID
+        LEFT JOIN X000_Codedescription DISC ON DISC.KCODEDESCID = RESU.FDISCONTINUECODEID
+        LEFT JOIN X000_Codedescription TYPE ON TYPE.KCODEDESCID = RESU.FISSUETYPECODEID
+    Order By
+        RESU.KBUSINESSENTITYID,
+        RESU.AUDITDATETIME DESC
+    ;"""
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD VIEW: X000_Student_qual_result")
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
-    # BUILD QUALIFICATION STEP ONE
-    print("Build qualification...")
-    s_sql = "CREATE VIEW X000_Qualification AS " + """
-    SELECT
-      QUAL.KACADEMICPROGRAMID,
-      QUAL.STARTDATE,
-      QUAL.ENDDATE,
-      QUAL.QUALIFICATIONCODE,
-      QUALTYPE.LONG AS QUAL_TYPE,
-      MINDUR.LANK AS MIN,
-      MINUNI.LONG AS MIN_UNIT,
-      MAXDUR.LONG AS MAX,
-      MAXUNI.LONG AS MAX_UNIT,
-      QUAL.AUDITDATETIME,
-      QUAL.FAUDITSYSTEMFUNCTIONID,
-      QUAL.FAUDITUSERCODE,
-      CERTTYPE.LONG AS CERT_TYPE,
-      LEVY.LONG AS LEVY_TYPE,
-      QUAL.ISVATAPPLICABLE,
-      QUAL.ISPRESENTEDBEFOREAPPROVAL,
-      QUAL.ISDIRECTED
-    FROM
-      QUALIFICATION QUAL
-      LEFT JOIN X000_Codedescription MINDUR ON MINDUR.KCODEDESCID = QUAL.FMINDURATIONCODEID
-      LEFT JOIN X000_Codedescription MINUNI ON MINUNI.KCODEDESCID = QUAL.FMINDURPERIODUNITCODEID
-      LEFT JOIN X000_Codedescription MAXDUR ON MAXDUR.KCODEDESCID = QUAL.FMAXDURATIONCODEID
-      LEFT JOIN X000_Codedescription MAXUNI ON MAXUNI.KCODEDESCID = QUAL.FMAXDURPERIODUNITCODEID
-      LEFT JOIN X000_Codedescription QUALTYPE ON QUALTYPE.KCODEDESCID = QUAL.FQUALIFICATIONTYPECODEID
-      LEFT JOIN X000_Codedescription CERTTYPE ON CERTTYPE.KCODEDESCID = QUAL.FCERTIFICATETYPECODEID
-      LEFT JOIN X000_Codedescription LEVY ON LEVY.KCODEDESCID = QUAL.FLEVYLEVELCODEID
-    """
-    so_curs.execute("DROP VIEW IF EXISTS X000_Qualification")
+    # BUILD ACADEMIC PROGRAM NAME
+    print("Build academic program name 1 ...")
+    sr_file = "X000ba_Academicprog_shortname"
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
+    Select
+        PROG.KACADEMICPROGRAMNAMEID,
+        PROG.FACADEMICPROGRAMID,
+        PROG.FNAMEPURPOSECODEID,
+        Upper(PURP.LONG) As PURPOSE,
+        PROG.FSYSTEMLANGUAGECODEID,
+        Upper(LANG.LONG) As LANGUAGE,
+        PROG.STARTDATE,
+        PROG.ENDDATE,
+        PROG.SHORTDESCRIPTION,
+        PROG.WFSHORTDESC,
+        PROG.LOCKSTAMP,
+        PROG.AUDITDATETIME,
+        PROG.FAUDITSYSTEMFUNCTIONID,
+        PROG.FAUDITUSERCODE
+    From
+        ACADEMICPROGRAMSHORTNAME PROG Left Join
+        X000_Codedescription PURP On PURP.KCODEDESCID = PROG.FNAMEPURPOSECODEID Left Join
+        X000_Codedescription LANG On LANG.KCODEDESCID = PROG.FSYSTEMLANGUAGECODEID
+    Order By
+        PROG.FACADEMICPROGRAMID,
+        LANGUAGE,
+        PURPOSE,
+        PROG.STARTDATE
+    ;"""
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD VIEW: X000_Qualification")
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
-    # BUILD QUALIFICATION STEP TWO
-    print("Build qualification level...")
-    s_sql = "CREATE VIEW X000_Qualification_level AS " + """
-    SELECT
-      QUAL.KACADEMICPROGRAMID,
-      QUAL.STARTDATE,
-      QUAL.ENDDATE,
-      QUAL.QUALIFICATIONLEVEL,
-      FINAL.LONG AS STATUS_FINAL,
-      LEVY.LONG AS LEVY_CATEGORY,
-      QUAL.FFIELDOFSTUDYAPID,
-      QUAL.FFINALSTATUSCODEID,
-      QUAL.FLEVYCATEGORYCODEID,
-      QUAL.LOCKSTAMP,
-      QUAL.AUDITDATETIME,
-      QUAL.FAUDITSYSTEMFUNCTIONID,
-      QUAL.FAUDITUSERCODE,
-      QUAL.PHASEOUTDATE
-    FROM
-      QUALIFICATIONLEVEL QUAL
-      LEFT JOIN X000_Codedescription FINAL ON FINAL.KCODEDESCID = QUAL.FFINALSTATUSCODEID
-      LEFT JOIN X000_Codedescription LEVY ON LEVY.KCODEDESCID = QUAL.FLEVYCATEGORYCODEID
-    """
-    so_curs.execute("DROP VIEW IF EXISTS X000_Qualification_level")
+    # BUILD ACADEMIC PROGRAM NAME SUMMARY
+    print("Build academic program name summary 2...")
+    sr_file = "X000bb_Academicprog_summary"
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
+    Select
+        PROG.FNAMEPURPOSECODEID,
+        PROG.PURPOSE,
+        Count(PROG.KACADEMICPROGRAMNAMEID) As PURPOSE_COUNT
+    From
+        X000ba_Academicprog_shortname PROG
+    Where
+        PROG.FSYSTEMLANGUAGECODEID = 3
+    Group By
+        PROG.FNAMEPURPOSECODEID
+    ;"""
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD VIEW: X000_Qualification_level")
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
+
+    # QUALIFICATION, MODULE, PROGRAM MASTER
+    print("Build present enrol master...")
+    sr_file = "X000aa_QMP_Master"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        PRES.KENROLMENTPRESENTATIONID,
+        PRES.FQUALPRESENTINGOUID,
+        PRES.FMODULEPRESENTINGOUID,
+        PRES.FPROGRAMPRESENTINGOUID,
+        PRES.FPROGRAMAPID,
+        PRES.FENROLMENTCATEGORYCODEID,
+        Upper(ENRO.LONG) As ENROL_CATEGORY,
+        PRES.FPRESENTATIONCATEGORYCODEID,
+        Upper(PRES.LONG) As PRESENT_CATEGORY,
+        PRES.MAXNOOFSTUDENTS,
+        PRES.MINNOOFSTUDENTS,
+        PRES.ISVERIFICATIONREQUIRED,
+        PRES.EXAMSUBMINIMUM,
+        PRES.STARTDATE AS MASTER_STARTDATE,
+        PRES.ENDDATE AS MASTER_ENDDATE,
+        PRES.AUDITDATETIME MASTER_AUDITDATETIME,
+        PRES.FAUDITSYSTEMFUNCTIONID AS MASTER_SYSID,
+        PRES.FAUDITUSERCODE AS MASTER_USERCODE
+    From
+        PRESENTOUENROLPRESENTCAT PRES Left Join
+        X000_Codedescription ENRO ON ENRO.KCODEDESCID = PRES.FENROLMENTCATEGORYCODEID Left Join 
+        X000_Codedescription PRES ON PRES.KCODEDESCID = PRES.FPRESENTATIONCATEGORYCODEID 
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    """*************************************************************************
+    BUILD QUALIFICATION MASTER LIST
+    *************************************************************************"""
+    print("BUILD QUALIFICATION MASTER LIST")
+    funcfile.writelog("BUILD QUALIFICATION MASTER LIST")
+
+    # BUILD QUALIFICATION STEP 1 - QUALIFICATION LEVEL
+    print("Build qualification level (step 1)...")
+    sr_file = "X001aa_Qual_level"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        QUAL.KACADEMICPROGRAMID,
+        QUAL.STARTDATE,
+        QUAL.ENDDATE,
+        QUAL.QUALIFICATIONLEVEL,
+        Upper(FINA.LONG) AS FINAL_STATUS,
+        Upper(LEVY.LONG) AS LEVY_CATEGORY,
+        QUAL.FFIELDOFSTUDYAPID,
+        QUAL.FFINALSTATUSCODEID,
+        QUAL.FLEVYCATEGORYCODEID,
+        QUAL.LOCKSTAMP,
+        QUAL.AUDITDATETIME,
+        QUAL.FAUDITSYSTEMFUNCTIONID,
+        QUAL.FAUDITUSERCODE,
+        QUAL.PHASEOUTDATE
+    From
+        QUALIFICATIONLEVEL QUAL Left Join
+        X000_Codedescription FINA ON FINA.KCODEDESCID = QUAL.FFINALSTATUSCODEID Left Join
+        X000_Codedescription LEVY ON LEVY.KCODEDESCID = QUAL.FLEVYCATEGORYCODEID
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD QUALIFICATION STEP 2 - QUALIFICATION LEVEL
+    print("Build qualification presentation (step 2)...")
+    sr_file = "X001ab_Qual_level_present"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        MAST.KENROLMENTPRESENTATIONID,
+        LEVE.QUALIFICATIONLEVEL,
+        PRES.FQUALLEVELAPID,
+        MAST.ENROL_CATEGORY,
+        MAST.PRESENT_CATEGORY,
+        LEVE.FINAL_STATUS,
+        LEVE.LEVY_CATEGORY,
+        LEVE.FFIELDOFSTUDYAPID,
+        MAST.FPROGRAMAPID,
+        PRES.FBUSINESSENTITYID,
+        ORGA.FSITEORGUNITNUMBER As SITEID,
+        Upper(SITE.LONG) As CAMPUS,
+        Upper(ORGA.ORGUNIT_TYPE) As ORGUNIT_TYPE,
+        Upper(ORGA.ORGUNIT_NAME) As ORGUNIT_NAME,
+        Upper(ORGA.MANAGER_TYPE) As ORGUNIT_MANAGER,
+        MAST.MAXNOOFSTUDENTS,
+        MAST.MINNOOFSTUDENTS,
+        PRES.NUMBEROFSTUDENTS,
+        MAST.ISVERIFICATIONREQUIRED,
+        MAST.EXAMSUBMINIMUM,
+        MAST.FQUALPRESENTINGOUID,
+        MAST.MASTER_STARTDATE,
+        MAST.MASTER_ENDDATE,
+        MAST.MASTER_AUDITDATETIME,
+        MAST.MASTER_SYSID,
+        MAST.MASTER_USERCODE,
+        PRES.KPRESENTINGOUID,
+        PRES.STARTDATE As PRESENT_STARTDATE,
+        PRES.ENDDATE As PRESENT_ENDDATE,
+        PRES.AUDITDATETIME As PRESENT_AUDITDATETIME,
+        PRES.FAUDITSYSTEMFUNCTIONID AS PRESENT_SYSID,
+        PRES.FAUDITUSERCODE As PRESENT_USERCODE,
+        LEVE.KACADEMICPROGRAMID As LEVEL_KACADEMICPROGRAMID,
+        LEVE.STARTDATE As LEVEL_STARTDATE,
+        LEVE.ENDDATE As LEVEL_ENDDATE,
+        LEVE.PHASEOUTDATE As LEVEL_PHASEOUTDATE,    
+        LEVE.AUDITDATETIME As LEVEL_AUDITDATETIME,
+        LEVE.FAUDITSYSTEMFUNCTIONID As LEVEL_SYSID,
+        LEVE.FAUDITUSERCODE As LEVEL_USERCODE
+    From
+        X000aa_QMP_Master MAST Inner Join
+        QUALLEVELPRESENTINGOU PRES On PRES.KPRESENTINGOUID = MAST.FQUALPRESENTINGOUID Left Join
+        X000_Orgunitinstance ORGA On ORGA.KBUSINESSENTITYID = PRES.FBUSINESSENTITYID Left Join
+        X000_Orgunit SITE On SITE.KORGUNITNUMBER = ORGA.FSITEORGUNITNUMBER Left Join
+        X001aa_Qual_level LEVE On LEVE.KACADEMICPROGRAMID = PRES.FQUALLEVELAPID 
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD QUALIFICATION STEP 3 - FIELD OF STUDY
+    print("Build qualification field of study (step 3)...")
+    sr_file = "X001ac_Qual_fieldofstudy"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        QUAL.KENROLMENTPRESENTATIONID,
+        FOFS.QUALIFICATIONFIELDOFSTUDY,
+        QUAL.QUALIFICATIONLEVEL,
+        QUAL.FQUALLEVELAPID,
+        QUAL.ENROL_CATEGORY,
+        QUAL.PRESENT_CATEGORY,
+        QUAL.FINAL_STATUS,
+        QUAL.LEVY_CATEGORY,
+        Upper(SELE.LONG) As FOS_SELECTION,
+        QUAL.FFIELDOFSTUDYAPID,
+        FOFS.FQUALIFICATIONAPID,
+        QUAL.FPROGRAMAPID,
+        QUAL.FBUSINESSENTITYID,
+        QUAL.SITEID,
+        QUAL.CAMPUS,
+        QUAL.ORGUNIT_TYPE,
+        QUAL.ORGUNIT_NAME,
+        QUAL.ORGUNIT_MANAGER,
+        QUAL.MAXNOOFSTUDENTS,
+        QUAL.MINNOOFSTUDENTS,
+        QUAL.NUMBEROFSTUDENTS,
+        QUAL.ISVERIFICATIONREQUIRED,
+        QUAL.EXAMSUBMINIMUM,
+        QUAL.FQUALPRESENTINGOUID,
+        QUAL.MASTER_STARTDATE,
+        QUAL.MASTER_ENDDATE,
+        QUAL.MASTER_AUDITDATETIME,
+        QUAL.MASTER_SYSID,
+        QUAL.MASTER_USERCODE,
+        QUAL.KPRESENTINGOUID,
+        QUAL.PRESENT_STARTDATE,
+        QUAL.PRESENT_ENDDATE,
+        QUAL.PRESENT_AUDITDATETIME,
+        QUAL.PRESENT_SYSID,
+        QUAL.PRESENT_USERCODE,
+        QUAL.LEVEL_KACADEMICPROGRAMID,
+        QUAL.LEVEL_STARTDATE,
+        QUAL.LEVEL_ENDDATE,
+        QUAL.LEVEL_PHASEOUTDATE,
+        QUAL.LEVEL_AUDITDATETIME,
+        QUAL.LEVEL_SYSID,
+        QUAL.LEVEL_USERCODE,
+        FOFS.KACADEMICPROGRAMID As FOS_KACADEMICPROGRAMID,
+        FOFS.STARTDATE As FOS_STARTDATE,
+        FOFS.ENDDATE As FOS_ENDDATE,
+        FOFS.AUDITDATETIME As FOS_AUDITDATETIME,
+        FOFS.FAUDITSYSTEMFUNCTIONID As FOS_SYSID,
+        FOFS.FAUDITUSERCODE As FOS_USERCODE
+    From
+        X001ab_Qual_level_present QUAL Left Join
+        FIELDOFSTUDY FOFS On FOFS.KACADEMICPROGRAMID = QUAL.FFIELDOFSTUDYAPID Left Join
+        X000_Codedescription SELE On SELE.KCODEDESCID = FOFS.FSELECTIONCODEID
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD QUALIFICATION STEP 4 - QUALIFICATION
+    print("Build qualification (step 4)...")
+    sr_file = "X001ad_Qual"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        QUAL.KACADEMICPROGRAMID,
+        QUAL.STARTDATE,
+        QUAL.ENDDATE,
+        QUAL.QUALIFICATIONCODE,
+        Upper(QUALTYPE.LONG) AS QUALIFICATION_TYPE,
+        Cast(MINDUR.LANK As REAL) AS MIN,
+        Upper(MINUNI.LONG) AS MIN_UNIT,
+        Cast(MAXDUR.LONG As REAL) AS MAX,
+        Upper(MAXUNI.LONG) AS MAX_UNIT,
+        Upper(CERTTYPE.LONG) AS CERT_TYPE,
+        Upper(LEVY.LONG) AS LEVY_TYPE,
+        QUAL.ISVATAPPLICABLE,
+        QUAL.ISPRESENTEDBEFOREAPPROVAL,
+        QUAL.ISDIRECTED,
+        QUAL.AUDITDATETIME,
+        QUAL.FAUDITSYSTEMFUNCTIONID,
+        QUAL.FAUDITUSERCODE
+    From
+        QUALIFICATION QUAL Left Join
+        X000_Codedescription MINDUR ON MINDUR.KCODEDESCID = QUAL.FMINDURATIONCODEID Left Join
+        X000_Codedescription MINUNI ON MINUNI.KCODEDESCID = QUAL.FMINDURPERIODUNITCODEID Left Join
+        X000_Codedescription MAXDUR ON MAXDUR.KCODEDESCID = QUAL.FMAXDURATIONCODEID Left Join
+        X000_Codedescription MAXUNI ON MAXUNI.KCODEDESCID = QUAL.FMAXDURPERIODUNITCODEID Left Join
+        X000_Codedescription QUALTYPE ON QUALTYPE.KCODEDESCID = QUAL.FQUALIFICATIONTYPECODEID Left Join
+        X000_Codedescription CERTTYPE ON CERTTYPE.KCODEDESCID = QUAL.FCERTIFICATETYPECODEID Left Join
+        X000_Codedescription LEVY ON LEVY.KCODEDESCID = QUAL.FLEVYLEVELCODEID
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD QUALIFICATION STEP 5 - ADD QUALIFICATION
+    print("Build qualification final (step 5)...")
+    sr_file = "X001ae_Qual_final"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        QUAL.KENROLMENTPRESENTATIONID,
+        Upper(NAME.SHORTDESCRIPTION) As QUALIFICATION_NAME,
+        Trim(QAUD.QUALIFICATIONCODE)||' '||
+            Trim(QUAL.QUALIFICATIONFIELDOFSTUDY)||' '||
+            Trim(QUAL.QUALIFICATIONLEVEL) As QUALIFICATION,
+        QAUD.QUALIFICATIONCODE,
+        QUAL.QUALIFICATIONFIELDOFSTUDY,
+        QUAL.QUALIFICATIONLEVEL,
+        QAUD.QUALIFICATION_TYPE,
+        QUAL.FQUALLEVELAPID,
+        QUAL.ENROL_CATEGORY,
+        QUAL.PRESENT_CATEGORY,
+        QUAL.FINAL_STATUS,
+        QUAL.LEVY_CATEGORY,
+        QAUD.CERT_TYPE,
+        QAUD.LEVY_TYPE,
+        QUAL.FOS_SELECTION,
+        QUAL.FPROGRAMAPID,
+        QUAL.FBUSINESSENTITYID,
+        QUAL.SITEID,
+        QUAL.CAMPUS,
+        QUAL.ORGUNIT_TYPE,
+        QUAL.ORGUNIT_NAME,
+        QUAL.ORGUNIT_MANAGER,
+        QAUD.MIN,
+        QAUD.MIN_UNIT,
+        QAUD.MAX,
+        QAUD.MAX_UNIT,
+        QUAL.MAXNOOFSTUDENTS,
+        QUAL.MINNOOFSTUDENTS,
+        QUAL.NUMBEROFSTUDENTS,
+        QUAL.ISVERIFICATIONREQUIRED,
+        QUAL.EXAMSUBMINIMUM,
+        QAUD.ISVATAPPLICABLE,
+        QAUD.ISPRESENTEDBEFOREAPPROVAL,
+        QAUD.ISDIRECTED,
+        QUAL.FQUALPRESENTINGOUID,
+        QUAL.MASTER_STARTDATE,
+        QUAL.MASTER_ENDDATE,
+        QUAL.MASTER_AUDITDATETIME,
+        QUAL.MASTER_SYSID,
+        QUAL.MASTER_USERCODE,
+        QUAL.KPRESENTINGOUID,
+        QUAL.PRESENT_STARTDATE,
+        QUAL.PRESENT_ENDDATE,
+        QUAL.PRESENT_AUDITDATETIME,
+        QUAL.PRESENT_SYSID,
+        QUAL.PRESENT_USERCODE,
+        QUAL.LEVEL_KACADEMICPROGRAMID,
+        QUAL.LEVEL_STARTDATE,
+        QUAL.LEVEL_ENDDATE,
+        QUAL.LEVEL_PHASEOUTDATE,
+        QUAL.LEVEL_AUDITDATETIME,
+        QUAL.LEVEL_SYSID,
+        QUAL.LEVEL_USERCODE,
+        QUAL.FOS_KACADEMICPROGRAMID,
+        QUAL.FOS_STARTDATE,
+        QUAL.FOS_ENDDATE,
+        QUAL.FOS_AUDITDATETIME,
+        QUAL.FOS_SYSID,
+        QUAL.FOS_USERCODE,
+        QAUD.KACADEMICPROGRAMID As QUAL_KACADEMICPROGRAMID,
+        QAUD.STARTDATE As QUAL_STARTDATE,
+        QAUD.ENDDATE As QUAL_ENDDATE,
+        QAUD.AUDITDATETIME As QUAL_AUDITDATETIME,
+        QAUD.FAUDITSYSTEMFUNCTIONID As QUAL_SYSID,
+        QAUD.FAUDITUSERCODE As QUAL_USERCODE
+    From
+        X001ac_Qual_fieldofstudy QUAL Left Join
+        X001ad_Qual QAUD On QAUD.KACADEMICPROGRAMID = QUAL.FQUALIFICATIONAPID Left Join
+        ACADEMICPROGRAMSHORTNAME NAME On NAME.FACADEMICPROGRAMID = QUAL.LEVEL_KACADEMICPROGRAMID And
+            NAME.STARTDATE <= QUAL.LEVEL_STARTDATE And
+            NAME.ENDDATE >= QUAL.LEVEL_ENDDATE And
+            NAME.FSYSTEMLANGUAGECODEID = 3 And
+            NAME.FNAMEPURPOSECODEID = 7294
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD QUALIFICATION FINAL
+    print("Build qualification final...")
+    sr_file = "X000_Qualifications"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        QUAL.KENROLMENTPRESENTATIONID,
+        QUAL.QUALIFICATION,
+        QUAL.QUALIFICATION_NAME,
+        QUAL.QUALIFICATION_TYPE,
+        QUAL.FQUALLEVELAPID,
+        QUAL.ENROL_CATEGORY,
+        QUAL.PRESENT_CATEGORY,
+        QUAL.FINAL_STATUS,
+        QUAL.LEVY_CATEGORY,
+        QUAL.CERT_TYPE,
+        QUAL.LEVY_TYPE,
+        QUAL.FOS_SELECTION,
+        QUAL.FPROGRAMAPID,
+        QUAL.FBUSINESSENTITYID,
+        QUAL.SITEID,
+        QUAL.CAMPUS,
+        QUAL.ORGUNIT_TYPE,
+        QUAL.ORGUNIT_NAME,
+        QUAL.ORGUNIT_MANAGER,
+        QUAL.QUALIFICATIONCODE,
+        QUAL.QUALIFICATIONFIELDOFSTUDY,
+        QUAL.QUALIFICATIONLEVEL,
+        QUAL.MIN,
+        QUAL.MIN_UNIT,
+        QUAL.MAX,
+        QUAL.MAX_UNIT,
+        QUAL.MAXNOOFSTUDENTS,
+        QUAL.MINNOOFSTUDENTS,
+        QUAL.NUMBEROFSTUDENTS,
+        QUAL.ISVERIFICATIONREQUIRED,
+        QUAL.EXAMSUBMINIMUM,
+        QUAL.ISVATAPPLICABLE,
+        QUAL.ISPRESENTEDBEFOREAPPROVAL,
+        QUAL.ISDIRECTED,
+        QUAL.FQUALPRESENTINGOUID,
+        QUAL.MASTER_STARTDATE,
+        QUAL.MASTER_ENDDATE,
+        QUAL.MASTER_AUDITDATETIME,
+        QUAL.MASTER_SYSID,
+        QUAL.MASTER_USERCODE,
+        QUAL.KPRESENTINGOUID,
+        QUAL.PRESENT_STARTDATE,
+        QUAL.PRESENT_ENDDATE,
+        QUAL.PRESENT_AUDITDATETIME,
+        QUAL.PRESENT_SYSID,
+        QUAL.PRESENT_USERCODE,
+        QUAL.LEVEL_KACADEMICPROGRAMID,
+        QUAL.LEVEL_STARTDATE,
+        QUAL.LEVEL_ENDDATE,
+        QUAL.LEVEL_PHASEOUTDATE,
+        QUAL.LEVEL_AUDITDATETIME,
+        QUAL.LEVEL_SYSID,
+        QUAL.LEVEL_USERCODE,
+        QUAL.FOS_KACADEMICPROGRAMID,
+        QUAL.FOS_STARTDATE,
+        QUAL.FOS_ENDDATE,
+        QUAL.FOS_AUDITDATETIME,
+        QUAL.FOS_SYSID,
+        QUAL.FOS_USERCODE,
+        QUAL.QUAL_KACADEMICPROGRAMID,
+        QUAL.QUAL_STARTDATE,
+        QUAL.QUAL_ENDDATE,
+        QUAL.QUAL_AUDITDATETIME,
+        QUAL.QUAL_SYSID,
+        QUAL.QUAL_USERCODE
+    From
+        X001ae_Qual_final QUAL
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # VACUUM TEMP DEVELOPMENT FILES
+    sr_file = "X001aa_Qual_level"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sr_file = "X001ab_Qual_level_present"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sr_file = "X001ac_Qual_fieldofstudy"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sr_file = "X001ad_Qual"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sr_file = "X001ae_Qual_final"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_conn.commit()
 
     """*************************************************************************
     BUILD STUDENTS
@@ -363,9 +718,9 @@ def Vss_lists():
     print("BUILD STUDENTS")
     funcfile.writelog("BUILD STUDENTS")
 
-    funcstudent.Studentlist(so_conn,re_path,'curr','0',True)
-    funcstudent.Studentlist(so_conn,re_path,'prev','0',True)
-    #funcstudent.Studentlist(so_conn,re_path,'peri','2017',True)
+    funcstudent.studentlist(so_conn,re_path,'curr','0',True)
+    # funcstudent.studentlist(so_conn,re_path,'prev','0',True)
+    # funcstudent.studentlist(so_conn,re_path,'peri','2017',True)
 
     """*************************************************************************
     BUILD MODULES
@@ -373,172 +728,11 @@ def Vss_lists():
     print("BUILD MODULES")
     funcfile.writelog("BUILD MODULES")
 
-    # BUILD MODULES
-    print("Build module...")
-    sr_file: str = "X002aa_Module"
-    s_sql = "CREATE VIEW " + sr_file + " AS " + """
-    SELECT
-        MODU.KACADEMICPROGRAMID AS MODULE_ID,
-        MODU.STARTDATE,
-        MODU.ENDDATE,
-        COUR.COURSECODE,
-        COUL.COURSELEVEL,
-        MODU.COURSEMODULE
-    FROM
-        MODULE MODU Left Join
-        COURSELEVEL COUL ON COUL.KACADEMICPROGRAMID = MODU.FCOURSELEVELAPID Left Join
-        COURSE COUR ON COUR.KACADEMICPROGRAMID = COUL.FCOURSEAPID
-    ;"""
-    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD VIEW: " + sr_file)
-
-    # BUILD MODULE PRESENTING ORGANIZATION
-    print("Build module present organization...")
-    sr_file: str = "X002ba_Module_present_org"
-    s_sql = "CREATE VIEW " + sr_file + " AS " + """
-    SELECT
-        PRES.KPRESENTINGOUID,
-        PRES.STARTDATE,
-        PRES.ENDDATE,
-        PRES.FBUSINESSENTITYID,
-        ORGA.FSITEORGUNITNUMBER,
-        ORGA.ORGUNIT_TYPE,
-        ORGA.ORGUNIT_NAME,
-        PRES.FMODULEAPID,
-        MODU.COURSECODE,
-        MODU.COURSELEVEL,
-        MODU.COURSEMODULE,
-        PRES.FCOURSEGROUPCODEID,
-        NAME.LONG AS NAME_GROUP,
-        NAME.LANK AS NAAM_GROEP,
-        PRES.ISEXAMMODULE,
-        PRES.LOCKSTAMP,
-        PRES.AUDITDATETIME,
-        PRES.FAUDITSYSTEMFUNCTIONID,
-        PRES.FAUDITUSERCODE
-    FROM
-        MODULEPRESENTINGOU PRES Left Join
-        X000_Orgunitinstance ORGA ON ORGA.KBUSINESSENTITYID = PRES.FBUSINESSENTITYID Left Join
-        X002aa_Module MODU ON MODU.MODULE_ID = PRES.FMODULEAPID Left Join
-        X000_Codedescription NAME ON NAME.KCODEDESCID = PRES.FCOURSEGROUPCODEID
-    ;"""
-    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD VIEW: " + sr_file)
-
-    # BUILD MODULE ENROLMENT CATEGORY
-    print("Build module enrolment category...")
-    sr_file = "X002bb_Module_present_enrol"
-    s_sql = "CREATE VIEW " + sr_file + " AS " + """
-    SELECT
-        ENRC.KENROLMENTPRESENTATIONID,
-        ENRC.ENROL_CAT_E,
-        ENRC.ENROL_CAT_A,
-        ENRC.PRESENT_CAT_E,
-        ENRC.PRESENT_CAT_A,
-        ENRC.STARTDATE,
-        ENRC.ENDDATE,
-        ENRO.FSITEORGUNITNUMBER,
-        ENRO.ORGUNIT_TYPE,
-        ENRO.ORGUNIT_NAME,
-        ENRO.FMODULEAPID,
-        ENRO.COURSECODE,
-        ENRO.COURSELEVEL,
-        ENRO.COURSEMODULE,
-        ENRO.FCOURSEGROUPCODEID,
-        ENRO.NAME_GROUP,
-        ENRO.NAAM_GROEP,
-        ENRO.ISEXAMMODULE,
-        ENRC.EXAMSUBMINIMUM
-    FROM
-        X000_Present_enrol_category ENRC Inner Join
-        X002ba_Module_present_org ENRO ON ENRO.KPRESENTINGOUID = ENRC.FMODULEPRESENTINGOUID
-    ;"""
-    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD VIEW: " + sr_file)
-
-    # BUILD CURRENT STUDENT MODULE LIST
-    print("Build student module enrolments...")
-    sr_file = "X002_Module_curr"
-    s_sql = "CREATE TABLE " + sr_file + " AS " + """
-    Select
-        STUD.KENROLSTUDID,
-        STUD.KSTUDBUSENTID,
-        MODU.FSITEORGUNITNUMBER,
-        STUD.STARTDATE,
-        STUD.ENDDATE,
-        STUD.DATEENROL,
-        Upper(MODU.COURSECODE) As COURSECODE,
-        MODU.COURSELEVEL,
-        MODU.COURSEMODULE,
-        Upper(MODU.COURSECODE)||' '||MODU.COURSELEVEL||' '||MODU.COURSEMODULE As MODULE,
-        Substr(MODU.COURSEMODULE,1,1) As COURSESEM,
-        CASE
-            When Substr(MODU.COURSEMODULE,1,1) = '2' Then '2'
-            When Substr(MODU.COURSEMODULE,1,1) = '5' Then '2'
-            When Substr(MODU.COURSEMODULE,1,1) = '6' Then '2'
-            Else '1'
-        END As COURSESECS,
-        Upper(MODU.ORGUNIT_TYPE) As ORGUNIT_TYPE,
-        Upper(MODU.ORGUNIT_NAME) As ORGUNIT_NAME,
-        Upper(MODU.NAME_GROUP) As NAME_GROUP,
-        Upper(MODU.NAAM_GROEP) As NAAM_GROEP,
-        STUD.FMODULETYPECODEID,
-        Upper(TYPE.LONG) AS NAME_TYPE,
-        Upper(TYPE.LANK) AS NAAM_TYPE,
-        STUD.DATEDISCONTINUED,
-        STUD.FCOMPLETEREASONCODEID,
-        Upper(REAS.LONG) AS NAME_REAS,
-        Upper(REAS.LANK) AS NAAM_REAS,
-        STUD.FSTUDYCENTREMODAPID,
-        STUD.FQUALLEVELENROLSTUDID,
-        STUD.FENROLMENTPRESENTATIONID,
-        STUD.FEXAMCENTREMODAPID,
-        STUD.FPRESENTATIONLANGUAGEID,
-        STUD.FMODPERIODENROLPRESCATID,
-        STUD.ACADEMICYEAR,
-        STUD.ISNEWENROLMENT,
-        STUD.ISPROCESSEDONLINE,
-        STUD.ISREPEATINGMODULE,
-        STUD.ISEXEMPTION,
-        STUD.FACKTYPECODEID,
-        STUD.FACKSTUDBUSENTID,
-        STUD.FACKENROLSTUDID,
-        STUD.FACKMODENROLSTUDID,
-        STUD.FACKMODSTUDBUSENTID,
-        STUD.ISCONDITIONALREG,
-        STUD.LOCKSTAMP,
-        STUD.AUDITDATETIME,
-        STUD.FAUDITSYSTEMFUNCTIONID,
-        STUD.FAUDITUSERCODE,
-        STUD.REGALLOWED,
-        STUD.ISDISCOUNTED,
-        MODU.KENROLMENTPRESENTATIONID,
-        Upper(MODU.ENROL_CAT_E) As ENROL_CAT_E,
-        Upper(MODU.ENROL_CAT_A) As ENROL_CAT_A,
-        Upper(MODU.PRESENT_CAT_E) As PRESENT_CAT_E,
-        Upper(MODU.PRESENT_CAT_A) As PRESENT_CAT_A,
-        MODU.STARTDATE,
-        MODU.ENDDATE,
-        MODU.FMODULEAPID,
-        MODU.FCOURSEGROUPCODEID,
-        MODU.ISEXAMMODULE,
-        MODU.EXAMSUBMINIMUM
-    From
-        MODULEENROLSTUD_CURR STUD Left Join
-        X002bb_Module_present_enrol MODU On MODU.KENROLMENTPRESENTATIONID = STUD.FENROLMENTPRESENTATIONID Left Join
-        X000_Codedescription TYPE ON TYPE.KCODEDESCID = STUD.FMODULETYPECODEID Left Join
-        X000_Codedescription REAS ON REAS.KCODEDESCID = STUD.FCOMPLETEREASONCODEID
-    ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    """*************************************************************************
+    BUILD PROGRAMS
+    *************************************************************************"""
+    print("BUILD PROGRAMS")
+    funcfile.writelog("BUILD PROGRAMS")
 
     """*************************************************************************
     BUILD BURSARIES
@@ -983,134 +1177,6 @@ def Vss_lists():
       STUDYTRANS_CURR.TRANSDATETIME
     """
     so_curs.execute("DROP TABLE IF EXISTS X010_Studytrans")
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD VIEW: " + sr_file)    
-
-    # BUILD PREVIOUS YEAR TRANSACTIONS *****************************************
-    print("Build previous year transactions...")
-    sr_file = "X010_Studytrans_prev"
-    s_sql = "CREATE TABLE " + sr_file + " AS " + """
-    SELECT
-      STUDYTRANS_PREV.KACCTRANSID,
-      STUDYTRANS_PREV.FACCID,
-      STUDACC.FBUSENTID,
-      STUDYTRANS_PREV.FSERVICESITE,
-      STUDYTRANS_PREV.FDEBTCOLLECTIONSITE,
-      STUDYTRANS_PREV.TRANSDATE,
-      STUDYTRANS_PREV.AMOUNT,
-      STUDYTRANS_PREV.FTRANSMASTERID,
-      X000_Transmaster.TRANSCODE,
-      X000_Transmaster.DESCRIPTION_E,
-      X000_Transmaster.DESCRIPTION_A,
-      STUDYTRANS_PREV.TRANSDATETIME,
-      STUDYTRANS_PREV.MONTHENDDATE,
-      STUDYTRANS_PREV.POSTDATEDTRANSDATE,
-      STUDYTRANS_PREV.FFINAIDSITEID,
-      X004_Bursaries.FINAIDCODE,
-      X004_Bursaries.FINAIDNAAM,
-      STUDYTRANS_PREV.FRESIDENCELOGID,
-      STUDYTRANS_PREV.FLEVYLOGID,
-      STUDYTRANS_PREV.FMODAPID,
-      STUDYTRANS_PREV.FQUALLEVELAPID,
-      STUDYTRANS_PREV.FPROGAPID,
-      STUDYTRANS_PREV.FENROLPRESID,
-      STUDYTRANS_PREV.FRESIDENCEID,
-      STUDYTRANS_PREV.FRECEIPTID,
-      STUDYTRANS_PREV.FROOMTYPECODEID,
-      STUDYTRANS_PREV.REFERENCENO,
-      STUDYTRANS_PREV.FSUBACCTYPECODEID,
-      STUDYTRANS_PREV.FDEPOSITCODEID,
-      STUDYTRANS_PREV.FDEPOSITTYPECODEID,
-      STUDYTRANS_PREV.FVARIABLEAMOUNTTYPECODEID,
-      STUDYTRANS_PREV.FDEPOSITTRANSTYPECODEID,
-      STUDYTRANS_PREV.RESIDENCETRANSTYPE,
-      STUDYTRANS_PREV.FSTUDYTRANSTYPECODEID,
-      STUDYTRANS_PREV.ISSHOWN,
-      STUDYTRANS_PREV.ISCREATEDMANUALLY,
-      STUDYTRANS_PREV.FTRANSINSTID,
-      STUDYTRANS_PREV.FMONTHENDORGUNITNO,
-      STUDYTRANS_PREV.LOCKSTAMP,
-      STUDYTRANS_PREV.AUDITDATETIME,
-      STUDYTRANS_PREV.FAUDITSYSTEMFUNCTIONID,
-      STUDYTRANS_PREV.FAUDITUSERCODE,
-      SYSTEMUSER.FUSERBUSINESSENTITYID,
-      STUDYTRANS_PREV.FORIGINSYSTEMFUNCTIONID,
-      STUDYTRANS_PREV.FPAYMENTREQUESTID
-    FROM
-      STUDYTRANS_PREV
-      LEFT JOIN STUDACC ON STUDACC.KACCID = STUDYTRANS_PREV.FACCID
-      LEFT JOIN X000_Transmaster ON X000_Transmaster.KTRANSMASTERID = STUDYTRANS_PREV.FTRANSMASTERID
-      LEFT JOIN X004_Bursaries ON X004_Bursaries.KFINAIDSITEID = STUDYTRANS_PREV.FFINAIDSITEID
-      LEFT JOIN SYSTEMUSER ON SYSTEMUSER.KUSERCODE = STUDYTRANS_PREV.FAUDITUSERCODE
-    ORDER BY
-      STUDYTRANS_PREV.TRANSDATETIME
-    """
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD VIEW: " + sr_file)
-
-    # BUILD PERIOD TRANSACTIONS *****************************************
-    print("Build period transactions...")
-    sr_file = "X010_Studytrans_peri"
-    s_sql = "CREATE TABLE " + sr_file + " AS " + """
-    SELECT
-      TRAN.KACCTRANSID,
-      TRAN.FACCID,
-      STUDACC.FBUSENTID,
-      TRAN.FSERVICESITE,
-      TRAN.FDEBTCOLLECTIONSITE,
-      TRAN.TRANSDATE,
-      TRAN.AMOUNT,
-      TRAN.FTRANSMASTERID,
-      TRANMAST.TRANSCODE,
-      TRANMAST.DESCRIPTION_E,
-      TRANMAST.DESCRIPTION_A,
-      TRAN.TRANSDATETIME,
-      TRAN.MONTHENDDATE,
-      TRAN.POSTDATEDTRANSDATE,
-      TRAN.FFINAIDSITEID,
-      BURS.FINAIDCODE,
-      BURS.FINAIDNAAM,
-      TRAN.FRESIDENCELOGID,
-      TRAN.FLEVYLOGID,
-      TRAN.FMODAPID,
-      TRAN.FQUALLEVELAPID,
-      TRAN.FPROGAPID,
-      TRAN.FENROLPRESID,
-      TRAN.FRESIDENCEID,
-      TRAN.FRECEIPTID,
-      TRAN.FROOMTYPECODEID,
-      TRAN.REFERENCENO,
-      TRAN.FSUBACCTYPECODEID,
-      TRAN.FDEPOSITCODEID,
-      TRAN.FDEPOSITTYPECODEID,
-      TRAN.FVARIABLEAMOUNTTYPECODEID,
-      TRAN.FDEPOSITTRANSTYPECODEID,
-      TRAN.RESIDENCETRANSTYPE,
-      TRAN.FSTUDYTRANSTYPECODEID,
-      TRAN.ISSHOWN,
-      TRAN.ISCREATEDMANUALLY,
-      TRAN.FTRANSINSTID,
-      TRAN.FMONTHENDORGUNITNO,
-      TRAN.LOCKSTAMP,
-      TRAN.AUDITDATETIME,
-      TRAN.FAUDITSYSTEMFUNCTIONID,
-      TRAN.FAUDITUSERCODE,
-      USER.FUSERBUSINESSENTITYID,
-      TRAN.FORIGINSYSTEMFUNCTIONID,
-      TRAN.FPAYMENTREQUESTID
-    FROM
-      STUDYTRANS_PERI TRAN
-      LEFT JOIN STUDACC ON STUDACC.KACCID = TRAN.FACCID
-      LEFT JOIN X000_Transmaster TRANMAST ON TRANMAST.KTRANSMASTERID = TRAN.FTRANSMASTERID
-      LEFT JOIN X004_Bursaries BURS ON BURS.KFINAIDSITEID = TRAN.FFINAIDSITEID
-      LEFT JOIN SYSTEMUSER USER ON USER.KUSERCODE = TRAN.FAUDITUSERCODE
-    ORDER BY
-      TRAN.TRANSDATETIME
-    """
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
