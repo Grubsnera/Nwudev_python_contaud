@@ -152,7 +152,7 @@ VSS LISTS
 if funcdate.today_dayname() in "TueWedThuFriSat":
     import B003_vss_lists
     try:
-        B003_vss_lists.Vss_lists()
+        B003_vss_lists.vss_lists()
         if l_mail:
             funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:B003_vss_lists',
                           'NWUIAPython: Success: B003_vss_lists')
