@@ -20,7 +20,7 @@ l_mail = True
 
 # Vss lists
 try:
-    B003_vss_lists.Vss_lists()
+    B003_vss_lists.vss_lists()
 except Exception as e:
     funcsys.ErrMessage(e)
 
