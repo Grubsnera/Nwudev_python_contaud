@@ -1,20 +1,13 @@
 # Import python modules
-import csv
-import datetime
 import sqlite3
 import sys
 
-# Add own module path
-sys.path.append('S:/_my_modules')
-#print(sys.path)
-
 # Import own modules
-import funcdate
-import funccsv
-import funcfile
+from _my_modules import funcdate
+from _my_modules import funccsv
+from _my_modules import funcfile
 
 # Open the script log file ******************************************************
-
 funcfile.writelog("Now")
 funcfile.writelog("SCRIPT: REPORT VSS STUDENT LIST")
 funcfile.writelog("-------------------------------")
@@ -33,7 +26,6 @@ s_sql = "" #SQL statements
 # Open the SOURCE file
 with sqlite3.connect(so_path+so_file) as so_conn:
     so_curs = so_conn.cursor()
-
 funcfile.writelog("OPEN DATABASE: " + so_file)
 
 # Build test code **************************************************************
