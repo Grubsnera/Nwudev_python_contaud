@@ -39,6 +39,7 @@ so_path = "W:/Vss/"  # Source database path
 so_file = "Vss.sqlite"  # Source database
 re_path = "R:/Vss/"
 l_vacuum: bool = False
+s_period:str = "curr"
 
 """*****************************************************************************
 OPEN THE DATABASES
@@ -63,7 +64,7 @@ funcfile.writelog("TEMPORARY AREA")
 
 # IMPORT OWN LOOKUPS
 print("Import own lookups...")
-sr_file = "X000_OWN_LOOKUPS"
+sr_file = "X000_Own_lookups"
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 so_curs.execute("CREATE TABLE " + sr_file + "(LOOKUP TEXT,LOOKUP_CODE TEXT,LOOKUP_DESCRIPTION TEXT)")
 s_cols = ""
