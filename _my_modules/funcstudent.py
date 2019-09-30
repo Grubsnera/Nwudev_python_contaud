@@ -113,11 +113,13 @@ def studentlist(so_conn, re_path, s_period='curr', s_year='2019', l_export=False
         X000_Qualifications QUAL On QUAL.KENROLMENTPRESENTATIONID = STUD.FENROLMENTPRESENTATIONID Left Join
         X000_Student_qualfos_result RESU ON RESU.KBUSINESSENTITYID = STUD.KSTUDBUSENTID And
             RESU.FPROGRAMAPID = STUD.FPROGRAMAPID And
-            RESU.KACADEMICPROGRAMID = QUAL.FOS_KACADEMICPROGRAMID
+            RESU.KACADEMICPROGRAMID = QUAL.FOS_KACADEMICPROGRAMID And
+            Strftime('%Y',RESU.DISCONTINUEDATE) = %YEAR%
     Order By
         STUD.KSTUDBUSENTID
     ;"""
     s_sql = s_sql.replace("%PERIOD%", s_period)
+    s_sql = s_sql.replace("%YEAR%", s_year)
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
@@ -131,5 +133,83 @@ def studentlist(so_conn, re_path, s_period='curr', s_year='2019', l_export=False
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
         funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
         funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
+
+    """*************************************************************************
+    BUILD STUDENT MODULES
+    *************************************************************************"""
+    print("BUILD "+s_year+" STUDENT MODULES")
+    funcfile.writelog("BUILD "+s_year+" YEAR STUDENT MODULES")
+
+    # BUILD STUDENT LIST
+    print("Build student list...")
+    sr_file = "X001_Student_module_" + s_period
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        MENR.KENROLSTUDID,
+        MENR.KSTUDBUSENTID,
+        MENR.ACADEMICYEAR,
+        MENR.DATEENROL,
+        MENR.STARTDATE,
+        MENR.ENDDATE,
+        MODU.MODULE,
+        MODU.MODULE_NAME,
+        MODU.FENROLMENTCATEGORYCODEID,
+        MODU.ENROL_CATEGORY,
+        MODU.FPRESENTATIONCATEGORYCODEID,
+        MODU.PRESENT_CATEGORY,
+        MODU.FCOURSEGROUPCODEID,
+        MODU.COURSEGROUP,
+        MENR.FMODULETYPECODEID,
+        Upper(TYPE.LONG) As MODULE_TYPE,
+        MENR.DATEDISCONTINUED,
+        MENR.FCOMPLETEREASONCODEID,
+        Upper(REAS.LONG) As COMPLETE_REASON,
+        MODU.FBUSINESSENTITYID,
+        MODU.SITEID,
+        MODU.CAMPUS,
+        MODU.ORGUNIT_TYPE,
+        MODU.ORGUNIT_NAME,
+        MODU.ORGUNIT_MANAGER,
+        STUD.ISCONDITIONALREG,
+        MENR.ISNEWENROLMENT,
+        MENR.ISPROCESSEDONLINE,
+        MENR.ISREPEATINGMODULE,
+        MENR.ISEXEMPTION,
+        MODU.ISEXAMMODULE,
+        MODU.ISRESEARCHMODULE,
+        MENR.ISDISCOUNTED,
+        MODU.EXAMSUBMINIMUM,
+        MENR.FSTUDYCENTREMODAPID,
+        MENR.FENROLMENTPRESENTATIONID,
+        MENR.FEXAMCENTREMODAPID,
+        MENR.FPRESENTATIONLANGUAGEID,
+        MENR.FMODPERIODENROLPRESCATID,
+        MENR.FACKTYPECODEID,
+        MENR.FACKSTUDBUSENTID,
+        MENR.FACKENROLSTUDID,
+        MENR.FACKMODENROLSTUDID,
+        MENR.FACKMODSTUDBUSENTID,
+        MENR.ISCONDITIONALREG,
+        MENR.AUDITDATETIME As MENROL_AUDITDATETIME,
+        MENR.FAUDITSYSTEMFUNCTIONID As MENROL_SYSID,
+        MENR.FAUDITUSERCODE As MENROL_USERCODE,
+        MENR.REGALLOWED,
+        MODU.KENROLMENTPRESENTATIONID,
+        MODU.COURSECODE,
+        MODU.COURSELEVEL,
+        MODU.COURSEMODULE
+    From
+        MODULEENROLSTUD_CURR MENR Inner Join
+        X000_Modules MODU On MODU.KENROLMENTPRESENTATIONID = MENR.FENROLMENTPRESENTATIONID Left Join
+        X000_Codedescription TYPE On TYPE.KCODEDESCID = MENR.FMODULETYPECODEID Left Join
+        X000_Codedescription REAS On REAS.KCODEDESCID = MENR.FCOMPLETEREASONCODEID Left Join
+        X001_Student_%PERIOD% STUD On STUD.KSTUDBUSENTID = MENR.KSTUDBUSENTID And
+            STUD.KENROLSTUDID = MENR.FQUALLEVELENROLSTUDID
+    ;"""
+    s_sql = s_sql.replace("%PERIOD%", s_period)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     return
