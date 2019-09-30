@@ -40,6 +40,7 @@ so_file = "Vss.sqlite"  # Source database
 re_path = "R:/Vss/"
 l_vacuum: bool = False
 s_period:str = "curr"
+s_year: str = "2019"
 
 """*****************************************************************************
 OPEN THE DATABASES
