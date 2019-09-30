@@ -17,10 +17,11 @@ from _my_modules import funcstudent
 ENVIRONMENT
 BUILD STANDARD LOOKUP TABLES
 BUILD QUALIFICATION MASTER LIST
-BUILD STUDENTS
 BUILD MODULES
 BUILD PROGRAMS
 BUILD BURSARIES
+BUILD STUDENTS
+STUDENT ACCOUNT TRANSACTIONS
 *****************************************************************************"""
 
 def vss_lists():
@@ -392,6 +393,8 @@ def vss_lists():
         LEVE.FINAL_STATUS,
         LEVE.LEVY_CATEGORY,
         LEVE.FFIELDOFSTUDYAPID,
+        MAST.FMODULEPRESENTINGOUID,
+        MODU.KMODPERIODENROLPRESID,
         MAST.FPROGRAMAPID,
         PRES.FBUSINESSENTITYID,
         ORGA.FSITEORGUNITNUMBER As SITEID,
@@ -428,7 +431,8 @@ def vss_lists():
         QUALLEVELPRESENTINGOU PRES On PRES.KPRESENTINGOUID = MAST.FQUALPRESENTINGOUID Left Join
         X000_Orgunitinstance ORGA On ORGA.KBUSINESSENTITYID = PRES.FBUSINESSENTITYID Left Join
         X000_Orgunit SITE On SITE.KORGUNITNUMBER = ORGA.FSITEORGUNITNUMBER Left Join
-        X001aa_Qual_level LEVE On LEVE.KACADEMICPROGRAMID = PRES.FQUALLEVELAPID 
+        X001aa_Qual_level LEVE On LEVE.KACADEMICPROGRAMID = PRES.FQUALLEVELAPID Left Join
+        MODPERIODPRESOUENROLPRESCAT MODU On MODU.KMODPRESENTOUENROLPRESID = MAST.FMODULEPRESENTINGOUID  
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -711,16 +715,6 @@ def vss_lists():
     sr_file = "X001ae_Qual_final"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_conn.commit()
-
-    """*************************************************************************
-    BUILD STUDENTS
-    *************************************************************************"""
-    print("BUILD STUDENTS")
-    funcfile.writelog("BUILD STUDENTS")
-
-    funcstudent.studentlist(so_conn,re_path,'curr','0',True)
-    # funcstudent.studentlist(so_conn,re_path,'prev','0',True)
-    # funcstudent.studentlist(so_conn,re_path,'peri','2017',True)
 
     """*************************************************************************
     BUILD MODULES
@@ -1330,10 +1324,18 @@ def vss_lists():
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
-    """ STUDENT ACCOUNT TRANSACTIONS *******************************************
-    *** 
-    *** 
-    *** 
+    """*************************************************************************
+    BUILD STUDENTS
+    *************************************************************************"""
+    print("BUILD STUDENTS")
+    funcfile.writelog("BUILD STUDENTS")
+
+    funcstudent.studentlist(so_conn,re_path,'curr','0',True)
+    # funcstudent.studentlist(so_conn,re_path,'prev','0',True)
+    # funcstudent.studentlist(so_conn,re_path,'peri','2017',True)
+
+    """*************************************************************************
+    STUDENT ACCOUNT TRANSACTIONS
     *************************************************************************"""
 
     funcfile.writelog("STUDENT TRANSACTIONS")
