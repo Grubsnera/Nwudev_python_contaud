@@ -1,15 +1,15 @@
 ﻿Select
-    X020_Student_feequal.VALID,
-    X020_Student_feequal.PRESENT_CAT,
-    X020_Student_feequal.FSITEORGUNITNUMBER,
-    Count(X020_Student_feequal.KSTUDBUSENTID) As Count_KSTUDBUSENTID,
-    X020_Student_feequal.FEE_TYPE,
-    X020_Student_feequal.FEE_CAT
+    STUD.FQUALLEVELAPID,
+    STUD.CAMPUS,
+    STUD.QUALIFICATION,
+    STUD.QUALIFICATION_NAME,
+    Count(STUD.KSTUDBUSENTID) As COUNT_STUD,
+    TRAN.TRAN_COUNT_ALL
 From
-    X020_Student_feequal
+    X000_Student STUD Left Join
+    X020aa_Trans_feequal TRAN On TRAN.FQUALLEVELAPID = STUD.FQUALLEVELAPID
+Where
+    STUD.PRESENT_CAT Like ('C%')
 Group By
-    X020_Student_feequal.VALID,
-    X020_Student_feequal.PRESENT_CAT,
-    X020_Student_feequal.FSITEORGUNITNUMBER,
-    X020_Student_feequal.FEE_TYPE,
-    X020_Student_feequal.FEE_CAT
+    STUD.FQUALLEVELAPID,
+    STUD.CAMPUS
