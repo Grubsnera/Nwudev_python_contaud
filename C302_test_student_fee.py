@@ -165,7 +165,11 @@ def student_fee(s_period='curr', s_year='2019'):
         TRAN.FUSERBUSINESSENTITYID,
         TRAN.AUDITDATETIME,
         TRAN.FMODAPID,
+        TRAN.MODULE,
+        TRAN.MODULE_NAME,
         TRAN.FQUALLEVELAPID,
+        TRAN.QUALIFICATION,
+        TRAN.QUALIFICATION_NAME,
         TRAN.FENROLPRESID
     FROM
         VSS.X010_Studytrans_%PERIOD% TRAN
