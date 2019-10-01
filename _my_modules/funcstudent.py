@@ -64,15 +64,16 @@ def studentlist(so_conn, re_path, s_period='curr', s_year='2019', l_export=False
         QUAL.LEVY_TYPE,
         QUAL.FOS_SELECTION,
         QUAL.FOS_SELECTION As LONG,
-        RESU.RESULT,
         QUAL.FBUSINESSENTITYID,
         QUAL.SITEID,
         QUAL.CAMPUS,
         QUAL.ORGUNIT_MANAGER,
         QUAL.ORGUNIT_NAME,
         QUAL.ORGUNIT_TYPE,
+        RESU.KSTUDQUALFOSRESULTID,
         RESU.DISCONTINUEDATE,
         RESU.FDISCONTINUECODEID,
+        RESU.RESULT,
         RESU.DISCONTINUE_REAS,
         RESU.POSTPONE_REAS,
         RESU.FPOSTPONEMENTCODEID,    
@@ -103,7 +104,6 @@ def studentlist(so_conn, re_path, s_period='curr', s_year='2019', l_export=False
         STUD.FENROLMENTPRESENTATIONID,
         QUAL.FOS_KACADEMICPROGRAMID,
         STUD.FPROGRAMAPID,
-        RESU.KSTUDQUALFOSRESULTID,
         STUD.FGRADUATIONCEREMONYID As STUD_CEREMONY_ID
     From
         QUALLEVELENROLSTUD_%PERIOD% STUD Left Join
@@ -112,9 +112,8 @@ def studentlist(so_conn, re_path, s_period='curr', s_year='2019', l_export=False
         X000_Codedescription ENTR ON ENTR.KCODEDESCID = STUD.FENTRYLEVELCODEID Left Join
         X000_Qualifications QUAL On QUAL.KENROLMENTPRESENTATIONID = STUD.FENROLMENTPRESENTATIONID Left Join
         X000_Student_qualfos_result RESU ON RESU.KBUSINESSENTITYID = STUD.KSTUDBUSENTID And
-            RESU.FPROGRAMAPID = STUD.FPROGRAMAPID And
             RESU.KACADEMICPROGRAMID = QUAL.FOS_KACADEMICPROGRAMID And
-            Strftime('%Y',RESU.DISCONTINUEDATE) = %YEAR%
+            Strftime('%Y', RESU.DISCONTINUEDATE) = '%YEAR%'
     Order By
         STUD.KSTUDBUSENTID
     ;"""
@@ -151,6 +150,8 @@ def studentlist(so_conn, re_path, s_period='curr', s_year='2019', l_export=False
         MENR.DATEENROL,
         MENR.STARTDATE,
         MENR.ENDDATE,
+        STUD.FQUALLEVELAPID,
+        STUD.QUALIFICATION,
         MODU.MODULE,
         MODU.MODULE_NAME,
         MODU.FENROLMENTCATEGORYCODEID,
@@ -170,7 +171,7 @@ def studentlist(so_conn, re_path, s_period='curr', s_year='2019', l_export=False
         MODU.ORGUNIT_TYPE,
         MODU.ORGUNIT_NAME,
         MODU.ORGUNIT_MANAGER,
-        STUD.ISCONDITIONALREG,
+        MENR.ISCONDITIONALREG,
         MENR.ISNEWENROLMENT,
         MENR.ISPROCESSEDONLINE,
         MENR.ISREPEATINGMODULE,
@@ -189,7 +190,6 @@ def studentlist(so_conn, re_path, s_period='curr', s_year='2019', l_export=False
         MENR.FACKENROLSTUDID,
         MENR.FACKMODENROLSTUDID,
         MENR.FACKMODSTUDBUSENTID,
-        MENR.ISCONDITIONALREG,
         MENR.AUDITDATETIME As MENROL_AUDITDATETIME,
         MENR.FAUDITSYSTEMFUNCTIONID As MENROL_SYSID,
         MENR.FAUDITUSERCODE As MENROL_USERCODE,
