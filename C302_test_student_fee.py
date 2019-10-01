@@ -20,14 +20,19 @@ ENVIRONMENT
 OPEN THE DATABASES
 TEMPORARY AREA
 BEGIN OF SCRIPT
+
 OBTAIN STUDENTS
 OBTAIN STUDENT TRANSACTIONS
+
 REGISTRATION FEE MASTER
 REGISTRATION FEE REPORTS
 TEST REGISTRATION FEE CONTACT NULL
 TEST REGISTRATION FEE CONTACT NEGATIVE
 TEST REGISTRATION FEE CONTACT ZERO
 TEST REGISTRATION FEE CONTACT ABNORMAL
+
+QUALIFICATION FEE MASTER
+
 END OF SCRIPT
 *****************************************************************************"""
 
@@ -1772,6 +1777,132 @@ def student_fee(s_period='curr', s_year='2019'):
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    """*****************************************************************************
+    QUALIFICATION FEE MASTER
+    *****************************************************************************"""
+    print("QUALIFICATION FEE MASTER")
+    funcfile.writelog("QUALIFICATION FEE MASTER")
+
+    # BUILD LIST OF QUALIFICATIONS PLUS STATS
+    print("Build summary of qualifications levied...")
+    sr_file = "X020aa_Trans_feequal"
+    s_sql = "Create table " + sr_file + " AS" + """
+    Select
+        TRAN.FQUALLEVELAPID,
+        TRAN.QUALIFICATION,
+        TRAN.QUALIFICATION_NAME,
+        CAST(COUNT(TRAN.STUDENT) As INT) As TRAN_COUNT_ALL,
+        CAST(TOTAL(TRAN.AMOUNT) AS REAL) AS FEE_QUAL_ALL
+    From
+        X000_Transaction TRAN
+    Where
+        Instr('%TRANCODE%', Trim(TRAN.TRANSCODE)) > 0 And
+        TRAN.FMODAPID = 0
+    Group by
+        TRAN.FQUALLEVELAPID
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = s_sql.replace("%TRANCODE%", s_qual_trancode)
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # CALCULATE THE QUALIFICATION FEES LEVIED PER STUDENT
+    print("Calculate the qualification fees levied per student...")
+    sr_file = "X020ab_Trans_feequal_stud"
+    s_sql = "Create table " + sr_file + " AS" + """
+    Select
+        TRAN.STUDENT,
+        TRAN.FQUALLEVELAPID,
+        TRAN.FUSERBUSINESSENTITYID,
+        CAST(COUNT(TRAN.STUDENT) As INT) As TRAN_COUNT,
+        CAST(TOTAL(TRAN.AMOUNT) AS REAL) AS FEE_QUAL
+    From
+        X000_Transaction TRAN
+    Where
+        Instr('%TRANCODE%', Trim(TRAN.TRANSCODE)) > 0 And
+        TRAN.FMODAPID = 0
+    Group by
+        TRAN.STUDENT,
+        TRAN.FQUALLEVELAPID
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = s_sql.replace("%TRANCODE%", s_qual_trancode)
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # CALCULATE THE STATISTIC MODE FOR EACH QUALIFICATION
+    print("Calculate the qualification statistic mode...")
+    i_value: int = 0
+    sr_file = "X020ac_Trans_feequal_mode"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute("CREATE TABLE " + sr_file + " (FQUALLEVELAPID INT, FEE_MODE REAL)")
+    for qual in so_curs.execute("SELECT FQUALLEVELAPID FROM X020_Trans_feequal").fetchall():
+        try:
+            i_value = funcstat.stat_mode(so_curs, "X020_Trans_feequal_stud",
+                                         "FEE_QUAL", "FQUALLEVELAPID = " + str(qual[0]))
+            if i_value < 0:
+                i_value = 0
+        except Exception as e:
+            # funcsys.ErrMessage(e) if you want error to log
+            if "".join(e.args).find("no unique mode") >= 0:
+                i_value = funcstat.stat_highest_value(so_curs, "X020_Trans_feequal_stud", "FEE_QUAL",
+                                                      "FQUALLEVELAPID = " + str(qual[0]))
+            else:
+                i_value = 0
+        s_cols = "INSERT INTO " + sr_file + " VALUES(" + str(qual[0]) + ", " + str(i_value) + ")"
+        so_curs.execute(s_cols)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    so_conn.commit()
+
+    # CALCULATE THE NUMBER OF FIRST SEMESTER MODULES
+    print("Calculate the number of first semester modules...")
+    sr_file = "X020ad_Trans_feequal_semester1"
+    s_sql = "Create table " + sr_file + " AS" + """
+    Select
+        MODU.KSTUDBUSENTID,
+        MODU.FQUALLEVELAPID,    
+        Count(MODU.KENROLSTUDID) As SEM1
+    From
+        VSS.X001_Student_module_curr MODU
+    Where
+        Substr(MODU.COURSEMODULE,1,1) = '1' Or
+        Substr(MODU.COURSEMODULE,1,1) = '3' Or
+        Substr(MODU.COURSEMODULE,1,1) = '4' Or
+        Substr(MODU.COURSEMODULE,1,1) = '7' Or
+        Substr(MODU.COURSEMODULE,1,1) = '8' Or
+        Substr(MODU.COURSEMODULE,1,1) = '9'
+    Group By
+        MODU.KSTUDBUSENTID,
+        MODU.FQUALLEVELAPID
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    so_conn.commit()
+
+    # CALCULATE THE NUMBER OF SECOND SEMESTER MODULES
+    print("Calculate the number of second semester modules...")
+    sr_file = "X020ae_Trans_feequal_semester2"
+    s_sql = "Create table " + sr_file + " AS" + """
+    Select
+        MODU.KSTUDBUSENTID,
+        MODU.FQUALLEVELAPID,    
+        Count(MODU.KENROLSTUDID) As SEM2
+    From
+        VSS.X001_Student_module_curr MODU
+    Where
+        Substr(MODU.COURSEMODULE,1,1) = '2' Or
+        Substr(MODU.COURSEMODULE,1,1) = '5' Or
+        Substr(MODU.COURSEMODULE,1,1) = '6'
+    Group By
+        MODU.KSTUDBUSENTID,
+        MODU.FQUALLEVELAPID    
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    so_conn.commit()
 
     """ ****************************************************************************
     END OF SCRIPT
