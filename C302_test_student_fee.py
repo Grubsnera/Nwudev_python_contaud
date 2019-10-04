@@ -1837,16 +1837,16 @@ def student_fee(s_period='curr', s_year='2019'):
     sr_file = "X020ac_Trans_feequal_mode"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute("CREATE TABLE " + sr_file + " (FQUALLEVELAPID INT, FEE_MODE REAL)")
-    for qual in so_curs.execute("SELECT FQUALLEVELAPID FROM X020_Trans_feequal").fetchall():
+    for qual in so_curs.execute("SELECT FQUALLEVELAPID FROM X020aa_Trans_feequal").fetchall():
         try:
-            i_value = funcstat.stat_mode(so_curs, "X020_Trans_feequal_stud",
+            i_value = funcstat.stat_mode(so_curs, "X020ab_Trans_feequal_stud",
                                          "FEE_QUAL", "FQUALLEVELAPID = " + str(qual[0]))
             if i_value < 0:
                 i_value = 0
         except Exception as e:
             # funcsys.ErrMessage(e) if you want error to log
             if "".join(e.args).find("no unique mode") >= 0:
-                i_value = funcstat.stat_highest_value(so_curs, "X020_Trans_feequal_stud", "FEE_QUAL",
+                i_value = funcstat.stat_highest_value(so_curs, "X020ab_Trans_feequal_stud", "FEE_QUAL",
                                                       "FQUALLEVELAPID = " + str(qual[0]))
             else:
                 i_value = 0
