@@ -2407,7 +2407,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
         TRAN.VSS_DESCRIPTION AS TRAN_DESCRIPTION,
         TRAN.VSS_AMOUNT AS AMOUNT_VSS,
         TRAN.GL_AMOUNT AS AMOUNT_GL,
-        TRAN.DIFF
+        Round(TRAN.DIFF,2) As DIFF
     FROM
         X003ax_vss_gl_join TRAN
     WHERE
@@ -2454,7 +2454,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
         so_curs.execute(
             "CREATE TABLE " + sr_file + """
             (PROCESS TEXT,
-            FIELD1 INT,
+            FIELD1 TEXT,
             FIELD2 TEXT,
             FIELD3 TEXT,
             FIELD4 REAL,
