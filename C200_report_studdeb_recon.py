@@ -1402,8 +1402,8 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     SELECT
         TRAN.CAMPUS,
         TRAN.MONTH,
-        Total(TRAN.VSS_AMOUNT) AS VSS_AMOUNT,
-        Total(TRAN.GL_AMOUNT) AS GL_AMOUNT
+        Round(Total(TRAN.VSS_AMOUNT),2) AS VSS_AMOUNT,
+        Round(Total(TRAN.GL_AMOUNT),2) AS GL_AMOUNT
     FROM
         X003ax_vss_gl_join TRAN
     WHERE
@@ -1442,7 +1442,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
         TRAN.VSS_DESCRIPTION AS TRAN_DESCRIPTION,
         TRAN.VSS_AMOUNT AS AMOUNT_VSS,
         TRAN.GL_AMOUNT AS AMOUNT_GL,
-        TRAN.DIFF
+        Round(TRAN.DIFF,2) As DIFF
     FROM
         X003ax_vss_gl_join TRAN
     WHERE
@@ -1767,7 +1767,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
         TRAN.MONTH,
         TRAN.TRANCODE AS TRAN_TYPE,
         TRAN.VSS_DESCRIPTION AS TRAN_DESCRIPTION,
-        TRAN.VSS_AMOUNT AS AMOUNT_VSS
+        Round(TRAN.VSS_AMOUNT,2) AS AMOUNT_VSS
     FROM
         X003ax_vss_gl_join TRAN
     WHERE
@@ -2086,7 +2086,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
         Upper(TRAN.CAMPUS) As CAMPUS,
         TRAN.MONTH,
         TRAN.GL_DESCRIPTION,
-        TRAN.GL_AMOUNT
+        Round(TRAN.GL_AMOUNT,2) As GL_AMOUNT
     FROM
         X003ax_vss_gl_join TRAN
     WHERE
@@ -3165,7 +3165,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
         TRAN.TRANSDATE_VSS,
         TRAN.TRANSCODE_VSS,
         TRAN.TRANSDESC_VSS,
-        TRAN.AMOUNT_VSS,
+        Round(TRAN.AMOUNT_VSS,2) As AMOUNT_VSS,
         TRAN.BURSCODE_VSS,
         TRAN.BURSNAAM_VSS,
         TRAN.TRANSUSER_VSS  
@@ -3259,8 +3259,8 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
             PREV.DATE_MAILED
         From
             X010eb_findings FIND Left Join
-            X010ec_get_previous PREV ON PREV.FIELD1 = FIND.CAMPUS_VSS AND
-                PREV.FIELD2 = FIND.MONTH_VSS And
+            X010ec_get_previous PREV ON PREV.FIELD1 = FIND.STUDENT_VSS AND
+                PREV.FIELD2 = FIND.CAMPUS_VSS And
                 PREV.FIELD3 = FIND.TRANSDATE_VSS And
                 PREV.FIELD4 = FIND.AMOUNT_VSS And
                 PREV.FIELD5 = FIND.BURSCODE_VSS And
@@ -3281,8 +3281,8 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             PREV.PROCESS,
-            PREV.CAMPUS_VSS AS FIELD1,
-            PREV.MONTH_VSS AS FIELD2,
+            PREV.STUDENT_VSS AS FIELD1,
+            PREV.CAMPUS_VSS AS FIELD2,
             PREV.TRANSDATE_VSS AS FIELD3,
             Cast(PREV.AMOUNT_VSS As REAL) AS FIELD4,
             PREV.BURSCODE_VSS AS FIELD5,
