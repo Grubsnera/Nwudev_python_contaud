@@ -62,7 +62,7 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
         s_year = funcdate.prev_year()
         so_file = "Kfs_prev.sqlite"  # Source database
     else:
-        so_file = "Kfs" + s_year + "sqlite"  # Source database
+        so_file = "Kfs_" + s_year + ".sqlite"  # Source database
     l_vacuum = False  # Vacuum database
 
     """*****************************************************************************
@@ -334,6 +334,7 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
             OBJ.FIN_OBJECT_CD = LINE.FIN_OBJECT_CD        
     Order By
         LINE.FDOC_NBR,
+        LINE.FDOC_LINE_NBR,
         LINE.FDOC_LINE_AMT
     """
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -527,6 +528,7 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
         APPROVE.NAME_ADDR AS APPROVE_EMP_NAME,
         APPROVE.ACTN_DT AS APPROVE_DATE,
         APPROVE.ACTN AS APPROVE_STATUS,
+        PAYMENT.A_COUNT,
         APPROVE.ANNOTN AS NOTE,
         CASE
             WHEN ACC.COUNT_LINES = 1 THEN ACC.COST_STRING 
