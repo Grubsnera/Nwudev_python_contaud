@@ -34,7 +34,8 @@ print("(S)ingle all payments")
 print("(I)nitiator details")
 print("(A)pprover details")
 print("(C)ost string details")
-s_tabl = input("Which table? (SIAC)")
+print("")
+s_tabl = input("Which table? (SIAC) ").upper()
 print("")
 
 # OPEN THE LOG WRITER
@@ -69,8 +70,18 @@ print("BEGIN OF SCRIPT")
 funcfile.writelog("BEGIN OF SCRIPT")
 
 # Export the declaration data
-if s_
-sr_file = "X001ad_Report_payments_accroute"
+if s_tabl == 'I':
+    sr_file = "X001ab_Report_payments_initiate"
+    sx_file = "Creditor_report_payments_001ab_initiate_"
+elif s_tabl == 'A':
+    sr_file = "X001ac_Report_payments_approve"
+    sx_file = "Creditor_report_payments_001ac_approve_"
+elif s_tabl == 'C':
+    sr_file = "X001ad_Report_payments_accroute"
+    sx_file = "Creditor_report_payments_001ad_accroute_"
+else:
+    sr_file = "X001aa_Report_payments"
+    sx_file = "Creditor_report_payments_001aa_"
 if l_export == True:
     if s_period == "curr":
         sx_path = "R:/Kfs/" + funcdate.cur_year() + "/"
@@ -78,7 +89,6 @@ if l_export == True:
         sx_path = "R:/Kfs/" + funcdate.prev_year() + "/"
     else:
         sx_path = "R:/Kfs/" + s_period + "/"
-    sx_file = "Creditor_report_payments_001ad_accroute_"
     print("Export data..." + sx_path + sx_file)
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
     funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
