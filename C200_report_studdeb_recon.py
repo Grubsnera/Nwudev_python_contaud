@@ -1815,10 +1815,10 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
         so_curs.execute(
             "CREATE TABLE " + sr_file + """
             (PROCESS TEXT,
-            FIELD1 INT,
+            FIELD1 TEXT,
             FIELD2 TEXT,
             FIELD3 TEXT,
-            FIELD4 TEXT,
+            FIELD4 REAL,
             FIELD5 TEXT,
             DATE_REPORTED TEXT,
             DATE_RETEST TEXT,
@@ -2131,10 +2131,10 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
         so_curs.execute(
             "CREATE TABLE " + sr_file + """
             (PROCESS TEXT,
-            FIELD1 INT,
+            FIELD1 TEXT,
             FIELD2 TEXT,
             FIELD3 TEXT,
-            FIELD4 TEXT,
+            FIELD4 REAL,
             FIELD5 TEXT,
             DATE_REPORTED TEXT,
             DATE_RETEST TEXT,
