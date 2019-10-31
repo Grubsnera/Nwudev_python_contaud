@@ -22,9 +22,12 @@ ENVIRONMENT
 OPEN THE DATABASES
 BEGIN OF SCRIPT
 GL TRANSACTION LIST
+PAYMENT SUMMARY LIST
 PAYMENT INITIATE LIST
 PAYMENT APPROVE LIST
 BUILD ACCOUNTING LINE
+PAYMENT NOTES
+PAYMENT ATTACHMENTS
 BUILD PAYMENTS
 BUILD PAYMENTS SUMMARY
 END OF SCRIPT
@@ -143,6 +146,43 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: GL Transaction list")
+
+    """ ****************************************************************************
+    PAYMENT SUMMARY LIST
+    *****************************************************************************"""
+    print("PAYMENT INITIATE LIST")
+    funcfile.writelog("PAYMENT INITIATE LIST")
+
+    # BUILD PAYMENTS SUMMARY LIST
+    print("Build payments...")
+    sr_file = "X000_Payments"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        DETAIL.CUST_PMT_DOC_NBR As EDOC,
+        PAYMENT.PMT_DT,
+        DETAIL.REQS_NBR,
+        DETAIL.PO_NBR,
+        DETAIL.INV_NBR,
+        DETAIL.INV_DT,
+        DETAIL.ORIG_INV_AMT,
+        PAYMENT.PAYEE_ID AS VENDOR_ID,
+        PAYMENT.PAYEE_ID_TYP_CD AS VENDOR_TYPE,
+        DETAIL.NET_PMT_AMT,
+        PAYMENT.PMT_GRP_ID,
+        PAYMENT.DISB_NBR,
+        PAYMENT.DISB_TS,
+        PAYMENT.PMT_STAT_CD,
+        DOC.DOC_TYP_NM As DOC_TYPE,
+        Upper(DOC.LBL) As DOC_LABEL
+    From
+        PDP_PMT_GRP_T PAYMENT Left Join
+        KFS.PDP_PMT_DTL_T DETAIL On DETAIL.PMT_GRP_ID = PAYMENT.PMT_GRP_ID Left Join
+        KFS.X000_Document DOC On DOC.DOC_HDR_ID = DETAIL.CUST_PMT_DOC_NBR
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """ ****************************************************************************
     PAYMENT INITIATE LIST
@@ -364,10 +404,102 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """ ****************************************************************************
-    BUILD PAYMENTS
+    PAYMENT NOTES
     *****************************************************************************"""
-    print("BUILD PAYMENTS")
-    funcfile.writelog("BUILD PAYMENTS")
+    print("PAYMENT NOTES")
+    funcfile.writelog("PAYMENT NOTES")
+
+    # BUILD PAYMENT NOTE
+    print("Build payment note...")
+    sr_file = "X000_Note"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        PAY.EDOC,
+        HDR.FDOC_DESC As NOTE_DESC,
+        NTE.TXT As NOTE_TXT
+    From
+        X000_Payments PAY Left Join
+        KFS.KRNS_DOC_HDR_T HDR On HDR.DOC_HDR_ID = PAY.EDOC Inner Join
+        KFS.KRNS_NTE_T NTE On NTE.RMT_OBJ_ID = HDR.OBJ_ID Left Join
+        KFS.KRNS_ATT_T ATT On ATT.NTE_ID = NTE.NTE_ID
+    Where
+        ATT.FILE_NM IS NULL
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD PAYMENT UNIQUE NOTE
+    print("Build payment unique note...")
+    sr_file = "X000_Note_unique"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        NTE.EDOC,
+        Count(NTE.EDOC) As NOTE_COUNT,
+        NTE.NOTE_DESC,
+        NTE.NOTE_TXT
+    From
+        X000_Note NTE
+    Group By
+        NTE.EDOC
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    """ ****************************************************************************
+    PAYMENT ATTACHMENTS
+    *****************************************************************************"""
+    print("PAYMENT ATTACHMENTS")
+    funcfile.writelog("PAYMENT ATTACHMENTS")
+
+    # BUILD PAYMENT ATTACHMENTS
+    print("Build payment attachments...")
+    sr_file = "X000_Attachment"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        PAY.EDOC,
+        HDR.FDOC_DESC As ATTACH_DESC,
+        NTE.TXT As ATTACH_TXT,
+        ATT.FILE_NM As ATTACH_FILE
+    From
+        X000_Payments PAY Left Join
+        KFS.KRNS_DOC_HDR_T HDR On HDR.DOC_HDR_ID = PAY.EDOC Inner Join
+        KFS.KRNS_NTE_T NTE On NTE.RMT_OBJ_ID = HDR.OBJ_ID Inner Join
+        KFS.KRNS_ATT_T ATT On ATT.NTE_ID = NTE.NTE_ID
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD PAYMENT UNIQUE ATTACHMENT
+    print("Build payment unique attachment...")
+    sr_file = "X000_Attachment_unique"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        ATT.EDOC,
+        Count(ATT.EDOC) As ATTACH_COUNT,
+        ATT.ATTACH_DESC,
+        ATT.ATTACH_TXT,
+        ATT.ATTACH_FILE
+    From
+        X000_Attachment ATT
+    Group By
+        ATT.EDOC
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    """ ****************************************************************************
+    BUILD PAYMENTS DETAIL
+    *****************************************************************************"""
+    print("BUILD PAYMENTS DETAIL")
+    funcfile.writelog("BUILD PAYMENTS DETAIL")
 
     # BUILD PAYMENTS WITH LAST INITIATOR AND APPROVER
     print("Build payments...")
@@ -414,7 +546,14 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
             WHEN ACC.COUNT_LINES = 1 THEN ACC.COST_STRING 
             ELSE Cast(ACC.COUNT_LINES As TEXT)
         END As ACC_COST_STRING,
-        ACC.FDOC_LINE_DESC As ACC_DESC
+        ACC.FDOC_LINE_DESC As ACC_DESC,
+        NTE.NOTE_DESC,
+        NTE.NOTE_TXT,
+        NTE.NOTE_COUNT,
+        ATT.ATTACH_DESC,
+        ATT.ATTACH_TXT,
+        ATT.ATTACH_FILE,
+        ATT.ATTACH_COUNT
     From
         PDP_PMT_GRP_T PAYMENT Left Join
         KFS.X000_Vendor VENDOR On VENDOR.VENDOR_ID = PAYMENT.PAYEE_ID Left Join
@@ -426,7 +565,9 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
         KFS.X000_Document DOC On DOC.DOC_HDR_ID = DETAIL.CUST_PMT_DOC_NBR Left Join
         X000_Account_line_unique ACC On ACC.FDOC_NBR = DETAIL.CUST_PMT_DOC_NBR Left Join
         X000_Initiate_unique INITIATE On INITIATE.DOC_HDR_ID = DETAIL.CUST_PMT_DOC_NBR Left Join    
-        X000_Approve_unique APPROVE On APPROVE.DOC_HDR_ID = DETAIL.CUST_PMT_DOC_NBR
+        X000_Approve_unique APPROVE On APPROVE.DOC_HDR_ID = DETAIL.CUST_PMT_DOC_NBR Left Join
+        X000_Note_unique NTE On NTE.EDOC = DETAIL.CUST_PMT_DOC_NBR Left Join
+        X000_Attachment_unique ATT On ATT.EDOC = DETAIL.CUST_PMT_DOC_NBR
     """
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
