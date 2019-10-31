@@ -32,7 +32,7 @@ funcfile.writelog("--------------------------------")
 # DECLARE VARIABLES
 so_file: str = ""
 s_period: str = "curr"
-s_year: str = ""
+s_year: str = s_period
 so_path = "W:/Kfs/"  # Source database path
 if s_period == "curr":
     so_file = "Kfs_curr.sqlite"  # Source database
