@@ -25,11 +25,11 @@ GL TRANSACTION LIST
 PAYMENT SUMMARY LIST
 PAYMENT INITIATE LIST
 PAYMENT APPROVE LIST
-BUILD ACCOUNTING LINE
+PAYMENT ACCOUNTING LINE
 PAYMENT NOTES
 PAYMENT ATTACHMENTS
-BUILD PAYMENTS
-BUILD PAYMENTS SUMMARY
+PAYMENTS DETAIL
+PAYMENTS SUMMARY
 END OF SCRIPT
 *****************************************************************************"""
 
@@ -260,8 +260,8 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
     """ ****************************************************************************
     PAYMENT APPROVE LIST
     *****************************************************************************"""
-    print("BUILD PAYMENT APPROVE LIST")
-    funcfile.writelog("BUILD PAYMENT APPROVE LIST")
+    print("PAYMENT APPROVE LIST")
+    funcfile.writelog("PAYMENT APPROVE LIST")
 
     # BUILD CURR APPROVALS ALL APPROVERS
     print("Build approve list...")
@@ -341,10 +341,10 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """ ****************************************************************************
-    BUILD ACCOUNTING LINE
+    PAYMENT ACCOUNTING LINE
     *****************************************************************************"""
-    print("BUILD ACCOUNTING LINE")
-    funcfile.writelog("BUILD ACCOUNTING LINE")
+    print("PAYMENT ACCOUNTING LINE")
+    funcfile.writelog("PAYMENT ACCOUNTING LINE")
 
     # BUILD ACCOUNTING LINES
     print("Build account lines...")
@@ -496,10 +496,10 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """ ****************************************************************************
-    BUILD PAYMENTS DETAIL
+    PAYMENTS DETAIL
     *****************************************************************************"""
-    print("BUILD PAYMENTS DETAIL")
-    funcfile.writelog("BUILD PAYMENTS DETAIL")
+    print("PAYMENTS DETAIL")
+    funcfile.writelog("PAYMENTS DETAIL")
 
     # BUILD PAYMENTS WITH LAST INITIATOR AND APPROVER
     print("Build payments...")
@@ -756,10 +756,10 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """*****************************************************************************
-    BUILD PAYMENTS SUMMARY
+    PAYMENTS SUMMARY
     *****************************************************************************"""
-    print("BUILD PAYMENTS SUMMARY")
-    funcfile.writelog("BUILD PAYMENTS SUMMARY")
+    print("PAYMENTS SUMMARY")
+    funcfile.writelog("PAYMENTS SUMMARY")
 
     # BUILD VENDOR PAYMENTS SUMMARY
     print("Build vendor payments summary...")
