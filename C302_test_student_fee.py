@@ -1977,6 +1977,68 @@ def student_fee(s_period='curr', s_year='2019'):
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
+    # IDENTIFY FINDINGS LIST - NOT DONE NORMALLY BUT WANT DETAIL HERE TO EXPORT
+    print("Identify findings list...")
+    sr_file = "X021ab_findings_list"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        FIND.LOC,
+        FIND.QUALIFICATION,
+        FIND.QUALIFICATION_NAME,
+        STUD.KSTUDBUSENTID,
+        STUD.DATEQUALLEVELSTARTED,
+        STUD.DATEENROL,
+        STUD.STARTDATE,
+        STUD.ENDDATE,
+        STUD.QUAL_TYPE,
+        STUD.ACTIVE_IND,
+        STUD.ENTRY_LEVEL,
+        STUD.BLACKLIST,
+        STUD.ENROL_CAT,
+        STUD.PRESENT_CAT,
+        STUD.STATUS_FINAL,
+        STUD.LEVY_CATEGORY,
+        STUD.SITEID,
+        STUD.CAMPUS,
+        STUD.ORGUNIT_NAME,
+        STUD.KSTUDQUALFOSRESULTID,
+        STUD.DISCONTINUEDATE,
+        STUD.FDISCONTINUECODEID,
+        STUD.RESULT,
+        STUD.DISCONTINUE_REAS,
+        STUD.POSTPONE_REAS,
+        STUD.FPOSTPONEMENTCODEID,
+        STUD.ENROLACADEMICYEAR,
+        STUD.ENROLHISTORYYEAR,
+        STUD.ISHEMISSUBSIDY,
+        STUD.ISMAINQUALLEVEL,
+        STUD.ISCONDITIONALREG,
+        STUD.ISCUMLAUDE,
+        STUD.ISPOSSIBLEGRADUATE,
+        STUD.FACCEPTANCETESTCODEID,
+        STUD.ISVERIFICATIONREQUIRED,
+        STUD.EXAMSUBMINIMUM,
+        STUD.ISVATAPPLICABLE,
+        STUD.ISPRESENTEDBEFOREAPPROVAL,
+        STUD.ISDIRECTED
+    From
+        X021ab_findings FIND Inner Join
+        X000_Student STUD On STUD.QUALIFICATION = FIND.QUALIFICATION
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    if funcsys.tablerowcount(so_curs, sr_file) > 0:  # Ignore l_export flag - should export every time
+        print("Export findings...")
+        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_file = "Student_fee_test_021ax_qual_fee_not_loaded_studentlist_"  # File X021_findings_list
+        sx_file_dated = sx_file + funcdate.today_file()
+        s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
+        # funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
+        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
+
     # COUNT THE NUMBER OF FINDINGS
     i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
     print("*** Found " + str(i_finding_before) + " exceptions ***")
