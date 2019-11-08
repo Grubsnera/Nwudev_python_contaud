@@ -1,9 +1,10 @@
 ﻿Select
-    STU.KSTUDBUSENTID,
-    STU.PRESENT_CAT
+    STUD.*
 From
-    X000_Student STU Left Join
-    X021ab_findings_list FIN On FIN.KSTUDBUSENTID = STU.KSTUDBUSENTID
-            And FIN.QUALIFICATION = STU.QUALIFICATION
+    X020ba_Student_master STUD
 Where
-    STU.PRESENT_CAT Like ('C%')
+    STUD.VALID = 0 And
+    STUD.FEE_LEVIED_TYPE Like ('1%')
+Order By
+    STUD.CAMPUS,
+    STUD.FEE_SHOULD_BE
