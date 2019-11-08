@@ -31,8 +31,11 @@ TEST REGISTRATION FEE CONTACT NEGATIVE
 TEST REGISTRATION FEE CONTACT ZERO
 TEST REGISTRATION FEE CONTACT ABNORMAL
 
-QUALIFICATION FEE MASTER
+QUALIFICATION FEE MASTER 1
 QUALIFICATION FEE TEST NO FEE LOADED
+QUALIFICATION FEE MASTER 2
+QUALIFICATION FEE TEST NO TRANSACTION
+QUALIFICATION FEE TEST ZERO TRANSACTION
 
 END OF SCRIPT
 *****************************************************************************"""
@@ -72,7 +75,7 @@ def student_fee(s_period='curr', s_year='2019'):
     s_qual_trancode: str = "004"
     s_mba: str = "71500z2381692z2381690z665559"  # Exclude these FQUALLEVELAPID
     s_mpa: str = "665566"  # Exclude these FQUALLEVELAPID
-    s_exclude = s_mba + 'z' + s_mpa
+    # Find these id's from Sqlite->Sqlite_vss_test_fee->Q021aa_qual_nofee_loaded
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -1784,7 +1787,7 @@ def student_fee(s_period='curr', s_year='2019'):
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """*****************************************************************************
-    QUALIFICATION FEE MASTER
+    QUALIFICATION FEE MASTER 1
     *****************************************************************************"""
     print("QUALIFICATION FEE MASTER")
     funcfile.writelog("QUALIFICATION FEE MASTER")
@@ -1921,6 +1924,7 @@ def student_fee(s_period='curr', s_year='2019'):
     # EXCLUDE
     # Distance students
     # MBA and MPA students
+    # Occasional students
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
@@ -1935,21 +1939,35 @@ def student_fee(s_period='curr', s_year='2019'):
         STUD.QUALIFICATION,
         STUD.QUALIFICATION_NAME,
         Count(STUD.KSTUDBUSENTID) As COUNT_STUD,
-        TRAN.TRAN_COUNT_ALL As COUNT_TRAN
+        Cast(Case
+            When Instr('%MBA%',STUD.FQUALLEVELAPID) > 0 Then 0
+            When Instr('%MPA%',STUD.FQUALLEVELAPID) > 0 Then 0
+            When STUD.QUALIFICATION_NAME Like ('%NON DEGREE%') Then 0
+            When STUD.QUALIFICATION_NAME Like ('%OCCASIONAL STUD%') Then 0
+            When STUD.QUALIFICATION_NAME Like ('%OCCATIONAL STUD%') Then 0
+            When STUD.QUALIFICATION_NAME Like ('%OCC. STUD.%') Then 0
+            When STUD.QUALIFICATION_NAME Like ('%MBA%') Then 0
+            When STUD.QUALIFICATION_NAME Like ('%MASTER OF BUSINESS ADMINISTRATION%') Then 0
+            Else 1
+        End As INT) As FINDING
     From
         X000_Student STUD Left Join
         X020aa_Trans_feequal TRAN On TRAN.FQUALLEVELAPID = STUD.FQUALLEVELAPID
     Where
-        STUD.PRESENT_CAT Like ('C%')
+        (STUD.PRESENT_CAT Like ('C%') And
+        TRAN.TRAN_COUNT_ALL Is Null) Or
+        (STUD.PRESENT_CAT Like ('C%') And
+        Instr('%MPA%',STUD.FQUALLEVELAPID) > 0)
     Group By
         STUD.FQUALLEVELAPID,
         STUD.CAMPUS
     Order By
-        COUNT_TRAN,
         STUD.CAMPUS,
         STUD.QUALIFICATION
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = s_sql.replace("%MBA%", s_mba)
+    s_sql = s_sql.replace("%MPA%", s_mpa)
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     so_conn.commit()
@@ -1968,11 +1986,9 @@ def student_fee(s_period='curr', s_year='2019'):
     From
         X021aa_Qual_nofee_loaded FIND
     Where
-        FIND.COUNT_TRAN Is Null And
-        Instr('%EXCLUDE%',FIND.FQUALLEVELAPID) = 0
+        FIND.FINDING = 1
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = s_sql.replace("%EXCLUDE%", s_exclude)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -1982,7 +1998,7 @@ def student_fee(s_period='curr', s_year='2019'):
     sr_file = "X021ab_findings_list"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
-        FIND.LOC,
+        FIND.CAMPUS,
         FIND.QUALIFICATION,
         FIND.QUALIFICATION_NAME,
         STUD.KSTUDBUSENTID,
@@ -2022,7 +2038,7 @@ def student_fee(s_period='curr', s_year='2019'):
         STUD.ISPRESENTEDBEFOREAPPROVAL,
         STUD.ISDIRECTED
     From
-        X021ab_findings FIND Inner Join
+        X021aa_Qual_nofee_loaded FIND Inner Join
         X000_Student STUD On STUD.QUALIFICATION = FIND.QUALIFICATION
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -2189,7 +2205,7 @@ def student_fee(s_period='curr', s_year='2019'):
             VSS.X000_OWN_LOOKUPS SUPERVISOR Left Join
             PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = SUPERVISOR.LOOKUP_DESCRIPTION
         Where
-            SUPERVISOR.LOOKUP = 'stud_fee_test_qual_no_fee_loaded_officer_supervisor'
+            SUPERVISOR.LOOKUP = 'stud_fee_test_qual_no_fee_loaded_supervisor'
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -2308,6 +2324,568 @@ def student_fee(s_period='curr', s_year='2019'):
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    """*****************************************************************************
+    QUALIFICATION FEE MASTER 2 - JOIN STUDENT AND TRANSACTION AND NO FEE LOADED TEST
+    *****************************************************************************"""
+    print("QUALIFICATION FEE MASTER")
+    funcfile.writelog("QUALIFICATION FEE MASTER")
+
+    # Short course students already removed in OBTAIN STUDENTS
+    # Remove NON CONTACT students
+    # Remove students identified in QUALIFICATION FEE TEST NO FEE LOADED
+
+    # JOIN STUDENTS AND TRANSACTIONS
+    print("Join students and transactions...")
+    sr_file = "X020ba_Student_master"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        Cast(0 As INT) As VALID,
+        STUD.CAMPUS,
+        STUD.KSTUDBUSENTID,
+        Cast(Case
+            When FEES.FEE_QUAL Is Null Then 0
+            Else Round(FEES.FEE_QUAL,2)
+        End As REAL) As FEE_LEVIED,
+        Cast(Case
+            When MODE.FEE_MODE Is Null Then 0
+            Else Round(MODE.FEE_MODE,2)
+        End As REAL) As FEE_MODE,
+        Cast(Case
+            When MODE.FEE_MODE Is Null Then 0
+            Else Round(MODE.FEE_MODE/2,2)
+        End As REAL) As FEE_MODE_HALF,
+        '' As FEE_SHOULD_BE,
+        Case
+            When STUD.ENROL_CAT = "POST DOC" Then '9 EXCLUDE POST DOC'
+            When STUD.ISCONDITIONALREG = '1' Then  '9 EXCLUDE CONDITIONAL REG'
+            When Instr('%MBA%',STUD.FQUALLEVELAPID) != 0 Then '9 EXCLUDE MBA'
+            When Instr('%MPA%',STUD.FQUALLEVELAPID) != 0 Then '9 EXCLUDE MPA'
+            When STUD.QUALIFICATION_NAME Like ('%NON DEGREE%') Then '9 EXCLUDE NON DEGREE'
+            When STUD.QUALIFICATION_NAME Like ('%OCCASIONAL STUD%') Then '9 OCCASIONAL STUDENT'
+            When STUD.QUALIFICATION_NAME Like ('%OCCATIONAL STUD%') Then '9 OCCASIONAL STUDENT'
+            When STUD.QUALIFICATION_NAME Like ('%MTH IN%') Then '9 MTH STUDENT'
+            When FEES.FEE_QUAL Is Null Then '1 NO TRANSACTION'
+            When FEES.FEE_QUAL < 0 Then '2 NEGATIVE TRANSACTION'
+            When FEES.FEE_QUAL = 0 Then '3 ZERO TRANSACTION'
+            When FEES.FEE_QUAL = Round(MODE.FEE_MODE/2,2) Then '4 HALF TRANSACTION'
+            When FEES.FEE_QUAL = MODE.FEE_MODE Then '5 NORMAL TRANSACTION'
+            Else '6 ABNORMAL TRANSACTION'
+        End As FEE_LEVIED_TYPE,
+        STUD.QUALIFICATION,
+        STUD.QUALIFICATION_NAME,
+        STUD.QUAL_TYPE,
+        STUD.ACTIVE_IND,
+        STUD.LEVY_CATEGORY,
+        STUD.PRESENT_CAT,
+        STUD.ENROL_CAT,
+        STUD.ENTRY_LEVEL,
+        STUD.STATUS_FINAL,
+        STUD.FSITEORGUNITNUMBER As FSITE,
+        STUD.ORGUNIT_NAME,
+        STUD.DATEQUALLEVELSTARTED,
+        STUD.STARTDATE,
+        STUD.DATEENROL,
+        STUD.DISCONTINUEDATE,
+        Cast(Case
+            When STUD.DISCONTINUEDATE > STUD.DATEENROL Then Julianday(STUD.DISCONTINUEDATE) - Julianday(STUD.DATEENROL) 
+            Else 0
+        End As INT) As DAYS_REG,
+        Case
+            When Upper(STUD.RESULT) Like '%PASS%' Then ''
+            Else STUD.DISCONTINUEDATE 
+        End As DISCDATE_CALC,
+        Case
+            When Upper(STUD.RESULT) Like '%PASS%' Then STUD.RESULTPASSDATE
+            Else '' 
+        End As RESULTPASSDATE,
+        Case
+            When Upper(STUD.RESULT) Like '%PASS%' Then STUD.RESULTISSUEDATE
+            Else '' 
+        End As RESULTISSUEDATE,
+        STUD.RESULT,
+        STUD.ISHEMISSUBSIDY,
+        STUD.ISMAINQUALLEVEL,
+        STUD.ENROLACADEMICYEAR,
+        STUD.ENROLHISTORYYEAR,
+        Cast(Case
+            When SEMA.SEM1 > 0 Then SEMA.SEM1
+            Else 0
+        End As INT) As MOD_SEMA,
+        Cast(Case
+            When SEMB.SEM2 > 0 Then SEMB.SEM2
+            Else 0
+        End As INT) As MOD_SEMB,
+        STUD.MIN,
+        STUD.MIN_UNIT,
+        STUD.MAX,
+        STUD.MAX_UNIT,
+        STUD.CERT_TYPE,
+        STUD.LEVY_TYPE,
+        STUD.BLACKLIST,
+        STUD.LONG,
+        STUD.DISCONTINUE_REAS,
+        STUD.POSTPONE_REAS,
+        STUD.FBUSINESSENTITYID,
+        STUD.ORGUNIT_TYPE,
+        STUD.ISCONDITIONALREG,
+        STUD.MARKSFINALISEDDATE,
+        STUD.EXAMSUBMINIMUM,
+        STUD.ISCUMLAUDE,
+        STUD.ISPOSSIBLEGRADUATE,
+        STUD.FACCEPTANCETESTCODEID,
+        STUD.FENROLMENTPRESENTATIONID,
+        STUD.FQUALLEVELAPID,
+        STUD.FPROGRAMAPID,
+        FEES.TRAN_COUNT,
+        FEES.FUSERBUSINESSENTITYID
+    From
+        X000_Student STUD Left Join
+        X021ab_findings_list FIND On FIND.KSTUDBUSENTID = STUD.KSTUDBUSENTID And
+            FIND.QUALIFICATION = STUD.QUALIFICATION Left Join
+        X020ab_Trans_feequal_stud FEES On FEES.STUDENT = STUD.KSTUDBUSENTID And
+            FEES.FQUALLEVELAPID = STUD.FQUALLEVELAPID Left Join
+        X020ac_Trans_feequal_mode MODE On MODE.FQUALLEVELAPID = STUD.FQUALLEVELAPID Left Join
+        X020ad_Trans_feequal_semester1 SEMA On SEMA.KSTUDBUSENTID = STUD.KSTUDBUSENTID And
+            SEMA.FQUALLEVELAPID = STUD.FQUALLEVELAPID Left Join
+        X020ae_Trans_feequal_semester2 SEMB On SEMB.KSTUDBUSENTID = STUD.KSTUDBUSENTID And
+            SEMB.FQUALLEVELAPID = STUD.FQUALLEVELAPID    
+    Where
+        STUD.PRESENT_CAT Like ('C%') And
+        FIND.KSTUDBUSENTID Is Null    
+    ;"""
+
+    # To exclude all MBA and MPA include the following in the where clause
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # UPDATE FEE SHOULD BE COLUMN
+    print("Update qualification fee should be column...")
+    so_curs.execute("UPDATE " + sr_file + """
+                    SET FEE_SHOULD_BE = 
+                    CASE
+                        When LEVY_CATEGORY Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And MOD_SEMA = 0 Then '6 CP 2ND SEM HALF PAYMENT RQD' 
+                        When LEVY_CATEGORY Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null Then '4 CP FULL PAYMENT RQD' 
+                        When LEVY_CATEGORY Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' Then '5 CP PASS FULL PAYMENT RQD' 
+                        When LEVY_CATEGORY Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC <= '2019-03-31' Then '1 CP NO PAYMENT RQD' 
+                        When LEVY_CATEGORY Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC <= '2019-07-31' Then '2 CP DISC 1ST HALF PAYMENT RQD' 
+                        When LEVY_CATEGORY Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC > '2019-07-31' Then '3 CP DISC 2ND FULL PAYMENT RQD'
+                        When LEVY_CATEGORY Like 'P%' And PRESENT_CAT Like 'D%' And DISCDATE_CALC Is Null Then '4 DP FULL PAYMENT RQD' 
+                        When LEVY_CATEGORY Like 'P%' And PRESENT_CAT Like 'D%' And DISCDATE_CALC = '' Then '5 DP PASS FULL PAYMENT RQD' 
+                        When LEVY_CATEGORY Like 'P%' And PRESENT_CAT Like 'D%' And DISCDATE_CALC <= '2019-03-31' Then '1 DP NO PAYMENT RQD' 
+                        When LEVY_CATEGORY Like 'P%' And PRESENT_CAT Like 'D%' And DISCDATE_CALC <= '2019-07-31' Then '2 DP DISC 1ST HALF PAYMENT RQD' 
+                        When LEVY_CATEGORY Like 'P%' And PRESENT_CAT Like 'D%' And DISCDATE_CALC > '2019-07-31' Then '3 DP DISC 2ND FULL PAYMENT RQD'
+                        When LEVY_CATEGORY Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And MOD_SEMA = 0 Then '6 CP 2ND SEM HALF PAYMENT RQD' 
+                        When LEVY_CATEGORY Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null Then '4 CU FULL PAYMENT RQD'
+                        When LEVY_CATEGORY Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' Then '5 CU PASS FULL PAYMENT RQD'
+                        When LEVY_CATEGORY Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC <= '2019-02-17' Then '1 CU NO PAYMENT RQD'
+                        When LEVY_CATEGORY Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC <= '2019-07-31' Then '2 CU DISC 1ST HALF PAYMENT RQD'
+                        When LEVY_CATEGORY Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC > '2019-07-31' Then '3 CU DISC 2ND FULL PAYMENT RQD'
+                        When LEVY_CATEGORY Like 'U%' And PRESENT_CAT Like 'D%' And DISCDATE_CALC Is Null Then '4 DU FULL PAYMENT RQD'
+                        When LEVY_CATEGORY Like 'U%' And PRESENT_CAT Like 'D%' And DISCDATE_CALC = '' Then '5 DU PASS FULL PAYMENT RQD'
+                        When LEVY_CATEGORY Like 'U%' And PRESENT_CAT Like 'D%' And DISCDATE_CALC <= '2019-03-09' Then '1 DU NO PAYMENT RQD'
+                        When LEVY_CATEGORY Like 'U%' And PRESENT_CAT Like 'D%' And DISCDATE_CALC <= '2019-08-15' Then '2 DU DISC 1ST HALF PAYMENT RQD'
+                        When LEVY_CATEGORY Like 'U%' And PRESENT_CAT Like 'D%' And DISCDATE_CALC > '2019-08-15' Then '3 DU DISC 2ND FULL PAYMENT RQD'
+                        Else '7 NO ALLOCATION FULL PAYMENT RQD' 
+                    END
+                    ;""")
+    so_conn.commit()
+    funcfile.writelog("%t UPDATE COLUMN: Valid qualification fee")
+
+    # UPDATE VALID COLUMN
+    print("Update qualification fee valid column...")
+    so_curs.execute("UPDATE " + sr_file + """
+                    SET VALID = 
+                    CASE
+                        When FEE_LEVIED_TYPE Like '2%' Then 0
+                        When FEE_LEVIED_TYPE Like '9%' Then 1
+                        When FEE_SHOULD_BE Like '1%' And FEE_LEVIED_TYPE Like '1%' Then 1
+                        When FEE_SHOULD_BE Like '1%' And FEE_LEVIED_TYPE Like '3%' Then 1
+                        When FEE_SHOULD_BE Like '1%' And FEE_LEVIED_TYPE Like '4%' Then 2
+                        When FEE_SHOULD_BE Like '2%' And FEE_LEVIED_TYPE Like '4%' Then 1
+                        When FEE_SHOULD_BE Like '2%' And FEE_LEVIED_TYPE Like '5%' Then 2
+                        When FEE_SHOULD_BE Like '3%' And FEE_LEVIED_TYPE Like '5%' Then 1
+                        When FEE_SHOULD_BE Like '4%' And FEE_LEVIED_TYPE Like '5%' Then 1
+                        When FEE_SHOULD_BE Like '5%' And FEE_LEVIED_TYPE Like '5%' Then 1
+                        When FEE_SHOULD_BE Like '6%' And FEE_LEVIED_TYPE Like '4%' Then 1
+                        When FEE_SHOULD_BE Like '6%' And FEE_LEVIED_TYPE Like '5%' Then 2
+                        When FEE_SHOULD_BE Like '7%' And FEE_LEVIED_TYPE Like '5%' Then 1
+                        Else 0
+                    END
+                    ;""")
+    so_conn.commit()
+    funcfile.writelog("%t UPDATE COLUMN: Valid qualification fee")
+
+    # JOIN STUDENTS AND TRANSACTIONS
+    print("Join students and transactions...")
+    sr_file = "X020bx_Student_master_sort"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        MAST.*
+    From
+        X020ba_Student_master MAST
+    Order By
+        FEE_LEVIED_TYPE,
+        DATEENROL,
+        MOD_SEMA,
+        MOD_SEMB,
+        FEE_SHOULD_BE
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    """*****************************************************************************
+    QUALIFICATION FEE TEST NO TRANSACTION
+    *****************************************************************************"""
+    print("QUALIFICATION FEE TEST NO TRANSACTION")
+    funcfile.writelog("QUALIFICATION FEE TEST NO TRANSACTION")
+
+    # FILES NEEDED
+    # X020ba_Student_master
+
+    # DECLARE VARIABLES
+    i_finding_after: int = 0
+
+    # ISOLATE QUALIFICATIONS WITH NO TRANSACTIONS - CONTACT STUDENTS ONLY
+    print("Isolate qualifications with no transactions...")
+    sr_file = "X021ba_Qual_nofee_transaction"
+    s_sql = "Create table " + sr_file + " AS" + """
+    Select
+        STUD.*
+    From
+        X020ba_Student_master STUD
+    Where
+        (STUD.VALID = 0 And
+        STUD.FEE_LEVIED_TYPE Like ('1%')) Or
+        (STUD.VALID = 2 And
+        STUD.FEE_LEVIED_TYPE Like ('1%')) Or
+    Order By
+        STUD.CAMPUS,
+        STUD.FEE_SHOULD_BE,
+        STUD.KSTUDBUSENTID
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    so_conn.commit()
+    if funcsys.tablerowcount(so_curs, sr_file) > 0:  # Ignore l_export flag - should export every time
+        print("Export findings...")
+        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_file = "Student_fee_test_021bx_qual_fee_no_transaction_studentlist_"
+        sx_file_dated = sx_file + funcdate.today_file()
+        s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
+        # funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
+        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
+
+    # IDENTIFY FINDINGS
+    print("Identify findings...")
+    sr_file = "X021bb_findings"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        'NWU' As ORG,
+        FIND.CAMPUS As LOC,
+        FIND.KSTUDBUSENTID As ID,
+        FIND.QUALIFICATION,
+        FIND.FEE_LEVIED,
+        FIND.FUSERBUSINESSENTITYID As USER
+    From
+        X021ba_Qual_nofee_transaction FIND
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # COUNT THE NUMBER OF FINDINGS
+    i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
+    print("*** Found " + str(i_finding_before) + " exceptions ***")
+    funcfile.writelog("%t FINDING: " + str(i_finding_before) + " QUALIFICATION NO FEE LOADED finding(s)")
+
+    # GET PREVIOUS FINDINGS
+    sr_file = "X021bc_get_previous"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        print("Import previously reported findings...")
+        so_curs.execute(
+            "CREATE TABLE " + sr_file + """
+            (PROCESS TEXT,
+            FIELD1 INT,
+            FIELD2 TEXT,
+            FIELD3 REAL,
+            FIELD4 TEXT,
+            FIELD5 TEXT,
+            DATE_REPORTED TEXT,
+            DATE_RETEST TEXT,
+            DATE_MAILED TEXT)
+            """)
+        co = open(ed_path + "302_reported.txt", "r")
+        co_reader = csv.reader(co)
+        # Read the COLUMN database data
+        for row in co_reader:
+            # Populate the column variables
+            if row[0] == "PROCESS":
+                continue
+            elif row[0] != "qualification no transaction":
+                continue
+            else:
+                s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "','" + \
+                         row[
+                             3] + "','" + row[4] + "','" + row[5] + "','" + row[6] + "','" + row[7] + "','" + row[
+                             8] + "')"
+                so_curs.execute(s_cols)
+        so_conn.commit()
+        # Close the imported data file
+        co.close()
+        funcfile.writelog("%t IMPORT TABLE: " + ed_path + "302_reported.txt (" + sr_file + ")")
+
+        # ADD PREVIOUS FINDINGS
+        sr_file = "X021bd_add_previous"
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        if i_finding_before > 0:
+            print("Join previously reported to current findings...")
+            s_sql = "CREATE TABLE " + sr_file + " AS" + """
+            Select
+                FIND.*,
+                'qualification no transaction' AS PROCESS,
+                '%TODAY%' AS DATE_REPORTED,
+                '%DAYS%' AS DATE_RETEST,
+                PREV.PROCESS AS PREV_PROCESS,
+                PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
+                PREV.DATE_RETEST AS PREV_DATE_RETEST,
+                PREV.DATE_MAILED
+            From
+                X021bb_findings FIND Left Join
+                X021bc_get_previous PREV ON PREV.FIELD1 = FIND.ID And
+                    PREV.FIELD2 = FIND.QUALIFICATION And
+                    PREV.FIELD3 = FIND.FEE_LEVIED
+            ;"""
+            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+            s_sql = s_sql.replace("%TODAY%", funcdate.today())
+            s_sql = s_sql.replace("%DAYS%", funcdate.cur_yearend())
+            so_curs.execute(s_sql)
+            so_conn.commit()
+            funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+        # BUILD LIST TO UPDATE FINDINGS
+        sr_file = "X021be_new_previous"
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        if i_finding_before > 0:
+            s_sql = "CREATE TABLE " + sr_file + " AS " + """
+            Select
+                PREV.PROCESS,
+                PREV.ID AS FIELD1,
+                PREV.QUALIFICATION AS FIELD2,
+                PREV.FEE_LEVIED AS FIELD3,
+                '' AS FIELD4,
+                '' AS FIELD5,
+                PREV.DATE_REPORTED,
+                PREV.DATE_RETEST,
+                PREV.DATE_MAILED
+            From
+                X021bd_add_previous PREV
+            Where
+                PREV.PREV_PROCESS Is Null
+            ;"""
+            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+            so_curs.execute(s_sql)
+            so_conn.commit()
+            funcfile.writelog("%t BUILD TABLE: " + sr_file)
+            # Export findings to previous reported file
+            i_finding_after = funcsys.tablerowcount(so_curs, sr_file)
+            if i_finding_after > 0:
+                print("*** " + str(i_finding_after) + " Finding(s) to report ***")
+                sx_path = ed_path
+                sx_file = "302_reported"
+                # Read the header data
+                s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+                # Write the data
+                if l_record:
+                    funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
+                    funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
+                    funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            else:
+                print("*** No new findings to report ***")
+                funcfile.writelog("%t FINDING: No new findings to export")
+
+        # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
+        sr_file = "X021bf_officer"
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        if i_finding_before > 0:
+            if i_finding_after > 0:
+                print("Import reporting officers for mail purposes...")
+                s_sql = "CREATE TABLE " + sr_file + " AS " + """
+                Select
+                    OFFICER.LOOKUP,
+                    Upper(OFFICER.LOOKUP_CODE) AS CAMPUS,
+                    OFFICER.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
+                    PEOP.NAME_ADDR As NAME,
+                    PEOP.EMAIL_ADDRESS
+                From
+                    VSS.X000_OWN_LOOKUPS OFFICER Left Join
+                    PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = OFFICER.LOOKUP_DESCRIPTION
+                Where
+                    OFFICER.LOOKUP = 'stud_fee_test_qual_no_fee_transaction_officer'
+                ;"""
+                so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+                so_curs.execute(s_sql)
+                so_conn.commit()
+                funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+        # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
+        sr_file = "X021bg_supervisor"
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        if i_finding_before > 0 and i_finding_after > 0:
+            print("Import reporting supervisors for mail purposes...")
+            s_sql = "CREATE TABLE " + sr_file + " AS " + """
+            Select
+                SUPERVISOR.LOOKUP,
+                Upper(SUPERVISOR.LOOKUP_CODE) AS CAMPUS,
+                SUPERVISOR.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
+                PEOP.NAME_ADDR As NAME,
+                PEOP.EMAIL_ADDRESS
+            From
+                VSS.X000_OWN_LOOKUPS SUPERVISOR Left Join
+                PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = SUPERVISOR.LOOKUP_DESCRIPTION
+            Where
+                SUPERVISOR.LOOKUP = 'stud_fee_test_qual_no_fee_transaction_supervisor'
+            ;"""
+            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+            so_curs.execute(s_sql)
+            so_conn.commit()
+            funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+        # ADD CONTACT DETAILS TO FINDINGS
+        sr_file = "X021bh_detail"
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        if i_finding_before > 0 and i_finding_after > 0:
+            print("Add contact details to findings...")
+            s_sql = "CREATE TABLE " + sr_file + " AS " + """
+            Select
+                PREV.ORG,
+                PREV.LOC,
+                PREV.ID,
+                PREV.QUALIFICATION,
+                MAST.QUALIFICATION_NAME,
+                MAST.FEE_LEVIED,
+                MAST.FEE_SHOULD_BE,
+                MAST.FEE_MODE,
+                MAST.DATEENROL,
+                MAST.RESULTPASSDATE,
+                MAST.DISCONTINUEDATE,
+                CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
+                CAMP_OFF.NAME As CAMP_OFF_NAME,
+                CASE
+                    WHEN  CAMP_OFF.EMPLOYEE_NUMBER <> '' THEN CAMP_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                    ELSE CAMP_OFF.EMAIL_ADDRESS
+                END As CAMP_OFF_MAIL,
+                CAMP_OFF.EMAIL_ADDRESS As CAMP_OFF_MAIL2,
+                CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
+                CAMP_SUP.NAME As CAMP_SUP_NAME,
+                CASE
+                    WHEN CAMP_SUP.EMPLOYEE_NUMBER <> '' THEN CAMP_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                    ELSE CAMP_SUP.EMAIL_ADDRESS
+                END As CAMP_SUP_MAIL,
+                CAMP_SUP.EMAIL_ADDRESS As CAMP_SUP_MAIL2,
+                ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
+                ORG_OFF.NAME As ORG_OFF_NAME,
+                CASE
+                    WHEN ORG_OFF.EMPLOYEE_NUMBER <> '' THEN ORG_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                    ELSE ORG_OFF.EMAIL_ADDRESS
+                END As ORG_OFF_MAIL,
+                ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL2,
+                ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
+                ORG_SUP.NAME As ORG_SUP_NAME,
+                CASE
+                    WHEN ORG_SUP.EMPLOYEE_NUMBER <> '' THEN ORG_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                    ELSE ORG_SUP.EMAIL_ADDRESS
+                END As ORG_SUP_MAIL,
+                ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL2,
+                PREV.USER
+            From
+                X021bd_add_previous PREV Left Join
+                X021ba_Qual_nofee_transaction MAST On MAST.KSTUDBUSENTID = PREV.ID And
+                    MAST.QUALIFICATION = PREV.QUALIFICATION Left Join
+                X021bf_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.LOC Left Join
+                X021bf_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG Left Join
+                X021bg_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.LOC Left Join
+                X021bg_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG
+            Where
+              PREV.PREV_PROCESS IS NULL
+            ;"""
+            """
+            WHEN CAMP_OFF.NAME != '' THEN CAMP_OFF.NAME 
+            """
+            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+            so_curs.execute(s_sql)
+            so_conn.commit()
+            funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+        # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
+        sr_file = "X021bx_Qual_nofee_transaction"
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        print("Build the final report")
+        if i_finding_before > 0 and i_finding_after > 0:
+            s_sql = "CREATE TABLE " + sr_file + " AS " + """
+            Select
+                'QUALIFICATION FEE NO TRANSACTION' As Audit_finding,
+                FIND.ORG As 'Organization',
+                FIND.LOC As 'Campus',
+                FIND.ID As 'Student',
+                FIND.QUALIFICATION As 'Qualification',
+                FIND.QUALIFICATION_NAME As 'Qualification_name',
+                FIND.FEE_LEVIED As 'Fee_levied',
+                FIND.FEE_SHOULD_BE As 'Fee_should_be',
+                FIND.FEE_MODE As 'Qual_fee',
+                FIND.DATEENROL As 'Date_enrol',
+                FIND.RESULTPASSDATE As 'Date_pass',
+                FIND.DISCONTINUEDATE As 'Date_discontinue',
+                FIND.CAMP_OFF_NAME AS Responsible_Officer,
+                FIND.CAMP_OFF_NUMB AS Responsible_Officer_Numb,
+                FIND.CAMP_OFF_MAIL AS Responsible_Officer_Mail,
+                FIND.CAMP_SUP_NAME AS Supervisor,
+                FIND.CAMP_SUP_NUMB AS Supervisor_Numb,
+                FIND.CAMP_SUP_MAIL AS Supervisor_Mail,
+                FIND.ORG_OFF_NAME AS Org_Officer,
+                FIND.ORG_OFF_NUMB AS Org_Officer_Numb,
+                FIND.ORG_OFF_MAIL AS Org_Officer_Mail,
+                FIND.ORG_SUP_NAME AS Org_Supervisor,
+                FIND.ORG_SUP_NUMB AS Org_Supervisor_Numb,
+                FIND.ORG_SUP_MAIL AS Org_Supervisor_Mail
+            From
+                X021bh_detail FIND
+            Order by
+                FIND.LOC,
+                FIND.QUALIFICATION,
+                FIND.FEE_SHOULD_BE,
+                FIND.ID
+            ;"""
+            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+            so_curs.execute(s_sql)
+            so_conn.commit()
+            funcfile.writelog("%t BUILD TABLE: " + sr_file)
+            # Export findings
+            if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
+                print("Export findings...")
+                sx_path = re_path + funcdate.cur_year() + "/"
+                sx_file = "Student_fee_test_021bx_qual_fee_no_transaction_"
+                sx_file_dated = sx_file + funcdate.today_file()
+                s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+                funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
+                funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
+                funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
+        else:
+            s_sql = "CREATE TABLE " + sr_file + " (" + """
+            BLANK TEXT
+            );"""
+            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+            so_curs.execute(s_sql)
+            so_conn.commit()
+            funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """ ****************************************************************************
     END OF SCRIPT
