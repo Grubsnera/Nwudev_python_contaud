@@ -3166,7 +3166,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
         TRAN.TRANSCODE_VSS,
         TRAN.TRANSDESC_VSS,
         Round(TRAN.AMOUNT_VSS,2) As AMOUNT_VSS,
-        TRAN.BURSCODE_VSS,
+        Cast(TRAN.BURSCODE_VSS As INT) As BURSCODE_VSS,
         TRAN.BURSNAAM_VSS,
         TRAN.TRANSUSER_VSS  
     FROM
@@ -3217,7 +3217,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
             FIELD2 TEXT,
             FIELD3 TEXT,
             FIELD4 REAL,
-            FIELD5 TEXT,
+            FIELD5 INT,
             DATE_REPORTED TEXT,
             DATE_RETEST TEXT,
             DATE_MAILED TEXT)
