@@ -40,9 +40,9 @@ ed_path = "S:/_external_data/"  # External data path
 so_path = "W:/Vss_fee/"  # Source database path
 so_file = "Vss_test_fee.sqlite"  # Source database
 re_path = "R:/Vss/"
-l_export: bool = True
+l_export: bool = False
 l_mail: bool = False
-l_record: bool = True
+l_record: bool = False
 l_vacuum: bool = False
 s_period: str = "curr"
 
@@ -51,7 +51,6 @@ s_reg_trancode: str = "095"
 s_qual_trancode: str = "004"
 s_mba: str = "71500z2381692z2381690z665559"  # Exclude these FQUALLEVELAPID
 s_mpa: str = "665566"  # Exclude these FQUALLEVELAPID
-s_exclude = s_mba + 'z' + s_mpa
 
 """*****************************************************************************
 OPEN THE DATABASES
@@ -84,11 +83,12 @@ BEGIN OF SCRIPT
 print("BEGIN OF SCRIPT")
 funcfile.writelog("BEGIN OF SCRIPT")
 
+
 """*****************************************************************************
-QUALIFICATION FEE TEST NO TRANSACTION
+QUALIFICATION FEE TEST ZERO TRANSACTION
 *****************************************************************************"""
-print("QUALIFICATION FEE TEST NO TRANSACTION")
-funcfile.writelog("QUALIFICATION FEE TEST NO TRANSACTION")
+print("QUALIFICATION FEE TEST ZERO TRANSACTION")
+funcfile.writelog("QUALIFICATION FEE TEST ZERO TRANSACTION")
 
 # FILES NEEDED
 # X020ba_Student_master
@@ -97,8 +97,8 @@ funcfile.writelog("QUALIFICATION FEE TEST NO TRANSACTION")
 i_finding_after: int = 0
 
 # ISOLATE QUALIFICATIONS WITH NO TRANSACTIONS - CONTACT STUDENTS ONLY
-print("Isolate qualifications with no transactions...")
-sr_file = "X021ba_Qual_nofee_transaction"
+print("Isolate qualifications with zero value transactions...")
+sr_file = "X021ca_Qual_zerofee_transaction"
 s_sql = "Create table " + sr_file + " AS" + """
 Select
     STUD.*
@@ -106,9 +106,9 @@ From
     X020ba_Student_master STUD
 Where
     (STUD.VALID = 0 And
-    STUD.FEE_LEVIED_TYPE Like ('1%')) Or
+    STUD.FEE_LEVIED_TYPE Like ('3%')) Or
     (STUD.VALID = 2 And
-    STUD.FEE_LEVIED_TYPE Like ('1%')) Or
+    STUD.FEE_LEVIED_TYPE Like ('3%'))
 Order By
     STUD.CAMPUS,
     STUD.FEE_SHOULD_BE,
@@ -121,7 +121,7 @@ so_conn.commit()
 if funcsys.tablerowcount(so_curs, sr_file) > 0:  # Ignore l_export flag - should export every time
     print("Export findings...")
     sx_path = re_path + funcdate.cur_year() + "/"
-    sx_file = "Student_fee_test_021bx_qual_fee_no_transaction_studentlist_"
+    sx_file = "Student_fee_test_021cx_qual_fee_zero_transaction_studentlist_"
     sx_file_dated = sx_file + funcdate.today_file()
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
     funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
@@ -130,7 +130,7 @@ if funcsys.tablerowcount(so_curs, sr_file) > 0:  # Ignore l_export flag - should
 
 # IDENTIFY FINDINGS
 print("Identify findings...")
-sr_file = "X021bb_findings"
+sr_file = "X021cb_findings"
 s_sql = "CREATE TABLE " + sr_file + " AS " + """
 Select
     'NWU' As ORG,
@@ -140,7 +140,7 @@ Select
     FIND.FEE_LEVIED,
     FIND.FUSERBUSINESSENTITYID As USER
 From
-    X021ba_Qual_nofee_transaction FIND
+    X021ca_Qual_zerofee_transaction FIND
 ;"""
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 so_curs.execute(s_sql)
@@ -150,10 +150,10 @@ funcfile.writelog("%t BUILD TABLE: " + sr_file)
 # COUNT THE NUMBER OF FINDINGS
 i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
 print("*** Found " + str(i_finding_before) + " exceptions ***")
-funcfile.writelog("%t FINDING: " + str(i_finding_before) + " QUALIFICATION NO FEE LOADED finding(s)")
+funcfile.writelog("%t FINDING: " + str(i_finding_before) + " QUALIFICATION ZERO FEE TRAN finding(s)")
 
 # GET PREVIOUS FINDINGS
-sr_file = "X021bc_get_previous"
+sr_file = "X021cc_get_previous"
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 if i_finding_before > 0:
     print("Import previously reported findings...")
@@ -176,7 +176,7 @@ if i_finding_before > 0:
         # Populate the column variables
         if row[0] == "PROCESS":
             continue
-        elif row[0] != "qualification no transaction":
+        elif row[0] != "qualification zero transaction":
             continue
         else:
             s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "','" + \
@@ -190,14 +190,14 @@ if i_finding_before > 0:
     funcfile.writelog("%t IMPORT TABLE: " + ed_path + "302_reported.txt (" + sr_file + ")")
 
     # ADD PREVIOUS FINDINGS
-    sr_file = "X021bd_add_previous"
+    sr_file = "X021cd_add_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
         print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         Select
             FIND.*,
-            'qualification no transaction' AS PROCESS,
+            'qualification zero transaction' AS PROCESS,
             '%TODAY%' AS DATE_REPORTED,
             '%DAYS%' AS DATE_RETEST,
             PREV.PROCESS AS PREV_PROCESS,
@@ -205,8 +205,8 @@ if i_finding_before > 0:
             PREV.DATE_RETEST AS PREV_DATE_RETEST,
             PREV.DATE_MAILED
         From
-            X021bb_findings FIND Left Join
-            X021bc_get_previous PREV ON PREV.FIELD1 = FIND.ID And
+            X021cb_findings FIND Left Join
+            X021cc_get_previous PREV ON PREV.FIELD1 = FIND.ID And
                 PREV.FIELD2 = FIND.QUALIFICATION And
                 PREV.FIELD3 = FIND.FEE_LEVIED
         ;"""
@@ -218,7 +218,7 @@ if i_finding_before > 0:
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD LIST TO UPDATE FINDINGS
-    sr_file = "X021be_new_previous"
+    sr_file = "X021ce_new_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -233,7 +233,7 @@ if i_finding_before > 0:
             PREV.DATE_RETEST,
             PREV.DATE_MAILED
         From
-            X021bd_add_previous PREV
+            X021cd_add_previous PREV
         Where
             PREV.PREV_PROCESS Is Null
         ;"""
@@ -259,7 +259,7 @@ if i_finding_before > 0:
             funcfile.writelog("%t FINDING: No new findings to export")
 
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
-    sr_file = "X021bf_officer"
+    sr_file = "X021cf_officer"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
         if i_finding_after > 0:
@@ -275,7 +275,7 @@ if i_finding_before > 0:
                 VSS.X000_OWN_LOOKUPS OFFICER Left Join
                 PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = OFFICER.LOOKUP_DESCRIPTION
             Where
-                OFFICER.LOOKUP = 'stud_fee_test_qual_no_fee_transaction_officer'
+                OFFICER.LOOKUP = 'stud_fee_test_qual_zero_fee_transaction_officer'
             ;"""
             so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
             so_curs.execute(s_sql)
@@ -283,7 +283,7 @@ if i_finding_before > 0:
             funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
-    sr_file = "X021bg_supervisor"
+    sr_file = "X021cg_supervisor"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0 and i_finding_after > 0:
         print("Import reporting supervisors for mail purposes...")
@@ -298,7 +298,7 @@ if i_finding_before > 0:
             VSS.X000_OWN_LOOKUPS SUPERVISOR Left Join
             PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = SUPERVISOR.LOOKUP_DESCRIPTION
         Where
-            SUPERVISOR.LOOKUP = 'stud_fee_test_qual_no_fee_transaction_supervisor'
+            SUPERVISOR.LOOKUP = 'stud_fee_test_qual_zero_fee_transaction_supervisor'
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -306,7 +306,7 @@ if i_finding_before > 0:
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # ADD CONTACT DETAILS TO FINDINGS
-    sr_file = "X021bh_detail"
+    sr_file = "X021ch_detail"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0 and i_finding_after > 0:
         print("Add contact details to findings...")
@@ -351,15 +351,31 @@ if i_finding_before > 0:
                 ELSE ORG_SUP.EMAIL_ADDRESS
             END As ORG_SUP_MAIL,
             ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL2,
-            PREV.USER
+            PREV.USER As USER_NUMB,
+            CASE
+                WHEN PREV.USER != '' THEN PEOP.NAME_ADDR
+                WHEN CAMP_OFF.NAME != '' THEN CAMP_OFF.NAME 
+                ELSE ''
+            END As USER_NAME,
+            CASE
+                WHEN PREV.USER != '' THEN PREV.USER||'@nwu.ac.za'
+                WHEN CAMP_OFF.EMPLOYEE_NUMBER != '' THEN CAMP_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                ELSE ''
+            END As USER_MAIL,
+            CASE
+                WHEN PREV.USER != '' THEN PEOP.EMAIL_ADDRESS
+                WHEN CAMP_OFF.EMPLOYEE_NUMBER != '' THEN CAMP_OFF.EMAIL_ADDRESS
+                ELSE ''
+            END As USER_MAIL2
         From
-            X021bd_add_previous PREV Left Join
-            X021ba_Qual_nofee_transaction MAST On MAST.KSTUDBUSENTID = PREV.ID And
+            X021cd_add_previous PREV Left Join
+            X021ca_Qual_zerofee_transaction MAST On MAST.KSTUDBUSENTID = PREV.ID And
                 MAST.QUALIFICATION = PREV.QUALIFICATION Left Join
-            X021bf_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.LOC Left Join
-            X021bf_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG Left Join
-            X021bg_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.LOC Left Join
-            X021bg_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG
+            X021cf_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.LOC Left Join
+            X021cf_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG Left Join
+            X021cg_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.LOC Left Join
+            X021cg_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG Left Join
+            PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = PREV.USER
         Where
           PREV.PREV_PROCESS IS NULL
         ;"""
@@ -372,13 +388,13 @@ if i_finding_before > 0:
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
-    sr_file = "X021bx_Qual_nofee_transaction"
+    sr_file = "X021cx_Qual_zerofee_transaction"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     print("Build the final report")
     if i_finding_before > 0 and i_finding_after > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
-            'QUALIFICATION FEE NO TRANSACTION' As Audit_finding,
+            'QUALIFICATION FEE ZERO VALUE TRANSACTION' As Audit_finding,
             FIND.ORG As 'Organization',
             FIND.LOC As 'Campus',
             FIND.ID As 'Student',
@@ -401,9 +417,12 @@ if i_finding_before > 0:
             FIND.ORG_OFF_MAIL AS Org_Officer_Mail,
             FIND.ORG_SUP_NAME AS Org_Supervisor,
             FIND.ORG_SUP_NUMB AS Org_Supervisor_Numb,
-            FIND.ORG_SUP_MAIL AS Org_Supervisor_Mail
+            FIND.ORG_SUP_MAIL AS Org_Supervisor_Mail,
+            FIND.USER_NAME As User,
+            FIND.USER_NUMB As User_Numb,
+            FIND.USER_MAIL As User_Mail
         From
-            X021bh_detail FIND
+            X021ch_detail FIND
         Order by
             FIND.LOC,
             FIND.QUALIFICATION,
@@ -418,7 +437,7 @@ if i_finding_before > 0:
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
             sx_path = re_path + funcdate.cur_year() + "/"
-            sx_file = "Student_fee_test_021bx_qual_fee_no_transaction_"
+            sx_file = "Student_fee_test_021cx_qual_fee_zero_transaction_"
             sx_file_dated = sx_file + funcdate.today_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
