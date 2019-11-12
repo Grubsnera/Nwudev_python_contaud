@@ -3166,7 +3166,10 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
         TRAN.TRANSCODE_VSS,
         TRAN.TRANSDESC_VSS,
         Round(TRAN.AMOUNT_VSS,2) As AMOUNT_VSS,
-        Cast(TRAN.BURSCODE_VSS As INT) As BURSCODE_VSS,
+        Cast(Case
+            When Cast(TRAN.BURSCODE_VSS As INT) > 0 Then TRAN.BURSCODE_VSS
+            Else 0
+        End As INT) As BURSCODE_VSS,
         TRAN.BURSNAAM_VSS,
         TRAN.TRANSUSER_VSS  
     FROM
