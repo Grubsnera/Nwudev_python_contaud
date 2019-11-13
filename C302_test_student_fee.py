@@ -34,8 +34,8 @@ TEST REGISTRATION FEE CONTACT ABNORMAL
 QUALIFICATION FEE MASTER 1
 QUALIFICATION FEE TEST NO FEE LOADED
 QUALIFICATION FEE MASTER 2
-QUALIFICATION FEE TEST NO TRANSACTION
-QUALIFICATION FEE TEST ZERO TRANSACTION
+QUALIFICATION FEE TEST NO TRANSACTION (1 NO TRANSACTION)
+QUALIFICATION FEE TEST ZERO TRANSACTION (3 ZERO TRANSACTION)
 
 END OF SCRIPT
 *****************************************************************************"""
@@ -2561,10 +2561,8 @@ def student_fee(s_period='curr', s_year='2019'):
     From
         X020ba_Student_master STUD
     Where
-        (STUD.VALID = 0 And
-        STUD.FEE_LEVIED_TYPE Like ('1%')) Or
-        (STUD.VALID = 2 And
-        STUD.FEE_LEVIED_TYPE Like ('1%'))
+        STUD.VALID = 0 And
+        STUD.FEE_LEVIED_TYPE Like ('1%')
     Order By
         STUD.CAMPUS,
         STUD.FEE_SHOULD_BE,
@@ -2910,10 +2908,8 @@ def student_fee(s_period='curr', s_year='2019'):
     From
         X020ba_Student_master STUD
     Where
-        (STUD.VALID = 0 And
-        STUD.FEE_LEVIED_TYPE Like ('3%')) Or
-        (STUD.VALID = 2 And
-        STUD.FEE_LEVIED_TYPE Like ('3%'))
+        STUD.VALID = 0 And
+        STUD.FEE_LEVIED_TYPE Like ('3%')
     Order By
         STUD.CAMPUS,
         STUD.FEE_SHOULD_BE,
