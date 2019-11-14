@@ -197,7 +197,8 @@ def studentlist(so_conn, re_path, s_period='curr', s_year='2019', l_export=False
         MODU.KENROLMENTPRESENTATIONID,
         MODU.COURSECODE,
         MODU.COURSELEVEL,
-        MODU.COURSEMODULE
+        MODU.COURSEMODULE,
+        MODU.COURSESEMESTER
     From
         MODULEENROLSTUD_CURR MENR Inner Join
         X000_Modules MODU On MODU.KENROLMENTPRESENTATIONID = MENR.FENROLMENTPRESENTATIONID Left Join
