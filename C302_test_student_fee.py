@@ -178,8 +178,10 @@ def student_fee(s_period='curr', s_year='2019'):
             ELSE 0.00
         END AS AMOUNT_CR,
         TRAN.DESCRIPTION_E As TRANSDESC,
-        TRAN.FUSERBUSINESSENTITYID,
         TRAN.AUDITDATETIME,
+        TRAN.FUSERBUSINESSENTITYID,
+        TRAN.FAUDITUSERCODE,
+        TRAN.SYSTEM_DESC,
         TRAN.FMODAPID,
         TRAN.MODULE,
         TRAN.MODULE_NAME,
