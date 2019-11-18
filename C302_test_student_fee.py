@@ -1829,6 +1829,8 @@ def student_fee(s_period='curr', s_year='2019'):
         TRAN.STUDENT,
         TRAN.FQUALLEVELAPID,
         TRAN.FUSERBUSINESSENTITYID,
+        TRAN.FAUDITUSERCODE,
+        TRAN.SYSTEM_DESC,
         CAST(COUNT(TRAN.STUDENT) As INT) As TRAN_COUNT,
         CAST(TOTAL(TRAN.AMOUNT) AS REAL) AS FEE_QUAL,
         MAX(TRAN.AUDITDATETIME)
@@ -2483,7 +2485,9 @@ def student_fee(s_period='curr', s_year='2019'):
         STUD.FQUALLEVELAPID,
         STUD.FPROGRAMAPID,
         FEES.TRAN_COUNT,    
-        FEES.FUSERBUSINESSENTITYID
+        FEES.FUSERBUSINESSENTITYID,
+        FEES.FAUDITUSERCODE,
+        FEES.SYSTEM_DESC
     From
         X000_Student STUD Left Join
         X021ab_findings_list FIND On FIND.KSTUDBUSENTID = STUD.KSTUDBUSENTID And
