@@ -2508,45 +2508,55 @@ def student_fee(s_period='curr', s_year='2019'):
     so_curs.execute("UPDATE " + sr_file + """
                     SET FEE_SHOULD_BE = 
                     CASE
-                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM9 > 0 Then '4 CP FULL PAYMENT RQD' 
-                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM8 > 0 Then '4 CP FULL PAYMENT RQD' 
-                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM7 > 0 Then '4 CP FULL PAYMENT RQD' 
-                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM1 = 0 And SEM7 = 0 Then '6 CP 2ND SEM HALF PAYMENT RQD' 
-                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null Then '4 CP FULL PAYMENT RQD' 
 
-                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM2 = 0 And SEM7 = 0 Then '7 CP 1ST SEM HALF PAYMENT RQD'
-                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM1 = 0 And SEM7 = 0 Then '6 CP 2ND SEM HALF PAYMENT RQD'
-                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' Then '5 CP PASS FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'D%' Then 'DP DISTANCE POSTGRADUATE' 
+                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'U%' Then 'DU DISTANCE UNDERGRADUATE' 
 
-                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC <= '2019-03-31' Then '1 CP NO PAYMENT RQD' 
-                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC <= '2019-07-31' Then '2 CP DISC 1ST HALF PAYMENT RQD' 
-                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC > '2019-07-31' Then '3 CP DISC 2ND FULL PAYMENT RQD'
+                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM1 Is Null Then '46 CP NULL SEM FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM9 > 0 Then '49 CP FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM8 > 0 Then '48 CP FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM7 > 0 Then '47 CP FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM1 = 0 And SEM2 = 0 And SEM7 = 0 Then '45 CP ZERO SEM FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM2 > 0 And SEM1 = 0 Then '42 CP 2ND SEM HALF PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM1 > 0 And SEM2 = 0 Then '41 CP 1ST SEM HALF PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null Then '40 CP FULL PAYMENT RQD' 
 
-                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'D%' And DISCDATE_CALC Is Null Then '4 DP FULL PAYMENT RQD' 
-                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'D%' And DISCDATE_CALC = '' Then '5 DP PASS FULL PAYMENT RQD' 
-                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'D%' And DISCDATE_CALC <= '2019-03-31' Then '1 DP NO PAYMENT RQD' 
-                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'D%' And DISCDATE_CALC <= '2019-07-31' Then '2 DP DISC 1ST HALF PAYMENT RQD' 
-                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'D%' And DISCDATE_CALC > '2019-07-31' Then '3 DP DISC 2ND FULL PAYMENT RQD'
+                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM1 Is Null Then '56 CP PASS NULL SEM FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM9 > 0 Then '59 CP PASS FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM8 > 0 Then '58 CP PASS FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM7 > 0 Then '57 CP PASS FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM1 = 0 And SEM2 = 0 And SEM7 = 0 Then '55 CP PASS ZERO SEM FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM2 > 0 And SEM1 = 0 Then '52 CP PASS 2ND SEM HALF PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM1 > 0 And SEM2 = 0 Then '51 CP PASS 1ST SEM HALF PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' Then '50 CP PASS FULL PAYMENT RQD' 
 
-                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM8 > 0 Then '4 CU FULL PAYMENT RQD' 
-                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM7 > 0 Then '4 CU FULL PAYMENT RQD' 
-                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM1 = 0 And SEM7 = 0 Then '6 CU 2ND SEM HALF PAYMENT RQD' 
-                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null Then '4 CU FULL PAYMENT RQD'
+                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC <= '2019-03-31' Then '10 CP NO PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC <= '2019-07-31' Then '20 CP DISC 1ST HALF PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC > '2019-07-31' Then '30 CP DISC 2ND FULL PAYMENT RQD'
 
-                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM2 = 0 And SEM7 = 0 Then '7 CU 1ST SEM HALF PAYMENT RQD'
-                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM1 = 0 And SEM7 = 0 Then '6 CU 2ND SEM HALF PAYMENT RQD'
-                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' Then '5 CU PASS FULL PAYMENT RQD'
+                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM1 Is Null Then '46 CU NULL SEM FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM9 > 0 Then '49 CU FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM8 > 0 Then '48 CU FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM7 > 0 Then '47 CU FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM1 = 0 And SEM2 = 0 And SEM7 = 0 Then '45 CU ZERO SEM FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM2 > 0 And SEM1 = 0 Then '42 CU 2ND SEM HALF PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM1 > 0 And SEM2 = 0 Then '41 CU 1ST SEM HALF PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null Then '40 CU FULL PAYMENT RQD' 
 
-                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC <= '2019-02-17' Then '1 CU NO PAYMENT RQD'
-                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC <= '2019-07-31' Then '2 CU DISC 1ST HALF PAYMENT RQD'
-                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC > '2019-07-31' Then '3 CU DISC 2ND FULL PAYMENT RQD'
+                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM1 Is Null Then '56 CU PASS NULL SEM FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM9 > 0 Then '59 CU PASS FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM8 > 0 Then '58 CU PASS FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM7 > 0 Then '57 CU PASS FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM1 = 0 And SEM2 = 0 And SEM7 = 0 Then '55 CU PASS ZERO SEM FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM2 > 0 And SEM1 = 0 Then '52 CU PASS 2ND SEM HALF PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM1 > 0 And SEM2 = 0 Then '51 CU PASS 1ST SEM HALF PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' Then '50 CU PASS FULL PAYMENT RQD' 
 
-                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'D%' And DISCDATE_CALC Is Null Then '4 DU FULL PAYMENT RQD'
-                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'D%' And DISCDATE_CALC = '' Then '5 DU PASS FULL PAYMENT RQD'
-                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'D%' And DISCDATE_CALC <= '2019-03-09' Then '1 DU NO PAYMENT RQD'
-                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'D%' And DISCDATE_CALC <= '2019-08-15' Then '2 DU DISC 1ST HALF PAYMENT RQD'
-                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'D%' And DISCDATE_CALC > '2019-08-15' Then '3 DU DISC 2ND FULL PAYMENT RQD'
-                        Else '8 NO ALLOCATION FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC <= '2019-02-17' Then '10 CU NO PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC <= '2019-07-31' Then '20 CU DISC 1ST HALF PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC > '2019-07-31' Then '30 CU DISC 2ND FULL PAYMENT RQD'
+
+                        Else '90 NO ALLOCATION FULL PAYMENT RQD' 
                     END
                     ;""")
     so_conn.commit()
@@ -2561,17 +2571,30 @@ def student_fee(s_period='curr', s_year='2019'):
                         When FEE_LEVIED_TYPE Like '9%' Then 1
                         When FEE_SHOULD_BE Like '1%' And FEE_LEVIED_TYPE Like '1%' Then 1
                         When FEE_SHOULD_BE Like '1%' And FEE_LEVIED_TYPE Like '3%' Then 1
-                        When FEE_SHOULD_BE Like '1%' And FEE_LEVIED_TYPE Like '4%' Then 2
+
                         When FEE_SHOULD_BE Like '2%' And FEE_LEVIED_TYPE Like '4%' Then 1
                         When FEE_SHOULD_BE Like '2%' And FEE_LEVIED_TYPE Like '5%' Then 2
+
                         When FEE_SHOULD_BE Like '3%' And FEE_LEVIED_TYPE Like '5%' Then 1
+
+                        When FEE_SHOULD_BE Like '46%' And FEE_LEVIED_TYPE Like '3%' Then 1
+                        When FEE_SHOULD_BE Like '45%' And FEE_LEVIED_TYPE Like '3%' Then 1
+                        When FEE_SHOULD_BE Like '42%' And FEE_LEVIED_TYPE Like '4%' Then 1
+                        When FEE_SHOULD_BE Like '42%' And FEE_LEVIED_TYPE Like '5%' Then 2
+                        When FEE_SHOULD_BE Like '41%' And FEE_LEVIED_TYPE Like '4%' Then 1
+                        When FEE_SHOULD_BE Like '41%' And FEE_LEVIED_TYPE Like '5%' Then 2
                         When FEE_SHOULD_BE Like '4%' And FEE_LEVIED_TYPE Like '5%' Then 1
+
+                        When FEE_SHOULD_BE Like '56%' And FEE_LEVIED_TYPE Like '3%' Then 1
+                        When FEE_SHOULD_BE Like '55%' And FEE_LEVIED_TYPE Like '3%' Then 1
+                        When FEE_SHOULD_BE Like '52%' And FEE_LEVIED_TYPE Like '4%' Then 1
+                        When FEE_SHOULD_BE Like '52%' And FEE_LEVIED_TYPE Like '5%' Then 2
+                        When FEE_SHOULD_BE Like '51%' And FEE_LEVIED_TYPE Like '4%' Then 1
+                        When FEE_SHOULD_BE Like '51%' And FEE_LEVIED_TYPE Like '5%' Then 2
                         When FEE_SHOULD_BE Like '5%' And FEE_LEVIED_TYPE Like '5%' Then 1
-                        When FEE_SHOULD_BE Like '6%' And FEE_LEVIED_TYPE Like '4%' Then 1
-                        When FEE_SHOULD_BE Like '6%' And FEE_LEVIED_TYPE Like '5%' Then 2
-                        When FEE_SHOULD_BE Like '7%' And FEE_LEVIED_TYPE Like '4%' Then 1
-                        When FEE_SHOULD_BE Like '7%' And FEE_LEVIED_TYPE Like '5%' Then 2
+
                         When FEE_SHOULD_BE Like '8%' And FEE_LEVIED_TYPE Like '5%' Then 1
+
                         Else 0
                     END
                     ;""")
