@@ -1545,7 +1545,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.today_plusdays(20000))
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_yearend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -1869,7 +1869,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.today_plusdays(20000))
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_yearend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -2185,7 +2185,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.today_plusdays(20000))
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_yearend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -2508,7 +2508,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.today_plusdays(20000))
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_yearend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -3271,7 +3271,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.today_plusdays(20000))
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_yearend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -3603,7 +3603,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.today_plusdays(20000))
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_yearend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
