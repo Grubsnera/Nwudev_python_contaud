@@ -217,9 +217,13 @@ def student_fee(s_period='curr', s_year='2019'):
         CAST(TOTAL(TRAN.AMOUNT) AS REAL) AS FEE_REG,
         COUNT(TRAN.STUDENT) As TRAN_COUNT,
         MAX(AUDITDATETIME),
-        TRAN.FUSERBUSINESSENTITYID
+        TRAN.FUSERBUSINESSENTITYID,
+        PEOP.NAME_ADDR,        
+        TRAN.FAUDITUSERCODE,
+        TRAN.SYSTEM_DESC        
     From
-        X000_Transaction TRAN
+        X000_Transaction TRAN Left Join
+        PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = Cast(TRAN.FUSERBUSINESSENTITYID As TEXT)        
     Where
         Instr('%TRANCODE%', Trim(TRAN.TRANSCODE)) > 0
     Group by
@@ -1828,17 +1832,18 @@ def student_fee(s_period='curr', s_year='2019'):
     Select
         TRAN.STUDENT,
         TRAN.FQUALLEVELAPID,
-        TRAN.FUSERBUSINESSENTITYID,
-        TRAN.FAUDITUSERCODE,
-        TRAN.SYSTEM_DESC,
         CAST(COUNT(TRAN.STUDENT) As INT) As TRAN_COUNT,
         CAST(TOTAL(TRAN.AMOUNT) AS REAL) AS FEE_QUAL,
-        MAX(TRAN.AUDITDATETIME)
+        MAX(TRAN.AUDITDATETIME),
+        TRAN.FUSERBUSINESSENTITYID,
+        PEOP.NAME_ADDR,
+        TRAN.FAUDITUSERCODE,
+        TRAN.SYSTEM_DESC
     From
-        X000_Transaction TRAN
+        X000_Transaction TRAN Left Join
+        PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = Cast(TRAN.FUSERBUSINESSENTITYID As TEXT)
     Where
-        Instr('%TRANCODE%', Trim(TRAN.TRANSCODE)) > 0 And
-        TRAN.FMODAPID = 0
+        Instr('%TRANCODE%', Trim(TRAN.TRANSCODE)) > 0 And TRAN.FMODAPID = 0
     Group by
         TRAN.STUDENT,
         TRAN.FQUALLEVELAPID
@@ -1955,6 +1960,54 @@ def student_fee(s_period='curr', s_year='2019'):
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     so_conn.commit()
+
+    # IDENTIFY COURSE CONVERTERS
+    # Student may appear multiple times
+    print("Identify course converters...")
+    sr_file = "X020ae_Student_convert"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select Distinct
+        CONV.KSTUDBUSENTID,
+        STUD.FQUALLEVELAPID,
+        Case
+            When CONV.FQUALLEVELAPID = STUD.FQUALLEVELAPID Then 'FROM'
+            Else 'TO' 
+        End As CONV_IND
+    From
+        X000_Student STUD Inner Join
+        X000_Student CONV On STUD.KSTUDBUSENTID = CONV.KSTUDBUSENTID
+    Where
+        CONV.RESULT Like ('%CONVERT%')
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # IDENTIFY COURSE CONVERTERS
+    # Only allow one conversion
+    print("Identify course converters...")
+    sr_file = "X020ae_Student_convert_master"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        X020ae_Student_convert.KSTUDBUSENTID,
+        X020ae_Student_convert1.FQUALLEVELAPID,
+        X020ae_Student_convert1.CONV_IND
+    From
+        X020ae_Student_convert Inner Join
+        X020ae_Student_convert X020ae_Student_convert1 On X020ae_Student_convert1.KSTUDBUSENTID =
+                X020ae_Student_convert.KSTUDBUSENTID
+    Group By
+        X020ae_Student_convert.KSTUDBUSENTID,
+        X020ae_Student_convert1.FQUALLEVELAPID,
+        X020ae_Student_convert1.CONV_IND
+    Having
+        Count(X020ae_Student_convert.FQUALLEVELAPID) = 2
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """*****************************************************************************
     QUALIFICATION FEE TEST NO FEE LOADED
@@ -2399,6 +2452,7 @@ def student_fee(s_period='curr', s_year='2019'):
             When MODE.FEE_MODE Is Null Then 0
             Else Round(MODE.FEE_MODE/2,2)
         End As REAL) As FEE_MODE_HALF,
+        CONV.CONV_IND,
         '' As FEE_SHOULD_BE,
         Case
             When STUD.ENROL_CAT = "POST DOC" Then '9 EXCLUDE POST DOC'
@@ -2441,15 +2495,18 @@ def student_fee(s_period='curr', s_year='2019'):
             Else 0
         End As INT) As DAYS_REG,
         Case
-            When Upper(STUD.RESULT) Like '%PASS%' Then ''
+            When Upper(STUD.RESULT) Like 'PASS C%' Then ''
+            When Upper(STUD.RESULT) Like 'PASS D%' Then ''
             Else STUD.DISCONTINUEDATE 
         End As DISCDATE_CALC,
         Case
-            When Upper(STUD.RESULT) Like '%PASS%' Then STUD.RESULTPASSDATE
+            When Upper(STUD.RESULT) Like 'PASS C%' Then STUD.RESULTPASSDATE
+            When Upper(STUD.RESULT) Like 'PASS D%' Then STUD.RESULTPASSDATE
             Else '' 
         End As RESULTPASSDATE,
         Case
-            When Upper(STUD.RESULT) Like '%PASS%' Then STUD.RESULTISSUEDATE
+            When Upper(STUD.RESULT) Like 'PASS C%' Then STUD.RESULTISSUEDATE
+            When Upper(STUD.RESULT) Like 'PASS D%' Then STUD.RESULTISSUEDATE
             Else '' 
         End As RESULTISSUEDATE,
         STUD.RESULT,
@@ -2486,6 +2543,7 @@ def student_fee(s_period='curr', s_year='2019'):
         STUD.FPROGRAMAPID,
         FEES.TRAN_COUNT,    
         FEES.FUSERBUSINESSENTITYID,
+        FEES.NAME_ADDR,
         FEES.FAUDITUSERCODE,
         FEES.SYSTEM_DESC
     From
@@ -2497,7 +2555,9 @@ def student_fee(s_period='curr', s_year='2019'):
         X020ac_Trans_feequal_mode MODE On MODE.FQUALLEVELAPID = STUD.FQUALLEVELAPID Left Join
         X020ad_Student_module_summ SEME On SEME.KSTUDBUSENTID = STUD.KSTUDBUSENTID And
             SEME.FQUALLEVELAPID = STUD.FQUALLEVELAPID Left Join
-        X010_Student_feereg REGF On REGF.KSTUDBUSENTID = STUD.KSTUDBUSENTID    
+        X010_Student_feereg REGF On REGF.KSTUDBUSENTID = STUD.KSTUDBUSENTID Left Join
+        X020ae_Student_convert_master CONV On CONV.KSTUDBUSENTID = STUD.KSTUDBUSENTID And
+            CONV.FQUALLEVELAPID = STUD.FQUALLEVELAPID 
     Where
         STUD.PRESENT_CAT Like ('C%') And
         FIND.KSTUDBUSENTID Is Null    
@@ -2516,7 +2576,7 @@ def student_fee(s_period='curr', s_year='2019'):
                     CASE
 
                         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'D%' Then 'DP DISTANCE POSTGRADUATE' 
-                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'U%' Then 'DU DISTANCE UNDERGRADUATE' 
+                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'D%' Then 'DU DISTANCE UNDERGRADUATE' 
 
                         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM1 Is Null Then '46 CP NULL SEM FULL PAYMENT RQD' 
                         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM9 > 0 Then '49 CP FULL PAYMENT RQD' 
@@ -2537,8 +2597,8 @@ def student_fee(s_period='curr', s_year='2019'):
                         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' Then '50 CP PASS FULL PAYMENT RQD' 
 
                         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC <= '2019-03-31' Then '10 CP NO PAYMENT RQD' 
-                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC <= '2019-07-31' Then '20 CP DISC 1ST HALF PAYMENT RQD' 
-                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC > '2019-07-31' Then '30 CP DISC 2ND FULL PAYMENT RQD'
+                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC <= '2019-08-09' Then '20 CP DISC 1ST HALF PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC > '2019-08-09' Then '30 CP DISC 2ND FULL PAYMENT RQD'
 
                         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM1 Is Null Then '46 CU NULL SEM FULL PAYMENT RQD' 
                         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM9 > 0 Then '49 CU FULL PAYMENT RQD' 
@@ -2558,9 +2618,9 @@ def student_fee(s_period='curr', s_year='2019'):
                         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM1 > 0 And SEM2 = 0 Then '51 CU PASS 1ST SEM HALF PAYMENT RQD' 
                         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' Then '50 CU PASS FULL PAYMENT RQD' 
 
-                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC <= '2019-02-17' Then '10 CU NO PAYMENT RQD' 
-                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC <= '2019-07-31' Then '20 CU DISC 1ST HALF PAYMENT RQD' 
-                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC > '2019-07-31' Then '30 CU DISC 2ND FULL PAYMENT RQD'
+                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC <= '2019-03-05' Then '10 CU NO PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC <= '2019-08-09' Then '20 CU DISC 1ST HALF PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC > '2019-08-09' Then '30 CU DISC 2ND FULL PAYMENT RQD'
 
                         Else '90 NO ALLOCATION FULL PAYMENT RQD' 
                     END
@@ -2575,8 +2635,11 @@ def student_fee(s_period='curr', s_year='2019'):
                     CASE
                         When FEE_LEVIED_TYPE Like '2%' Then 0
                         When FEE_LEVIED_TYPE Like '9%' Then 1
+                        
                         When FEE_SHOULD_BE Like '1%' And FEE_LEVIED_TYPE Like '1%' Then 1
                         When FEE_SHOULD_BE Like '1%' And FEE_LEVIED_TYPE Like '3%' Then 1
+                        When FEE_SHOULD_BE Like '1%' And FEE_LEVIED_TYPE Like '4%' Then 2
+                        When FEE_SHOULD_BE Like '1%' And FEE_LEVIED_TYPE Like '5%' Then 2
 
                         When FEE_SHOULD_BE Like '2%' And FEE_LEVIED_TYPE Like '4%' Then 1
                         When FEE_SHOULD_BE Like '2%' And FEE_LEVIED_TYPE Like '5%' Then 2
@@ -2631,12 +2694,16 @@ def student_fee(s_period='curr', s_year='2019'):
     sr_file = "X020bx_Student_master_sort"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
-        STUD.VALID,
+        Case
+            When HALF.FEE_COUNT_HALF = 2 Then 1
+            Else VALID
+        End As VALID,
         STUD.CAMPUS,
         STUD.KSTUDBUSENTID,
         STUD.FEE_LEVIED,
         STUD.FEE_MODE,
         STUD.FEE_MODE_HALF,
+        STUD.CONV_IND,
         HALF.FEE_COUNT_HALF,
         STUD.FEE_SHOULD_BE,
         STUD.FEE_LEVIED_TYPE,
@@ -2693,7 +2760,10 @@ def student_fee(s_period='curr', s_year='2019'):
         STUD.FQUALLEVELAPID,
         STUD.FPROGRAMAPID,
         STUD.TRAN_COUNT,
-        STUD.FUSERBUSINESSENTITYID
+        STUD.FUSERBUSINESSENTITYID,
+        STUD.NAME_ADDR,
+        STUD.FAUDITUSERCODE,
+        STUD.SYSTEM_DESC
     From
         X020ba_Student_master STUD Left Join
         X020bb_Student_multiple_half HALF On HALF.KSTUDBUSENTID = STUD.KSTUDBUSENTID
@@ -2705,6 +2775,32 @@ def student_fee(s_period='curr', s_year='2019'):
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # EXPORT INVALID TRANSACTIONS
+    # Note - Created for Corlia de Beer and she can modify outlay hereof
+    print("Build table of invalid qualification fees...")
+    sr_file = "X020bx_Student_master_export"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        STUD.*
+    From
+        X020bx_Student_master_sort STUD
+    Where
+        STUD.VALID != 1        
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    if funcsys.tablerowcount(so_curs, sr_file) > 0:  # Ignore l_export flag - should export every time
+        print("Export findings...")
+        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_file = "Student_fee_test_020bx_qual_fee_invalid_studentlist_"
+        sx_file_dated = sx_file + funcdate.today_file()
+        s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
+        # funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
+        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
 
     """*****************************************************************************
     QUALIFICATION FEE TEST NO TRANSACTION
