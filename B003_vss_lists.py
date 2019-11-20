@@ -201,6 +201,7 @@ def vss_lists():
     funcfile.writelog("%t BUILD TABLE: X000_Orgunitinstance")
 
     # CREATE SYSTEM FUNCTION MASTER TABLE
+    # NOTE - Only records where name purpose is General (Exclude others like web, heading etc.)
     sr_file = "X000_Systemfunction"
     print("Create system function master...")
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -240,7 +241,8 @@ def vss_lists():
         SYSTEMFUNCTIONNAME NAME On NAME.KSYSTEMFUNCTIONID = SYSF.KSYSTEMFUNCTIONID Left Join
         X000_Codedescription NAPC On NAPC.KCODEDESCID = NAME.KNAMEPURPOSECODEID
     Where
-        NAME.KSYSTEMLANGUAGECODE = 3
+        NAME.KSYSTEMLANGUAGECODE = 3 And
+        Upper(NAPC.LONG) = 'GENERAL'
     Order By
         SYSF.KSYSTEMFUNCTIONID
     ;"""
