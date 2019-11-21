@@ -1,14 +1,7 @@
 ﻿Select
     X020ae_Student_convert.KSTUDBUSENTID,
-    X020ae_Student_convert1.FQUALLEVELAPID,
-    X020ae_Student_convert1.CONV_IND
+    Count(X020ae_Student_convert.FQUALLEVELAPID) As Count_FQUALLEVELAPID
 From
-    X020ae_Student_convert Inner Join
-    X020ae_Student_convert X020ae_Student_convert1 On X020ae_Student_convert1.KSTUDBUSENTID =
-            X020ae_Student_convert.KSTUDBUSENTID
+    X020ae_Student_convert
 Group By
-    X020ae_Student_convert.KSTUDBUSENTID,
-    X020ae_Student_convert1.FQUALLEVELAPID,
-    X020ae_Student_convert1.CONV_IND
-Having
-    Count(X020ae_Student_convert.FQUALLEVELAPID) = 2
+    X020ae_Student_convert.KSTUDBUSENTID
