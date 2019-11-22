@@ -1567,7 +1567,6 @@ def student_fee(s_period='curr', s_year='2019'):
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD LIST TO UPDATE FINDINGS
-    # NOTE ADD CODE
     sr_file = "X010ee_new_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
@@ -1831,6 +1830,32 @@ def student_fee(s_period='curr', s_year='2019'):
     s_sql = "Create table " + sr_file + " AS" + """
     Select
         TRAN.STUDENT,
+        CAST(COUNT(TRAN.STUDENT) As INT) As TRAN_COUNT,
+        CAST(TOTAL(TRAN.AMOUNT) AS REAL) AS FEE_QUAL,
+        MAX(TRAN.AUDITDATETIME),
+        TRAN.FUSERBUSINESSENTITYID,
+        PEOP.NAME_ADDR,
+        TRAN.FAUDITUSERCODE,
+        TRAN.SYSTEM_DESC
+    From
+        X000_Transaction TRAN Left Join
+        PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = Cast(TRAN.FUSERBUSINESSENTITYID As TEXT)
+    Where
+        Instr('%TRANCODE%', Trim(TRAN.TRANSCODE)) > 0 And TRAN.FMODAPID = 0
+    Group by
+        TRAN.STUDENT
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = s_sql.replace("%TRANCODE%", s_qual_trancode)
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # CALCULATE THE QUALIFICATION FEES LEVIED PER STUDENT
+    print("Calculate the qualification fees levied per student...")
+    sr_file = "X020ab_Trans_feequal_stud_level"
+    s_sql = "Create table " + sr_file + " AS" + """
+    Select
+        TRAN.STUDENT,
         TRAN.FQUALLEVELAPID,
         CAST(COUNT(TRAN.STUDENT) As INT) As TRAN_COUNT,
         CAST(TOTAL(TRAN.AMOUNT) AS REAL) AS FEE_QUAL,
@@ -1861,14 +1886,14 @@ def student_fee(s_period='curr', s_year='2019'):
     so_curs.execute("CREATE TABLE " + sr_file + " (FQUALLEVELAPID INT, FEE_MODE REAL)")
     for qual in so_curs.execute("SELECT FQUALLEVELAPID FROM X020aa_Trans_feequal").fetchall():
         try:
-            i_value = funcstat.stat_mode(so_curs, "X020ab_Trans_feequal_stud",
+            i_value = funcstat.stat_mode(so_curs, "X020ab_Trans_feequal_stud_level",
                                          "FEE_QUAL", "FQUALLEVELAPID = " + str(qual[0]))
             if i_value < 0:
                 i_value = 0
         except Exception as e:
             # funcsys.ErrMessage(e) if you want error to log
             if "".join(e.args).find("no unique mode") >= 0:
-                i_value = funcstat.stat_highest_value(so_curs, "X020ab_Trans_feequal_stud", "FEE_QUAL",
+                i_value = funcstat.stat_highest_value(so_curs, "X020ab_Trans_feequal_stud_level", "FEE_QUAL",
                                                       "FQUALLEVELAPID = " + str(qual[0]))
             else:
                 i_value = 0
@@ -1876,6 +1901,8 @@ def student_fee(s_period='curr', s_year='2019'):
         so_curs.execute(s_cols)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     so_conn.commit()
+
+    # TODO Continue here
 
     # CALCULATE THE NUMBER OF MODULES
     print("Calculate the number modules...")
@@ -1886,43 +1913,53 @@ def student_fee(s_period='curr', s_year='2019'):
         MODU.FQUALLEVELAPID,
         MODU.COURSESEMESTER,
         Cast(Case
-            When MODU.COURSESEMESTER = '0' Then 1
+            When MODU.COURSESEMESTER = '0' And MODU.COMPLETE_REASON Is Null Then 1
+            When MODU.COURSESEMESTER = '0' And Instr(MODU.COMPLETE_REASON,'RECOGNISED') = 0 Then 1
             Else 0
         End As INT) As S0,
         Cast(Case
-            When MODU.COURSESEMESTER = '1' Then 1
+            When MODU.COURSESEMESTER = '1' And MODU.COMPLETE_REASON Is Null Then 1
+            When MODU.COURSESEMESTER = '1' And Instr(MODU.COMPLETE_REASON,'RECOGNISED') = 0 Then 1
             Else 0
         End As INT) As S1,
         Cast(Case
-            When MODU.COURSESEMESTER = '2' Then 1
+            When MODU.COURSESEMESTER = '2' And MODU.COMPLETE_REASON Is Null Then 1
+            When MODU.COURSESEMESTER = '2' And Instr(MODU.COMPLETE_REASON,'RECOGNISED') = 0 Then 1
             Else 0
         End As INT) As S2,
         Cast(Case
-            When MODU.COURSESEMESTER = '3' Then 1
+            When MODU.COURSESEMESTER = '3' And MODU.COMPLETE_REASON Is Null Then 1
+            When MODU.COURSESEMESTER = '3' And Instr(MODU.COMPLETE_REASON,'RECOGNISED') = 0 Then 1
             Else 0
         End As INT) As S3,
         Cast(Case
-            When MODU.COURSESEMESTER = '4' Then 1
+            When MODU.COURSESEMESTER = '4' And MODU.COMPLETE_REASON Is Null Then 1
+            When MODU.COURSESEMESTER = '4' And Instr(MODU.COMPLETE_REASON,'RECOGNISED') = 0 Then 1
             Else 0
         End As INT) As S4,
         Cast(Case
-            When MODU.COURSESEMESTER = '5' Then 1
+            When MODU.COURSESEMESTER = '5' And MODU.COMPLETE_REASON Is Null Then 1
+            When MODU.COURSESEMESTER = '5' And Instr(MODU.COMPLETE_REASON,'RECOGNISED') = 0 Then 1
             Else 0
         End As INT) As S5,
         Cast(Case
-            When MODU.COURSESEMESTER = '6' Then 1
+            When MODU.COURSESEMESTER = '6' And MODU.COMPLETE_REASON Is Null Then 1
+            When MODU.COURSESEMESTER = '6' And Instr(MODU.COMPLETE_REASON,'RECOGNISED') = 0 Then 1
             Else 0
         End As INT) As S6,
         Cast(Case
-            When MODU.COURSESEMESTER = '7' Then 1
+            When MODU.COURSESEMESTER = '7' And MODU.COMPLETE_REASON Is Null Then 1
+            When MODU.COURSESEMESTER = '7' And Instr(MODU.COMPLETE_REASON,'RECOGNISED') = 0 Then 1
             Else 0
         End As INT) As S7,
         Cast(Case
-            When MODU.COURSESEMESTER = '8' Then 1
+            When MODU.COURSESEMESTER = '8' And MODU.COMPLETE_REASON Is Null Then 1
+            When MODU.COURSESEMESTER = '8' And Instr(MODU.COMPLETE_REASON,'RECOGNISED') = 0 Then 1
             Else 0
         End As INT) As S8,
         Cast(Case
-            When MODU.COURSESEMESTER = '9' Then 1
+            When MODU.COURSESEMESTER = '9' And MODU.COMPLETE_REASON Is Null Then 1
+            When MODU.COURSESEMESTER = '9' And Instr(MODU.COMPLETE_REASON,'RECOGNISED') = 0 Then 1
             Else 0
         End As INT) As S9
     From
@@ -1990,19 +2027,20 @@ def student_fee(s_period='curr', s_year='2019'):
     sr_file = "X020ae_Student_convert_master"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
-        X020ae_Student_convert.KSTUDBUSENTID,
-        X020ae_Student_convert1.FQUALLEVELAPID,
-        X020ae_Student_convert1.CONV_IND
+        STUD.KSTUDBUSENTID,
+        STU2.FQUALLEVELAPID,
+        STU2.CONV_IND,
+        FEES.FEE_QUAL As FEE_QUAL_TOTAL
     From
-        X020ae_Student_convert Inner Join
-        X020ae_Student_convert X020ae_Student_convert1 On X020ae_Student_convert1.KSTUDBUSENTID =
-                X020ae_Student_convert.KSTUDBUSENTID
+        X020ae_Student_convert STUD Inner Join
+        X020ae_Student_convert STU2 On STU2.KSTUDBUSENTID = STUD.KSTUDBUSENTID Left Join
+        X020ab_Trans_feequal_stud FEES On FEES.STUDENT = STUD.KSTUDBUSENTID
     Group By
-        X020ae_Student_convert.KSTUDBUSENTID,
-        X020ae_Student_convert1.FQUALLEVELAPID,
-        X020ae_Student_convert1.CONV_IND
+        STUD.KSTUDBUSENTID,
+        STU2.FQUALLEVELAPID,
+        STU2.CONV_IND
     Having
-        Count(X020ae_Student_convert.FQUALLEVELAPID) = 2
+        Count(STUD.FQUALLEVELAPID) = 2
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -2453,6 +2491,7 @@ def student_fee(s_period='curr', s_year='2019'):
             Else Round(MODE.FEE_MODE/2,2)
         End As REAL) As FEE_MODE_HALF,
         CONV.CONV_IND,
+        CONV.FEE_QUAL_TOTAL,
         '' As FEE_SHOULD_BE,
         Case
             When STUD.ENROL_CAT = "POST DOC" Then '9 EXCLUDE POST DOC'
@@ -2550,7 +2589,7 @@ def student_fee(s_period='curr', s_year='2019'):
         X000_Student STUD Left Join
         X021ab_findings_list FIND On FIND.KSTUDBUSENTID = STUD.KSTUDBUSENTID And
             FIND.QUALIFICATION = STUD.QUALIFICATION Left Join
-        X020ab_Trans_feequal_stud FEES On FEES.STUDENT = STUD.KSTUDBUSENTID And
+        X020ab_Trans_feequal_stud_level FEES On FEES.STUDENT = STUD.KSTUDBUSENTID And
             FEES.FQUALLEVELAPID = STUD.FQUALLEVELAPID Left Join
         X020ac_Trans_feequal_mode MODE On MODE.FQUALLEVELAPID = STUD.FQUALLEVELAPID Left Join
         X020ad_Student_module_summ SEME On SEME.KSTUDBUSENTID = STUD.KSTUDBUSENTID And
@@ -2635,7 +2674,7 @@ def student_fee(s_period='curr', s_year='2019'):
                     CASE
                         When FEE_LEVIED_TYPE Like '2%' Then 0
                         When FEE_LEVIED_TYPE Like '9%' Then 1
-                        
+
                         When FEE_SHOULD_BE Like '1%' And FEE_LEVIED_TYPE Like '1%' Then 1
                         When FEE_SHOULD_BE Like '1%' And FEE_LEVIED_TYPE Like '3%' Then 1
                         When FEE_SHOULD_BE Like '1%' And FEE_LEVIED_TYPE Like '4%' Then 2
@@ -2689,6 +2728,16 @@ def student_fee(s_period='curr', s_year='2019'):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     so_conn.commit()
 
+    """
+    NOTE
+    Use the following in the script following for test purposes.
+            When STUD.CONV_IND != '' And STUD.FEE_MODE = STUD.FEE_QUAL_TOTAL Then 3
+            When STUD.CONV_IND != '' And STUD.FEE_LEVIED > 0 And STUD.FEE_LEVIED = Round(STUD.FEE_QUAL_TOTAL/2,2) Then 4 
+            When STUD.CONV_IND != '' And STUD.FEE_LEVIED > 0 And STUD.FEE_QUAL_TOTAL >= STUD.FEE_LEVIED Then 5
+            When STUD.CONV_IND != '' And FEE_QUAL_TOTAL > 0 And FEE_SHOULD_BE Like('%HALF%') And FEE_MODE_HALF <= FEE_QUAL_TOTAL Then 6 
+            When STUD.CONV_IND != '' And FEE_QUAL_TOTAL > 0 And FEE_SHOULD_BE Like('%FULL%') And FEE_MODE <= FEE_QUAL_TOTAL Then 6 
+    """
+
     # JOIN STUDENTS AND TRANSACTIONS
     print("Join students and transactions...")
     sr_file = "X020bx_Student_master_sort"
@@ -2696,6 +2745,11 @@ def student_fee(s_period='curr', s_year='2019'):
     Select
         Case
             When HALF.FEE_COUNT_HALF = 2 Then 1
+            When STUD.CONV_IND != '' And STUD.FEE_MODE = STUD.FEE_QUAL_TOTAL Then 1
+            When STUD.CONV_IND != '' And STUD.FEE_LEVIED > 0 And STUD.FEE_LEVIED = Round(STUD.FEE_QUAL_TOTAL/2,2) Then 1 
+            When STUD.CONV_IND != '' And STUD.FEE_LEVIED > 0 And STUD.FEE_QUAL_TOTAL >= STUD.FEE_LEVIED Then 1
+            When STUD.CONV_IND != '' And FEE_QUAL_TOTAL > 0 And FEE_SHOULD_BE Like('%HALF%') And FEE_MODE_HALF <= FEE_QUAL_TOTAL Then 1 
+            When STUD.CONV_IND != '' And FEE_QUAL_TOTAL > 0 And FEE_SHOULD_BE Like('%FULL%') And FEE_MODE <= FEE_QUAL_TOTAL Then 1
             Else VALID
         End As VALID,
         STUD.CAMPUS,
@@ -2704,6 +2758,7 @@ def student_fee(s_period='curr', s_year='2019'):
         STUD.FEE_MODE,
         STUD.FEE_MODE_HALF,
         STUD.CONV_IND,
+        STUD.FEE_QUAL_TOTAL,
         HALF.FEE_COUNT_HALF,
         STUD.FEE_SHOULD_BE,
         STUD.FEE_LEVIED_TYPE,
@@ -2777,7 +2832,7 @@ def student_fee(s_period='curr', s_year='2019'):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # EXPORT INVALID TRANSACTIONS
-    # Note - Created for Corlia de Beer and she can modify outlay hereof
+    # NOTE - Created for Corlia de Beer and she can modify outlay hereof
     print("Build table of invalid qualification fees...")
     sr_file = "X020bx_Student_master_export"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -2801,6 +2856,63 @@ def student_fee(s_period='curr', s_year='2019'):
         funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
         # funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
         funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
+
+    """
+    NOTE - Explanation of calculated fields in above script and qualification master export
+    
+        VALID:  0 = Qualification fee invalid.
+                1 = Qualification fee valid.
+                2 = Qualification fee overcharge.
+        FEE_LEVIED: Total qualification fee levied on the student account per qualification.
+        FEE_MODE: Qualification fee loaded onto system which constitute full fee.
+        FEE_MODE_HALF: Half or 50% of the FEE_MODE.
+        CONV_IND:   FROM = Qualification was discontinued and converted to another qualification.
+                    TO = New qualification which follows converted qualification.
+        FEE_QUAL_TOTAL: The total qualification fee levied irrespective of qualification.
+        FEE_COUNT_HALF: 1 = One half (50%) transaction occurred on the student account.
+                        2 = Multiple half (50%) transactions occurred on the student account.
+        FEE_SHOULD_BE:  A calculated proposal of what we think the qualification should be on the student account. 
+                        Legend = NN CC CCCCCCCCCCCCCCCCCCCCCC
+                        NN  Proposed levy category. What we calculated the the qualification levy should be.
+                        CC  CP = Contact postgraduate
+                            CU = Contact undergraduate
+                            DP = Distance postgraduate
+                            DU = Distance undergraduate
+                        10 NO PAYMENT RQD: No qualification fee should be levied.
+                        20 DISC 1ST HALF PAYMENT RQD: Discontinued in first semester. Levy 50%.
+                        30 DISC 2ND FULL PAYMENT RQD: Discontinued in second semester. Levy 100%.
+                        40 FULL PAYMENT RQD: Student studied full year. Levy 100%.
+                        41 1ST SEM HALF PAYMENT RQD: Student studied only first semester. Levy 50%. See SEM1.
+                        42 2ND SEM HALF PAYMENT RQD: Student studied second semester only. Levy 50%. See SEM2.
+                        46 NULL SEM FULL PAYMENT RQD: Student registered for no modules. Levy 100%. No SEM1 to SEM9.
+                        47 FULL PAYMENT RQD: Student registered for a year module. Levy 100%. See SEM7.
+                        48 FULL PAYMENT RQD: Student regsitered for honours or masters script. Levy 100%. See SEM8.
+                        49 FULL PAYMENT RQD: Student registered for doctoral script. Levy 100%. See SEM9.
+                        50 PASS FULL PAYMENT RQD: Student studied full year and passed. Levy 100%.
+                        51 PASS 1ST SEM HALF PAYMENT RQD: Student studied only first semester and passed. Levy 50%. See SEM1.
+                        52 PASS 2ND SEM HALF PAYMENT RQD: Student studied second semester only and passed. Levy 50%. See SEM2.
+                        56 PASS NULL SEM FULL PAYMENT RQD: Student registered for no modules and passed. Levy 100%. No SEM1 to SEM9.
+                        57 PASS FULL PAYMENT RQD: Student registered for a year module and passed. Levy 100%. See SEM7.
+                        58 PASS FULL PAYMENT RQD: Student regsitered for honours or masters script and passed. Levy 100%. See SEM8.
+                        59 FULL PAYMENT RQD: Student registered for doctoral script and passed. Levy 100%. See SEM9.
+        FEE_LEVIED_TYPE:    The actual fee levied category.
+                            1 = NO TRANSACTION. No qualification fee transaction whatsoever was recorded on the student account.
+                            2 = NEGATIVE TRANSACTION. The total of the qualification fee transactions is a credit or negative amount.
+                            3 = ZERO TRANSACTION. Multiple qualification transactions were recorded, but the total is no value.
+                            4 = HALF TRANSACTION. The total the qualification fee transactions amounts to half (50%) of the full fee.
+                            5 = NORMAL TRANSACTION. The total of the qualification fee transactions is equal to the full fee.
+                            6 = ABNORMAL TRANSACTION. The total of the qualification fee is not equal to the full or half the fee.
+        DAYS_REG:   The number of days registered. Discontinue date minus enrol date.
+        DISCDATE_CALC:  Discontinue date excluding passed students.
+        SEM1:   Number of first semester modules.
+        SEM2:   Number of second semester modules.
+        SEM7:   Number of year modules.
+        SEM8:   Number of honours / masters scripts. ?
+        SEM9:   Number of doctorate scripts. ?
+        REG_FEE_TYPE:   Registration fee levied category. See categories FEE_LEVIED_TYPE.
+        TRAN_COUNT: The number of qualification (type 004) transactions on the student account.
+        NAME:ADDR:  The name of the employee who did the last qualification fee transaction on the student account.
+    """
 
     """*****************************************************************************
     QUALIFICATION FEE TEST NO TRANSACTION
