@@ -1801,6 +1801,86 @@ def student_fee(s_period='curr', s_year='2019'):
     print("QUALIFICATION FEE MASTER")
     funcfile.writelog("QUALIFICATION FEE MASTER")
 
+    # IMPORT QUALIFICATION LEVY LIST
+    # TODO Get latest list from Corlia Report FIABD007
+    sr_file = "X020aa_Fiabd007"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    print("Import vss qualification fees...")
+    so_curs.execute(
+        "Create Table " + sr_file + """
+        (ACAD_PROG_FEE_TYPE INT,
+        ACAD_PROG_FEE_DESC TEXT,
+        APOMOD INT,
+        FPRESENTATIONCATEGORYCODEID INT,
+        PRESENT_CAT TEXT,
+        FENROLMENTCATEGORYCODEID INT,
+        ENROL_CATEGORY TEXT,
+        FSITEORGUNITNUMBER INT,
+        CAMPUS TEXT,
+        FQUALLEVELAPID INT,
+        QUALIFICATION TEXT,
+        QUALIFICATION_NAME TEXT,
+        LEVY_CATEGORY TEXT,
+        TRANSCODE TEXT,
+        UMPT_REGU INT,
+        AMOUNT REAL)
+        """)
+    co = open(ed_path + "302_fiapd007_" + s_period + ".csv", "r")
+    co_reader = csv.reader(co)
+    # Read the COLUMN database data
+    for row in co_reader:
+        # Populate the column variables
+        # print(row[0])
+        if row[0] == "ï»¿Academic Program Fee Type ":
+            continue
+        else:
+            s_cols = "Insert Into " + sr_file + " Values(" \
+            "" + row[0] + "," \
+            "'" + row[1] + "'," \
+            "" + row[2] + "," \
+            "" + row[3] + "," \
+            "'" + row[4] + "'," \
+            "" + row[5] + "," \
+            "'" + row[6] + "'," \
+            "" + row[7] + "," \
+            "'" + row[8] + "'," \
+            "" + row[9] + "," \
+            "'" + row[10] + "'," \
+            "'" + row[11] + "'," \
+            "'" + row[12] + "'," \
+            "'" + row[13] + "'," \
+            "" + row[14] + "," \
+            "" + row[15] + ")"
+            # print(s_cols)
+            so_curs.execute(s_cols)
+    so_conn.commit()
+    # Close the imported data file
+    co.close()
+    funcfile.writelog("%t IMPORT TABLE: " + ed_path + "302_fiapd007_period.csv (" + sr_file + ")")
+
+    # SUMM FIAB LEVY LIST
+    print("Build summary of levy list...")
+    sr_file = "X020aa_Fiabd007_summ"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        FIAB.FQUALLEVELAPID,
+        FIAB.AMOUNT,
+        Count(FIAB.ACAD_PROG_FEE_TYPE) As COUNT,
+        FIAB.QUALIFICATION,
+        FIAB.QUALIFICATION_NAME        
+    From
+        X020aa_Fiabd007 FIAB
+    Where
+        FIAB.AMOUNT > 0
+    Group By
+        FIAB.FQUALLEVELAPID,
+        FIAB.AMOUNT
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
     # BUILD LIST OF QUALIFICATIONS PLUS STATS
     print("Build summary of qualifications levied...")
     sr_file = "X020aa_Trans_feequal"
@@ -1883,7 +1963,7 @@ def student_fee(s_period='curr', s_year='2019'):
     i_value: int = 0
     sr_file = "X020ac_Trans_feequal_mode"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute("CREATE TABLE " + sr_file + " (FQUALLEVELAPID INT, FEE_MODE REAL)")
+    so_curs.execute("CREATE TABLE " + sr_file + " (FQUALLEVELAPID INT, AMOUNT REAL)")
     for qual in so_curs.execute("SELECT FQUALLEVELAPID FROM X020aa_Trans_feequal").fetchall():
         try:
             i_value = funcstat.stat_mode(so_curs, "X020ab_Trans_feequal_stud_level",
@@ -1902,7 +1982,35 @@ def student_fee(s_period='curr', s_year='2019'):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     so_conn.commit()
 
-    # TODO Continue here
+    # COMBINE MODE AND LEVY LIST
+    print("Combine mode and levy list...")
+    sr_file = "X020ac_Trans_feequal_mode_fiab"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        MODE.FQUALLEVELAPID,
+        MODE.AMOUNT As MODE_FEE,
+        FIAB.AMOUNT As LIST_FEE,
+        Cast(Case
+            When FIAB.AMOUNT Is Null Then MODE.AMOUNT
+            When FIAB.AMOUNT = 0 Then MODE.AMOUNT
+            Else FIAB.AMOUNT
+        End As REAL) As FEE_MODE,
+        Cast(Case
+            When MODE.AMOUNT = 0 Or FIAB.AMOUNT = 0 Then 2
+            When MODE.AMOUNT Is Null Or FIAB.AMOUNT Is Null Then 2
+            When MODE.AMOUNT > 0 And FIAB.AMOUNT > 0 And MODE.AMOUNT <> FIAB.AMOUNT Then 1
+            Else 0
+        End As INT) As DIFF,
+        FIAB.QUALIFICATION,
+        FIAB.QUALIFICATION_NAME
+    From
+        X020ac_Trans_feequal_mode MODE Left Join
+        X020aa_Fiabd007_summ FIAB On FIAB.FQUALLEVELAPID = MODE.FQUALLEVELAPID
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # CALCULATE THE NUMBER OF MODULES
     print("Calculate the number modules...")
@@ -2591,7 +2699,7 @@ def student_fee(s_period='curr', s_year='2019'):
             FIND.QUALIFICATION = STUD.QUALIFICATION Left Join
         X020ab_Trans_feequal_stud_level FEES On FEES.STUDENT = STUD.KSTUDBUSENTID And
             FEES.FQUALLEVELAPID = STUD.FQUALLEVELAPID Left Join
-        X020ac_Trans_feequal_mode MODE On MODE.FQUALLEVELAPID = STUD.FQUALLEVELAPID Left Join
+        X020ac_Trans_feequal_mode_fiab MODE On MODE.FQUALLEVELAPID = STUD.FQUALLEVELAPID Left Join
         X020ad_Student_module_summ SEME On SEME.KSTUDBUSENTID = STUD.KSTUDBUSENTID And
             SEME.FQUALLEVELAPID = STUD.FQUALLEVELAPID Left Join
         X010_Student_feereg REGF On REGF.KSTUDBUSENTID = STUD.KSTUDBUSENTID Left Join
