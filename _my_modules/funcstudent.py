@@ -165,6 +165,8 @@ def studentlist(so_conn, re_path, s_period='curr', s_year='2019', l_export=False
         MENR.DATEDISCONTINUED,
         MENR.FCOMPLETEREASONCODEID,
         Upper(REAS.LONG) As COMPLETE_REASON,
+        MODR.PART_RESU,
+        MODR.DATEACHIEVED As DATE_RESU,
         MODU.FBUSINESSENTITYID,
         MODU.SITEID,
         MODU.CAMPUS,
@@ -205,7 +207,9 @@ def studentlist(so_conn, re_path, s_period='curr', s_year='2019', l_export=False
         X000_Codedescription TYPE On TYPE.KCODEDESCID = MENR.FMODULETYPECODEID Left Join
         X000_Codedescription REAS On REAS.KCODEDESCID = MENR.FCOMPLETEREASONCODEID Left Join
         X001_Student_%PERIOD% STUD On STUD.KSTUDBUSENTID = MENR.KSTUDBUSENTID And
-            STUD.KENROLSTUDID = MENR.FQUALLEVELENROLSTUDID
+            STUD.KENROLSTUDID = MENR.FQUALLEVELENROLSTUDID Left Join
+        X000_Student_module_result_participate MODR On MODR.KSTUDBUSENTID = MENR.KSTUDBUSENTID And
+            MODR.KENROLSTUDID = MENR.KENROLSTUDID     
     ;"""
     s_sql = s_sql.replace("%PERIOD%", s_period)
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
