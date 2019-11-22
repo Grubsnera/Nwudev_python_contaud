@@ -1,7 +1,7 @@
 ﻿Select
-    X020ae_Student_convert.KSTUDBUSENTID,
-    Count(X020ae_Student_convert.FQUALLEVELAPID) As Count_FQUALLEVELAPID
+    X020aa_Fiabd007_summ.FQUALLEVELAPID,
+    Count(X020aa_Fiabd007_summ.AMOUNT) As Count_AMOUNT
 From
-    X020ae_Student_convert
+    X020aa_Fiabd007_summ
 Group By
-    X020ae_Student_convert.KSTUDBUSENTID
+    X020aa_Fiabd007_summ.FQUALLEVELAPID
