@@ -34,6 +34,7 @@ TEST REGISTRATION FEE CONTACT ABNORMAL
 QUALIFICATION FEE MASTER 1
 QUALIFICATION FEE TEST NO FEE LOADED
 QUALIFICATION FEE MASTER 2
+UPDATE FEE SHOULD BE COLUMN
 QUALIFICATION FEE TEST NO TRANSACTION (1 NO TRANSACTION)
 QUALIFICATION FEE TEST NEGATIVE TRANSACTION (2 NEGATIVE TRANSACTION)
 QUALIFICATION FEE TEST ZERO TRANSACTION (3 ZERO TRANSACTION)
@@ -1825,7 +1826,7 @@ def student_fee(s_period='curr', s_year='2019'):
         UMPT_REGU INT,
         AMOUNT REAL)
         """)
-    co = open(ed_path + "302_fiapd007_" + s_period + ".csv", "r")
+    co = open(ed_path + "302_fiapd007_qual_" + s_period + ".csv", "r")
     co_reader = csv.reader(co)
     # Read the COLUMN database data
     for row in co_reader:
@@ -1856,7 +1857,7 @@ def student_fee(s_period='curr', s_year='2019'):
     so_conn.commit()
     # Close the imported data file
     co.close()
-    funcfile.writelog("%t IMPORT TABLE: " + ed_path + "302_fiapd007_period.csv (" + sr_file + ")")
+    funcfile.writelog("%t IMPORT TABLE: " + ed_path + "302_fiapd007_qual_period.csv (" + sr_file + ")")
 
     # SUMM FIAB LEVY LIST
     print("Build summary of levy list...")
@@ -2651,6 +2652,11 @@ def student_fee(s_period='curr', s_year='2019'):
             When Upper(STUD.RESULT) Like 'PASS D%' Then STUD.RESULTPASSDATE
             Else '' 
         End As RESULTPASSDATE,
+        Cast(Case
+            When Upper(STUD.RESULT) Like 'PASS C%' And STUD.DISCONTINUEDATE > STUD.RESULTPASSDATE Then Julianday(STUD.DISCONTINUEDATE) - Julianday(STUD.RESULTPASSDATE)
+            When Upper(STUD.RESULT) Like 'PASS D%' And STUD.DISCONTINUEDATE > STUD.RESULTPASSDATE Then Julianday(STUD.DISCONTINUEDATE) - Julianday(STUD.RESULTPASSDATE) 
+            Else 0
+        End As INT) As DAYS_PASS,
         Case
             When Upper(STUD.RESULT) Like 'PASS C%' Then STUD.RESULTISSUEDATE
             When Upper(STUD.RESULT) Like 'PASS D%' Then STUD.RESULTISSUEDATE
@@ -2889,6 +2895,7 @@ def student_fee(s_period='curr', s_year='2019'):
         STUD.DAYS_REG,
         STUD.DISCDATE_CALC,
         STUD.RESULTPASSDATE,
+        STUD.DAYS_PASS,
         STUD.RESULTISSUEDATE,
         STUD.RESULT,
         STUD.ISHEMISSUBSIDY,
