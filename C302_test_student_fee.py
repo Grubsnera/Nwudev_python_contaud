@@ -77,6 +77,7 @@ def student_fee(s_period='curr', s_year='2019'):
 
     s_reg_trancode: str = "095"
     s_qual_trancode: str = "004"
+    s_burs_trancode: str = "042z052z381z500"
     s_mba: str = "71500z2381692z2381690z665559"  # Exclude these FQUALLEVELAPID
     s_mpa: str = "665566"  # Exclude these FQUALLEVELAPID
     # Find these id's from Sqlite->Sqlite_vss_test_fee->Q021aa_qual_nofee_loaded
@@ -2156,6 +2157,33 @@ def student_fee(s_period='curr', s_year='2019'):
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
+    # CALCULATE THE BURSARY FEES LEVIED PER STUDENT
+    print("Calculate the bursary fees levied per student...")
+    sr_file = "X020af_Trans_feeburs_stud"
+    s_sql = "Create table " + sr_file + " AS" + """
+    Select
+        TRAN.STUDENT,
+        CAST(COUNT(TRAN.STUDENT) As INT) As TRAN_COUNT,
+        CAST(TOTAL(TRAN.AMOUNT) AS REAL) AS FEE_BURS,
+        MAX(TRAN.AUDITDATETIME),
+        TRAN.FUSERBUSINESSENTITYID,
+        PEOP.NAME_ADDR,
+        TRAN.FAUDITUSERCODE,
+        TRAN.SYSTEM_DESC
+    From
+        X000_Transaction TRAN Left Join
+        PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = Cast(TRAN.FUSERBUSINESSENTITYID As TEXT)
+    Where
+        Instr('%TRANCODE%', Trim(TRAN.TRANSCODE)) > 0
+    Group by
+        TRAN.STUDENT
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = s_sql.replace("%TRANCODE%", s_burs_trancode)
+    print(s_sql)
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
     """*****************************************************************************
     QUALIFICATION FEE TEST NO FEE LOADED
     *****************************************************************************"""
@@ -2653,8 +2681,8 @@ def student_fee(s_period='curr', s_year='2019'):
             Else '' 
         End As RESULTPASSDATE,
         Cast(Case
-            When Upper(STUD.RESULT) Like 'PASS C%' And STUD.DISCONTINUEDATE > STUD.RESULTPASSDATE Then Julianday(STUD.DISCONTINUEDATE) - Julianday(STUD.RESULTPASSDATE)
-            When Upper(STUD.RESULT) Like 'PASS D%' And STUD.DISCONTINUEDATE > STUD.RESULTPASSDATE Then Julianday(STUD.DISCONTINUEDATE) - Julianday(STUD.RESULTPASSDATE) 
+            When Upper(STUD.RESULT) Like 'PASS C%' And STUD.RESULTPASSDATE > STUD.DATEENROL Then Julianday(STUD.RESULTPASSDATE) - Julianday(STUD.DATEENROL)
+            When Upper(STUD.RESULT) Like 'PASS D%' And STUD.RESULTPASSDATE > STUD.DATEENROL Then Julianday(STUD.RESULTPASSDATE) - Julianday(STUD.DATEENROL) 
             Else 0
         End As INT) As DAYS_PASS,
         Case
@@ -2663,6 +2691,8 @@ def student_fee(s_period='curr', s_year='2019'):
             Else '' 
         End As RESULTISSUEDATE,
         STUD.RESULT,
+        STUD.CEREMONYDATETIME,
+        STUD.CEREMONY,
         STUD.ISHEMISSUBSIDY,
         STUD.ISMAINQUALLEVEL,
         STUD.ENROLACADEMICYEAR,
@@ -2673,6 +2703,7 @@ def student_fee(s_period='curr', s_year='2019'):
         SEME.SEM8,
         SEME.SEM9,
         REGF.FEE_TYPE As REG_FEE_TYPE,
+        BURS.FEE_BURS,
         STUD.MIN,
         STUD.MIN_UNIT,
         STUD.MAX,
@@ -2710,7 +2741,8 @@ def student_fee(s_period='curr', s_year='2019'):
             SEME.FQUALLEVELAPID = STUD.FQUALLEVELAPID Left Join
         X010_Student_feereg REGF On REGF.KSTUDBUSENTID = STUD.KSTUDBUSENTID Left Join
         X020ae_Student_convert_master CONV On CONV.KSTUDBUSENTID = STUD.KSTUDBUSENTID And
-            CONV.FQUALLEVELAPID = STUD.FQUALLEVELAPID 
+            CONV.FQUALLEVELAPID = STUD.FQUALLEVELAPID Left join
+        X020af_Trans_feeburs_stud BURS On BURS.STUDENT = STUD.KSTUDBUSENTID     
     Where
         STUD.PRESENT_CAT Like ('C%') And
         FIND.KSTUDBUSENTID Is Null    
@@ -2731,20 +2763,20 @@ def student_fee(s_period='curr', s_year='2019'):
                         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'D%' Then 'DP DISTANCE POSTGRADUATE' 
                         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'D%' Then 'DU DISTANCE UNDERGRADUATE' 
 
-                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM1 Is Null Then '46 CP NULL SEM FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM1 Is Null Then '43 CP NULL SEM FULL PAYMENT RQD' 
                         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM9 > 0 Then '49 CP FULL PAYMENT RQD' 
                         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM8 > 0 Then '48 CP FULL PAYMENT RQD' 
                         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM7 > 0 Then '47 CP FULL PAYMENT RQD' 
-                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM1 = 0 And SEM2 = 0 And SEM7 = 0 Then '45 CP ZERO SEM FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM1 = 0 And SEM2 = 0 And SEM7 = 0 Then '44 CP ZERO SEM FULL PAYMENT RQD' 
                         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM2 > 0 And SEM1 = 0 Then '42 CP 2ND SEM HALF PAYMENT RQD' 
                         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM1 > 0 And SEM2 = 0 Then '41 CP 1ST SEM HALF PAYMENT RQD' 
                         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null Then '40 CP FULL PAYMENT RQD' 
 
-                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM1 Is Null Then '56 CP PASS NULL SEM FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM1 Is Null Then '53 CP PASS NULL SEM FULL PAYMENT RQD' 
                         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM9 > 0 Then '59 CP PASS FULL PAYMENT RQD' 
                         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM8 > 0 Then '58 CP PASS FULL PAYMENT RQD' 
                         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM7 > 0 Then '57 CP PASS FULL PAYMENT RQD' 
-                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM1 = 0 And SEM2 = 0 And SEM7 = 0 Then '55 CP PASS ZERO SEM FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM1 = 0 And SEM2 = 0 And SEM7 = 0 Then '54 CP PASS ZERO SEM FULL PAYMENT RQD' 
                         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM2 > 0 And SEM1 = 0 Then '52 CP PASS 2ND SEM HALF PAYMENT RQD' 
                         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM1 > 0 And SEM2 = 0 Then '51 CP PASS 1ST SEM HALF PAYMENT RQD' 
                         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' Then '50 CP PASS FULL PAYMENT RQD' 
@@ -2753,20 +2785,20 @@ def student_fee(s_period='curr', s_year='2019'):
                         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC <= '2019-08-09' Then '20 CP DISC 1ST HALF PAYMENT RQD' 
                         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC > '2019-08-09' Then '30 CP DISC 2ND FULL PAYMENT RQD'
 
-                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM1 Is Null Then '46 CU NULL SEM FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM1 Is Null Then '43 CU NULL SEM FULL PAYMENT RQD' 
                         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM9 > 0 Then '49 CU FULL PAYMENT RQD' 
                         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM8 > 0 Then '48 CU FULL PAYMENT RQD' 
                         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM7 > 0 Then '47 CU FULL PAYMENT RQD' 
-                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM1 = 0 And SEM2 = 0 And SEM7 = 0 Then '45 CU ZERO SEM FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM1 = 0 And SEM2 = 0 And SEM7 = 0 Then '44 CU ZERO SEM FULL PAYMENT RQD' 
                         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM2 > 0 And SEM1 = 0 Then '42 CU 2ND SEM HALF PAYMENT RQD' 
                         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM1 > 0 And SEM2 = 0 Then '41 CU 1ST SEM HALF PAYMENT RQD' 
                         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null Then '40 CU FULL PAYMENT RQD' 
 
-                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM1 Is Null Then '56 CU PASS NULL SEM FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM1 Is Null Then '53 CU PASS NULL SEM FULL PAYMENT RQD' 
                         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM9 > 0 Then '59 CU PASS FULL PAYMENT RQD' 
                         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM8 > 0 Then '58 CU PASS FULL PAYMENT RQD' 
                         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM7 > 0 Then '57 CU PASS FULL PAYMENT RQD' 
-                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM1 = 0 And SEM2 = 0 And SEM7 = 0 Then '55 CU PASS ZERO SEM FULL PAYMENT RQD' 
+                        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM1 = 0 And SEM2 = 0 And SEM7 = 0 Then '54 CU PASS ZERO SEM FULL PAYMENT RQD' 
                         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM2 > 0 And SEM1 = 0 Then '52 CU PASS 2ND SEM HALF PAYMENT RQD' 
                         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM1 > 0 And SEM2 = 0 Then '51 CU PASS 1ST SEM HALF PAYMENT RQD' 
                         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' Then '50 CU PASS FULL PAYMENT RQD' 
@@ -2799,16 +2831,16 @@ def student_fee(s_period='curr', s_year='2019'):
 
                         When FEE_SHOULD_BE Like '3%' And FEE_LEVIED_TYPE Like '5%' Then 1
 
-                        When FEE_SHOULD_BE Like '46%' And FEE_LEVIED_TYPE Like '3%' Then 1
-                        When FEE_SHOULD_BE Like '45%' And FEE_LEVIED_TYPE Like '3%' Then 1
+                        When FEE_SHOULD_BE Like '43%' And FEE_LEVIED_TYPE Like '3%' Then 1
+                        When FEE_SHOULD_BE Like '44%' And FEE_LEVIED_TYPE Like '3%' Then 1
                         When FEE_SHOULD_BE Like '42%' And FEE_LEVIED_TYPE Like '4%' Then 1
                         When FEE_SHOULD_BE Like '42%' And FEE_LEVIED_TYPE Like '5%' Then 2
                         When FEE_SHOULD_BE Like '41%' And FEE_LEVIED_TYPE Like '4%' Then 1
                         When FEE_SHOULD_BE Like '41%' And FEE_LEVIED_TYPE Like '5%' Then 2
                         When FEE_SHOULD_BE Like '4%' And FEE_LEVIED_TYPE Like '5%' Then 1
 
-                        When FEE_SHOULD_BE Like '56%' And FEE_LEVIED_TYPE Like '3%' Then 1
-                        When FEE_SHOULD_BE Like '55%' And FEE_LEVIED_TYPE Like '3%' Then 1
+                        When FEE_SHOULD_BE Like '53%' And FEE_LEVIED_TYPE Like '3%' Then 1
+                        When FEE_SHOULD_BE Like '54%' And FEE_LEVIED_TYPE Like '3%' Then 1
                         When FEE_SHOULD_BE Like '52%' And FEE_LEVIED_TYPE Like '4%' Then 1
                         When FEE_SHOULD_BE Like '52%' And FEE_LEVIED_TYPE Like '5%' Then 2
                         When FEE_SHOULD_BE Like '51%' And FEE_LEVIED_TYPE Like '4%' Then 1
@@ -2898,6 +2930,8 @@ def student_fee(s_period='curr', s_year='2019'):
         STUD.DAYS_PASS,
         STUD.RESULTISSUEDATE,
         STUD.RESULT,
+        STUD.CEREMONYDATETIME,
+        STUD.CEREMONY,
         STUD.ISHEMISSUBSIDY,
         STUD.ISMAINQUALLEVEL,
         STUD.ENROLACADEMICYEAR,
@@ -2908,6 +2942,7 @@ def student_fee(s_period='curr', s_year='2019'):
         STUD.SEM8,
         STUD.SEM9,
         STUD.REG_FEE_TYPE,
+        STUD.FEE_BURS,
         STUD.MIN,
         STUD.MIN_UNIT,
         STUD.MAX,
@@ -2999,14 +3034,14 @@ def student_fee(s_period='curr', s_year='2019'):
                         40 FULL PAYMENT RQD: Student studied full year. Levy 100%.
                         41 1ST SEM HALF PAYMENT RQD: Student studied only first semester. Levy 50%. See SEM1.
                         42 2ND SEM HALF PAYMENT RQD: Student studied second semester only. Levy 50%. See SEM2.
-                        46 NULL SEM FULL PAYMENT RQD: Student registered for no modules. Levy 100%. No SEM1 to SEM9.
+                        43 NULL SEM FULL PAYMENT RQD: Student registered for no modules. Levy 100%. No SEM1 to SEM9.
                         47 FULL PAYMENT RQD: Student registered for a year module. Levy 100%. See SEM7.
                         48 FULL PAYMENT RQD: Student regsitered for honours or masters script. Levy 100%. See SEM8.
                         49 FULL PAYMENT RQD: Student registered for doctoral script. Levy 100%. See SEM9.
                         50 PASS FULL PAYMENT RQD: Student studied full year and passed. Levy 100%.
                         51 PASS 1ST SEM HALF PAYMENT RQD: Student studied only first semester and passed. Levy 50%. See SEM1.
                         52 PASS 2ND SEM HALF PAYMENT RQD: Student studied second semester only and passed. Levy 50%. See SEM2.
-                        56 PASS NULL SEM FULL PAYMENT RQD: Student registered for no modules and passed. Levy 100%. No SEM1 to SEM9.
+                        53 PASS NULL SEM FULL PAYMENT RQD: Student registered for no modules and passed. Levy 100%. No SEM1 to SEM9.
                         57 PASS FULL PAYMENT RQD: Student registered for a year module and passed. Levy 100%. See SEM7.
                         58 PASS FULL PAYMENT RQD: Student regsitered for honours or masters script and passed. Levy 100%. See SEM8.
                         59 FULL PAYMENT RQD: Student registered for doctoral script and passed. Levy 100%. See SEM9.
