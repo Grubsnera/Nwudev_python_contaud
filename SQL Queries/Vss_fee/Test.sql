@@ -1,7 +1,12 @@
 ﻿Select
-    X020aa_Fiabd007_summ.FQUALLEVELAPID,
-    Count(X020aa_Fiabd007_summ.AMOUNT) As Count_AMOUNT
+    TRAN.STUDENT,
+    Total(TRAN.AMOUNT) As FEE_BURS
 From
-    X020aa_Fiabd007_summ
+    X000_Transaction TRAN
+Where
+    TRAN.TRANSCODE = '042' Or
+    TRAN.TRANSCODE = '052' Or
+    TRAN.TRANSCODE = '381' Or
+    TRAN.TRANSCODE = '500'
 Group By
-    X020aa_Fiabd007_summ.FQUALLEVELAPID
+    TRAN.STUDENT
