@@ -76,7 +76,10 @@ def studentlist(so_conn, re_path, s_period='curr', s_year='2019', l_export=False
         RESU.RESULT,
         RESU.DISCONTINUE_REAS,
         RESU.POSTPONE_REAS,
-        RESU.FPOSTPONEMENTCODEID,    
+        RESU.FPOSTPONEMENTCODEID,
+        RESU.FGRADUATIONCEREMONYID,
+        GRAD.CEREMONY,
+        GRAD.CEREMONYDATETIME,    
         QUAL.QUALIFICATIONCODE,
         QUAL.QUALIFICATIONFIELDOFSTUDY,
         QUAL.QUALIFICATIONLEVEL,  
@@ -103,8 +106,7 @@ def studentlist(so_conn, re_path, s_period='curr', s_year='2019', l_export=False
         QUAL.KENROLMENTPRESENTATIONID,
         STUD.FENROLMENTPRESENTATIONID,
         QUAL.FOS_KACADEMICPROGRAMID,
-        STUD.FPROGRAMAPID,
-        STUD.FGRADUATIONCEREMONYID As STUD_CEREMONY_ID
+        STUD.FPROGRAMAPID
     From
         QUALLEVELENROLSTUD_%PERIOD% STUD Left Join
         X000_Codedescription BLAC ON BLAC.KCODEDESCID = STUD.FBLACKLISTCODEID Left Join
@@ -113,7 +115,8 @@ def studentlist(so_conn, re_path, s_period='curr', s_year='2019', l_export=False
         X000_Qualifications QUAL On QUAL.KENROLMENTPRESENTATIONID = STUD.FENROLMENTPRESENTATIONID Left Join
         X000_Student_qualfos_result RESU ON RESU.KBUSINESSENTITYID = STUD.KSTUDBUSENTID And
             RESU.KACADEMICPROGRAMID = QUAL.FOS_KACADEMICPROGRAMID And
-            Strftime('%Y', RESU.DISCONTINUEDATE) = '%YEAR%'
+            Strftime('%Y', RESU.DISCONTINUEDATE) = '%YEAR%' Left Join
+        X000_Gradceremony GRAD On GRAD.KGRADUATIONCEREMONYID = RESU.FGRADUATIONCEREMONYID
     Order By
         STUD.KSTUDBUSENTID
     ;"""

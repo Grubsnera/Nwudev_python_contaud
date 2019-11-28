@@ -104,6 +104,38 @@ def vss_lists():
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: X000_Codedescription")
 
+    # CREATE SYSTEM FUNCTION MASTER TABLE
+    # NOTE - Only records where name purpose is General (Exclude others like web, heading etc.)
+    sr_file = "X000_Gradceremony"
+    print("Create graduation ceremony master...")
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        GRAD.KGRADUATIONCEREMONYID,
+        GRAD.FBUSENTID,
+        GRAD.FGRADUATIONCEREMONYCODEID,
+        Upper(CERE.LONG) As CEREMONY,
+        GRAD.FGRADUATIONCEREMONYTYPECODEID,
+        Upper(TYPE.LONG) As CEREMONY_TYPE,
+        GRAD.CEREMONYDATETIME,
+        GRAD.SESSIONNUMBER,
+        GRAD.FRESERVATIONID,
+        GRAD.ISDEFAULTCEREMONY,
+        GRAD.LOCKSTAMP,
+        GRAD.AUDITDATETIME,
+        GRAD.FAUDITSYSTEMFUNCTIONID,
+        GRAD.FAUDITUSERCODE
+    From
+        GRADUATIONCEREMONY GRAD Left Join
+        X000_Codedescription CERE On CERE.KCODEDESCID = GRAD.FGRADUATIONCEREMONYCODEID Left Join
+        X000_Codedescription TYPE On TYPE.KCODEDESCID = GRAD.FGRADUATIONCEREMONYTYPECODEID
+    Order By
+        KGRADUATIONCEREMONYID
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
     # BUILD ORGANIZATION UNIT NAME
     print("Build org unit name...")
     s_sql = "CREATE VIEW X000_Orgunitname AS " + """
