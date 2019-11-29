@@ -2023,53 +2023,55 @@ def student_fee(s_period='curr', s_year='2019'):
         MODU.FQUALLEVELAPID,
         MODU.COURSESEMESTER,
         Cast(Case
-            When MODU.COURSESEMESTER = '0' And MODU.COMPLETE_REASON Is Null Then 1
-            When MODU.COURSESEMESTER = '0' And Instr(MODU.COMPLETE_REASON,'RECOGNISED') = 0 Then 1
+            When MODU.COURSESEMESTER = '0' And Instr(MODU.COMPLETE_REASON,'RECOGN') > 0 Then 0
+            When MODU.COURSESEMESTER = '0' Then 1        
             Else 0
         End As INT) As S0,
         Cast(Case
-            When MODU.COURSESEMESTER = '1' And MODU.COMPLETE_REASON Is Null Then 1
-            When MODU.COURSESEMESTER = '1' And Instr(MODU.COMPLETE_REASON,'RECOGNISED') = 0 Then 1
+            When MODU.COURSESEMESTER = '1' And Instr(MODU.COMPLETE_REASON,'RECOGN') > 0 Then 0
+            When MODU.COURSESEMESTER = '1' And Instr(MODU.COMPLETE_REASON,'DISCON') > 0 And MODU.DATE_RESU <= '2019-03-05' Then 0
+            When MODU.COURSESEMESTER = '1' Then 1        
             Else 0
         End As INT) As S1,
         Cast(Case
-            When MODU.COURSESEMESTER = '2' And MODU.COMPLETE_REASON Is Null Then 1
-            When MODU.COURSESEMESTER = '2' And Instr(MODU.COMPLETE_REASON,'RECOGNISED') = 0 Then 1
+            When MODU.COURSESEMESTER = '2' And Instr(MODU.COMPLETE_REASON,'RECOGN') > 0 Then 0
+            When MODU.COURSESEMESTER = '2' And Instr(MODU.COMPLETE_REASON,'DISCON') > 0 And MODU.DATE_RESU <= '2019-08-09' Then 0
+            When MODU.COURSESEMESTER = '2' Then 1        
             Else 0
         End As INT) As S2,
         Cast(Case
-            When MODU.COURSESEMESTER = '3' And MODU.COMPLETE_REASON Is Null Then 1
-            When MODU.COURSESEMESTER = '3' And Instr(MODU.COMPLETE_REASON,'RECOGNISED') = 0 Then 1
+            When MODU.COURSESEMESTER = '3' And Instr(MODU.COMPLETE_REASON,'RECOGN') > 0 Then 0
+            When MODU.COURSESEMESTER = '3' Then 1        
             Else 0
         End As INT) As S3,
         Cast(Case
-            When MODU.COURSESEMESTER = '4' And MODU.COMPLETE_REASON Is Null Then 1
-            When MODU.COURSESEMESTER = '4' And Instr(MODU.COMPLETE_REASON,'RECOGNISED') = 0 Then 1
+            When MODU.COURSESEMESTER = '4' And Instr(MODU.COMPLETE_REASON,'RECOGN') > 0 Then 0
+            When MODU.COURSESEMESTER = '4' Then 1        
             Else 0
         End As INT) As S4,
         Cast(Case
-            When MODU.COURSESEMESTER = '5' And MODU.COMPLETE_REASON Is Null Then 1
-            When MODU.COURSESEMESTER = '5' And Instr(MODU.COMPLETE_REASON,'RECOGNISED') = 0 Then 1
+            When MODU.COURSESEMESTER = '5' And Instr(MODU.COMPLETE_REASON,'RECOGN') > 0 Then 0
+            When MODU.COURSESEMESTER = '5' Then 1        
             Else 0
         End As INT) As S5,
         Cast(Case
-            When MODU.COURSESEMESTER = '6' And MODU.COMPLETE_REASON Is Null Then 1
-            When MODU.COURSESEMESTER = '6' And Instr(MODU.COMPLETE_REASON,'RECOGNISED') = 0 Then 1
+            When MODU.COURSESEMESTER = '6' And Instr(MODU.COMPLETE_REASON,'RECOGN') > 0 Then 0
+            When MODU.COURSESEMESTER = '6' Then 1        
             Else 0
         End As INT) As S6,
         Cast(Case
-            When MODU.COURSESEMESTER = '7' And MODU.COMPLETE_REASON Is Null Then 1
-            When MODU.COURSESEMESTER = '7' And Instr(MODU.COMPLETE_REASON,'RECOGNISED') = 0 Then 1
+            When MODU.COURSESEMESTER = '7' And Instr(MODU.COMPLETE_REASON,'RECOGN') > 0 Then 0
+            When MODU.COURSESEMESTER = '7' Then 1        
             Else 0
         End As INT) As S7,
         Cast(Case
-            When MODU.COURSESEMESTER = '8' And MODU.COMPLETE_REASON Is Null Then 1
-            When MODU.COURSESEMESTER = '8' And Instr(MODU.COMPLETE_REASON,'RECOGNISED') = 0 Then 1
+            When MODU.COURSESEMESTER = '8' And Instr(MODU.COMPLETE_REASON,'RECOGN') > 0 Then 0
+            When MODU.COURSESEMESTER = '8' Then 1        
             Else 0
         End As INT) As S8,
         Cast(Case
-            When MODU.COURSESEMESTER = '9' And MODU.COMPLETE_REASON Is Null Then 1
-            When MODU.COURSESEMESTER = '9' And Instr(MODU.COMPLETE_REASON,'RECOGNISED') = 0 Then 1
+            When MODU.COURSESEMESTER = '9' And Instr(MODU.COMPLETE_REASON,'RECOGN') > 0 Then 0
+            When MODU.COURSESEMESTER = '9' Then 1        
             Else 0
         End As INT) As S9
     From
@@ -2087,16 +2089,16 @@ def student_fee(s_period='curr', s_year='2019'):
     Select
         MODU.KSTUDBUSENTID,
         MODU.FQUALLEVELAPID,
-        Sum(MODU.S0) As SEM0,
-        Sum(MODU.S1) As SEM1,
-        Sum(MODU.S2) As SEM2,
-        Sum(MODU.S3) As SEM3,
-        Sum(MODU.S4) As SEM4,
-        Sum(MODU.S5) As SEM5,
-        Sum(MODU.S6) As SEM6,
-        Sum(MODU.S7) As SEM7,
-        Sum(MODU.S8) As SEM8,
-        Sum(MODU.S9) As SEM9
+        Cast(Sum(MODU.S0) As INT) As SEM0,
+        Cast(Sum(MODU.S1) As INT) As SEM1,
+        Cast(Sum(MODU.S2) As INT) As SEM2,
+        Cast(Sum(MODU.S3) As INT) As SEM3,
+        Cast(Sum(MODU.S4) As INT) As SEM4,
+        Cast(Sum(MODU.S5) As INT) As SEM5,
+        Cast(Sum(MODU.S6) As INT) As SEM6,
+        Cast(Sum(MODU.S7) As INT) As SEM7,
+        Cast(Sum(MODU.S8) As INT) As SEM8,
+        Cast(Sum(MODU.S9) As INT) As SEM9
     From
         X020ad_Student_module_calc MODU
     Group By
@@ -2180,7 +2182,7 @@ def student_fee(s_period='curr', s_year='2019'):
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = s_sql.replace("%TRANCODE%", s_burs_trancode)
-    print(s_sql)
+    # print(s_sql)
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
