@@ -1,12 +1,7 @@
 ﻿Select
-    TRAN.STUDENT,
-    Total(TRAN.AMOUNT) As FEE_BURS
+    X020bx_Student_master_sort.KSTUDBUSENTID,
+    X020bx_Student_master_sort.FEE_SHOULD_BE
 From
-    X000_Transaction TRAN
+    X020bx_Student_master_sort
 Where
-    TRAN.TRANSCODE = '042' Or
-    TRAN.TRANSCODE = '052' Or
-    TRAN.TRANSCODE = '381' Or
-    TRAN.TRANSCODE = '500'
-Group By
-    TRAN.STUDENT
+    X020bx_Student_master_sort.FEE_SHOULD_BE Like ('50%')
