@@ -168,7 +168,7 @@ def studentlist(so_conn, re_path, s_period='curr', s_year='2019', l_export=False
         MENR.DATEDISCONTINUED,
         MENR.FCOMPLETEREASONCODEID,
         Upper(REAS.LONG) As COMPLETE_REASON,
-        MODR.PART_RESU,
+        Trim(MODR.PART_RESU) As PART_RESU,
         MODR.DATEACHIEVED As DATE_RESU,
         MODU.FBUSINESSENTITYID,
         MODU.SITEID,
