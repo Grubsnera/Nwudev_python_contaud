@@ -41,6 +41,8 @@ QUALIFICATION FEE TEST ZERO TRANSACTION (3 ZERO TRANSACTION)
 QUALIFICATION FEE TEST HALF TRANSACTION (4 HALF TRANSACTION)
 QUALIFICATION FEE TEST ABNORMAL TRANSACTION (6 ABNORMAL TRANSACTION)
 
+MODULE FEE MASTER 1
+
 END OF SCRIPT
 *****************************************************************************"""
 
@@ -185,6 +187,8 @@ def student_fee(s_period='curr', s_year='2019'):
         TRAN.FAUDITUSERCODE,
         TRAN.SYSTEM_DESC,
         TRAN.FMODAPID,
+        TRAN.ENROL_ID,
+        TRAN.ENROL_CATEGORY,        
         TRAN.MODULE,
         TRAN.MODULE_NAME,
         TRAN.FQUALLEVELAPID,
@@ -4905,6 +4909,216 @@ def student_fee(s_period='curr', s_year='2019'):
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    """*****************************************************************************
+    MODULE FEE MASTER 1 - PREPARE MODULE MASTER FILES
+    *****************************************************************************"""
+    print("MODULE FEE MASTER")
+    funcfile.writelog("MODULE FEE MASTER")
+
+    # IMPORT MODULE LEVY LIST
+    # TODO Get latest list from Corlia Report FIABD007
+    sr_file = "X030aa_Fiabd007"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    print("Import vss module fees...")
+    so_curs.execute(
+        "Create Table " + sr_file + """
+        (ACAD_PROG_FEE_TYPE INT,
+        ACAD_PROG_FEE_DESC TEXT,
+        APOMOD INT,
+        FPRESENTATIONCATEGORYCODEID INT,
+        PRESENT_CAT TEXT,
+        FENROLMENTCATEGORYCODEID INT,
+        ENROL_CATEGORY TEXT,
+        FSITEORGUNITNUMBER INT,
+        CAMPUS TEXT,
+        OE_CODE INT,
+        SCHOOL TEXT,
+        FMODAPID INT,
+        MODULE TEXT,
+        MODULE_NAME TEXT,
+        TRANSCODE TEXT,
+        AMOUNT REAL)
+        """)
+    co = open(ed_path + "302_fiapd007_modu_" + s_period + ".csv", "r")
+    co_reader = csv.reader(co)
+    # Read the COLUMN database data
+    for row in co_reader:
+        # Populate the column variables
+        # print(row[0])
+        if row[0] == "Academic Program Fee Type ":
+            continue
+        else:
+            s_cols = "Insert Into " + sr_file + " Values(" \
+                                                "" + row[0] + "," \
+                                                              "'" + row[1] + "'," \
+                                                                             "" + row[2] + "," \
+                                                                                           "" + row[3] + "," \
+                                                                                                         "'" + row[
+                         4] + "'," \
+                              "" + row[5] + "," \
+                                            "'" + row[6] + "'," \
+                                                           "" + row[7] + "," \
+                                                                         "'" + row[8] + "'," \
+                                                                                        "" + row[9] + "," \
+                                                                                                      "'" + row[
+                         10] + "'," \
+                               "" + row[11] + "," \
+                                              "'" + row[12] + "'," \
+                                                              "'" + row[13] + "'," \
+                                                                              "'" + row[14] + "'," \
+                                                                                              "" + row[15] + ")"
+            s_cols = s_cols.replace("A'S ", "A ")
+            s_cols = s_cols.replace("E'S ", "E ")
+            s_cols = s_cols.replace("N'S ", "N ")
+            # print(s_cols)
+            so_curs.execute(s_cols)
+    so_conn.commit()
+    # Close the imported data file
+    co.close()
+    funcfile.writelog("%t IMPORT TABLE: " + ed_path + "302_fiapd007_modu_period.csv (" + sr_file + ")")
+
+    # SUMM FIAB LEVY LIST
+    print("Build summary of module levy list...")
+    sr_file = "X030aa_Fiabd007_summ"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        FIAB.FMODAPID,
+        FIAB.FENROLMENTCATEGORYCODEID As ENROL_ID,
+        FIAB.ENROL_CATEGORY,
+        FIAB.AMOUNT,
+        Cast(Count(FIAB.ACAD_PROG_FEE_TYPE) As INT) As COUNT,
+        FIAB.MODULE,
+        FIAB.MODULE_NAME        
+    From
+        X030aa_Fiabd007 FIAB
+    Group By
+        FIAB.FMODAPID,
+        FIAB.FENROLMENTCATEGORYCODEID,
+        FIAB.AMOUNT
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD LIST OF MODULES PLUS STATS
+    print("Build summary of modules levied from transactions...")
+    sr_file = "X030ab_Trans_feemodu"
+    s_sql = "Create table " + sr_file + " AS" + """
+    Select
+        TRAN.FMODAPID,
+        TRAN.ENROL_ID,
+        TRAN.ENROL_CATEGORY As ENROL_CAT,
+        TRAN.MODULE,
+        TRAN.MODULE_NAME,
+        TRAN.AMOUNT,
+        CAST(COUNT(TRAN.STUDENT) As INT) As TRAN_COUNT_ALL,
+        CAST(TOTAL(TRAN.AMOUNT) AS REAL) AS FEE_MODU_ALL
+    From
+        X000_Transaction TRAN
+    Where
+        Instr('%TRANCODE%', Trim(TRAN.TRANSCODE)) > 0 And TRAN.FMODAPID != 0
+    Group by
+        TRAN.FMODAPID,
+        TRAN.ENROL_ID
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = s_sql.replace("%TRANCODE%", s_modu_trancode)
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # CALCULATE THE MODULE FEES LEVIED PER STUDENT
+    print("Calculate the module fees levied per student...")
+    sr_file = "X030ab_Trans_feemodu_stud"
+    s_sql = "Create table " + sr_file + " AS" + """
+    Select
+        TRAN.STUDENT,
+        TRAN.FMODAPID,
+        TRAN.ENROL_ID,
+        TRAN.ENROL_CATEGORY As ENROL_CAT,
+        CAST(COUNT(TRAN.STUDENT) As INT) As TRAN_COUNT,
+        CAST(TOTAL(TRAN.AMOUNT) AS REAL) AS FEE_MODU,
+        MAX(TRAN.AUDITDATETIME),
+        TRAN.MODULE,
+        TRAN.MODULE_NAME,
+        TRAN.FUSERBUSINESSENTITYID,
+        PEOP.NAME_ADDR,
+        TRAN.FAUDITUSERCODE,
+        TRAN.SYSTEM_DESC
+    From
+        X000_Transaction TRAN Left Join
+        PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = Cast(TRAN.FUSERBUSINESSENTITYID As TEXT)
+    Where
+        Instr('%TRANCODE%', Trim(TRAN.TRANSCODE)) > 0 And TRAN.FMODAPID != 0
+    Group by
+        TRAN.STUDENT,
+        TRAN.FMODAPID,
+        TRAN.ENROL_ID
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = s_sql.replace("%TRANCODE%", s_modu_trancode)
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # NOTE - Function fully functional. Take long time to complete (30min). Not used at the moment.
+    """
+    # CALCULATE THE STATISTIC MODE FOR EACH QUALIFICATION
+    print("Calculate the module transaction statistic mode...")
+    i_value: int = 0
+    sr_file = "X030ac_Trans_feemodu_mode"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute("CREATE TABLE " + sr_file + " (FMODAPID INT, ENROL_ID INT, AMOUNT REAL)")
+    for qual in so_curs.execute("SELECT FMODAPID, ENROL_ID FROM X030ab_Trans_feemodu").fetchall():
+        # print("FMODAPID = " + str(qual[0]) + " And ENROL_CAT = " + str(qual[1]))
+        try:
+            i_value = funcstat.stat_mode(so_curs,
+                                         "X030ab_Trans_feemodu_stud",
+                                         "FEE_MODU",
+                                         "FMODAPID = " + str(qual[0]) + " And ENROL_ID = " + str(qual[1])
+                                         )
+            if i_value < 0:
+                i_value = 0
+        except Exception as e:
+            # funcsys.ErrMessage(e) if you want error to log
+            if "".join(e.args).find("no unique mode") >= 0:
+                i_value = funcstat.stat_highest_value(so_curs,
+                                                      "X030ab_Trans_feemodu_stud",
+                                                      "FEE_MODU",
+                                                      "FMODAPID = " + str(qual[0]) + " And ENROL_ID = " + str(qual[1])
+                                                      )
+            else:
+                i_value = 0
+        # print(i_value)
+        s_cols = "INSERT INTO " + sr_file + " VALUES(" + str(qual[0]) + ", " + str(qual[1]) + ", " + str(i_value) + ")"
+        so_curs.execute(s_cols)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    so_conn.commit()
+    """
+
+    # BUILD SUMMARY OF ALL MODULES PRESENTED
+    print("Build summary of all modules presented...")
+    sr_file = "X030ad_Stud_modu_present"
+    s_sql = "Create table " + sr_file + " AS" + """
+    Select
+        STUD.KENROLMENTPRESENTATIONID,
+        STUD.FMODULEAPID,
+        STUD.FENROLMENTCATEGORYCODEID As ENROL_ID,
+        STUD.ENROL_CATEGORY,
+        STUD.FPRESENTATIONCATEGORYCODEID As PRESENT_ID,
+        STUD.PRESENT_CATEGORY,
+        Count(STUD.KENROLSTUDID) As COUNT
+    From
+        VSS.X001_Student_module_curr STUD
+    Group By
+        STUD.KENROLMENTPRESENTATIONID,
+        STUD.FMODULEAPID,
+        STUD.FENROLMENTCATEGORYCODEID,
+        STUD.FPRESENTATIONCATEGORYCODEID
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """ ****************************************************************************
     END OF SCRIPT
