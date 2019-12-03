@@ -21,7 +21,7 @@ def stat_mode(o_cursor, s_table, s_column, s_where=""):
     # Convert the table column into a list and the calculate the mode
     s_sql = "SELECT " + s_column
     s_sql += " FROM " + s_table
-    s_sql += " WHERE " + s_column + " != 0"
+    s_sql += " WHERE " + s_column + " Is Not Null"
     if s_where != "":
         s_sql += " And " + s_where
     s_sql += " ;"
@@ -45,7 +45,7 @@ def stat_pstdev(o_cursor, s_table, s_column, s_where=""):
     # Convert the table column into a list and the calculate the mode
     s_sql = "SELECT " + s_column
     s_sql += " FROM " + s_table
-    s_sql += " WHERE " + s_column + " != 0"
+    s_sql += " WHERE " + s_column + " Is Not Null"
     if s_where != "":
         s_sql += " And " + s_where
     s_sql += " ;"
@@ -69,7 +69,7 @@ def stat_highest_value(o_cursor, s_table, s_column, s_where=""):
     # Convert the table column into a list and the calculate the mode
     s_sql = "SELECT " + s_column
     s_sql += " FROM " + s_table
-    s_sql += " WHERE " + s_column + " != 0"
+    s_sql += " WHERE " + s_column + " Is Not Null"
     if s_where != "":
         s_sql += " And " + s_where
     s_sql += " ORDER BY " + s_column + " DESC "
