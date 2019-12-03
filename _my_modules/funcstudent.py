@@ -155,6 +155,7 @@ def studentlist(so_conn, re_path, s_period='curr', s_year='2019', l_export=False
         MENR.ENDDATE,
         STUD.FQUALLEVELAPID,
         STUD.QUALIFICATION,
+        MODU.FMODULEAPID,
         MODU.MODULE,
         MODU.MODULE_NAME,
         MODU.FENROLMENTCATEGORYCODEID,
