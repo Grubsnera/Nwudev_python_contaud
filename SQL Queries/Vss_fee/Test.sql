@@ -1,7 +1,12 @@
 ﻿Select
-    X020bx_Student_master_sort.KSTUDBUSENTID,
-    X020bx_Student_master_sort.FEE_SHOULD_BE
+    PRES.FMODULEAPID,
+    PRES.ENROL_ID,
+    PRES.ENROL_CATEGORY,
+    PRES.PRESENT_ID,
+    PRES.PRESENT_CATEGORY,
+    PRES.COUNT As PRES_COUNT,
+    LIST.AMOUNT As LIST_AMOUNT
 From
-    X020bx_Student_master_sort
-Where
-    X020bx_Student_master_sort.FEE_SHOULD_BE Like ('50%')
+    X030ad_Stud_modu_present PRES Left Join
+    X030aa_Fiabd007_summ LIST On LIST.FMODAPID = PRES.FMODULEAPID
+            And LIST.ENROL_ID = PRES.ENROL_ID
