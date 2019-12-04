@@ -1,12 +1,6 @@
 ﻿Select
-    PRES.FMODULEAPID,
-    PRES.ENROL_ID,
-    PRES.ENROL_CATEGORY,
-    PRES.PRESENT_ID,
-    PRES.PRESENT_CATEGORY,
-    PRES.COUNT As PRES_COUNT,
-    LIST.AMOUNT As LIST_AMOUNT
+    X030ac_Trans_feemodu_mode.AMOUNT
 From
-    X030ad_Stud_modu_present PRES Left Join
-    X030aa_Fiabd007_summ LIST On LIST.FMODAPID = PRES.FMODULEAPID
-            And LIST.ENROL_ID = PRES.ENROL_ID
+    X031aa_Modu_nofee_loaded_modu Inner Join
+    X030ac_Trans_feemodu_mode On X030ac_Trans_feemodu_mode.FMODAPID = X031aa_Modu_nofee_loaded_modu.FMODULEAPID
+            And X030ac_Trans_feemodu_mode.ENROL_CAT = X031aa_Modu_nofee_loaded_modu.ENROL_CAT
