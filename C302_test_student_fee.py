@@ -5213,6 +5213,7 @@ def student_fee(s_period='curr', s_year='2019'):
         funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
 
     # IDENTIFY FINDINGS
+    # NOTE Exclude distance students
     print("Identify findings...")
     sr_file = "X031ab_findings"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -5232,11 +5233,7 @@ def student_fee(s_period='curr', s_year='2019'):
     Where
         FIND.PRESENT_CAT Not Like ('D%')
     ;"""
-    # TODO EXCLUDE DISTANCE STUDENTS
-    """
-    Where
-        FIND.PRESENT_CAT Not Like ('D%')
-    """
+
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
