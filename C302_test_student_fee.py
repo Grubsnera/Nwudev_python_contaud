@@ -79,6 +79,7 @@ def student_fee(s_period='curr', s_year='2019'):
 
     s_reg_trancode: str = "095"
     s_qual_trancode: str = "004"
+    s_modu_trancode: str = "004"
     s_burs_trancode: str = "042z052z381z500"
     s_mba: str = "71500z2381692z2381690z665559"  # Exclude these FQUALLEVELAPID
     s_mpa: str = "665566"  # Exclude these FQUALLEVELAPID
