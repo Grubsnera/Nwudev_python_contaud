@@ -1,9 +1,7 @@
 ﻿Select
-    X007da_leave.EMPLOYEE_NUMBER,
-    Count(X007da_leave.VALID) As Count_VALID
+    X007dx_leavecode_invalid.Person_type,
+    Count(X007dx_leavecode_invalid.Workdays) As Count_Workdays
 From
-    X007da_leave
+    X007dx_leavecode_invalid
 Group By
-    X007da_leave.EMPLOYEE_NUMBER
-Having
-    Count(X007da_leave.VALID) > 1
+    X007dx_leavecode_invalid.Person_type
