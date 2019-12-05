@@ -44,10 +44,10 @@ TEST BANK SARS VERIFICATION
 BANK CHANGE MASTER FILE
 BANK CHANGE VERIFICATION *
 
-PAYE NUMBER MASTER FILE
-TEST PAYE NUMBER BLANK *
-TEST PAYE NUMBER INVALID *
-TEST PAYE NUMBER DUPLICATE
+TAX NUMBER MASTER FILE
+TEST TAX NUMBER BLANK *
+TEST TAX NUMBER INVALID *
+TEST TAX NUMBER DUPLICATE
 
 NAME MASTER FILE
 TEST NAME DUPLICATE *
@@ -188,7 +188,7 @@ def People_test_masterfile():
     ID NUMBER MASTER FILE
     *****************************************************************************"""
 
-    # BUILD TABLE WITH EMPLOYEE PAYE NUMBERS
+    # BUILD TABLE WITH EMPLOYEE TAX NUMBERS
     print("Obtain master list of all employees...")
     sr_file = "X002_id_master"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
@@ -3669,10 +3669,10 @@ def People_test_masterfile():
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """ ****************************************************************************
-    PAYE NUMBER MASTER FILE
+    TAX NUMBER MASTER FILE
     *****************************************************************************"""
 
-    # BUILD TABLE WITH EMPLOYEE PAYE NUMBERS
+    # BUILD TABLE WITH EMPLOYEE TAX NUMBERS
     print("Obtain master list of all employees...")
     sr_file = "X005_paye_master"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
@@ -3698,7 +3698,7 @@ def People_test_masterfile():
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
     """ ****************************************************************************
-    TEST PAYE NUMBER BLANK
+    TEST TAX NUMBER BLANK
         01 Test only include SAF (Nationality) and PERMANENT APPOINTMENT (Person_type)
         02 Test only include appointments older than a month
         03 Ignore   AD HOC APPOINTMENT
@@ -3709,15 +3709,15 @@ def People_test_masterfile():
                     TEMP FIXED TERM CONTRACT
                     TEMPORARY APPOINTMENT
     *****************************************************************************"""
-    print("TEST PAYE NUMBER BLANK")
-    funcfile.writelog("TEST PAYE NUMBER BLANK")
+    print("TEST TAX NUMBER BLANK")
+    funcfile.writelog("TEST TAX NUMBER BLANK")
 
     # DECLARE TEST VARIABLES
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
-    # SELECT ALL EMPLOYEES WITHOUT A PAYE NUMBER
-    print("Select all employees with paye number...")
+    # SELECT ALL EMPLOYEES WITHOUT A TAX NUMBER
+    print("Select all employees with tax number...")
     sr_file = "X005aa_paye_blank"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     Select
@@ -3737,8 +3737,8 @@ def People_test_masterfile():
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
-    # SELECT ALL EMPLOYEES WITHOUT A PAYE NUMBER
-    print("Select all employees with an invalid paye number...")
+    # SELECT ALL EMPLOYEES WITHOUT A TAX NUMBER
+    print("Select all employees with a blank tax number...")
     sr_file = "X005ab_paye_blank"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     Select
@@ -3754,7 +3754,7 @@ def People_test_masterfile():
     # COUNT THE NUMBER OF FINDINGS
     i_find = funcsys.tablerowcount(so_curs,sr_file)
     print("*** Found "+str(i_find)+" exceptions ***")
-    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL PAYE invalid finding(s)")
+    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL TAX NUMBER blank finding(s)")
 
     # GET PREVIOUS FINDINGS
     # NOTE ADD CODE
@@ -3868,7 +3868,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS
           LEFT JOIN PEOPLE.X002_PEOPLE_CURR ON PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION
         WHERE
-          PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP = 'TEST_PAYE_BLANK_OFFICER'
+          PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP = 'TEST_TAXNUMBER_BLANK_OFFICER'
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -3891,7 +3891,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS
           LEFT JOIN PEOPLE.X002_PEOPLE_CURR ON PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION
         WHERE
-          PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP = 'TEST_PAYE_BLANK_SUPERVISOR'
+          PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP = 'TEST_TAXNUMBER_BLANK_SUPERVISOR'
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -3988,18 +3988,18 @@ def People_test_masterfile():
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """ ****************************************************************************
-    TEST PAYE NUMBER INVALID
-        NOTE 01: SELECT ALL CURRENT EMPLOYEES WITH PAYE TAX NUMBER
+    TEST TAX NUMBER INVALID
+        NOTE 01: SELECT ALL CURRENT EMPLOYEES WITH TAX TAX NUMBER
     *****************************************************************************"""
-    print("TEST PAYE NUMBER INVALID")
-    funcfile.writelog("TEST PAYE NUMBER INVALID")
+    print("TEST TAX NUMBER INVALID")
+    funcfile.writelog("TEST TAX NUMBER INVALID")
 
     # DECLARE TEST VARIABLES
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
-    # SELECT ALL EMPLOYEES WITH A PAYE TAX NUMBER
-    print("Select all employees with paye number...")
+    # SELECT ALL EMPLOYEES WITH A TAX TAX NUMBER
+    print("Select all employees with tax number...")
     sr_file = "X005ba_paye_calc"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     Select
@@ -4060,8 +4060,8 @@ def People_test_masterfile():
                      END;""")
     so_conn.commit()
 
-    # SELECT ALL EMPLOYEES WITH AN INVALID PAYE NUMBER
-    print("Select all employees with an invalid paye number...")
+    # SELECT ALL EMPLOYEES WITH AN INVALID TAX NUMBER
+    print("Select all employees with an invalid tax number...")
     sr_file = "X005bb_paye_inva"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     Select
@@ -4084,7 +4084,7 @@ def People_test_masterfile():
     # COUNT THE NUMBER OF FINDINGS
     i_find = funcsys.tablerowcount(so_curs,sr_file)
     print("*** Found "+str(i_find)+" exceptions ***")
-    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL PAYE invalid finding(s)")
+    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL TAX NUMBER invalid finding(s)")
 
     # GET PREVIOUS FINDINGS
     # NOTE ADD CODE
@@ -4198,7 +4198,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS
           LEFT JOIN PEOPLE.X002_PEOPLE_CURR ON PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION
         WHERE
-          PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP = 'TEST_PAYE_INVALID_OFFICER'
+          PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP = 'TEST_TAXNUMBER_INVALID_OFFICER'
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -4221,7 +4221,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS
           LEFT JOIN PEOPLE.X002_PEOPLE_CURR ON PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION
         WHERE
-          PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP = 'TEST_PAYE_INVALID_SUPERVISOR'
+          PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP = 'TEST_TAXNUMBER_INVALID_SUPERVISOR'
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -4321,17 +4321,17 @@ def People_test_masterfile():
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """ ****************************************************************************
-    TEST PAYE NUMBER DUPLICATE
+    TEST TAX NUMBER DUPLICATE
     *****************************************************************************"""
-    print("TEST PAYE NUMBER DUPLICATE")
-    funcfile.writelog("TEST PAYE NUMBER DUPLICATE")
+    print("TEST TAX NUMBER DUPLICATE")
+    funcfile.writelog("TEST TAX NUMBER DUPLICATE")
 
     # DECLARE TEST VARIABLES
     i_find = 0 # Number of findings before previous reported findings
     i_coun = 0 # Number of new findings to report
 
     # COUNT ALL EMPLOYEES WITH A BANK ACCOUNT NUMBER
-    print("Count all employees with paye number...")
+    print("Count all employees with tax number...")
     sr_file = "X005ca_paye_coun"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     Select
@@ -4372,7 +4372,7 @@ def People_test_masterfile():
     # COUNT THE NUMBER OF FINDINGS
     i_find = funcsys.tablerowcount(so_curs,sr_file)
     print("*** Found "+str(i_find)+" exceptions ***")
-    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL PAYE duplicate finding(s)")
+    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL TAX NUMBER duplicate finding(s)")
 
     # GET PREVIOUS FINDINGS
     # NOTE ADD CODE
@@ -4486,7 +4486,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS
           LEFT JOIN PEOPLE.X002_PEOPLE_CURR ON PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION
         WHERE
-          PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP = 'TEST_PAYE_DUPLICATE_OFFICER'
+          PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP = 'TEST_TAXNUMBER_DUPLICATE_OFFICER'
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -4509,7 +4509,7 @@ def People_test_masterfile():
           PEOPLE.X000_OWN_HR_LOOKUPS
           LEFT JOIN PEOPLE.X002_PEOPLE_CURR ON PEOPLE.X002_PEOPLE_CURR.EMPLOYEE_NUMBER = PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP_DESCRIPTION
         WHERE
-          PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP = 'TEST_PAYE_DUPLICATE_SUPERVISOR'
+          PEOPLE.X000_OWN_HR_LOOKUPS.LOOKUP = 'TEST_TAXNUMBER_DUPLICATE_SUPERVISOR'
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
