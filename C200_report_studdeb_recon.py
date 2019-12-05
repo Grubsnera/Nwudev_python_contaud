@@ -242,7 +242,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
         WHEN FS_ORIGIN_CD = '10' AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),"STATUS : K") > 0 THEN SUBSTR(TRN_LDGR_ENTR_DESC,INSTR(UPPER(TRN_LDGR_ENTR_DESC),"LEARNER :")+10,8)
         ELSE ""
       END AS STUDENT,
-      TRIM(TRN_LDGR_ENTR_DESC) AS TEMP,
+      Upper(Trim(TRN_LDGR_ENTR_DESC)) AS TEMP,
       '' AS DESCRIPTION
     FROM
       KFSCURR.X000_GL_trans
@@ -260,6 +260,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
 
     # Temp description - Remove characters from description
     print("Add column gl temp description column...")
+    so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'REVERSESTF','');")
     so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'0','');")
     so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'1','');")
     so_curs.execute("UPDATE X001aa_gl_tranlist SET TEMP = REPLACE(TEMP,'2','');")
@@ -284,16 +285,17 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
 
     # Calc transaction description
     print("Add column gl description link...")
-    so_curs.execute("UPDATE X001aa_gl_tranlist " + """
-                    SET DESCRIPTION = 
-                    CASE
-                       WHEN FS_ORIGIN_CD = '01' AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),"REVERSE COLL") > 0 THEN "BEURSKANSELLASIEKLASGELDE"
-                       WHEN FS_ORIGIN_CD = '10' AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),"LEARNER :") > 0 THEN "BEURSKANSELLASIEKLASGELDE"
-                       WHEN FS_ORIGIN_CD = '10' THEN "BEURSEENLENINGSKLASGELDE"
-                       WHEN FS_ORIGIN_CD = '11' THEN UPPER(TRIM(TEMP))
-                       WHEN MONTH = '00' THEN 'SALDOOORGEDRAKLASGELD'
-                       ELSE "X "||UPPER(TRN_LDGR_ENTR_DESC)||" ORIGIN:"||UPPER(FS_DATABASE_DESC)||" EDOC:"||UPPER(FDOC_NBR)
-                    END
+    so_curs.execute("Update X001aa_gl_tranlist " + """
+                    Set DESCRIPTION = 
+                    Case
+                        When TEMP Like('REVERSESTF%') Then Replace(TEMP,'REVERSESTF','')
+                        WHEN FS_ORIGIN_CD = '01' AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),"REVERSE COLL") > 0 THEN "BEURSKANSELLASIEKLASGELDE"
+                        WHEN FS_ORIGIN_CD = '10' AND INSTR(UPPER(TRN_LDGR_ENTR_DESC),"LEARNER :") > 0 THEN "BEURSKANSELLASIEKLASGELDE"
+                        WHEN FS_ORIGIN_CD = '10' THEN "BEURSEENLENINGSKLASGELDE"
+                        WHEN FS_ORIGIN_CD = '11' THEN UPPER(TRIM(TEMP))
+                        WHEN MONTH = '00' THEN 'SALDOOORGEDRAKLASGELD'
+                        ELSE "X "||UPPER(TRN_LDGR_ENTR_DESC)||" ORIGIN:"||UPPER(FS_DATABASE_DESC)||" EDOC:"||UPPER(FDOC_NBR)
+                    End
                     ;""")
     so_conn.commit()
     funcfile.writelog("%t ADD COLUMN: Description link")
@@ -3847,7 +3849,8 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         STUD.STUDENT_VSS,
-        Count(STUD.CAMPUS_VSS) As COUNT
+        Cast(Count(STUD.CAMPUS_VSS) As INT) As COUNT,
+        Total(STUD.BALANCE) As BALANCE
     From
         X020_Balance_per_campus STUD
     Group By
@@ -3868,7 +3871,8 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
         COUNT.STUDENT_VSS,
         COUNT.COUNT,
         CAMP.CAMPUS_VSS,
-        CAMP.BALANCE
+        CAMP.BALANCE,
+        COUNT.BALANCE As BALANCE_TOTAL
     From
         X020_Count_per_campus COUNT Inner Join
         X020_Balance_per_campus CAMP On CAMP.STUDENT_VSS = COUNT.STUDENT_VSS
