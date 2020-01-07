@@ -43,10 +43,14 @@ so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
 funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
 so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs_curr.sqlite' AS 'KFSCURR'")
 funcfile.writelog("%t ATTACH DATABASE: KFS_CURR.SQLITE")
+so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs_prev.sqlite' AS 'KFSPREV'")
+funcfile.writelog("%t ATTACH DATABASE: KFS_PREV.SQLITE")
 so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss.sqlite' AS 'VSS'")
 funcfile.writelog("%t ATTACH DATABASE: VSS.SQLITE")
-so_curs.execute("ATTACH DATABASE 'W:/Kfs_vss_studdeb/Kfs_vss_studdeb_prev.sqlite' AS 'PREV'")
-funcfile.writelog("%t ATTACH DATABASE: KFS_VSS_STUDDEB_PREV.SQLITE")
+so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss_curr.sqlite' AS 'VSSCURR'")
+funcfile.writelog("%t ATTACH DATABASE: VSS_CURR.SQLITE")
+so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss_prev.sqlite' AS 'VSSPREV'")
+funcfile.writelog("%t ATTACH DATABASE: VSS_PREV.SQLITE")
 
 """*****************************************************************************
 BEGIN
