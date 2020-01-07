@@ -56,7 +56,6 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
 
     # DECLARE VARIABLES
     s_year: str = s_yyyy
-    so_file: str = ""
     so_path = "W:/Kfs/"  # Source database path
     if s_period == "curr":
         s_year = funcdate.cur_year()
