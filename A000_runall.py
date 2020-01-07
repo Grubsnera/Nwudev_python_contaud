@@ -20,6 +20,7 @@ PEOPLE LISTS (import B001_people_lists) "TueWedThuFriSat"
 KFS LISTS (import B002_kfs_lists) "TueWedThuFriSat"
 KFS GL AND PAYMENT LISTS (B006_kfs_period_list) "TueWedThuFriSat"
 VSS LISTS (B003_vss_lists) "TueWedThuFriSat"
+VSS PERIOD LISTS (B007_vss_period_list) "TueWedThuFriSat"
 
 PEOPLE LIST MASTERFILE (C003_people_list_masterfile) "MonTueWedThuFri"
 PEOPLE MASTER FILE TESTS (C001_people_test_masterfile) "MonTueWedThuFri"
@@ -162,6 +163,24 @@ if funcdate.today_dayname() in "TueWedThuFriSat":
 else:
     print("VSS lists do not run on Sundays and Mondays")
     funcfile.writelog("SCRIPT: B003_VSS_LISTS: DO NOT RUN ON SUNDAYS AND MONDAYS")
+
+"""****************************************************************************
+VSS PERIOD LISTS
+****************************************************************************"""
+
+if funcdate.today_dayname() in "TueWedThuFriSat":
+    import B007_vss_period_list
+    try:
+        B007_vss_period_list.vss_period_list("curr")
+        if l_mail:
+            funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:B007_vss_period_list',
+                          'NWUIAPython: Success: B007_vss_period_list')
+    except Exception as e:
+        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:B007_vss_period_list',
+                           'NWUIAPython: Fail: B007_vss_period_list')
+else:
+    print("VSS PERIOD LISTS do not run on Sundays and Mondays")
+    funcfile.writelog("SCRIPT: B007_VSS_PERIOD_LISTS: DO NOT RUN ON SUNDAYS AND MONDAYS")
 
 """ ***************************************************************************
 PEOPLE LIST MASTERFILE

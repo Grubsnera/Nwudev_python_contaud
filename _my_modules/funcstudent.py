@@ -39,7 +39,7 @@ def studentlist(so_conn, re_path, s_period='curr', s_year='2019', l_export=False
 
     # BUILD STUDENT LIST
     print("Build student list...")
-    sr_file = "X001_Student_" + s_period
+    sr_file = "X001_Student"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         STUD.KSTUDBUSENTID,
@@ -108,19 +108,19 @@ def studentlist(so_conn, re_path, s_period='curr', s_year='2019', l_export=False
         QUAL.FOS_KACADEMICPROGRAMID,
         STUD.FPROGRAMAPID
     From
-        QUALLEVELENROLSTUD_%PERIOD% STUD Left Join
-        X000_Codedescription BLAC ON BLAC.KCODEDESCID = STUD.FBLACKLISTCODEID Left Join
-        X000_Codedescription ACTI ON ACTI.KCODEDESCID = STUD.FSTUDACTIVECODEID Left Join
-        X000_Codedescription ENTR ON ENTR.KCODEDESCID = STUD.FENTRYLEVELCODEID Left Join
-        X000_Qualifications QUAL On QUAL.KENROLMENTPRESENTATIONID = STUD.FENROLMENTPRESENTATIONID Left Join
-        X000_Student_qualfos_result RESU ON RESU.KBUSINESSENTITYID = STUD.KSTUDBUSENTID And
+        QUALLEVELENROLSTUD STUD Left Join
+        VSS.X000_Codedescription BLAC ON BLAC.KCODEDESCID = STUD.FBLACKLISTCODEID Left Join
+        VSS.X000_Codedescription ACTI ON ACTI.KCODEDESCID = STUD.FSTUDACTIVECODEID Left Join
+        VSS.X000_Codedescription ENTR ON ENTR.KCODEDESCID = STUD.FENTRYLEVELCODEID Left Join
+        VSS.X000_Qualifications QUAL On QUAL.KENROLMENTPRESENTATIONID = STUD.FENROLMENTPRESENTATIONID Left Join
+        VSS.X000_Student_qualfos_result RESU ON RESU.KBUSINESSENTITYID = STUD.KSTUDBUSENTID And
             RESU.KACADEMICPROGRAMID = QUAL.FOS_KACADEMICPROGRAMID And
             Strftime('%Y', RESU.DISCONTINUEDATE) = '%YEAR%' Left Join
-        X000_Gradceremony GRAD On GRAD.KGRADUATIONCEREMONYID = RESU.FGRADUATIONCEREMONYID
+        Vss.X000_Gradceremony GRAD On GRAD.KGRADUATIONCEREMONYID = RESU.FGRADUATIONCEREMONYID
     Order By
         STUD.KSTUDBUSENTID
     ;"""
-    s_sql = s_sql.replace("%PERIOD%", s_period)
+    # s_sql = s_sql.replace("%PERIOD%", s_period)
     s_sql = s_sql.replace("%YEAR%", s_year)
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -144,7 +144,7 @@ def studentlist(so_conn, re_path, s_period='curr', s_year='2019', l_export=False
 
     # BUILD STUDENT LIST
     print("Build student list...")
-    sr_file = "X001_Student_module_" + s_period
+    sr_file = "X001_Student_module"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         MENR.KENROLSTUDID,
@@ -206,16 +206,16 @@ def studentlist(so_conn, re_path, s_period='curr', s_year='2019', l_export=False
         MODU.COURSEMODULE,
         MODU.COURSESEMESTER
     From
-        MODULEENROLSTUD_CURR MENR Inner Join
-        X000_Modules MODU On MODU.KENROLMENTPRESENTATIONID = MENR.FENROLMENTPRESENTATIONID Left Join
-        X000_Codedescription TYPE On TYPE.KCODEDESCID = MENR.FMODULETYPECODEID Left Join
-        X000_Codedescription REAS On REAS.KCODEDESCID = MENR.FCOMPLETEREASONCODEID Left Join
-        X001_Student_%PERIOD% STUD On STUD.KSTUDBUSENTID = MENR.KSTUDBUSENTID And
+        MODULEENROLSTUD MENR Inner Join
+        VSS.X000_Modules MODU On MODU.KENROLMENTPRESENTATIONID = MENR.FENROLMENTPRESENTATIONID Left Join
+        VSS.X000_Codedescription TYPE On TYPE.KCODEDESCID = MENR.FMODULETYPECODEID Left Join
+        VSS.X000_Codedescription REAS On REAS.KCODEDESCID = MENR.FCOMPLETEREASONCODEID Left Join
+        X001_Student STUD On STUD.KSTUDBUSENTID = MENR.KSTUDBUSENTID And
             STUD.KENROLSTUDID = MENR.FQUALLEVELENROLSTUDID Left Join
         X000_Student_module_result_participate MODR On MODR.KSTUDBUSENTID = MENR.KSTUDBUSENTID And
             MODR.KENROLSTUDID = MENR.KENROLSTUDID     
     ;"""
-    s_sql = s_sql.replace("%PERIOD%", s_period)
+    # s_sql = s_sql.replace("%PERIOD%", s_period)
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
