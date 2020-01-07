@@ -132,6 +132,7 @@ else:
 KFS GL AND PAYMENT LISTS
 ****************************************************************************"""
 
+# CURRENT YEAR
 if funcdate.today_dayname() in "TueWedThuFriSat":
     import B006_kfs_period_list
     try:
@@ -145,6 +146,21 @@ if funcdate.today_dayname() in "TueWedThuFriSat":
 else:
     print("KFS GL and Payment lists do not run on Sundays and Mondays")
     funcfile.writelog("SCRIPT: B006_KFS_PERIOD_LIST: DO NOT RUN ON SUNDAYS AND MONDAYS")
+
+# PREVIOUS YEAR
+if funcdate.today_dayname() in "TueWedThuFriSat":
+    import B006_kfs_period_list
+    try:
+        B006_kfs_period_list.kfs_period_list("prev")
+        if l_mail:
+            funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:B006_kfs_period_list_prev',
+                          'NWUIAPython: Success: B006_kfs_period_list_prev')
+    except Exception as e:
+        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:B006_kfs_period_list_prev',
+                           'NWUIAPython: Fail: B006_kfs_period_list_prev')
+else:
+    print("KFS GL and Payment lists do not run on Sundays and Mondays")
+    funcfile.writelog("SCRIPT: B006_KFS_PERIOD_LIST_PREV: DO NOT RUN ON SUNDAYS AND MONDAYS")
 
 """****************************************************************************
 VSS LISTS
