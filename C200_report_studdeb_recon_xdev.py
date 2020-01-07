@@ -56,6 +56,97 @@ funcfile.writelog("%t ATTACH DATABASE: VSS_PREV.SQLITE")
 BEGIN
 *****************************************************************************"""
 
+# DETERMINE BALANCE CHANGE TYPE
+print("Determine blanace change type...")
+sr_file = "X002de_vss_differ_type"
+s_sql = "Create Table " + sr_file + " As " + """
+Select
+    TYPE.STUDENT,
+    Count(TYPE.BAL_CLOS) As COUNT,
+    Total(TYPE.BAL_OPEN) As TOTAL_BAL_OPEN,
+    Total(TYPE.DIFF_BAL) As TOTAL_DIFF_BAL
+From
+    X002dd_vss_closing_open_differ TYPE
+Group By
+    TYPE.STUDENT
+;"""
+so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+so_curs.execute(s_sql)
+so_conn.commit()
+funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+# JOIN DIFFERENCES AND TYPES
+print("Join differences and types...")
+sr_file = "X002df_vss_differ_join"
+s_sql = "Create Table " + sr_file + " As " + """
+Select
+    DIFF.STUDENT,
+    DIFF.CAMPUS,
+    DIFF.BAL_CLOS,
+    DIFF.BAL_OPEN,
+    DIFF.DIFF_BAL,
+    TYPE.COUNT,
+    TYPE.TOTAL_BAL_OPEN,
+    TYPE.TOTAL_DIFF_BAL
+From
+    X002dd_vss_closing_open_differ DIFF Left Join
+    X002de_vss_differ_type TYPE On TYPE.STUDENT = DIFF.STUDENT
+;"""
+so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+so_curs.execute(s_sql)
+so_conn.commit()
+funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+# ISOLATE THE ACCOUNTS WHERE CLOSE / OPEN BALANCES DIFFER
+print("Isolate close open balances...")
+sr_file = "X002dg_vss_differ_close_open_differ"
+s_sql = "Create Table " + sr_file + " As " + """
+Select
+    *
+From
+    X002df_vss_differ_join
+Where
+    X002df_vss_differ_join.COUNT = 1
+;"""
+so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+so_curs.execute(s_sql)
+so_conn.commit()
+funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+# ISOLATE THE ACCOUNTS CAMPUS DIFFER WITH ZERO BALANCE
+print("Isolate campus differ zero balance...")
+sr_file = "X002dh_vss_differ_campus_differ_zerobal"
+s_sql = "Create Table " + sr_file + " As " + """
+Select
+    *
+From
+    X002df_vss_differ_join
+Where
+    X002df_vss_differ_join.COUNT != 1 And
+    X002df_vss_differ_join.TOTAL_BAL_OPEN = 0
+;"""
+so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+so_curs.execute(s_sql)
+so_conn.commit()
+funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+# ISOLATE THE ACCOUNTS CAMPUS DIFFER WITH BALANCE
+print("Isolate campus differ balance...")
+sr_file = "X002di_vss_differ_campus_differ_bal"
+s_sql = "Create Table " + sr_file + " As " + """
+Select
+    *
+From
+    X002df_vss_differ_join
+Where
+    X002df_vss_differ_join.COUNT != 1 And
+    X002df_vss_differ_join.TOTAL_BAL_OPEN != 0
+;"""
+so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+so_curs.execute(s_sql)
+so_conn.commit()
+funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
 """*****************************************************************************
 END
 *****************************************************************************"""

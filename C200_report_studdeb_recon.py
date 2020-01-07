@@ -4,6 +4,7 @@
 ***
 *** Albert J van Rensburg (21162395)
 *** 26 Jun 2018
+*** 7 Jan 2020 Read vss data from period database
 ***
 *****************************************************************************"""
 
@@ -45,7 +46,8 @@ TEST STUDENT BALANCE ON MORE THAN ONE CAMPUS
 END OF SCRIPT
 *****************************************************************************"""
 
-def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
+
+def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_yyyy="0"):
 
     """ PARAMETERS *************************************************************
     dOpenMaf = GL Opening balances for Mafikeng campus
@@ -71,13 +73,26 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     funcfile.writelog("SCRIPT: C200_REPORT_STUDDEB_RECON")
     funcfile.writelog("---------------------------------")
     funcfile.writelog("ENVIRONMENT")
-    ilog_severity = 1
 
     # Declare variables
+    s_year: str = s_yyyy
     so_path = "W:/Kfs_vss_studdeb/" #Source database path
+    if s_period == "curr":
+        s_year = funcdate.cur_year()
+        so_file = "Kfs_vss_studdeb.sqlite"  # Source database
+        s_kfs = "KFSCURR"
+        s_vss = "VSSCURR"
+    elif s_period == "prev":
+        s_year = funcdate.prev_year()
+        so_file = "Kfs_vss_studdeb_prev.sqlite"  # Source database
+        s_kfs = "KFSPREV"
+        s_vss = "VSSPREV"
+    else:
+        so_file = "Kfs_vss_studdeb_" + s_year + ".sqlite"  # Source database
+        s_kfs = ""
+        s_vss = ""
     re_path = "R:/Debtorstud/" #Results
     ed_path = "S:/_external_data/" #External data
-    so_file = "Kfs_vss_studdeb.sqlite" #Source database
     s_sql = "" #SQL statements
     l_mail = True
     l_export = True
@@ -101,14 +116,14 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
     so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs_curr.sqlite' AS 'KFSCURR'")
     funcfile.writelog("%t ATTACH DATABASE: KFS_CURR.SQLITE")
+    so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs_prev.sqlite' AS 'KFSPREV'")
+    funcfile.writelog("%t ATTACH DATABASE: KFS_PREV.SQLITE")
     so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss.sqlite' AS 'VSS'")
     funcfile.writelog("%t ATTACH DATABASE: VSS.SQLITE")
-    so_curs.execute("ATTACH DATABASE 'W:/Kfs_vss_studdeb/Kfs_vss_studdeb_prev.sqlite' AS 'PREV'")
-    funcfile.writelog("%t ATTACH DATABASE: KFS_VSS_STUDDEB_PREV.SQLITE")
-
-    # REMOVE NEXT RUN - DELETE SOME UNUSED FILES
-    so_curs.execute("DROP TABLE IF EXISTS X002fa_vss_tran_postdate")
-    so_curs.execute("DROP TABLE IF EXISTS X002fb_vss_tran_postdate")
+    so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss_curr.sqlite' AS 'VSSCURR'")
+    funcfile.writelog("%t ATTACH DATABASE: VSS_CURR.SQLITE")
+    so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss_prev.sqlite' AS 'VSSPREV'")
+    funcfile.writelog("%t ATTACH DATABASE: VSS_PREV.SQLITE")
 
     """*************************************************************************
     LIST VSS TRANSACTIONS ROUND 1
@@ -145,12 +160,13 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
       UPPER(TRIM(DESCRIPTION_A)) AS TEMP_DESC_A,
       UPPER(TRIM(DESCRIPTION_E)) AS TEMP_DESC_E
     FROM
-      VSS.X010_Studytrans_curr
+      %VSS%.X010_Studytrans
     WHERE
       TRANSCODE <> ''
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    s_sql = s_sql.replace("%CYEAR%",funcdate.cur_year())
+    s_sql = s_sql.replace("%CYEAR%", s_year)
+    s_sql = s_sql.replace("%VSS%", s_vss)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
@@ -245,13 +261,14 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
       Upper(Trim(TRN_LDGR_ENTR_DESC)) AS TEMP,
       '' AS DESCRIPTION
     FROM
-      KFSCURR.X000_GL_trans
+      %KFS%.X000_GL_trans
     WHERE
-      (KFSCURR.X000_GL_trans.FIN_OBJECT_CD = '7551') OR
-      (KFSCURR.X000_GL_trans.FIN_OBJECT_CD = '7552') OR
-      (KFSCURR.X000_GL_trans.FIN_OBJECT_CD = '7553')
+      (FIN_OBJECT_CD = '7551') OR
+      (FIN_OBJECT_CD = '7552') OR
+      (FIN_OBJECT_CD = '7553')
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    s_sql = s_sql.replace("%KFS%", s_kfs)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
@@ -635,7 +652,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
       X002ab_vss_transort
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    s_sql = s_sql.replace("%CYEAR%",funcdate.cur_year())
+    s_sql = s_sql.replace("%CYEAR%",s_year)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
@@ -850,29 +867,54 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     #sx_filet = sx_file + funcdate.prev_monthendfile()
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
     funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-    funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)    
+    funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 
     # CALCULATE CLOSING BALANCES ***************************************************
-    print("Sum vss student closing balances per campus...")
-    sr_file = "X002da_vss_student_balance_clos"
-    s_sql = "CREATE TABLE "+sr_file+" AS " + """
-    SELECT
-      PREV.X002ab_vss_transort.CAMPUS_VSS AS CAMPUS,
-      PREV.X002ab_vss_transort.STUDENT_VSS AS STUDENT,  
-      Round(Total(PREV.X002ab_vss_transort.AMOUNT_VSS),2) AS BALANCE
-    FROM
-      PREV.X002ab_vss_transort
-    WHERE
-      strftime('%Y',PREV.X002ab_vss_transort.TRANSDATE_VSS)='%PYEAR%'
-    GROUP BY
-      PREV.X002ab_vss_transort.STUDENT_VSS,
-      PREV.X002ab_vss_transort.CAMPUS_VSS
-    ;"""
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)    
-    s_sql = s_sql.replace("%PYEAR%",funcdate.prev_year())
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+    if s_period == "curr":
+        print("Sum vss student closing balances per campus...")
+        sr_file = "X002da_vss_student_balance_clos"
+        s_sql = "Create Table " + sr_file + " As " + """
+        Select
+            Case
+                WHEN FDEBTCOLLECTIONSITE = '-9' THEN 'Mafikeng'
+                WHEN FDEBTCOLLECTIONSITE = '-2' THEN 'Vaal Triangle'
+                ELSE 'Potchefstroom'    
+            End AS CAMPUS,
+            TRAN.FBUSENTID AS STUDENT,  
+            Round(Total(TRAN.AMOUNT),2) AS BALANCE
+        From
+            VSSPREV.X010_Studytrans TRAN
+        WHERE
+            TRAN.TRANSCODE != ""
+        GROUP BY
+            TRAN.FBUSENTID,
+            TRAN.FDEBTCOLLECTIONSITE
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    else:
+        # USE THE SAME BALANCE AS OPENING
+        print("Sum vss student opening balances per campus...")
+        sr_file = "X002da_vss_student_balance_clos"
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        SELECT
+          X002ab_vss_transort.CAMPUS_VSS AS CAMPUS,
+          X002ab_vss_transort.STUDENT_VSS AS STUDENT,  
+          Round(Total(X002ab_vss_transort.AMOUNT_VSS),2) AS BALANCE
+        FROM
+          X002ab_vss_transort
+        WHERE
+          X002ab_vss_transort.MONTH_VSS = '00'
+        GROUP BY
+          X002ab_vss_transort.STUDENT_VSS,
+          X002ab_vss_transort.CAMPUS_VSS
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # JOIN PREVIOUS BALANCE AND CURRENT OPENING BALANCE ****************************
     print("Join previous balance and current opening balance...")
@@ -931,6 +973,97 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
+    # DETERMINE BALANCE CHANGE TYPE
+    print("Determine blanace change type...")
+    sr_file = "X002de_vss_differ_type"
+    s_sql = "Create Table " + sr_file + " As " + """
+    Select
+        TYPE.STUDENT,
+        Count(TYPE.BAL_CLOS) As COUNT,
+        Total(TYPE.BAL_OPEN) As TOTAL_BAL_OPEN,
+        Total(TYPE.DIFF_BAL) As TOTAL_DIFF_BAL
+    From
+        X002dd_vss_closing_open_differ TYPE
+    Group By
+        TYPE.STUDENT
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # JOIN DIFFERENCES AND TYPES
+    print("Join differences and types...")
+    sr_file = "X002df_vss_differ_join"
+    s_sql = "Create Table " + sr_file + " As " + """
+    Select
+        DIFF.STUDENT,
+        DIFF.CAMPUS,
+        DIFF.BAL_CLOS,
+        DIFF.BAL_OPEN,
+        DIFF.DIFF_BAL,
+        TYPE.COUNT,
+        TYPE.TOTAL_BAL_OPEN,
+        TYPE.TOTAL_DIFF_BAL
+    From
+        X002dd_vss_closing_open_differ DIFF Left Join
+        X002de_vss_differ_type TYPE On TYPE.STUDENT = DIFF.STUDENT
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # ISOLATE THE ACCOUNTS WHERE CLOSE / OPEN BALANCES DIFFER
+    print("Isolate close open balances...")
+    sr_file = "X002dg_vss_differ_close_open_differ"
+    s_sql = "Create Table " + sr_file + " As " + """
+    Select
+        *
+    From
+        X002df_vss_differ_join
+    Where
+        X002df_vss_differ_join.COUNT = 1
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # ISOLATE THE ACCOUNTS CAMPUS DIFFER WITH ZERO BALANCE
+    print("Isolate campus differ zero balance...")
+    sr_file = "X002dh_vss_differ_campus_differ_zerobal"
+    s_sql = "Create Table " + sr_file + " As " + """
+    Select
+        *
+    From
+        X002df_vss_differ_join
+    Where
+        X002df_vss_differ_join.COUNT != 1 And
+        X002df_vss_differ_join.TOTAL_BAL_OPEN = 0
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # ISOLATE THE ACCOUNTS CAMPUS DIFFER WITH BALANCE
+    print("Isolate campus differ balance...")
+    sr_file = "X002di_vss_differ_campus_differ_bal"
+    s_sql = "Create Table " + sr_file + " As " + """
+    Select
+        *
+    From
+        X002df_vss_differ_join
+    Where
+        X002df_vss_differ_join.COUNT != 1 And
+        X002df_vss_differ_join.TOTAL_BAL_OPEN != 0
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
     # EXTRACT PRE DATED TRANSACTIONS ***********************************************
     print("Extract pre dated transactions...")
     sr_file = "X002fa_vss_tran_predate"
@@ -951,7 +1084,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
       Strftime('%Y',TRANSDATE_VSS) - Strftime('%Y',X002ab_vss_transort.POSTDATEDTRANSDATE) = 1 AND
       Strftime('%Y',TRANSDATE_VSS) = '%CYEAR%'    
     ;"""
-    s_sql = s_sql.replace("%CYEAR%",funcdate.cur_year())
+    s_sql = s_sql.replace("%CYEAR%", s_year)
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
@@ -998,7 +1131,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
       Strftime('%Y',TRANSDATE_VSS) - Strftime('%Y',X002ab_vss_transort.POSTDATEDTRANSDATE) = 1 AND
       Strftime('%Y',POSTDATEDTRANSDATE) = '%CYEAR%'    
     ;"""
-    s_sql = s_sql.replace("%CYEAR%",funcdate.cur_year())
+    s_sql = s_sql.replace("%CYEAR%", s_year)
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
@@ -1238,7 +1371,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     #WHERE
     #  X002cc_vss_summtype.MONTH_VSS <= '%PMONTH%'
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    s_sql = s_sql.replace("%CYEAR%",funcdate.cur_year())
+    s_sql = s_sql.replace("%CYEAR%", s_year)
     # s_sql = s_sql.replace("%PMONTH%",gl_month)
     so_curs.execute(s_sql)
     so_conn.commit()
@@ -1302,7 +1435,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
     #  X001cc_gl_summtype.AMOUNT <> 0 AND
     #  X001cc_gl_summtype.MONTH <= '%PMONTH%'
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    s_sql = s_sql.replace("%CYEAR%",funcdate.cur_year())
+    s_sql = s_sql.replace("%CYEAR%", s_year)
     # s_sql = s_sql.replace("%PMONTH%",gl_month)
     so_curs.execute(s_sql)
     so_conn.commit()
@@ -3042,7 +3175,7 @@ def Report_studdeb_recon(dOpenMaf=0,dOpenPot=0,dOpenVaa=0):
       X010aa_vss_burs.STUDENT_VSS
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    s_sql = s_sql.replace("%CYEAR%",funcdate.cur_year())
+    s_sql = s_sql.replace("%CYEAR%", s_year)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
