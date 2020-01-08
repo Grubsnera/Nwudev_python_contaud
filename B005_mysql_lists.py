@@ -43,8 +43,7 @@ def mysql_lists(s_database):
     print("-----------------")    
     print("B005_MYSQL_LISTS")
     print("-----------------")
-    ilog_severity = 1
-    
+
     # Declare variables
     s_schema: str = ""
     if s_database == "Web_ia_nwu":
