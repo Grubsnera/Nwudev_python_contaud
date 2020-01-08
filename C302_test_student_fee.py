@@ -74,8 +74,11 @@ def student_fee(s_period='curr', s_year='0'):
             s_year = funcdate.prev_year()
         else:
             s_year = funcdate.cur_year()
+
     ed_path = "S:/_external_data/"  # External data path
     so_path = "W:/Vss_fee/"  # Source database path
+    re_path = "R:/Vss/" + s_year
+
     if s_period == "prev":
         so_file = "Vss_test_fee_prev.sqlite"  # Source database
         s_reg_trancode: str = "095"
@@ -85,6 +88,8 @@ def student_fee(s_period='curr', s_year='0'):
         s_mba: str = "71500z2381692z2381690z665559"  # Exclude these FQUALLEVELAPID
         s_mpa: str = "665566"  # Exclude these FQUALLEVELAPID
         # Find these id's from Sqlite->Sqlite_vss_test_fee->Q021aa_qual_nofee_loaded
+        l_record: bool = False
+        l_export: bool = True
     else:
         so_file = "Vss_test_fee.sqlite"  # Source database
         s_reg_trancode: str = "095"
@@ -94,9 +99,9 @@ def student_fee(s_period='curr', s_year='0'):
         s_mba: str = "71500z2381692z2381690z665559"  # Exclude these FQUALLEVELAPID
         s_mpa: str = "665566"  # Exclude these FQUALLEVELAPID
         # Find these id's from Sqlite->Sqlite_vss_test_fee->Q021aa_qual_nofee_loaded
-    re_path = "R:/Vss/"
-    l_export: bool = False
-    l_record: bool = True
+        l_record: bool = True
+        l_export: bool = False
+
     l_vacuum: bool = False
     l_mail: bool = False
 
@@ -440,7 +445,7 @@ def student_fee(s_period='curr', s_year='0'):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
         print("Export findings...")
-        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_path = re_path + "/"
         sx_file = "Student_fee_test_010aa_reg_fee_contact_null_"
         sx_file_dated = sx_file + funcdate.today_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -749,7 +754,7 @@ def student_fee(s_period='curr', s_year='0'):
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + "/"
             sx_file = "Student_fee_test_010ex_reg_fee_contact_null_"
             sx_file_dated = sx_file + funcdate.today_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -797,7 +802,7 @@ def student_fee(s_period='curr', s_year='0'):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
         print("Export findings...")
-        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_path = re_path + "/"
         sx_file = "Student_fee_test_010ba_reg_fee_contact_negative_"
         sx_file_dated = sx_file + funcdate.today_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -1105,7 +1110,7 @@ def student_fee(s_period='curr', s_year='0'):
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + "/"
             sx_file = "Student_fee_test_010ex_reg_fee_contact_negative_"
             sx_file_dated = sx_file + funcdate.today_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -1153,7 +1158,7 @@ def student_fee(s_period='curr', s_year='0'):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
         print("Export findings...")
-        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_path = re_path + "/"
         sx_file = "Student_fee_test_010ca_reg_fee_contact_zero_"
         sx_file_dated = sx_file + funcdate.today_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -1460,7 +1465,7 @@ def student_fee(s_period='curr', s_year='0'):
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + "/"
             sx_file = "Student_fee_test_010ex_reg_fee_contact_zero_"
             sx_file_dated = sx_file + funcdate.today_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -1503,7 +1508,7 @@ def student_fee(s_period='curr', s_year='0'):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
         print("Export findings...")
-        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_path = re_path + "/"
         sx_file = "Student_fee_test_010ea_reg_fee_contact_abnormal_"
         sx_file_dated = sx_file + funcdate.today_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -1811,7 +1816,7 @@ def student_fee(s_period='curr', s_year='0'):
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + "/"
             sx_file = "Student_fee_test_010ex_reg_fee_contact_abnormal_"
             sx_file_dated = sx_file + funcdate.today_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -2355,7 +2360,7 @@ def student_fee(s_period='curr', s_year='0'):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     if funcsys.tablerowcount(so_curs, sr_file) > 0:  # Ignore l_export flag - should export every time
         print("Export findings...")
-        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_path = re_path + "/"
         sx_file = "Student_fee_test_021ax_qual_fee_not_loaded_studentlist_"  # File X021_findings_list
         sx_file_dated = sx_file + funcdate.today_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -2617,7 +2622,7 @@ def student_fee(s_period='curr', s_year='0'):
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + "/"
             sx_file = "Student_fee_test_021ax_qual_fee_not_loaded_"
             sx_file_dated = sx_file + funcdate.today_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -3068,7 +3073,7 @@ def student_fee(s_period='curr', s_year='0'):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     if funcsys.tablerowcount(so_curs, sr_file) > 0:  # Ignore l_export flag - should export every time
         print("Export findings...")
-        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_path = re_path + "/"
         sx_file = "Student_fee_test_020bx_qual_fee_invalid_studentlist_"
         sx_file_dated = sx_file + funcdate.today_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -3166,7 +3171,7 @@ def student_fee(s_period='curr', s_year='0'):
     so_conn.commit()
     if funcsys.tablerowcount(so_curs, sr_file) > 0:  # Ignore l_export flag - should export every time
         print("Export findings...")
-        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_path = re_path + "/"
         sx_file = "Student_fee_test_021bx_qual_fee_no_transaction_studentlist_"
         sx_file_dated = sx_file + funcdate.today_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -3463,7 +3468,7 @@ def student_fee(s_period='curr', s_year='0'):
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + "/"
             sx_file = "Student_fee_test_021bx_qual_fee_no_transaction_"
             sx_file_dated = sx_file + funcdate.today_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -3513,7 +3518,7 @@ def student_fee(s_period='curr', s_year='0'):
     so_conn.commit()
     if funcsys.tablerowcount(so_curs, sr_file) > 0:  # Ignore l_export flag - should export every time
         print("Export findings...")
-        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_path = re_path + "/"
         sx_file = "Student_fee_test_021dx_qual_fee_negative_transaction_studentlist_"
         sx_file_dated = sx_file + funcdate.today_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -3829,7 +3834,7 @@ def student_fee(s_period='curr', s_year='0'):
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + "/"
             sx_file = "Student_fee_test_021dx_qual_fee_negative_transaction_"
             sx_file_dated = sx_file + funcdate.today_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -3879,7 +3884,7 @@ def student_fee(s_period='curr', s_year='0'):
     so_conn.commit()
     if funcsys.tablerowcount(so_curs, sr_file) > 0:  # Ignore l_export flag - should export every time
         print("Export findings...")
-        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_path = re_path + "/"
         sx_file = "Student_fee_test_021cx_qual_fee_zero_transaction_studentlist_"
         sx_file_dated = sx_file + funcdate.today_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -4195,7 +4200,7 @@ def student_fee(s_period='curr', s_year='0'):
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + "/"
             sx_file = "Student_fee_test_021cx_qual_fee_zero_transaction_"
             sx_file_dated = sx_file + funcdate.today_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -4246,7 +4251,7 @@ def student_fee(s_period='curr', s_year='0'):
     so_conn.commit()
     if funcsys.tablerowcount(so_curs, sr_file) > 0:  # Ignore l_export flag - should export every time
         print("Export findings...")
-        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_path = re_path + "/"
         sx_file = "Student_fee_test_021ex_qual_fee_half_transaction_studentlist_"
         sx_file_dated = sx_file + funcdate.today_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -4562,7 +4567,7 @@ def student_fee(s_period='curr', s_year='0'):
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + "/"
             sx_file = "Student_fee_test_021ex_qual_fee_half_transaction_"
             sx_file_dated = sx_file + funcdate.today_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -4612,7 +4617,7 @@ def student_fee(s_period='curr', s_year='0'):
     so_conn.commit()
     if funcsys.tablerowcount(so_curs, sr_file) > 0:  # Ignore l_export flag - should export every time
         print("Export findings...")
-        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_path = re_path + "/"
         sx_file = "Student_fee_test_021fx_qual_fee_abnormal_transaction_studentlist_"
         sx_file_dated = sx_file + funcdate.today_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -4928,7 +4933,7 @@ def student_fee(s_period='curr', s_year='0'):
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + "/"
             sx_file = "Student_fee_test_021fx_qual_fee_abnormal_transaction_"
             sx_file_dated = sx_file + funcdate.today_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -5243,7 +5248,7 @@ def student_fee(s_period='curr', s_year='0'):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     if funcsys.tablerowcount(so_curs, sr_file) > 0:  # Ignore l_export flag - should export every time
         print("Export findings...")
-        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_path = re_path + "/"
         sx_file = "Student_fee_test_031aa_modu_fee_not_loaded_"  # File X021_findings_list
         sx_file_dated = sx_file + funcdate.today_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -5538,7 +5543,7 @@ def student_fee(s_period='curr', s_year='0'):
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + "/"
             sx_file = "Student_fee_test_031ax_modu_fee_not_loaded_"
             sx_file_dated = sx_file + funcdate.today_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
