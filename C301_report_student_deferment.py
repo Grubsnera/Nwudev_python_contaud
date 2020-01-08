@@ -16,7 +16,7 @@ CALCULATE DEFERMENT STATUS
 END OF SCRIPT
 *****************************************************************************"""
 
-def Studdeb_deferments(s_period='curr',s_year='2019'):
+def Studdeb_deferments(s_period='curr',s_year='0'):
 
     """*****************************************************************************
     ENVIRONMENT
@@ -45,16 +45,17 @@ def Studdeb_deferments(s_period='curr',s_year='2019'):
     print("---------------------")    
     print("REPORT_VSS_DEFERMENTS")
     print("---------------------")
-    ilog_severity = 1
 
     # DECLARE VARIABLES
-    # s_period = "prev"
-    # s_year = "2018"
+    if s_year == '0':
+        if s_period == "prev":
+            s_year = funcdate.prev_year()
+        else:
+            s_year = funcdate.cur_year
     so_path = "W:/Vss_deferment/" #Source database path
-    re_path = "R:/Vss/"
     so_file = "Vss_deferment.sqlite" #Source database
     ed_path = "S:/_external_data/" # External data path
-    s_sql = "" #SQL statements
+    re_path = "R:/Vss/"
     l_export: bool = True
     l_mail = False
     l_record = False
@@ -76,6 +77,10 @@ def Studdeb_deferments(s_period='curr',s_year='2019'):
     print("Attach vss database...")
     so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss.sqlite' AS 'VSS'")
     funcfile.writelog("%t ATTACH DATABASE: Vss.sqlite")
+    so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss_curr.sqlite' AS 'VSSCURR'")
+    funcfile.writelog("%t ATTACH DATABASE: Vss_curr.sqlite")
+    so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss_prev.sqlite' AS 'VSSPREV'")
+    funcfile.writelog("%t ATTACH DATABASE: Vss_prev.sqlite")
 
     """ ****************************************************************************
     TEMPORARY AREA
@@ -216,14 +221,17 @@ def Studdeb_deferments(s_period='curr',s_year='2019'):
           ELSE DATEENROL
       END AS DATEENROL_CALC
     FROM
-      VSS.X001_Student_%PERIOD% STUD
+      %VSS%.X001_Student STUD
     WHERE
       UPPER(STUD.QUAL_TYPE) Not Like '%SHORT COURSE%' AND
       STUD.ISMAINQUALLEVEL = 1 AND
       UPPER(STUD.ACTIVE_IND) = 'ACTIVE'
     """
-    s_sql = s_sql.replace("%PERIOD%",s_period)
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if s_period == "prev":
+        s_sql = s_sql.replace("%VSS%", "VSSPREV")
+    else:
+        s_sql = s_sql.replace("%VSS%", "VSSCURR")
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
@@ -263,12 +271,15 @@ def Studdeb_deferments(s_period='curr',s_year='2019'):
       END AS AMOUNT_CR,
       TRAN.DESCRIPTION_E As TRANSDESC
     FROM
-      VSS.X010_Studytrans_%PERIOD% TRAN
+      %VSS%.X010_Studytrans TRAN
     WHERE
       TRAN.TRANSCODE <> ''
     """
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = s_sql.replace("%PERIOD%",s_period)
+    if s_period == "prev":
+        s_sql = s_sql.replace("%VSS%", "VSSPREV")
+    else:
+        s_sql = s_sql.replace("%VSS%", "VSSCURR")
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
@@ -278,7 +289,7 @@ def Studdeb_deferments(s_period='curr',s_year='2019'):
     s_sql = "CREATE VIEW " + sr_file+ " AS" + """
     SELECT
       TRAN.STUDENT,
-      CAST(TOTAL(TRAN.AMOUNT) AS REAL) AS BAL_OPEN
+      CAST(ROUND(TOTAL(TRAN.AMOUNT),2) AS REAL) AS BAL_OPEN
     FROM
       X000_Transaction TRAN
     WHERE
@@ -296,7 +307,7 @@ def Studdeb_deferments(s_period='curr',s_year='2019'):
     s_sql = "CREATE VIEW " + sr_file+ " AS" + """
     SELECT
       TRAN.STUDENT,
-      CAST(TOTAL(TRAN.AMOUNT) AS REAL) AS FEE_REG
+      CAST(ROUND(TOTAL(TRAN.AMOUNT),2) AS REAL) AS FEE_REG
     FROM
       X000_Transaction TRAN
     WHERE
@@ -330,7 +341,7 @@ def Studdeb_deferments(s_period='curr',s_year='2019'):
     s_sql = "CREATE VIEW " + sr_file+ " AS" + """
     SELECT
       TRAN.STUDENT,
-      CAST(TOTAL(TRAN.AMOUNT) AS REAL) AS BAL_REG
+      CAST(ROUND(TOTAL(TRAN.AMOUNT),2) AS REAL) AS BAL_REG
     FROM
       X001ac_Trans_addreg TRAN
     WHERE
@@ -348,7 +359,7 @@ def Studdeb_deferments(s_period='curr',s_year='2019'):
     s_sql = "CREATE VIEW " + sr_file+ " AS" + """
     SELECT
       TRAN.STUDENT,
-      CAST(TOTAL(TRAN.AMOUNT_CR) AS REAL) AS CRE_REG_BEFORE
+      CAST(ROUND(TOTAL(TRAN.AMOUNT_CR),2) AS REAL) AS CRE_REG_BEFORE
     FROM
       X001ac_Trans_addreg TRAN
     WHERE
@@ -368,7 +379,7 @@ def Studdeb_deferments(s_period='curr',s_year='2019'):
     s_sql = "CREATE VIEW " + sr_file+ " AS" + """
     SELECT
       TRAN.STUDENT,
-      CAST(TOTAL(TRAN.AMOUNT_CR) AS REAL) AS CRE_REG_AFTER
+      CAST(ROUND(TOTAL(TRAN.AMOUNT_CR),2) AS REAL) AS CRE_REG_AFTER
     FROM
       X001ac_Trans_addreg TRAN
     WHERE
@@ -388,7 +399,7 @@ def Studdeb_deferments(s_period='curr',s_year='2019'):
     s_sql = "CREATE VIEW " + sr_file+ " AS" + """
     SELECT
       TRAN.STUDENT,
-      CAST(TOTAL(TRAN.AMOUNT) AS REAL) AS BAL_CUR
+      CAST(ROUND(TOTAL(TRAN.AMOUNT),2) AS REAL) AS BAL_CUR
     FROM
       X000_Transaction TRAN
     GROUP BY
@@ -422,7 +433,7 @@ def Studdeb_deferments(s_period='curr',s_year='2019'):
     s_sql = "CREATE VIEW " + sr_file+ " AS" + """
     Select
         TRAN.STUDENT,
-        Cast(Total(TRAN.AMOUNT_CR) As REAL) As CRE_DEF_BEFORE
+        Cast(Round(Total(TRAN.AMOUNT_CR),2) As REAL) As CRE_DEF_BEFORE
     From
         X000_Transaction TRAN Inner Join
         X002aa_Defer_date DDATE On DDATE.STUDENT = TRAN.STUDENT
@@ -675,10 +686,10 @@ def Studdeb_deferments(s_period='curr',s_year='2019'):
         DEFER.CAMPUS,
         DEFER.DEFER_TYPE,
         DEFER.DEFER_TYPE_DESC,
-        Count(DEFER.STUDENT_VSS) As STUD_COUNT,
-        Sum(DEFER.BAL_REG_CALC) As BAL_REG_DATE,
-        Sum(DEFER.BAL_DEF_CALC) As BAL_DEF_DATE,
-        Sum(DEFER.BAL_CUR) As BAL_CUR
+        Cast(Count(DEFER.STUDENT_VSS) As INT) As STUD_COUNT,
+        Cast(Round(Total(DEFER.BAL_REG_CALC),2) As REAL) As BAL_REG_DATE,
+        Cast(Round(Sum(DEFER.BAL_DEF_CALC),2) As REAL) As BAL_DEF_DATE,
+        Cast(Round(Sum(DEFER.BAL_CUR),2) As REAL) As BAL_CUR
     From
         X001ax_Deferments_final_%PERIOD% DEFER
     Group By
@@ -713,7 +724,7 @@ def Studdeb_deferments(s_period='curr',s_year='2019'):
     sr_file = "X001ad_Deferment_summ"
     s_sql = "Create Table " + sr_file + " As " + """
     Select
-        X001ac_Students_deferment_summ_curr.*
+        *
     From
         X001ac_Students_deferment_summ_curr
     ;"""
@@ -740,6 +751,24 @@ def Studdeb_deferments(s_period='curr',s_year='2019'):
     # Close the impoted data file
     co.close()
     funcfile.writelog("%t IMPORT TABLE: " + ed_path + "301_Deferment_summ.csv (" + sr_file + ")")
+
+    # CREATE DUPLICATE SUMMARY FILE TO RECEIVE SUMMARY FOR PREVIOUS YEARS
+    print("Sort previous years...")
+    sr_file = "X001ae_Deferment_summ_sort"
+    s_sql = "Create Table " + sr_file + " As " + """
+    Select
+        *
+    From
+        X001ad_Deferment_summ
+    Order By
+        DEFER_TYPE,
+        CAMPUS,
+        YEAR Desc        
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """ ****************************************************************************
     END OF SCRIPT
