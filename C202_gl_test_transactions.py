@@ -71,8 +71,8 @@ def gl_test_transactions():
     funcfile.writelog("%t ATTACH DATABASE: KFS_CURR.SQLITE")
     so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
     funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
-    so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss.sqlite' AS 'VSS'")
-    funcfile.writelog("%t ATTACH DATABASE: VSS.SQLITE")
+    so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss_curr.sqlite' AS 'VSSCURR'")
+    funcfile.writelog("%t ATTACH DATABASE: VSS_CURR.SQLITE")
 
     """ ****************************************************************************
     BEGIN OF SCRIPT
@@ -159,7 +159,7 @@ def gl_test_transactions():
         END As LOC 
     From
         X001_gl_professional_fee_pay GL Inner Join
-        VSS.X001_student_curr STUD On Substr(GL.VENDOR_ID,1,8) = STUD.KSTUDBUSENTID And
+        VSSCURR.X001_student STUD On Substr(GL.VENDOR_ID,1,8) = STUD.KSTUDBUSENTID And
             STUD.ISMAINQUALLEVEL = '1'
     Order By
         GL.TIMESTAMP    
