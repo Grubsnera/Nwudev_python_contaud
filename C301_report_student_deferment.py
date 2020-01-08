@@ -51,7 +51,7 @@ def Studdeb_deferments(s_period='curr',s_year='0'):
         if s_period == "prev":
             s_year = funcdate.prev_year()
         else:
-            s_year = funcdate.cur_year
+            s_year = funcdate.cur_year()
     so_path = "W:/Vss_deferment/" #Source database path
     so_file = "Vss_deferment.sqlite" #Source database
     ed_path = "S:/_external_data/" # External data path
