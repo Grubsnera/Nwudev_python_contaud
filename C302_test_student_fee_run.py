@@ -9,7 +9,7 @@ funcfile.writelog("SCRIPT: C302_TEST_STUDENT_FEE_RUN")
 funcfile.writelog("---------------------------------")
 
 try:
-    C302_test_student_fee.student_fee("curr", "2019")
+    C302_test_student_fee.student_fee("curr")
 except Exception as e:
     funcsys.ErrMessage(e)
 

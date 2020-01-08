@@ -5,15 +5,15 @@ from _my_modules import funcsys
 
 # OPEN THE LOG WRITER
 funcfile.writelog("Now")
-funcfile.writelog("SCRIPT: C302_TEST_STUDENT_FEE_RUN")
-funcfile.writelog("---------------------------------")
+funcfile.writelog("SCRIPT: C302_TEST_STUDENT_FEE_RUN_PREV")
+funcfile.writelog("--------------------------------------")
 
 try:
-    C302_test_student_fee.student_fee("curr")
+    C302_test_student_fee.student_fee("prev")
 except Exception as e:
     funcsys.ErrMessage(e)
 
 # CLOSE THE LOG WRITER
 funcfile.writelog("Now")
-funcfile.writelog("COMPLETED: C302_TEST_STUDENT_FEE_RUN")
-funcfile.writelog("------------------------------------")
+funcfile.writelog("COMPLETED: C302_TEST_STUDENT_FEE_RUN_PREV")
+funcfile.writelog("-----------------------------------------")

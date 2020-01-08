@@ -48,7 +48,7 @@ END OF SCRIPT
 *****************************************************************************"""
 
 
-def student_fee(s_period='curr', s_year='2019'):
+def student_fee(s_period='curr', s_year='0'):
     """
     Script to test STUDENT FEE INCOME
     :param s_period: str: The financial period
@@ -69,22 +69,36 @@ def student_fee(s_period='curr', s_year='2019'):
     print("---------------------")
 
     # DECLARE VARIABLES
+    if s_year == '0':
+        if s_period == "prev":
+            s_year = funcdate.prev_year()
+        else:
+            s_year = funcdate.cur_year()
     ed_path = "S:/_external_data/"  # External data path
     so_path = "W:/Vss_fee/"  # Source database path
-    so_file = "Vss_test_fee.sqlite"  # Source database
+    if s_period == "prev":
+        so_file = "Vss_test_fee_prev.sqlite"  # Source database
+        s_reg_trancode: str = "095"
+        s_qual_trancode: str = "004"
+        s_modu_trancode: str = "004"
+        s_burs_trancode: str = "042z052z381z500"
+        s_mba: str = "71500z2381692z2381690z665559"  # Exclude these FQUALLEVELAPID
+        s_mpa: str = "665566"  # Exclude these FQUALLEVELAPID
+        # Find these id's from Sqlite->Sqlite_vss_test_fee->Q021aa_qual_nofee_loaded
+    else:
+        so_file = "Vss_test_fee.sqlite"  # Source database
+        s_reg_trancode: str = "095"
+        s_qual_trancode: str = "004"
+        s_modu_trancode: str = "004"
+        s_burs_trancode: str = "042z052z381z500"
+        s_mba: str = "71500z2381692z2381690z665559"  # Exclude these FQUALLEVELAPID
+        s_mpa: str = "665566"  # Exclude these FQUALLEVELAPID
+        # Find these id's from Sqlite->Sqlite_vss_test_fee->Q021aa_qual_nofee_loaded
     re_path = "R:/Vss/"
     l_export: bool = False
     l_record: bool = True
     l_vacuum: bool = False
     l_mail: bool = False
-
-    s_reg_trancode: str = "095"
-    s_qual_trancode: str = "004"
-    s_modu_trancode: str = "004"
-    s_burs_trancode: str = "042z052z381z500"
-    s_mba: str = "71500z2381692z2381690z665559"  # Exclude these FQUALLEVELAPID
-    s_mpa: str = "665566"  # Exclude these FQUALLEVELAPID
-    # Find these id's from Sqlite->Sqlite_vss_test_fee->Q021aa_qual_nofee_loaded
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -102,6 +116,10 @@ def student_fee(s_period='curr', s_year='2019'):
     print("Attach vss database...")
     so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss.sqlite' AS 'VSS'")
     funcfile.writelog("%t ATTACH DATABASE: Vss.sqlite")
+    so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss_curr.sqlite' AS 'VSSCURR'")
+    funcfile.writelog("%t ATTACH DATABASE: Vss_curr.sqlite")
+    so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss_prev.sqlite' AS 'VSSPREV'")
+    funcfile.writelog("%t ATTACH DATABASE: Vss_prev.sqlite")
     so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
     funcfile.writelog("%t ATTACH DATABASE: People.sqlite")
 
@@ -134,7 +152,7 @@ def student_fee(s_period='curr', s_year='2019'):
             ELSE DATEENROL
         END AS DATEENROL_CALC
     FROM
-        VSS.X001_Student_%PERIOD% STUD
+        %VSS%.X001_Student STUD
     WHERE
         UPPER(STUD.QUAL_TYPE) Not Like '%SHORT COURSE%'
     """
@@ -143,7 +161,10 @@ def student_fee(s_period='curr', s_year='2019'):
     STUD.ISMAINQUALLEVEL = 1 AND
     UPPER(STUD.ACTIVE_IND) = 'ACTIVE'
     """
-    s_sql = s_sql.replace("%PERIOD%", s_period)
+    if s_period == "prev":
+        s_sql = s_sql.replace("%VSS%", "VSSPREV")
+    else:
+        s_sql = s_sql.replace("%VSS%", "VSSCURR")
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -170,7 +191,7 @@ def student_fee(s_period='curr', s_year='2019'):
         CASE
             WHEN SUBSTR(TRAN.TRANSDATE,6,5)='01-01' AND INSTR('001z031z061',TRAN.TRANSCODE)>0 THEN '00'
             WHEN strftime('%Y',TRANSDATE)>strftime('%Y',POSTDATEDTRANSDATE) And
-             Strftime('%Y',POSTDATEDTRANSDATE) = '%CYEAR%' THEN strftime('%m',POSTDATEDTRANSDATE)
+             Strftime('%Y',POSTDATEDTRANSDATE) = '%YEAR%' THEN strftime('%m',POSTDATEDTRANSDATE)
             ELSE strftime('%m',TRAN.TRANSDATE)
         END AS MONTH,
         TRAN.TRANSCODE,
@@ -198,15 +219,18 @@ def student_fee(s_period='curr', s_year='2019'):
         TRAN.QUALIFICATION_NAME,
         TRAN.FENROLPRESID
     FROM
-        VSS.X010_Studytrans_%PERIOD% TRAN
+        %VSS%.X010_Studytrans TRAN
     WHERE
         TRAN.TRANSCODE <> ''
     ORDER BY
         AUDITDATETIME
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = s_sql.replace("%PERIOD%", s_period)
-    s_sql = s_sql.replace("%CYEAR%", funcdate.cur_year())
+    s_sql = s_sql.replace("%YEAR%", s_year)
+    if s_period == "prev":
+        s_sql = s_sql.replace("%VSS%", "VSSPREV")
+    else:
+        s_sql = s_sql.replace("%VSS%", "VSSCURR")
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
@@ -2081,9 +2105,13 @@ def student_fee(s_period='curr', s_year='2019'):
             Else 0
         End As INT) As S9
     From
-        VSS.X001_Student_module_curr MODU
+        %VSS%.X001_Student_module MODU
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if s_period == "prev":
+        s_sql = s_sql.replace("%VSS%", "VSSPREV")
+    else:
+        s_sql = s_sql.replace("%VSS%", "VSSCURR")
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     so_conn.commit()
@@ -2886,30 +2914,6 @@ def student_fee(s_period='curr', s_year='2019'):
 
     # TODO Further analysis of students identified as marks only
 
-    # LIST OF STUDENTS REGISTERED FOR MARK ONLY AND THEIR MODULES
-    print("Build list of student module marks...")
-    sr_file = "X020bc_Student_module_mark"
-    s_sql = "CREATE TABLE " + sr_file + " AS " + """
-    Select
-        STUD.KSTUDBUSENTID,
-        MODU.MODULE,
-        MODU.MODULE_NAME,
-        MODU.COMPLETE_REASON,
-        MODU.PART_RESU,
-        MODU.DATE_RESU
-    From
-        X020bx_Student_master_sort STUD Left Join
-        VSS.X001_Student_module_curr MODU On MODU.KSTUDBUSENTID = STUD.KSTUDBUSENTID 
-    Where
-        STUD.FEE_SHOULD_BE Like ('50%')
-    Order By
-        STUD.KSTUDBUSENTID    
-    ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
     """
     NOTE
     Use the following in the script following for test purposes.
@@ -3014,6 +3018,34 @@ def student_fee(s_period='curr', s_year='2019'):
         STUD.FEE_SHOULD_BE
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # LIST OF STUDENTS REGISTERED FOR MARK ONLY AND THEIR MODULES
+    print("Build list of student module marks...")
+    sr_file = "X020bc_Student_module_mark"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        STUD.KSTUDBUSENTID,
+        MODU.MODULE,
+        MODU.MODULE_NAME,
+        MODU.COMPLETE_REASON,
+        MODU.PART_RESU,
+        MODU.DATE_RESU
+    From
+        X020bx_Student_master_sort STUD Left Join
+        %VSS%.X001_Student_module MODU On MODU.KSTUDBUSENTID = STUD.KSTUDBUSENTID 
+    Where
+        STUD.FEE_SHOULD_BE Like ('50%')
+    Order By
+        STUD.KSTUDBUSENTID    
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if s_period == "prev":
+        s_sql = s_sql.replace("%VSS%", "VSSPREV")
+    else:
+        s_sql = s_sql.replace("%VSS%", "VSSCURR")
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -5111,7 +5143,7 @@ def student_fee(s_period='curr', s_year='2019'):
         STUD.PRESENT_CATEGORY,
         Count(STUD.KENROLSTUDID) As COUNT
     From
-        VSS.X001_Student_module_curr STUD
+        %VSS%.X001_Student_module STUD
     Group By
         STUD.KENROLMENTPRESENTATIONID,
         STUD.FMODULEAPID,
@@ -5119,6 +5151,10 @@ def student_fee(s_period='curr', s_year='2019'):
         STUD.FPRESENTATIONCATEGORYCODEID
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if s_period == "prev":
+        s_sql = s_sql.replace("%VSS%", "VSSPREV")
+    else:
+        s_sql = s_sql.replace("%VSS%", "VSSCURR")
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
@@ -5160,13 +5196,16 @@ def student_fee(s_period='curr', s_year='2019'):
         STUD.*,
         LIST.*
     From
-        VSS.X001_Student_module_curr STUD Inner Join
+        %VSS%.X001_Student_module STUD Inner Join
         X031aa_Modu_nofee_loaded LIST On LIST.KENROLMENTPRESENTATIONID = STUD.KENROLMENTPRESENTATIONID And
              LIST.FMODULEAPID = STUD.FMODULEAPID And
              LIST.ENROL_ID = STUD.FENROLMENTCATEGORYCODEID
     ;"""
-    # s_sql = s_sql.replace("%PERIOD%", s_period)
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if s_period == "prev":
+        s_sql = s_sql.replace("%VSS%", "VSSPREV")
+    else:
+        s_sql = s_sql.replace("%VSS%", "VSSCURR")
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
