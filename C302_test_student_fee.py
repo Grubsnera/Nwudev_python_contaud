@@ -85,8 +85,8 @@ def student_fee(s_period='curr', s_year='0'):
         s_qual_trancode: str = "004"
         s_modu_trancode: str = "004"
         s_burs_trancode: str = "042z052z381z500"
-        s_mba: str = "71500z2381692z2381690z665559"  # Exclude these FQUALLEVELAPID
-        s_mpa: str = "665566"  # Exclude these FQUALLEVELAPID
+        s_mba: str = "71500z2381692z2381690z665559z71839z71840z71841z71842z71820z71821z71822z1085390"  # Exclude these FQUALLEVELAPID
+        s_mpa: str = "665566z618161z618167z618169"  # Exclude these FQUALLEVELAPID
         # Find these id's from Sqlite->Sqlite_vss_test_fee->Q021aa_qual_nofee_loaded
         l_record: bool = False
         l_export: bool = True
@@ -96,8 +96,8 @@ def student_fee(s_period='curr', s_year='0'):
         s_qual_trancode: str = "004"
         s_modu_trancode: str = "004"
         s_burs_trancode: str = "042z052z381z500"
-        s_mba: str = "71500z2381692z2381690z665559"  # Exclude these FQUALLEVELAPID
-        s_mpa: str = "665566"  # Exclude these FQUALLEVELAPID
+        s_mba: str = "71500z2381692z2381690z665559z71839z71840z71841z71842z71820z71821z71822z1085390"  # Exclude these FQUALLEVELAPID
+        s_mpa: str = "665566z618161z618167z618169"  # Exclude these FQUALLEVELAPID
         # Find these id's from Sqlite->Sqlite_vss_test_fee->Q021aa_qual_nofee_loaded
         l_record: bool = True
         l_export: bool = False
@@ -147,6 +147,7 @@ def student_fee(s_period='curr', s_year='0'):
     funcfile.writelog("OBTAIN STUDENTS")      
 
     # OBTAIN THE LIST STUDENTS
+    # EXCLUDE SHORT COURSE STUDENTS
     print("Obtain the registered students...")
     sr_file = "X000_Student"
     s_sql = "CREATE TABLE " + sr_file + " AS" + """
@@ -245,7 +246,7 @@ def student_fee(s_period='curr', s_year='0'):
     print("REGISTRATION FEE MASTER")
     funcfile.writelog("REGISTRATION FEE MASTER")
 
-    # CALCULATE THE REGISTRATION FEES LEVIED
+    # CALCULATE THE REGISTRATION FEES LEVIED PER STUDENT
     print("Calculate the registration fee transactions...")
     sr_file = "X010_Trans_feereg"
     s_sql = "Create table " + sr_file + " AS" + """
@@ -277,6 +278,7 @@ def student_fee(s_period='curr', s_year='0'):
     print("Registration fee: R" + str(i_calc))
 
     # ADD REGISTRATION LEVIED FEES TO THE STUDENTS LIST
+    # EXCLUDE ALL NON MAIN QUALIFICATION QUALIFICATIONS
     print("Join students and registration fees...")
     sr_file = "X010_Student_feereg"
     s_sql = "CREATE TABLE " + sr_file + " AS" + """
@@ -417,12 +419,12 @@ def student_fee(s_period='curr', s_year='0'):
     # EXCLUSIONS
     # Only 1 NO TRANSACTION
     # Contact students only
-    # Exclude if conditional registration
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
 
     # IDENTIFY REGISTRATION FEES CONTACT NOT LEVIED
+    # EXCLUDE DISTANCE STUDENTS
     print("Identify null registration fees...")
     sr_file = "X010aa_Regfee_null"
     s_sql = "CREATE TABLE " + sr_file + " AS" + """
@@ -454,6 +456,7 @@ def student_fee(s_period='curr', s_year='0'):
         funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
 
     # IDENTIFY FINDINGS
+    # EXCLUDE CONDITIONAL REGISTRATIONS
     print("Identify findings...")
     sr_file = "X010ab_findings"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -493,7 +496,7 @@ def student_fee(s_period='curr', s_year='0'):
             FIELD5 TEXT,
             DATE_REPORTED TEXT,
             DATE_RETEST TEXT,
-            DATE_MAILED TEXT)
+            REMARK TEXT)
             """)
         co = open(ed_path + "302_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -515,6 +518,34 @@ def student_fee(s_period='curr', s_year='0'):
         co.close()
         funcfile.writelog("%t IMPORT TABLE: " + ed_path + "302_reported.txt (" + sr_file + ")")
 
+    # SET PREVIOUS FINDINGS
+    sr_file = "X010ac_set_previous"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        print("Obtain the latest previous finding...")
+        s_sql = "Create Table " + sr_file + " As" + """
+        Select
+            GET.PROCESS,
+            GET.FIELD1,
+            GET.FIELD2,
+            GET.FIELD3,
+            GET.FIELD4,
+            GET.FIELD5,
+            Max(GET.DATE_REPORTED) As DATE_REPORTED,
+            GET.DATE_RETEST,
+            GET.REMARK
+        From
+            X010ac_get_previous GET
+        Group By
+            GET.FIELD1        
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
     # ADD PREVIOUS FINDINGS
     sr_file = "X010ad_add_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -529,14 +560,14 @@ def student_fee(s_period='curr', s_year='0'):
             PREV.PROCESS AS PREV_PROCESS,
             PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
             PREV.DATE_RETEST AS PREV_DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X010ab_findings FIND Left Join
-            X010ac_get_previous PREV ON PREV.FIELD1 = FIND.STUDENT
+            X010ac_set_previous PREV ON PREV.FIELD1 = FIND.STUDENT
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.cur_yearend())
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -555,11 +586,12 @@ def student_fee(s_period='curr', s_year='0'):
             '' AS FIELD5,
             PREV.DATE_REPORTED,
             PREV.DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X010ad_add_previous PREV
         Where
-            PREV.PREV_PROCESS Is Null
+            PREV.PREV_PROCESS Is Null Or
+            PREV.DATE_REPORTED >= PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -848,7 +880,7 @@ def student_fee(s_period='curr', s_year='0'):
             FIELD5 TEXT,
             DATE_REPORTED TEXT,
             DATE_RETEST TEXT,
-            DATE_MAILED TEXT)
+            REMARK TEXT)
             """)
         co = open(ed_path + "302_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -870,6 +902,35 @@ def student_fee(s_period='curr', s_year='0'):
         co.close()
         funcfile.writelog("%t IMPORT TABLE: " + ed_path + "302_reported.txt (" + sr_file + ")")
 
+    # SET PREVIOUS FINDINGS
+    sr_file = "X010bc_set_previous"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        print("Obtain the latest previous finding...")
+        s_sql = "Create Table " + sr_file + " As" + """
+        Select
+            GET.PROCESS,
+            GET.FIELD1,
+            GET.FIELD2,
+            GET.FIELD3,
+            GET.FIELD4,
+            GET.FIELD5,
+            Max(GET.DATE_REPORTED) As DATE_REPORTED,
+            GET.DATE_RETEST,
+            GET.REMARK
+        From
+            X010ac_get_previous GET
+        Group By
+            GET.FIELD1,
+            GET.FIELD2        
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
     # ADD PREVIOUS FINDINGS
     sr_file = "X010bd_add_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -884,15 +945,15 @@ def student_fee(s_period='curr', s_year='0'):
             PREV.PROCESS AS PREV_PROCESS,
             PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
             PREV.DATE_RETEST AS PREV_DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X010bb_findings FIND Left Join
-            X010bc_get_previous PREV ON PREV.FIELD1 = FIND.STUDENT And
+            X010bc_set_previous PREV ON PREV.FIELD1 = FIND.STUDENT And
                 PREV.FIELD2 = FIND.FEE_CALC
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.cur_yearend())
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -911,11 +972,12 @@ def student_fee(s_period='curr', s_year='0'):
             '' AS FIELD5,
             PREV.DATE_REPORTED,
             PREV.DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X010bd_add_previous PREV
         Where
-            PREV.PREV_PROCESS Is Null
+            PREV.PREV_PROCESS Is Null Or
+            PREV.DATE_REPORTED >= PREV.PREV_DATE_RETEST And PREV.REMARK = ""            
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -1204,7 +1266,7 @@ def student_fee(s_period='curr', s_year='0'):
             FIELD5 TEXT,
             DATE_REPORTED TEXT,
             DATE_RETEST TEXT,
-            DATE_MAILED TEXT)
+            REMARK TEXT)
             """)
         co = open(ed_path + "302_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -1226,6 +1288,34 @@ def student_fee(s_period='curr', s_year='0'):
         co.close()
         funcfile.writelog("%t IMPORT TABLE: " + ed_path + "302_reported.txt (" + sr_file + ")")
 
+    # SET PREVIOUS FINDINGS
+    sr_file = "X010cc_set_previous"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        print("Obtain the latest previous finding...")
+        s_sql = "Create Table " + sr_file + " As" + """
+        Select
+            GET.PROCESS,
+            GET.FIELD1,
+            GET.FIELD2,
+            GET.FIELD3,
+            GET.FIELD4,
+            GET.FIELD5,
+            Max(GET.DATE_REPORTED) As DATE_REPORTED,
+            GET.DATE_RETEST,
+            GET.REMARK
+        From
+            X010ac_get_previous GET
+        Group By
+            GET.FIELD1        
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
     # ADD PREVIOUS FINDINGS
     sr_file = "X010cd_add_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -1240,14 +1330,14 @@ def student_fee(s_period='curr', s_year='0'):
             PREV.PROCESS AS PREV_PROCESS,
             PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
             PREV.DATE_RETEST AS PREV_DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X010cb_findings FIND Left Join
-            X010cc_get_previous PREV ON PREV.FIELD1 = FIND.STUDENT
+            X010cc_set_previous PREV ON PREV.FIELD1 = FIND.STUDENT
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.cur_yearend())
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -1266,11 +1356,12 @@ def student_fee(s_period='curr', s_year='0'):
             '' AS FIELD5,
             PREV.DATE_REPORTED,
             PREV.DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X010cd_add_previous PREV
         Where
-            PREV.PREV_PROCESS Is Null
+            PREV.PREV_PROCESS Is Null Or
+            PREV.DATE_REPORTED >= PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -1554,7 +1645,7 @@ def student_fee(s_period='curr', s_year='0'):
             FIELD5 TEXT,
             DATE_REPORTED TEXT,
             DATE_RETEST TEXT,
-            DATE_MAILED TEXT)
+            REMARK TEXT)
             """)
         co = open(ed_path + "302_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -1576,6 +1667,35 @@ def student_fee(s_period='curr', s_year='0'):
         co.close()
         funcfile.writelog("%t IMPORT TABLE: " + ed_path + "302_reported.txt (" + sr_file + ")")
 
+    # SET PREVIOUS FINDINGS
+    sr_file = "X010ec_set_previous"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        print("Obtain the latest previous finding...")
+        s_sql = "Create Table " + sr_file + " As" + """
+        Select
+            GET.PROCESS,
+            GET.FIELD1,
+            GET.FIELD2,
+            GET.FIELD3,
+            GET.FIELD4,
+            GET.FIELD5,
+            Max(GET.DATE_REPORTED) As DATE_REPORTED,
+            GET.DATE_RETEST,
+            GET.REMARK
+        From
+            X010ac_get_previous GET
+        Group By
+            GET.FIELD1,
+            GET.FIELD2        
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
     # ADD PREVIOUS FINDINGS
     sr_file = "X010ed_add_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -1590,15 +1710,15 @@ def student_fee(s_period='curr', s_year='0'):
             PREV.PROCESS AS PREV_PROCESS,
             PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
             PREV.DATE_RETEST AS PREV_DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X010eb_findings FIND Left Join
-            X010ec_get_previous PREV ON PREV.FIELD1 = FIND.STUDENT And
+            X010ec_set_previous PREV ON PREV.FIELD1 = FIND.STUDENT And
                 PREV.FIELD2 = FIND.FEE_CALC
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.cur_yearend())
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -1617,11 +1737,12 @@ def student_fee(s_period='curr', s_year='0'):
             '' AS FIELD5,
             PREV.DATE_REPORTED,
             PREV.DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X010ed_add_previous PREV
         Where
-            PREV.PREV_PROCESS Is Null
+            PREV.PREV_PROCESS Is Null Or
+            PREV.DATE_REPORTED >= PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -1868,7 +1989,8 @@ def student_fee(s_period='curr', s_year='0'):
     for row in co_reader:
         # Populate the column variables
         # print(row[0])
-        if row[0] == "Academic Program Fee Type ":
+        # TODO : "ï»¿" Glitch in 2019 data resolved - Remove if all working
+        if "Academic Program Fee Type" in row[0]:
             continue
         else:
             s_cols = "Insert Into " + sr_file + " Values(" \
@@ -2388,7 +2510,7 @@ def student_fee(s_period='curr', s_year='0'):
             FIELD5 TEXT,
             DATE_REPORTED TEXT,
             DATE_RETEST TEXT,
-            DATE_MAILED TEXT)
+            REMARK TEXT)
             """)
         co = open(ed_path + "302_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -2410,6 +2532,35 @@ def student_fee(s_period='curr', s_year='0'):
         co.close()
         funcfile.writelog("%t IMPORT TABLE: " + ed_path + "302_reported.txt (" + sr_file + ")")
 
+    # SET PREVIOUS FINDINGS
+    sr_file = "X021ac_set_previous"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        print("Obtain the latest previous finding...")
+        s_sql = "Create Table " + sr_file + " As" + """
+        Select
+            GET.PROCESS,
+            GET.FIELD1,
+            GET.FIELD2,
+            GET.FIELD3,
+            GET.FIELD4,
+            GET.FIELD5,
+            Max(GET.DATE_REPORTED) As DATE_REPORTED,
+            GET.DATE_RETEST,
+            GET.REMARK
+        From
+            X010ac_get_previous GET
+        Group By
+            GET.FIELD1,
+            GET.FIELD2        
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
     # ADD PREVIOUS FINDINGS
     sr_file = "X021ad_add_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -2424,15 +2575,15 @@ def student_fee(s_period='curr', s_year='0'):
             PREV.PROCESS AS PREV_PROCESS,
             PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
             PREV.DATE_RETEST AS PREV_DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X021ab_findings FIND Left Join
-            X021ac_get_previous PREV ON PREV.FIELD1 = FIND.ID And
+            X021ac_set_previous PREV ON PREV.FIELD1 = FIND.ID And
                 PREV.FIELD2 = FIND.QUALIFICATION
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.cur_yearend())
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -2451,11 +2602,12 @@ def student_fee(s_period='curr', s_year='0'):
             '' AS FIELD5,
             PREV.DATE_REPORTED,
             PREV.DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X021ad_add_previous PREV
         Where
-            PREV.PREV_PROCESS Is Null
+            PREV.PREV_PROCESS Is Null Or
+            PREV.DATE_REPORTED >= PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -3218,7 +3370,7 @@ def student_fee(s_period='curr', s_year='0'):
             FIELD5 TEXT,
             DATE_REPORTED TEXT,
             DATE_RETEST TEXT,
-            DATE_MAILED TEXT)
+            REMARK TEXT)
             """)
         co = open(ed_path + "302_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -3240,6 +3392,36 @@ def student_fee(s_period='curr', s_year='0'):
         co.close()
         funcfile.writelog("%t IMPORT TABLE: " + ed_path + "302_reported.txt (" + sr_file + ")")
 
+    # SET PREVIOUS FINDINGS
+    sr_file = "X010bc_set_previous"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        print("Obtain the latest previous finding...")
+        s_sql = "Create Table " + sr_file + " As" + """
+        Select
+            GET.PROCESS,
+            GET.FIELD1,
+            GET.FIELD2,
+            GET.FIELD3,
+            GET.FIELD4,
+            GET.FIELD5,
+            Max(GET.DATE_REPORTED) As DATE_REPORTED,
+            GET.DATE_RETEST,
+            GET.REMARK
+        From
+            X010ac_get_previous GET
+        Group By
+            GET.FIELD1,
+            GET.FIELD2,
+            GET.FIELD3        
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
     # ADD PREVIOUS FINDINGS
     sr_file = "X021bd_add_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -3254,16 +3436,16 @@ def student_fee(s_period='curr', s_year='0'):
             PREV.PROCESS AS PREV_PROCESS,
             PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
             PREV.DATE_RETEST AS PREV_DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X021bb_findings FIND Left Join
-            X021bc_get_previous PREV ON PREV.FIELD1 = FIND.ID And
+            X021bc_set_previous PREV ON PREV.FIELD1 = FIND.ID And
                 PREV.FIELD2 = FIND.QUALIFICATION And
                 PREV.FIELD3 = FIND.FEE_LEVIED
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.cur_yearend())
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -3282,11 +3464,12 @@ def student_fee(s_period='curr', s_year='0'):
             '' AS FIELD5,
             PREV.DATE_REPORTED,
             PREV.DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X021bd_add_previous PREV
         Where
-            PREV.PREV_PROCESS Is Null
+            PREV.PREV_PROCESS Is Null Or
+            PREV.DATE_REPORTED >= PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -3565,7 +3748,7 @@ def student_fee(s_period='curr', s_year='0'):
             FIELD5 TEXT,
             DATE_REPORTED TEXT,
             DATE_RETEST TEXT,
-            DATE_MAILED TEXT)
+            REMARK TEXT)
             """)
         co = open(ed_path + "302_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -3587,6 +3770,36 @@ def student_fee(s_period='curr', s_year='0'):
         co.close()
         funcfile.writelog("%t IMPORT TABLE: " + ed_path + "302_reported.txt (" + sr_file + ")")
 
+    # SET PREVIOUS FINDINGS
+    sr_file = "X010dc_set_previous"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        print("Obtain the latest previous finding...")
+        s_sql = "Create Table " + sr_file + " As" + """
+        Select
+            GET.PROCESS,
+            GET.FIELD1,
+            GET.FIELD2,
+            GET.FIELD3,
+            GET.FIELD4,
+            GET.FIELD5,
+            Max(GET.DATE_REPORTED) As DATE_REPORTED,
+            GET.DATE_RETEST,
+            GET.REMARK
+        From
+            X010ac_get_previous GET
+        Group By
+            GET.FIELD1,
+            GET.FIELD2,
+            GET.FIELD3        
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
     # ADD PREVIOUS FINDINGS
     sr_file = "X021dd_add_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -3601,16 +3814,16 @@ def student_fee(s_period='curr', s_year='0'):
             PREV.PROCESS AS PREV_PROCESS,
             PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
             PREV.DATE_RETEST AS PREV_DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X021db_findings FIND Left Join
-            X021dc_get_previous PREV ON PREV.FIELD1 = FIND.ID And
+            X021dc_set_previous PREV ON PREV.FIELD1 = FIND.ID And
                 PREV.FIELD2 = FIND.QUALIFICATION And
                 PREV.FIELD3 = FIND.FEE_LEVIED
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.cur_yearend())
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -3629,11 +3842,12 @@ def student_fee(s_period='curr', s_year='0'):
             '' AS FIELD5,
             PREV.DATE_REPORTED,
             PREV.DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X021dd_add_previous PREV
         Where
-            PREV.PREV_PROCESS Is Null
+            PREV.PREV_PROCESS Is Null Or
+            PREV.DATE_REPORTED >= PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -3931,7 +4145,7 @@ def student_fee(s_period='curr', s_year='0'):
             FIELD5 TEXT,
             DATE_REPORTED TEXT,
             DATE_RETEST TEXT,
-            DATE_MAILED TEXT)
+            REMARK TEXT)
             """)
         co = open(ed_path + "302_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -3953,6 +4167,36 @@ def student_fee(s_period='curr', s_year='0'):
         co.close()
         funcfile.writelog("%t IMPORT TABLE: " + ed_path + "302_reported.txt (" + sr_file + ")")
 
+    # SET PREVIOUS FINDINGS
+    sr_file = "X010cc_set_previous"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        print("Obtain the latest previous finding...")
+        s_sql = "Create Table " + sr_file + " As" + """
+        Select
+            GET.PROCESS,
+            GET.FIELD1,
+            GET.FIELD2,
+            GET.FIELD3,
+            GET.FIELD4,
+            GET.FIELD5,
+            Max(GET.DATE_REPORTED) As DATE_REPORTED,
+            GET.DATE_RETEST,
+            GET.REMARK
+        From
+            X010ac_get_previous GET
+        Group By
+            GET.FIELD1,
+            GET.FIELD2,
+            GET.FIELD3        
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
     # ADD PREVIOUS FINDINGS
     sr_file = "X021cd_add_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -3967,16 +4211,16 @@ def student_fee(s_period='curr', s_year='0'):
             PREV.PROCESS AS PREV_PROCESS,
             PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
             PREV.DATE_RETEST AS PREV_DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X021cb_findings FIND Left Join
-            X021cc_get_previous PREV ON PREV.FIELD1 = FIND.ID And
+            X021cc_set_previous PREV ON PREV.FIELD1 = FIND.ID And
                 PREV.FIELD2 = FIND.QUALIFICATION And
                 PREV.FIELD3 = FIND.FEE_LEVIED
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.cur_yearend())
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -3995,11 +4239,12 @@ def student_fee(s_period='curr', s_year='0'):
             '' AS FIELD5,
             PREV.DATE_REPORTED,
             PREV.DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X021cd_add_previous PREV
         Where
-            PREV.PREV_PROCESS Is Null
+            PREV.PREV_PROCESS Is Null Or
+            PREV.DATE_REPORTED >= PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -4298,7 +4543,7 @@ def student_fee(s_period='curr', s_year='0'):
             FIELD5 TEXT,
             DATE_REPORTED TEXT,
             DATE_RETEST TEXT,
-            DATE_MAILED TEXT)
+            REMARK TEXT)
             """)
         co = open(ed_path + "302_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -4320,6 +4565,36 @@ def student_fee(s_period='curr', s_year='0'):
         co.close()
         funcfile.writelog("%t IMPORT TABLE: " + ed_path + "302_reported.txt (" + sr_file + ")")
 
+    # SET PREVIOUS FINDINGS
+    sr_file = "X010ec_set_previous"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        print("Obtain the latest previous finding...")
+        s_sql = "Create Table " + sr_file + " As" + """
+        Select
+            GET.PROCESS,
+            GET.FIELD1,
+            GET.FIELD2,
+            GET.FIELD3,
+            GET.FIELD4,
+            GET.FIELD5,
+            Max(GET.DATE_REPORTED) As DATE_REPORTED,
+            GET.DATE_RETEST,
+            GET.REMARK
+        From
+            X010ac_get_previous GET
+        Group By
+            GET.FIELD1,
+            GET.FIELD2,
+            GET.FIELD3        
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
     # ADD PREVIOUS FINDINGS
     sr_file = "X021ed_add_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -4334,16 +4609,16 @@ def student_fee(s_period='curr', s_year='0'):
             PREV.PROCESS AS PREV_PROCESS,
             PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
             PREV.DATE_RETEST AS PREV_DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X021eb_findings FIND Left Join
-            X021ec_get_previous PREV ON PREV.FIELD1 = FIND.ID And
+            X021ec_set_previous PREV ON PREV.FIELD1 = FIND.ID And
                 PREV.FIELD2 = FIND.QUALIFICATION And
                 PREV.FIELD3 = FIND.FEE_LEVIED
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.cur_yearend())
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -4362,11 +4637,12 @@ def student_fee(s_period='curr', s_year='0'):
             '' AS FIELD5,
             PREV.DATE_REPORTED,
             PREV.DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X021ed_add_previous PREV
         Where
-            PREV.PREV_PROCESS Is Null
+            PREV.PREV_PROCESS Is Null Or
+            PREV.DATE_REPORTED >= PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -4664,7 +4940,7 @@ def student_fee(s_period='curr', s_year='0'):
             FIELD5 TEXT,
             DATE_REPORTED TEXT,
             DATE_RETEST TEXT,
-            DATE_MAILED TEXT)
+            REMARK TEXT)
             """)
         co = open(ed_path + "302_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -4686,6 +4962,36 @@ def student_fee(s_period='curr', s_year='0'):
         co.close()
         funcfile.writelog("%t IMPORT TABLE: " + ed_path + "302_reported.txt (" + sr_file + ")")
 
+    # SET PREVIOUS FINDINGS
+    sr_file = "X010fc_set_previous"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        print("Obtain the latest previous finding...")
+        s_sql = "Create Table " + sr_file + " As" + """
+        Select
+            GET.PROCESS,
+            GET.FIELD1,
+            GET.FIELD2,
+            GET.FIELD3,
+            GET.FIELD4,
+            GET.FIELD5,
+            Max(GET.DATE_REPORTED) As DATE_REPORTED,
+            GET.DATE_RETEST,
+            GET.REMARK
+        From
+            X010ac_get_previous GET
+        Group By
+            GET.FIELD1,
+            GET.FIELD2,
+            GET.FIELD3        
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
     # ADD PREVIOUS FINDINGS
     sr_file = "X021fd_add_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -4700,16 +5006,16 @@ def student_fee(s_period='curr', s_year='0'):
             PREV.PROCESS AS PREV_PROCESS,
             PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
             PREV.DATE_RETEST AS PREV_DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X021fb_findings FIND Left Join
-            X021fc_get_previous PREV ON PREV.FIELD1 = FIND.ID And
+            X021fc_set_previous PREV ON PREV.FIELD1 = FIND.ID And
                 PREV.FIELD2 = FIND.QUALIFICATION And
                 PREV.FIELD3 = FIND.FEE_LEVIED
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.cur_yearend())
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -4728,11 +5034,12 @@ def student_fee(s_period='curr', s_year='0'):
             '' AS FIELD5,
             PREV.DATE_REPORTED,
             PREV.DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X021fd_add_previous PREV
         Where
-            PREV.PREV_PROCESS Is Null
+            PREV.PREV_PROCESS Is Null Or
+            PREV.DATE_REPORTED >= PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -4985,7 +5292,7 @@ def student_fee(s_period='curr', s_year='0'):
     for row in co_reader:
         # Populate the column variables
         # print(row[0])
-        if row[0] == "Academic Program Fee Type ":
+        if "Academic Program Fee Type" in row[0]:
             continue
         else:
             s_cols = "Insert Into " + sr_file + " Values(" \
@@ -5303,7 +5610,7 @@ def student_fee(s_period='curr', s_year='0'):
             FIELD5 TEXT,
             DATE_REPORTED TEXT,
             DATE_RETEST TEXT,
-            DATE_MAILED TEXT)
+            REMARK TEXT)
             """)
         co = open(ed_path + "302_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -5325,6 +5632,37 @@ def student_fee(s_period='curr', s_year='0'):
         co.close()
         funcfile.writelog("%t IMPORT TABLE: " + ed_path + "302_reported.txt (" + sr_file + ")")
 
+    # SET PREVIOUS FINDINGS
+    sr_file = "X031ac_set_previous"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        print("Obtain the latest previous finding...")
+        s_sql = "Create Table " + sr_file + " As" + """
+        Select
+            GET.PROCESS,
+            GET.FIELD1,
+            GET.FIELD2,
+            GET.FIELD3,
+            GET.FIELD4,
+            GET.FIELD5,
+            Max(GET.DATE_REPORTED) As DATE_REPORTED,
+            GET.DATE_RETEST,
+            GET.REMARK
+        From
+            X010ac_get_previous GET
+        Group By
+            GET.FIELD1,
+            GET.FIELD2,
+            GET.FIELD3,
+            GET.FIELD4   
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
     # ADD PREVIOUS FINDINGS
     sr_file = "X031ad_add_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -5339,15 +5677,17 @@ def student_fee(s_period='curr', s_year='0'):
             PREV.PROCESS AS PREV_PROCESS,
             PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
             PREV.DATE_RETEST AS PREV_DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X031ab_findings FIND Left Join
             X031ac_get_previous PREV ON PREV.FIELD1 = FIND.ID And
-                PREV.FIELD3 = FIND.ENROL_ID
+                PREV.FIELD2 = FIND.MODULE And
+                PREV.FIELD3 = FIND.ENROL_ID And
+                PREV.FIELD4 = FIND.ENROL_CAT
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.cur_yearend())
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -5366,11 +5706,12 @@ def student_fee(s_period='curr', s_year='0'):
             '' AS FIELD5,
             PREV.DATE_REPORTED,
             PREV.DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X031ad_add_previous PREV
         Where
-            PREV.PREV_PROCESS Is Null
+            PREV.PREV_PROCESS Is Null Or
+            PREV.DATE_REPORTED >= PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
