@@ -1868,7 +1868,7 @@ def student_fee(s_period='curr', s_year='0'):
     for row in co_reader:
         # Populate the column variables
         # print(row[0])
-        if row[0] == "ï»¿Academic Program Fee Type ":
+        if row[0] == "Academic Program Fee Type ":
             continue
         else:
             s_cols = "Insert Into " + sr_file + " Values(" \
