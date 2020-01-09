@@ -35,24 +35,45 @@ print("---------------------")
 print("C302_TEST_STUDENT_FEE")
 print("---------------------")
 
-# DECLARE VARIABLES
-ed_path = "S:/_external_data/"  # External data path
-so_path = "W:/Vss_fee/"  # Source database path
-so_file = "Vss_test_fee.sqlite"  # Source database
-re_path = "R:/Vss/"
-l_export: bool = False
-l_mail: bool = False
-l_record: bool = False
-l_vacuum: bool = False
-s_period: str = "curr"
+s_period = "curr"
+s_year = "0"
 
 # DECLARE VARIABLES
-s_reg_trancode: str = "095"
-s_qual_trancode: str = "004"
-s_modu_trancode: str = "004"
-s_burs_trancode: str = "042z052z381z500"
-s_mba: str = "71500z2381692z2381690z665559"  # Exclude these FQUALLEVELAPID
-s_mpa: str = "665566"  # Exclude these FQUALLEVELAPID
+if s_year == '0':
+    if s_period == "prev":
+        s_year = funcdate.prev_year()
+    else:
+        s_year = funcdate.cur_year()
+
+ed_path = "S:/_external_data/"  # External data path
+so_path = "W:/Vss_fee/"  # Source database path
+re_path = "R:/Vss/" + s_year
+
+if s_period == "prev":
+    so_file = "Vss_test_fee_prev.sqlite"  # Source database
+    s_reg_trancode: str = "095"
+    s_qual_trancode: str = "004"
+    s_modu_trancode: str = "004"
+    s_burs_trancode: str = "042z052z381z500"
+    s_mba: str = "71500z2381692z2381690z665559z71839z71840z71841z71842z71820z71821z71822z1085390"  # Exclude these FQUALLEVELAPID
+    s_mpa: str = "665566z618161z618167z618169"  # Exclude these FQUALLEVELAPID
+    # Find these id's from Sqlite->Sqlite_vss_test_fee->Q021aa_qual_nofee_loaded
+    l_record: bool = False
+    l_export: bool = True
+else:
+    so_file = "Vss_test_fee.sqlite"  # Source database
+    s_reg_trancode: str = "095"
+    s_qual_trancode: str = "004"
+    s_modu_trancode: str = "004"
+    s_burs_trancode: str = "042z052z381z500"
+    s_mba: str = "71500z2381692z2381690z665559z71839z71840z71841z71842z71820z71821z71822z1085390"  # Exclude these FQUALLEVELAPID
+    s_mpa: str = "665566z618161z618167z618169"  # Exclude these FQUALLEVELAPID
+    # Find these id's from Sqlite->Sqlite_vss_test_fee->Q021aa_qual_nofee_loaded
+    l_record: bool = True
+    l_export: bool = False
+
+l_vacuum: bool = False
+l_mail: bool = False
 
 """*****************************************************************************
 OPEN THE DATABASES
@@ -62,7 +83,7 @@ funcfile.writelog("OPEN THE DATABASES")
 
 # OPEN SQLITE SOURCE table
 print("Open sqlite database...")
-with sqlite3.connect(so_path+so_file) as so_conn:
+with sqlite3.connect(so_path + so_file) as so_conn:
     so_curs = so_conn.cursor()
 funcfile.writelog("OPEN DATABASE: " + so_file)
 
@@ -70,6 +91,10 @@ funcfile.writelog("OPEN DATABASE: " + so_file)
 print("Attach vss database...")
 so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss.sqlite' AS 'VSS'")
 funcfile.writelog("%t ATTACH DATABASE: Vss.sqlite")
+so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss_curr.sqlite' AS 'VSSCURR'")
+funcfile.writelog("%t ATTACH DATABASE: Vss_curr.sqlite")
+so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss_prev.sqlite' AS 'VSSPREV'")
+funcfile.writelog("%t ATTACH DATABASE: Vss_prev.sqlite")
 so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
 funcfile.writelog("%t ATTACH DATABASE: People.sqlite")
 
