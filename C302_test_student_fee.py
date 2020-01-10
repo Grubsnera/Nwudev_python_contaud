@@ -540,8 +540,6 @@ def student_fee(s_period='curr', s_year='0'):
             GET.FIELD1        
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -925,8 +923,6 @@ def student_fee(s_period='curr', s_year='0'):
             GET.FIELD2        
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -1310,8 +1306,6 @@ def student_fee(s_period='curr', s_year='0'):
             GET.FIELD1        
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -1690,8 +1684,6 @@ def student_fee(s_period='curr', s_year='0'):
             GET.FIELD2        
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -2555,8 +2547,6 @@ def student_fee(s_period='curr', s_year='0'):
             GET.FIELD2        
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -3416,8 +3406,6 @@ def student_fee(s_period='curr', s_year='0'):
             GET.FIELD3        
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -3794,8 +3782,6 @@ def student_fee(s_period='curr', s_year='0'):
             GET.FIELD3        
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -4191,8 +4177,6 @@ def student_fee(s_period='curr', s_year='0'):
             GET.FIELD3        
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -4589,8 +4573,6 @@ def student_fee(s_period='curr', s_year='0'):
             GET.FIELD3        
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -4986,8 +4968,6 @@ def student_fee(s_period='curr', s_year='0'):
             GET.FIELD3        
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -5657,8 +5637,6 @@ def student_fee(s_period='curr', s_year='0'):
             GET.FIELD4   
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
