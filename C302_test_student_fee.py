@@ -589,7 +589,7 @@ def student_fee(s_period='curr', s_year='0'):
             X010ad_add_previous PREV
         Where
             PREV.PREV_PROCESS Is Null Or
-            PREV.DATE_REPORTED >= PREV.PREV_DATE_RETEST And PREV.REMARK = ""
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -973,7 +973,7 @@ def student_fee(s_period='curr', s_year='0'):
             X010bd_add_previous PREV
         Where
             PREV.PREV_PROCESS Is Null Or
-            PREV.DATE_REPORTED >= PREV.PREV_DATE_RETEST And PREV.REMARK = ""            
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""            
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -1355,7 +1355,7 @@ def student_fee(s_period='curr', s_year='0'):
             X010cd_add_previous PREV
         Where
             PREV.PREV_PROCESS Is Null Or
-            PREV.DATE_REPORTED >= PREV.PREV_DATE_RETEST And PREV.REMARK = ""
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -1734,7 +1734,7 @@ def student_fee(s_period='curr', s_year='0'):
             X010ed_add_previous PREV
         Where
             PREV.PREV_PROCESS Is Null Or
-            PREV.DATE_REPORTED >= PREV.PREV_DATE_RETEST And PREV.REMARK = ""
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -2597,7 +2597,7 @@ def student_fee(s_period='curr', s_year='0'):
             X021ad_add_previous PREV
         Where
             PREV.PREV_PROCESS Is Null Or
-            PREV.DATE_REPORTED >= PREV.PREV_DATE_RETEST And PREV.REMARK = ""
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -3457,7 +3457,7 @@ def student_fee(s_period='curr', s_year='0'):
             X021bd_add_previous PREV
         Where
             PREV.PREV_PROCESS Is Null Or
-            PREV.DATE_REPORTED >= PREV.PREV_DATE_RETEST And PREV.REMARK = ""
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -3833,7 +3833,7 @@ def student_fee(s_period='curr', s_year='0'):
             X021dd_add_previous PREV
         Where
             PREV.PREV_PROCESS Is Null Or
-            PREV.DATE_REPORTED >= PREV.PREV_DATE_RETEST And PREV.REMARK = ""
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -4228,7 +4228,7 @@ def student_fee(s_period='curr', s_year='0'):
             X021cd_add_previous PREV
         Where
             PREV.PREV_PROCESS Is Null Or
-            PREV.DATE_REPORTED >= PREV.PREV_DATE_RETEST And PREV.REMARK = ""
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -4624,7 +4624,7 @@ def student_fee(s_period='curr', s_year='0'):
             X021ed_add_previous PREV
         Where
             PREV.PREV_PROCESS Is Null Or
-            PREV.DATE_REPORTED >= PREV.PREV_DATE_RETEST And PREV.REMARK = ""
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -5019,7 +5019,7 @@ def student_fee(s_period='curr', s_year='0'):
             X021fd_add_previous PREV
         Where
             PREV.PREV_PROCESS Is Null Or
-            PREV.DATE_REPORTED >= PREV.PREV_DATE_RETEST And PREV.REMARK = ""
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -5689,7 +5689,7 @@ def student_fee(s_period='curr', s_year='0'):
             X031ad_add_previous PREV
         Where
             PREV.PREV_PROCESS Is Null Or
-            PREV.DATE_REPORTED >= PREV.PREV_DATE_RETEST And PREV.REMARK = ""
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
