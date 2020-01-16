@@ -57,7 +57,7 @@ BEGIN
 *****************************************************************************"""
 
 # DETERMINE BALANCE CHANGE TYPE
-print("Determine blanace change type...")
+print("Determine balanace change type...")
 sr_file = "X002de_vss_differ_type"
 s_sql = "Create Table " + sr_file + " As " + """
 Select
