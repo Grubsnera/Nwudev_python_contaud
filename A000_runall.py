@@ -293,7 +293,7 @@ KFS VSS STUDENT DEBTOR RECONCILIATION AND TESTS
 if funcdate.today_dayname() in "MonTueWedThuFri":
     import C200_report_studdeb_recon
     try:
-        C200_report_studdeb_recon.Report_studdeb_recon('48478050.09', '-12494403.94', '50039673.35', "curr")
+        C200_report_studdeb_recon.Report_studdeb_recon('48501952.09', '-12454680.98', '49976048.39', "curr")
         # 2019 balances
         # C200_report_studdeb_recon.Report_studdeb_recon('66561452.48','-18340951.06','39482933.18')
         if l_mail:
