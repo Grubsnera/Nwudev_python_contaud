@@ -3383,7 +3383,7 @@ def student_fee(s_period='curr', s_year='0'):
         funcfile.writelog("%t IMPORT TABLE: " + ed_path + "302_reported.txt (" + sr_file + ")")
 
     # SET PREVIOUS FINDINGS
-    sr_file = "X010bc_set_previous"
+    sr_file = "X021bc_set_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
         print("Obtain the latest previous finding...")
