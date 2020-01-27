@@ -627,7 +627,7 @@ def people_test_conflict():
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0:
         print("Import previously reported findings...")
-        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,DATE_MAILED TEXT)")
+        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,REMARK TEXT)")
         s_cols = ""
         co = open(ed_path + "002_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -646,6 +646,32 @@ def people_test_conflict():
         co.close()
         funcfile.writelog("%t IMPORT TABLE: " + ed_path + "002_reported.txt (" + sr_file + ")")
 
+    # SET PREVIOUS FINDINGS
+    sr_file = "X100ac_bank_setprev"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_find > 0:
+        print("Obtain the latest previous finding...")
+        s_sql = "Create Table " + sr_file + " As" + """
+        Select
+            GET.PROCESS,
+            GET.FIELD1,
+            GET.FIELD2,
+            GET.FIELD3,
+            GET.FIELD4,
+            GET.FIELD5,
+            Max(GET.DATE_REPORTED) As DATE_REPORTED,
+            GET.DATE_RETEST,
+            GET.REMARK
+        From
+            X100ac_bank_getprev GET
+        Group By
+            GET.FIELD1        
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
     # ADD PREVIOUS FINDINGS
     sr_file = "X100ad_bank_addprev"
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
@@ -653,23 +679,22 @@ def people_test_conflict():
         print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         SELECT
-          FINDING.*,
-          'bank_share_emp_ven' AS PROCESS,
-          '%TODAY%' AS DATE_REPORTED,
-          '%TODAYPLUS%' AS DATE_RETEST,
-          PREVIOUS.PROCESS AS PREV_PROCESS,
-          PREVIOUS.DATE_REPORTED AS PREV_DATE_REPORTED,
-          PREVIOUS.DATE_RETEST AS PREV_DATE_RETEST,
-          PREVIOUS.DATE_MAILED
+            FINDING.*,
+            'bank_share_emp_ven' AS PROCESS,
+            '%TODAY%' AS DATE_REPORTED,
+            '%TODAYPLUS%' AS DATE_RETEST,
+            PREVIOUS.PROCESS AS PREV_PROCESS,
+            PREVIOUS.DATE_REPORTED AS PREV_DATE_REPORTED,
+            PREVIOUS.DATE_RETEST AS PREV_DATE_RETEST,
+            PREVIOUS.REMARK
         FROM
-          X100ab_bank_empven FINDING Left Join
-          X100ac_bank_getprev PREVIOUS ON PREVIOUS.FIELD1 = FINDING.EMP AND
-              PREVIOUS.DATE_RETEST >= Date('%TODAY%') AND
-              PREVIOUS.FIELD2 = FINDING.EMP_BANK
+            X100ab_bank_empven FINDING Left Join
+            X100ac_bank_setprev PREVIOUS ON PREVIOUS.FIELD1 = FINDING.EMP AND
+                PREVIOUS.FIELD2 = FINDING.EMP_BANK
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(10))
+        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -680,19 +705,20 @@ def people_test_conflict():
     if i_find > 0:
         s_sql = "CREATE TABLE "+sr_file+" AS " + """
         SELECT
-          PREVIOUS.PROCESS,
-          PREVIOUS.EMP AS FIELD1,
-          PREVIOUS.EMP_BANK AS FIELD2,
-          '' AS FIELD3,
-          '' AS FIELD4,
-          '' AS FIELD5,
-          PREVIOUS.DATE_REPORTED,
-          PREVIOUS.DATE_RETEST,
-          PREVIOUS.DATE_MAILED
+            PREVIOUS.PROCESS,
+            PREVIOUS.EMP AS FIELD1,
+            PREVIOUS.EMP_BANK AS FIELD2,
+            '' AS FIELD3,
+            '' AS FIELD4,
+            '' AS FIELD5,
+            PREVIOUS.DATE_REPORTED,
+            PREVIOUS.DATE_RETEST,
+            PREVIOUS.REMARK
         FROM
-          X100ad_bank_addprev PREVIOUS
+            X100ad_bank_addprev PREVIOUS
         WHERE
-          PREVIOUS.PREV_PROCESS IS NULL
+            PREVIOUS.PREV_PROCESS IS NULL Or
+            PREVIOUS.DATE_REPORTED > PREVIOUS.PREV_DATE_RETEST And PREVIOUS.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
         so_curs.execute(s_sql)
