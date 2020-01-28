@@ -14,6 +14,7 @@ from _my_modules import funccsv
 from _my_modules import funcdate
 from _my_modules import funcfile
 from _my_modules import funcsys
+from _my_modules import functest
 
 """ INDEX **********************************************************************
 ENVIRONMENT
@@ -623,54 +624,14 @@ def people_test_conflict():
     funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL BANK conflict finding(s)")
 
     # GET PREVIOUS FINDINGS
-    sr_file = "X100ac_bank_getprev"
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0:
-        print("Import previously reported findings...")
-        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,REMARK TEXT)")
-        s_cols = ""
-        co = open(ed_path + "002_reported.txt", "r")
-        co_reader = csv.reader(co)
-        # Read the COLUMN database data
-        for row in co_reader:
-            # Populate the column variables
-            if row[0] == "PROCESS":
-                continue
-            elif row[0] != "bank_share_emp_ven":
-                continue
-            else:
-                s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "','" + row[3] + "','" + row[4] + "','" + row[5] + "','" + row[6] + "','" + row[7] + "','" + row[8] + "')"
-                so_curs.execute(s_cols)
+        i = functest.get_previous_finding(so_curs, ed_path, "002_reported.txt", "bank_share_emp_ven", "ITTTT")
         so_conn.commit()
-        # Close the impoted data file
-        co.close()
-        funcfile.writelog("%t IMPORT TABLE: " + ed_path + "002_reported.txt (" + sr_file + ")")
 
     # SET PREVIOUS FINDINGS
-    sr_file = "X100ac_bank_setprev"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_find > 0:
-        print("Obtain the latest previous finding...")
-        s_sql = "Create Table " + sr_file + " As" + """
-        Select
-            GET.PROCESS,
-            GET.FIELD1,
-            GET.FIELD2,
-            GET.FIELD3,
-            GET.FIELD4,
-            GET.FIELD5,
-            Max(GET.DATE_REPORTED) As DATE_REPORTED,
-            GET.DATE_RETEST,
-            GET.REMARK
-        From
-            X100ac_bank_getprev GET
-        Group By
-            GET.FIELD1        
-        ;"""
-        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        so_curs.execute(s_sql)
+        i = functest.set_previous_finding(so_curs)
         so_conn.commit()
-        funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # ADD PREVIOUS FINDINGS
     sr_file = "X100ad_bank_addprev"
@@ -679,18 +640,17 @@ def people_test_conflict():
         print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         SELECT
-            FINDING.*,
+            FIND.*,
             'bank_share_emp_ven' AS PROCESS,
             '%TODAY%' AS DATE_REPORTED,
             '%TODAYPLUS%' AS DATE_RETEST,
-            PREVIOUS.PROCESS AS PREV_PROCESS,
-            PREVIOUS.DATE_REPORTED AS PREV_DATE_REPORTED,
-            PREVIOUS.DATE_RETEST AS PREV_DATE_RETEST,
-            PREVIOUS.REMARK
+            PREV.PROCESS AS PREV_PROCESS,
+            PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
+            PREV.DATE_RETEST AS PREV_DATE_RETEST,
+            PREV.REMARK
         FROM
-            X100ab_bank_empven FINDING Left Join
-            X100ac_bank_setprev PREVIOUS ON PREVIOUS.FIELD1 = FINDING.EMP AND
-                PREVIOUS.FIELD2 = FINDING.EMP_BANK
+            X100ab_bank_empven FIND Left Join
+            Z001ab_setprev PREV ON PREV.FIELD1 = FIND.EMP AND PREV.FIELD2 = FIND.EMP_BANK
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
@@ -705,20 +665,20 @@ def people_test_conflict():
     if i_find > 0:
         s_sql = "CREATE TABLE "+sr_file+" AS " + """
         SELECT
-            PREVIOUS.PROCESS,
-            PREVIOUS.EMP AS FIELD1,
-            PREVIOUS.EMP_BANK AS FIELD2,
+            PREV.PROCESS,
+            PREV.EMP AS FIELD1,
+            PREV.EMP_BANK AS FIELD2,
             '' AS FIELD3,
             '' AS FIELD4,
             '' AS FIELD5,
-            PREVIOUS.DATE_REPORTED,
-            PREVIOUS.DATE_RETEST,
-            PREVIOUS.REMARK
+            PREV.DATE_REPORTED,
+            PREV.DATE_RETEST,
+            PREV.REMARK
         FROM
-            X100ad_bank_addprev PREVIOUS
+            X100ad_bank_addprev PREV
         WHERE
-            PREVIOUS.PREV_PROCESS IS NULL Or
-            PREVIOUS.DATE_REPORTED > PREVIOUS.PREV_DATE_RETEST And PREVIOUS.REMARK = ""
+            PREV.PREV_PROCESS IS NULL Or
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
         so_curs.execute(s_sql)
@@ -743,50 +703,14 @@ def people_test_conflict():
             funcfile.writelog("%t FINDING: No new findings to export")
 
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
-    sr_file = "X100af_bank_offi"
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0 and i_coun > 0:
-        print("Import reporting officers for mail purposes...")
-        s_sql = "CREATE TABLE " + sr_file + " AS " + """
-        SELECT
-          LOOKUP.LOOKUP,
-          LOOKUP.LOOKUP_CODE AS CAMPUS,
-          LOOKUP.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-          PEOPLE.NAME_ADDR,
-          PEOPLE.EMAIL_ADDRESS
-        FROM
-          PEOPLE.X000_OWN_HR_LOOKUPS LOOKUP
-          LEFT JOIN PEOPLE.X002_PEOPLE_CURR PEOPLE ON PEOPLE.EMPLOYEE_NUMBER = LOOKUP.LOOKUP_DESCRIPTION
-        WHERE
-          LOOKUP.LOOKUP = 'TEST_BANKACC_CONFLICT_VENDOR_OFFICER'
-        ;"""
-        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        so_curs.execute(s_sql)
+        i = functest.get_officer(so_curs, "TEST_BANKACC_CONFLICT_VENDOR_OFFICER")
         so_conn.commit()
-        funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
-    sr_file = "X100ag_bank_supe"
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0 and i_coun > 0:
-        print("Import reporting supervisors for mail purposes...")
-        s_sql = "CREATE TABLE " + sr_file + " AS " + """
-        SELECT
-          LOOKUP.LOOKUP,
-          LOOKUP.LOOKUP_CODE AS CAMPUS,
-          LOOKUP.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-          PEOPLE.NAME_ADDR,
-          PEOPLE.EMAIL_ADDRESS
-        FROM
-          PEOPLE.X000_OWN_HR_LOOKUPS LOOKUP
-          LEFT JOIN PEOPLE.X002_PEOPLE_CURR PEOPLE ON PEOPLE.EMPLOYEE_NUMBER = LOOKUP.LOOKUP_DESCRIPTION
-        WHERE
-          LOOKUP.LOOKUP = 'TEST_BANKACC_CONFLICT_VENDOR_SUPERVISOR'
-        ;"""
-        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        so_curs.execute(s_sql)
+        i = functest.get_supervisor(so_curs, "TEST_BANKACC_CONFLICT_VENDOR_SUPERVISOR")
         so_conn.commit()
-        funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # ADD CONTACT DETAILS TO FINDINGS
     sr_file = "X100ah_bank_addempven"
@@ -826,10 +750,10 @@ def people_test_conflict():
             Left Join KFS.X000_Vendor VENDOR On VENDOR.VENDOR_ID = FINDING.VENDOR_ID
             Left Join KFSCURR.X002aa_Report_payments_summary PAYMENTS On PAYMENTS.VENDOR_ID = FINDING.VENDOR_ID
             Left Join X001_declarations_curr DECLARE On DECLARE.EMPLOYEE = FINDING.EMP
-            Left Join X100af_bank_offi CAMP_OFF On CAMP_OFF.CAMPUS = FINDING.LOC
-            Left Join X100af_bank_offi ORG_OFF On ORG_OFF.CAMPUS = FINDING.ORG
-            Left Join X100ag_bank_supe CAMP_SUP On CAMP_SUP.CAMPUS = FINDING.LOC
-            Left Join X100ag_bank_supe ORG_SUP On ORG_SUP.CAMPUS = FINDING.ORG
+            Left Join Z001af_officer CAMP_OFF On CAMP_OFF.CAMPUS = FINDING.LOC
+            Left Join Z001af_officer ORG_OFF On ORG_OFF.CAMPUS = FINDING.ORG
+            Left Join Z001ag_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = FINDING.LOC
+            Left Join Z001ag_supervisor ORG_SUP On ORG_SUP.CAMPUS = FINDING.ORG
         WHERE
           FINDING.PREV_PROCESS IS NULL
         ;"""
