@@ -95,7 +95,11 @@ def set_previous_finding(o_cursor):
     From
         Z001aa_getprev GET
     Group By
-        GET.FIELD1        
+        GET.FIELD1,
+        GET.FIELD2,
+        GET.FIELD3,
+        GET.FIELD4,
+        GET.FIELD5
     ;"""
     o_cursor.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -103,10 +107,11 @@ def set_previous_finding(o_cursor):
     return funcsys.tablerowcount(o_cursor, sr_file)
 
 
-def get_officer(o_cursor, s_key):
+def get_officer(o_cursor, s_source="HR", s_key=""):
     """
     Function order and set last finding
     :param o_cursor: Database cursor
+    :param s_source: Table to read lookups
     :param s_key: Officer search key
     :return: Number of records
     """
@@ -118,27 +123,32 @@ def get_officer(o_cursor, s_key):
     s_sql = "Create Table " + sr_file + " As" + """
         Select
             LOOKUP.LOOKUP,
-            LOOKUP.LOOKUP_CODE AS CAMPUS,
+            Upper(LOOKUP.LOOKUP_CODE) AS CAMPUS,
             LOOKUP.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
             PEOPLE.NAME_ADDR,
             PEOPLE.EMAIL_ADDRESS
         FROM
-            PEOPLE.X000_OWN_HR_LOOKUPS LOOKUP
-            LEFT JOIN PEOPLE.X002_PEOPLE_CURR PEOPLE ON PEOPLE.EMPLOYEE_NUMBER = LOOKUP.LOOKUP_DESCRIPTION
+            %TABLE% LOOKUP Left Join
+            PEOPLE.X002_PEOPLE_CURR PEOPLE ON PEOPLE.EMPLOYEE_NUMBER = LOOKUP.LOOKUP_DESCRIPTION
         WHERE
             LOOKUP.LOOKUP = '%KEY%'
         ;"""
     s_sql = s_sql.replace("%KEY%", s_key)
+    if s_source == "VSS":
+        s_sql = s_sql.replace("%TABLE%", "VSS.X000_OWN_LOOKUPS")
+    else:
+        s_sql = s_sql.replace("%TABLE%", "HR.X000_OWN_HR_LOOKUPS")
     o_cursor.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     return funcsys.tablerowcount(o_cursor, sr_file)
 
 
-def get_supervisor(o_cursor, s_key):
+def get_supervisor(o_cursor, s_source="HR", s_key=""):
     """
     Function order and set last finding
     :param o_cursor: Database cursor
+    :param s_source: Table to read lookups
     :param s_key: Officer search key
     :return: Number of records
     """
@@ -150,17 +160,21 @@ def get_supervisor(o_cursor, s_key):
     s_sql = "Create Table " + sr_file + " As" + """
         Select
             LOOKUP.LOOKUP,
-            LOOKUP.LOOKUP_CODE AS CAMPUS,
+            Upper(LOOKUP.LOOKUP_CODE) AS CAMPUS,
             LOOKUP.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
             PEOPLE.NAME_ADDR,
             PEOPLE.EMAIL_ADDRESS
         FROM
-            PEOPLE.X000_OWN_HR_LOOKUPS LOOKUP
-            LEFT JOIN PEOPLE.X002_PEOPLE_CURR PEOPLE ON PEOPLE.EMPLOYEE_NUMBER = LOOKUP.LOOKUP_DESCRIPTION
+            %TABLE% LOOKUP Left Join
+            PEOPLE.X002_PEOPLE_CURR PEOPLE ON PEOPLE.EMPLOYEE_NUMBER = LOOKUP.LOOKUP_DESCRIPTION
         WHERE
             LOOKUP.LOOKUP = '%KEY%'
         ;"""
     s_sql = s_sql.replace("%KEY%", s_key)
+    if s_source == "VSS":
+        s_sql = s_sql.replace("%TABLE%", "VSS.X000_OWN_LOOKUPS")
+    else:
+        s_sql = s_sql.replace("%TABLE%", "HR.X000_OWN_HR_LOOKUPS")
     o_cursor.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
