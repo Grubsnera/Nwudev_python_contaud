@@ -51,6 +51,7 @@ so_path = "W:/Vss_fee/"  # Source database path
 re_path = "R:/Vss/" + s_year
 
 if s_period == "prev":
+    f_reg_fee = 1830.00
     so_file = "Vss_test_fee_prev.sqlite"  # Source database
     s_reg_trancode: str = "095"
     s_qual_trancode: str = "004"
@@ -63,6 +64,7 @@ if s_period == "prev":
     l_record: bool = False
     l_export: bool = True
 else:
+    f_reg_fee = 1930.00
     so_file = "Vss_test_fee.sqlite"  # Source database
     s_reg_trancode: str = "095"
     s_qual_trancode: str = "004"
