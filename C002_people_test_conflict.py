@@ -704,12 +704,12 @@ def people_test_conflict():
 
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
     if i_find > 0 and i_coun > 0:
-        i = functest.get_officer(so_curs, "TEST_BANKACC_CONFLICT_VENDOR_OFFICER")
+        i = functest.get_officer(so_curs, "HR", "TEST_BANKACC_CONFLICT_VENDOR_OFFICER")
         so_conn.commit()
 
     # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
     if i_find > 0 and i_coun > 0:
-        i = functest.get_supervisor(so_curs, "TEST_BANKACC_CONFLICT_VENDOR_SUPERVISOR")
+        i = functest.get_supervisor(so_curs, "HR", "TEST_BANKACC_CONFLICT_VENDOR_SUPERVISOR")
         so_conn.commit()
 
     # ADD CONTACT DETAILS TO FINDINGS
