@@ -1,9 +1,7 @@
 ﻿Select
-    X020aa_Fiabd007.FQUALLEVELAPID,
-    X020aa_Fiabd007.AMOUNT,
-    Count(X020aa_Fiabd007.UMPT_REGU) As Count_UMPT_REGU
+    X021aa_Qual_nofee_loaded.FINDING,
+    Count(X021aa_Qual_nofee_loaded.KSTUDBUSENTID) As Count_KSTUDBUSENTID
 From
-    X020aa_Fiabd007
+    X021aa_Qual_nofee_loaded
 Group By
-    X020aa_Fiabd007.FQUALLEVELAPID,
-    X020aa_Fiabd007.AMOUNT
+    X021aa_Qual_nofee_loaded.FINDING
