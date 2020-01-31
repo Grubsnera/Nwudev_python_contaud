@@ -14,6 +14,7 @@ from _my_modules import funcdate
 from _my_modules import funcfile
 from _my_modules import funcstat
 from _my_modules import funcsys
+from _my_modules import functest
 
 """ INDEX **********************************************************************
 ENVIRONMENT
@@ -55,9 +56,10 @@ if s_period == "prev":
     s_qual_trancode: str = "004"
     s_modu_trancode: str = "004"
     s_burs_trancode: str = "042z052z381z500"
-    s_mba: str = "71500z2381692z2381690z665559z71839z71840z71841z71842z71820z71821z71822z1085390"  # Exclude these FQUALLEVELAPID
-    s_mpa: str = "665566z618161z618167z618169"  # Exclude these FQUALLEVELAPID
     # Find these id's from Sqlite->Sqlite_vss_test_fee->Q021aa_qual_nofee_loaded
+    s_mba: str = "71500z2381692z2381690z665559"  # Exclude these FQUALLEVELAPID
+    s_mpa: str = "665566z618161z618167z618169"  # Exclude these FQUALLEVELAPID
+    s_aud: str = "71839z71840z71841z71842z71820z71821z71822z1085390"  # Exclude these FQUALLEVELAPID
     l_record: bool = False
     l_export: bool = True
 else:
@@ -66,11 +68,12 @@ else:
     s_qual_trancode: str = "004"
     s_modu_trancode: str = "004"
     s_burs_trancode: str = "042z052z381z500"
-    s_mba: str = "71500z2381692z2381690z665559z71839z71840z71841z71842z71820z71821z71822z1085390"  # Exclude these FQUALLEVELAPID
-    s_mpa: str = "665566z618161z618167z618169"  # Exclude these FQUALLEVELAPID
     # Find these id's from Sqlite->Sqlite_vss_test_fee->Q021aa_qual_nofee_loaded
+    s_mba: str = "71500z2381692z2381690z665559"  # Exclude these FQUALLEVELAPID
+    s_mpa: str = "665566z618161z618167z618169"  # Exclude these FQUALLEVELAPID
+    s_aud: str = "71839z71840z71841z71842z71820z71821z71822z1085390"  # Exclude these FQUALLEVELAPID
     l_record: bool = True
-    l_export: bool = False
+    l_export: bool = True
 
 l_vacuum: bool = False
 l_mail: bool = False
