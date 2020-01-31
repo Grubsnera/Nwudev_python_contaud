@@ -19,12 +19,12 @@ if i_find > 0:
 
 # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
 if i_find > 0 and i_coun > 0:
-    i = functest.get_officer(so_curs, "?")
+    i = functest.get_officer(so_curs, "HR", "?")
     print(i)
     so_conn.commit()
 
 # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
 if i_find > 0 and i_coun > 0:
-    i = functest.get_supervisor(so_curs, "?")
+    i = functest.get_supervisor(so_curs, "HR", "?")
     print(i)
     so_conn.commit()
