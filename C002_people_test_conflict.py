@@ -579,12 +579,13 @@ def people_test_conflict():
     funcfile.writelog("TEST EMPLOYEE VENDOR COMMON BANK")
 
     # DECLARE TEST VARIABLES
-    i_find = 0 # Number of findings before previous reported findings
-    i_coun = 0 # Number of new findings to report
+    i_find = 0  # Number of findings before previous reported findings
+    i_coun = 0  # Number of new findings to report
 
     # BUILD TABLE WITH VENDOR BANK ACCOUNT NUMBERS
     print("Merge employees and vendors on bank account...")
     sr_file = "X100aa_bank_empven"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         BANK.*,
@@ -594,7 +595,6 @@ def people_test_conflict():
         X100_bank_ven VEND On VEND.VENDOR_BANK = BANK.EMP_BANK And
             Instr(VEND.VENDOR_ID, BANK.EMP) = 0
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -602,7 +602,8 @@ def people_test_conflict():
     # BUILD TABLE WITH VENDOR BANK ACCOUNT NUMBERS
     print("Compile list of shared bank accounts...")
     sr_file = "X100ab_bank_empven"
-    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         FINDING.ORG,
         FINDING.LOC,
@@ -613,20 +614,27 @@ def people_test_conflict():
     From
         X100aa_bank_empven FINDING
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # COUNT THE NUMBER OF FINDINGS
-    i_find = funcsys.tablerowcount(so_curs,sr_file)
-    print("*** Found "+str(i_find)+" exceptions ***")
-    funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL BANK conflict finding(s)")
+    i_find = funcsys.tablerowcount(so_curs, sr_file)
+    print("*** Found " + str(i_find) + " exceptions ***")
+    funcfile.writelog("%t FINDING: " + str(i_find) + " EMPL BANK conflict finding(s)")
+
+    # TODO Delete after next run
+    sr_file = "X100ac_bank_getprev"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 
     # GET PREVIOUS FINDINGS
     if i_find > 0:
         i = functest.get_previous_finding(so_curs, ed_path, "002_reported.txt", "bank_share_emp_ven", "ITTTT")
         so_conn.commit()
+
+    # TODO Delete after next run
+    sr_file = "X100ac_bank_setprev"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 
     # SET PREVIOUS FINDINGS
     if i_find > 0:
@@ -635,7 +643,7 @@ def people_test_conflict():
 
     # ADD PREVIOUS FINDINGS
     sr_file = "X100ad_bank_addprev"
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_find > 0:
         print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
@@ -653,17 +661,17 @@ def people_test_conflict():
             Z001ab_setprev PREV ON PREV.FIELD1 = FIND.EMP AND PREV.FIELD2 = FIND.EMP_BANK
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%",funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.cur_monthend())
+        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%TODAYPLUS%", funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD LIST TO UPDATE FINDINGS
     sr_file = "X100ae_bank_newprev"
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_find > 0:
-        s_sql = "CREATE TABLE "+sr_file+" AS " + """
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
         SELECT
             PREV.PROCESS,
             PREV.EMP AS FIELD1,
@@ -680,14 +688,14 @@ def people_test_conflict():
             PREV.PREV_PROCESS IS NULL Or
             PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
-        so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
         so_conn.commit()
-        funcfile.writelog("%t BUILD TABLE: "+sr_file)
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
         # Export findings to previous reported file
-        i_coun = funcsys.tablerowcount(so_curs,sr_file)
+        i_coun = funcsys.tablerowcount(so_curs, sr_file)
         if i_coun > 0:
-            print("*** " +str(i_coun)+ " Finding(s) to report ***")    
+            print("*** " + str(i_coun) + " Finding(s) to report ***")
             sr_filet = sr_file
             sx_path = ed_path
             sx_file = "002_reported"
@@ -695,9 +703,9 @@ def people_test_conflict():
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             # Write the data
             if l_record:
-                funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head,"a",".txt")
-                funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
-                funcfile.writelog("%t EXPORT DATA: "+sr_file)
+                funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head, "a", ".txt")
+                funcfile.writelog("%t FINDING: " + str(i_coun) + " new finding(s) to export")
+                funcfile.writelog("%t EXPORT DATA: " + sr_file)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -714,12 +722,12 @@ def people_test_conflict():
 
     # ADD CONTACT DETAILS TO FINDINGS
     sr_file = "X100ah_bank_addempven"
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_find > 0 and i_coun > 0:
         print("Add details to findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
-            FINDING.*,
+            PREV.*,
             PERSON.NAME_ADDR AS EMP_NAME,
             PERSON.ACC_TYPE AS BANKACC_TYPE,
             PERSON.ACC_BRANCH AS BANKACC_BRANCH,
@@ -745,17 +753,18 @@ def people_test_conflict():
             ORG_SUP.NAME_ADDR As ORG_SUP_NAME,
             ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL
         From
-            X100ad_bank_addprev FINDING
-            Left Join PEOPLE.X002_PEOPLE_CURR PERSON On PERSON.EMPLOYEE_NUMBER = FINDING.EMP
-            Left Join KFS.X000_Vendor VENDOR On VENDOR.VENDOR_ID = FINDING.VENDOR_ID
-            Left Join KFSCURR.X002aa_Report_payments_summary PAYMENTS On PAYMENTS.VENDOR_ID = FINDING.VENDOR_ID
-            Left Join X001_declarations_curr DECLARE On DECLARE.EMPLOYEE = FINDING.EMP
-            Left Join Z001af_officer CAMP_OFF On CAMP_OFF.CAMPUS = FINDING.LOC
-            Left Join Z001af_officer ORG_OFF On ORG_OFF.CAMPUS = FINDING.ORG
-            Left Join Z001ag_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = FINDING.LOC
-            Left Join Z001ag_supervisor ORG_SUP On ORG_SUP.CAMPUS = FINDING.ORG
+            X100ad_bank_addprev PREV
+            Left Join PEOPLE.X002_PEOPLE_CURR PERSON On PERSON.EMPLOYEE_NUMBER = PREV.EMP
+            Left Join KFS.X000_Vendor VENDOR On VENDOR.VENDOR_ID = PREV.VENDOR_ID
+            Left Join KFSCURR.X002aa_Report_payments_summary PAYMENTS On PAYMENTS.VENDOR_ID = PREV.VENDOR_ID
+            Left Join X001_declarations_curr DECLARE On DECLARE.EMPLOYEE = PREV.EMP
+            Left Join Z001af_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.LOC
+            Left Join Z001af_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG
+            Left Join Z001ag_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.LOC
+            Left Join Z001ag_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG
         WHERE
-          FINDING.PREV_PROCESS IS NULL
+            PREV.PREV_PROCESS IS NULL Or
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""    
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -764,51 +773,51 @@ def people_test_conflict():
 
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
     sr_file = "X100ax_bank_emp_vend"
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     print("Build the final report")
     if i_find > 0 and i_coun > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             'EMPL VENDOR SAME BANK ACC' As AUDIT_FINDING,
-            FINDING.ORG AS ORGANIZATION,
-            FINDING.LOC AS LOCATION,
-            FINDING.EMP AS EMPLOYEE_NUMBER,
-            FINDING.EMP_NAME AS EMPLOYEE_NAME,
-            FINDING.PERSON_TYPE,
-            FINDING.EMP_BANK AS EMPLOYEE_BANK,
-            FINDING.BANKACC_TYPE,
-            FINDING.BANKACC_BRANCH,
-            FINDING.BANKACC_RELATION,
-            FINDING.DECLARE_DATE,
-            FINDING.DECLARE_STATUS,
-            FINDING.DECLARE_INTEREST,
-            FINDING.VENDOR_ID,
-            FINDING.VENDOR_NAME,
-            FINDING.VENDOR_BANK,
-            FINDING.PAY_DATE_LAST,
-            FINDING.PAY_NO_TRAN,
-            FINDING.PAY_TOTAL_AMOUNT,
-            FINDING.CAMP_OFF_NAME AS RESPONSIBLE_OFFICER,
-            FINDING.CAMP_OFF_NUMB AS RESPONSIBLE_OFFICER_NUMB,
-            FINDING.CAMP_OFF_MAIL AS RESPONSIBLE_OFFICER_MAIL,
-            FINDING.CAMP_SUP_NAME AS SUPERVISOR,
-            FINDING.CAMP_SUP_NUMB AS SUPERVISOR_NUMB,
-            FINDING.CAMP_SUP_MAIL AS SUPERVISOR_MAIL,
-            FINDING.ORG_OFF_NAME AS ORG_OFFICER,
-            FINDING.ORG_OFF_NUMB AS ORG_OFFICER_NUMB,
-            FINDING.ORG_OFF_MAIL AS ORG_OFFICER_MAIL,
-            FINDING.ORG_SUP_NAME AS ORG_SUPERVISOR,
-            FINDING.ORG_SUP_NUMB AS ORG_SUPERVISOR_NUMB,
-            FINDING.ORG_SUP_MAIL AS ORG_SUPERVISOR_MAIL
+            FIND.ORG AS ORGANIZATION,
+            FIND.LOC AS LOCATION,
+            FIND.EMP AS EMPLOYEE_NUMBER,
+            FIND.EMP_NAME AS EMPLOYEE_NAME,
+            FIND.PERSON_TYPE,
+            FIND.EMP_BANK AS EMPLOYEE_BANK,
+            FIND.BANKACC_TYPE,
+            FIND.BANKACC_BRANCH,
+            FIND.BANKACC_RELATION,
+            FIND.DECLARE_DATE,
+            FIND.DECLARE_STATUS,
+            FIND.DECLARE_INTEREST,
+            FIND.VENDOR_ID,
+            FIND.VENDOR_NAME,
+            FIND.VENDOR_BANK,
+            FIND.PAY_DATE_LAST,
+            FIND.PAY_NO_TRAN,
+            FIND.PAY_TOTAL_AMOUNT,
+            FIND.CAMP_OFF_NAME AS RESPONSIBLE_OFFICER,
+            FIND.CAMP_OFF_NUMB AS RESPONSIBLE_OFFICER_NUMB,
+            FIND.CAMP_OFF_MAIL AS RESPONSIBLE_OFFICER_MAIL,
+            FIND.CAMP_SUP_NAME AS SUPERVISOR,
+            FIND.CAMP_SUP_NUMB AS SUPERVISOR_NUMB,
+            FIND.CAMP_SUP_MAIL AS SUPERVISOR_MAIL,
+            FIND.ORG_OFF_NAME AS ORG_OFFICER,
+            FIND.ORG_OFF_NUMB AS ORG_OFFICER_NUMB,
+            FIND.ORG_OFF_MAIL AS ORG_OFFICER_MAIL,
+            FIND.ORG_SUP_NAME AS ORG_SUPERVISOR,
+            FIND.ORG_SUP_NUMB AS ORG_SUPERVISOR_NUMB,
+            FIND.ORG_SUP_MAIL AS ORG_SUPERVISOR_MAIL
         From
-            X100ah_bank_addempven FINDING
+            X100ah_bank_addempven FIND
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
         # Export findings
-        if l_export == True and funcsys.tablerowcount(so_curs,sr_file) > 0:
+        if l_export == True and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
             sr_filet = sr_file
             sx_path = re_path + funcdate.cur_year() + "/"
@@ -817,7 +826,7 @@ def people_test_conflict():
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
-            funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
+            funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
     else:
         s_sql = "CREATE TABLE " + sr_file + " (" + """
         BLANK TEXT
