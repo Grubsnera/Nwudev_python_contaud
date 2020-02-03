@@ -137,7 +137,7 @@ def get_officer(o_cursor, s_source="HR", s_key=""):
     if s_source == "VSS":
         s_sql = s_sql.replace("%TABLE%", "VSS.X000_OWN_LOOKUPS")
     else:
-        s_sql = s_sql.replace("%TABLE%", "HR.X000_OWN_HR_LOOKUPS")
+        s_sql = s_sql.replace("%TABLE%", "PEOPLE.X000_OWN_HR_LOOKUPS")
     o_cursor.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
@@ -174,7 +174,7 @@ def get_supervisor(o_cursor, s_source="HR", s_key=""):
     if s_source == "VSS":
         s_sql = s_sql.replace("%TABLE%", "VSS.X000_OWN_LOOKUPS")
     else:
-        s_sql = s_sql.replace("%TABLE%", "HR.X000_OWN_HR_LOOKUPS")
+        s_sql = s_sql.replace("%TABLE%", "PEOPLE.X000_OWN_HR_LOOKUPS")
     o_cursor.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
