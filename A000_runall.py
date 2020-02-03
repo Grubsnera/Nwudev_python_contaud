@@ -313,7 +313,7 @@ VSS STUDENT MASTER FILE TESTS
 if funcdate.cur_day() in "01z13":
     import C300_test_student_general
     try:
-        C300_test_student_general.Test_student_general()
+        C300_test_student_general.test_student_general()
         if l_mail:
             funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:C300_test_student_general',
                           'NWUIAPython: Success: C300_test_student_general')

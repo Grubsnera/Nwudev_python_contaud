@@ -21,7 +21,7 @@ l_mail = True
 
 # Vss general tests
 try:
-    C300_test_student_general.Test_student_general()
+    C300_test_student_general.test_student_general()
 except Exception as e:
     funcsys.ErrMessage(e)
 

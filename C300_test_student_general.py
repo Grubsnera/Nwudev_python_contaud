@@ -4,24 +4,19 @@
 *** 25 Jun 2018
 *****************************************************************************"""
 
-def Test_student_general():
+
+def test_student_general():
 
     # Import python module
     import csv
-    import datetime
     import sqlite3
-    import sys
-
-    # Add own module path
-    sys.path.append('S:/_my_modules')
-    #print(sys.path)
 
     # Import own modules
-    import funccsv
-    import funcdate
-    import funcfile
-    import funcmail
-    import funcsys
+    from _my_modules import funccsv
+    from _my_modules import funcdate
+    from _my_modules import funcfile
+    from _my_modules import funcmail
+    from _my_modules import funcsys
 
     # Open the script log file ******************************************************
 
@@ -31,14 +26,13 @@ def Test_student_general():
     print("-------------------------")
     print("C300_TEST_STUDENT_GENERAL")
     print("-------------------------")
-    ilog_severity = 1
 
     # Declare variables
-    so_path = "W:/Vss_general/" #Source database path
-    re_path = "R:/Vss/" #Results
+    so_path = "W:/Vss_general/"  # Source database path
+    re_path = "R:/Vss/"  # Results
     ed_path = "S:/_external_data/"
-    so_file = "Vss_general.sqlite" #Source database
-    s_sql = "" #SQL statements
+    so_file = "Vss_general.sqlite"  # Source database
+    s_sql = ""  # SQL statements
     l_mail = True
     l_export = True
 
@@ -48,8 +42,14 @@ def Test_student_general():
 
     funcfile.writelog("OPEN DATABASE: " + so_file)
 
+    # ATTACH VSS DATABASE
+    print("Attach vss database...")
     so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss.sqlite' AS 'VSS'")
     funcfile.writelog("%t ATTACH DATABASE: Vss.sqlite")
+    so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss_curr.sqlite' AS 'VSSCURR'")
+    funcfile.writelog("%t ATTACH DATABASE: Vss_curr.sqlite")
+    so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss_prev.sqlite' AS 'VSSPREV'")
+    funcfile.writelog("%t ATTACH DATABASE: Vss_prev.sqlite")
 
     """*************************************************************************
     ***
@@ -75,15 +75,15 @@ def Test_student_general():
     sr_file = "X001aa_impo_vsstran"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     SELECT
-      TRAN.FBUSENTID AS STUDENT,
-      TRAN.FDEBTCOLLECTIONSITE AS CAMPUS,
-      SUBSTR(TRAN.TRANSDATE,1,4) AS YEAR
+        TRAN.FBUSENTID AS STUDENT,
+        TRAN.FDEBTCOLLECTIONSITE AS CAMPUS,
+        SUBSTR(TRAN.TRANSDATE,1,4) AS YEAR
     FROM
-      VSS.X010_Studytrans_curr TRAN
+        VSSCURR.X010_Studytrans TRAN
     GROUP BY
-      TRAN.FBUSENTID
+        TRAN.FBUSENTID
     ORDER BY
-      TRAN.FBUSENTID
+        TRAN.FBUSENTID
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     so_curs.execute(s_sql)
@@ -95,7 +95,6 @@ def Test_student_general():
     tb_name = "X001ac_impo_reported"
     so_curs.execute("DROP TABLE IF EXISTS " + tb_name)
     so_curs.execute("CREATE TABLE " + tb_name + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT)")
-    s_cols = ""
     co = open(ed_path + "300_reported.txt", "rU")
     co_reader = csv.reader(co)
     # Read the COLUMN database data
@@ -109,7 +108,7 @@ def Test_student_general():
             s_cols = "INSERT INTO " + tb_name + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "','" + row[3] + "','" + row[4] + "','" + row[5] + "','" + row[6] + "','" + row[7] + "')"
             so_curs.execute(s_cols)
     so_conn.commit()
-    # Close the impoted data file
+    # Close the imported data file
     co.close()
     funcfile.writelog("%t IMPORT TABLE: " + ed_path + "300_reported.txt (" + tb_name + ")" )
 
@@ -118,28 +117,28 @@ def Test_student_general():
     sr_file = "X001ba_join_tran_vss"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     SELECT
-      VSS.X000_party.IDNO,
-      X001aa_impo_vsstran.STUDENT,
-      VSS.X000_Party.FULL_NAME AS NAME,
-      X001aa_impo_vsstran.YEAR,
-      X001aa_impo_vsstran.CAMPUS,
-      Trim(VSS.X000_Party.FIRSTNAMES) AS FIRSTNAME,
-      VSS.X000_Party.INITIALS,
-      VSS.X000_Party.SURNAME,
-      VSS.X000_Party.TITLE,
-      VSS.X000_Party.DATEOFBIRTH,
-      VSS.X000_Party.GENDER,
-      VSS.X000_Party.NATIONALITY,
-      VSS.X000_Party.POPULATION,
-      VSS.X000_Party.RACE,
-      VSS.X000_Party.FAUDITUSERCODE AS PARTY_AUDITDATETIME,
-      VSS.X000_Party.AUDITDATETIME AS PARTY_AUDITUSERCODE
+        VSS.X000_party.IDNO,
+        TRAN.STUDENT,
+        VSS.X000_Party.FULL_NAME AS NAME,
+        TRAN.YEAR,
+        TRAN.CAMPUS,
+        Trim(VSS.X000_Party.FIRSTNAMES) AS FIRSTNAME,
+        VSS.X000_Party.INITIALS,
+        VSS.X000_Party.SURNAME,
+        VSS.X000_Party.TITLE,
+        VSS.X000_Party.DATEOFBIRTH,
+        VSS.X000_Party.GENDER,
+        VSS.X000_Party.NATIONALITY,
+        VSS.X000_Party.POPULATION,
+        VSS.X000_Party.RACE,
+        VSS.X000_Party.FAUDITUSERCODE AS PARTY_AUDITDATETIME,
+        VSS.X000_Party.AUDITDATETIME AS PARTY_AUDITUSERCODE
     FROM
-      X001aa_impo_vsstran
-      INNER JOIN VSS.X000_Party ON VSS.X000_Party.KBUSINESSENTITYID = X001aa_impo_vsstran.STUDENT AND
+        X001aa_impo_vsstran TRAN Inner Join
+        VSS.X000_Party ON VSS.X000_Party.KBUSINESSENTITYID = TRAN.STUDENT AND
         Length(Trim(VSS.X000_Party.IDNO)) = 13
     ORDER BY
-      X001aa_impo_vsstran.STUDENT
+        TRAN.STUDENT
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     so_curs.execute(s_sql)
@@ -151,29 +150,28 @@ def Test_student_general():
     sr_file = "X001ca_join_prev_reported"
     s_sql = "CREATE TABLE " + sr_file + " AS" + """
     SELECT
-      X001ba_join_tran_vss.IDNO,
-      X001ba_join_tran_vss.STUDENT,
-      X001ba_join_tran_vss.NAME,
-      X001ba_join_tran_vss.YEAR,
-      X001ba_join_tran_vss.CAMPUS,
-      X001ba_join_tran_vss.FIRSTNAME,
-      X001ba_join_tran_vss.INITIALS,
-      X001ba_join_tran_vss.SURNAME,
-      X001ba_join_tran_vss.TITLE,
-      X001ba_join_tran_vss.DATEOFBIRTH,
-      X001ba_join_tran_vss.GENDER,
-      X001ba_join_tran_vss.NATIONALITY,
-      X001ba_join_tran_vss.POPULATION,
-      X001ba_join_tran_vss.RACE,
-      X001ba_join_tran_vss.PARTY_AUDITDATETIME,
-      X001ba_join_tran_vss.PARTY_AUDITUSERCODE,
-      X001ac_impo_reported.PROCESS AS PREV_PROCESS,
-      X001ac_impo_reported.DATE_REPORTED AS PREV_DATE_REPORTED,
-      X001ac_impo_reported.DATE_RETEST AS PREV_DATE_RETEST
+        TRAN.IDNO,
+        TRAN.STUDENT,
+        TRAN.NAME,
+        TRAN.YEAR,
+        TRAN.CAMPUS,
+        TRAN.FIRSTNAME,
+        TRAN.INITIALS,
+        TRAN.SURNAME,
+        TRAN.TITLE,
+        TRAN.DATEOFBIRTH,
+        TRAN.GENDER,
+        TRAN.NATIONALITY,
+        TRAN.POPULATION,
+        TRAN.RACE,
+        TRAN.PARTY_AUDITDATETIME,
+        TRAN.PARTY_AUDITUSERCODE,
+        IMPO.PROCESS AS PREV_PROCESS,
+        IMPO.DATE_REPORTED AS PREV_DATE_REPORTED,
+        IMPO.DATE_RETEST AS PREV_DATE_RETEST
     FROM
-      X001ba_join_tran_vss
-      LEFT JOIN X001ac_impo_reported ON X001ac_impo_reported.FIELD1 = X001ba_join_tran_vss.STUDENT AND
-        X001ac_impo_reported.DATE_RETEST >= Date('%TODAY%')
+        X001ba_join_tran_vss TRAN Left Join
+        X001ac_impo_reported IMPO ON IMPO.FIELD1 = TRAN.STUDENT AND IMPO.DATE_RETEST >= Date('%TODAY%')
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = s_sql.replace("%TODAY%",funcdate.today())
@@ -200,24 +198,24 @@ def Test_student_general():
     sr_file = "X001da_report_idlist"
     s_sql = "CREATE TABLE " + sr_file + " AS" + """
     SELECT
-      X001ca_join_prev_reported.IDNO,
-      X001ca_join_prev_reported.STUDENT,
-      X001ca_join_prev_reported.NAME,
-      X001ca_join_prev_reported.YEAR,
-      X001ca_join_prev_reported.CAMPUS,
-      X001ca_join_prev_reported.FIRSTNAME,
-      X001ca_join_prev_reported.INITIALS,
-      X001ca_join_prev_reported.SURNAME,
-      X001ca_join_prev_reported.TITLE,
-      X001ca_join_prev_reported.DATEOFBIRTH,
-      X001ca_join_prev_reported.GENDER,
-      X001ca_join_prev_reported.NATIONALITY,
-      X001ca_join_prev_reported.POPULATION,
-      X001ca_join_prev_reported.RACE
+        PREV.IDNO,
+        PREV.STUDENT,
+        PREV.NAME,
+        PREV.YEAR,
+        PREV.CAMPUS,
+        PREV.FIRSTNAME,
+        PREV.INITIALS,
+        PREV.SURNAME,
+        PREV.TITLE,
+        PREV.DATEOFBIRTH,
+        PREV.GENDER,
+        PREV.NATIONALITY,
+        PREV.POPULATION,
+        PREV.RACE
     FROM
-      X001ca_join_prev_reported
+        X001ca_join_prev_reported PREV
     ORDER BY
-      X001ca_join_prev_reported.STUDENT
+        PREV.STUDENT
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -241,28 +239,27 @@ def Test_student_general():
     sr_file = "X001da_report_idlist"
     s_sql = "CREATE TABLE " + sr_file + " AS" + """
     SELECT
-      X001ca_join_prev_reported.IDNO,
-      X001ca_join_prev_reported.STUDENT,
-      X001ca_join_prev_reported.NAME,
-      X001ca_join_prev_reported.YEAR,
-      X001ca_join_prev_reported.CAMPUS,
-      X001ca_join_prev_reported.FIRSTNAME,
-      X001ca_join_prev_reported.INITIALS,
-      X001ca_join_prev_reported.SURNAME,
-      X001ca_join_prev_reported.TITLE,
-      X001ca_join_prev_reported.DATEOFBIRTH,
-      X001ca_join_prev_reported.GENDER,
-      X001ca_join_prev_reported.NATIONALITY,
-      X001ca_join_prev_reported.POPULATION,
-      X001ca_join_prev_reported.RACE
+        PREV.IDNO,
+        PREV.STUDENT,
+        PREV.NAME,
+        PREV.YEAR,
+        PREV.CAMPUS,
+        PREV.FIRSTNAME,
+        PREV.INITIALS,
+        PREV.SURNAME,
+        PREV.TITLE,
+        PREV.DATEOFBIRTH,
+        PREV.GENDER,
+        PREV.NATIONALITY,
+        PREV.POPULATION,
+        PREV.RACE
     FROM
-      X001ca_join_prev_reported
+        X001ca_join_prev_reported PREV
     WHERE
-      StrfTime('%m', X001ca_join_prev_reported.PREV_DATE_REPORTED) = StrfTime('%m', 'now') OR
-      StrfTime('%m', X001ca_join_prev_reported.DATE_REPORTED) = StrfTime('%m', 'now') AND
-        X001ca_join_prev_reported.PREV_PROCESS IS NULL
+        StrfTime('%m', PREV.PREV_DATE_REPORTED) = StrfTime('%m', 'now') OR
+        StrfTime('%m', PREV.DATE_REPORTED) = StrfTime('%m', 'now') AND PREV.PREV_PROCESS IS NULL
     ORDER BY
-      X001ca_join_prev_reported.STUDENT
+      PREV.STUDENT
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -286,18 +283,18 @@ def Test_student_general():
     sr_file = "X001ea_prev_reported"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     SELECT
-      X001ca_join_prev_reported.PROCESS,
-      X001ca_join_prev_reported.STUDENT AS FIELD1,
-      X001ca_join_prev_reported.FIELD2,
-      X001ca_join_prev_reported.FIELD2 AS FIELD3,
-      X001ca_join_prev_reported.FIELD2 AS FIELD4,
-      X001ca_join_prev_reported.FIELD2 AS FIELD5,
-      X001ca_join_prev_reported.DATE_REPORTED,
-      X001ca_join_prev_reported.DATE_RETEST
+        PREV.PROCESS,
+        PREV.STUDENT AS FIELD1,
+        PREV.FIELD2,
+        PREV.FIELD2 AS FIELD3,
+        PREV.FIELD2 AS FIELD4,
+        PREV.FIELD2 AS FIELD5,
+        PREV.DATE_REPORTED,
+        PREV.DATE_RETEST
     FROM
-      X001ca_join_prev_reported
+        X001ca_join_prev_reported PREV
     WHERE
-      X001ca_join_prev_reported.PREV_PROCESS IS NULL
+        PREV.PREV_PROCESS IS NULL
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     so_curs.execute(s_sql)
