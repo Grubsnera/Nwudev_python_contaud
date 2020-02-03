@@ -5230,11 +5230,15 @@ def student_fee(s_period='curr', s_year='0'):
     # SUMM FIAB LEVY LIST
     print("Build summary of module levy list...")
     sr_file = "X030aa_Fiabd007_summ"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         FIAB.FMODAPID,
-        FIAB.FENROLMENTCATEGORYCODEID As ENROL_ID,
-        FIAB.ENROL_CATEGORY,
+        Upper(FIAB.CAMPUS) As CAMPUS,
+        FIAB.FPRESENTATIONCATEGORYCODEID,
+        Upper(FIAB.PRESENT_CAT) As PRESENT_CAT,
+        FIAB.FENROLMENTCATEGORYCODEID,
+        Upper(FIAB.ENROL_CATEGORY) As ENROL_CATEGORY,    
         FIAB.AMOUNT,
         Cast(Count(FIAB.ACAD_PROG_FEE_TYPE) As INT) As COUNT,
         FIAB.MODULE,
@@ -5243,17 +5247,91 @@ def student_fee(s_period='curr', s_year='0'):
         X030aa_Fiabd007 FIAB
     Group By
         FIAB.FMODAPID,
+        FIAB.CAMPUS,
+        FIAB.FPRESENTATIONCATEGORYCODEID,
         FIAB.FENROLMENTCATEGORYCODEID,
         FIAB.AMOUNT
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
+    # BUILD SUMMARY OF ALL MODULES PRESENTED
+    print("Build list of all modules presented...")
+    sr_file = "X030ab_Stud_modu_list"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "Create table " + sr_file + " AS" + """
+    Select
+        STUD.KENROLSTUDID,
+        STUD.KSTUDBUSENTID As STUDENT,
+        STUD.FMODULEAPID,
+        STUD.CAMPUS,
+        STUD.FPRESENTATIONCATEGORYCODEID As PRESENT_ID,
+        STUD.PRESENT_CATEGORY,    
+        STUD.FENROLMENTCATEGORYCODEID As ENROL_ID,
+        STUD.ENROL_CATEGORY,
+        STUD.MODULE,
+        STUD.MODULE_NAME,
+        Case
+            When STUD.ISCONDITIONALREG = 1 Then '0 CONDITIONAL REGISTRATION'
+            When STUD.ENROL_CATEGORY Like('%EXAM ONLY%') Then '0 EXAM ONLY'
+            When STUD.ENROL_CATEGORY Like('%ROLL OVER%') Then '0 ROLL OVER'
+            Else '1'
+        End As FINDING    
+    From
+        %VSS%.X001_Student_module STUD
+    Where
+            UPPER(STUD.ENROL_CATEGORY) Not Like '%SHORT COURSE%'
+    ;"""
+    if s_period == "prev":
+        s_sql = s_sql.replace("%VSS%", "VSSPREV")
+    else:
+        s_sql = s_sql.replace("%VSS%", "VSSCURR")
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD SUMMARY OF ALL MODULES PRESENTED
+    print("Build summary of all modules presented...")
+    sr_file = "X030ac_Stud_module_summ"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "Create table " + sr_file + " AS" + """
+    Select
+        STUD.FMODULEAPID,
+        STUD.CAMPUS,
+        STUD.PRESENT_ID,
+        STUD.PRESENT_CATEGORY,    
+        STUD.ENROL_ID,
+        STUD.ENROL_CATEGORY,
+        STUD.MODULE,
+        STUD.MODULE_NAME,
+        Count(STUD.KENROLSTUDID) As COUNT_STUD
+    From
+        X030ab_Stud_modu_list STUD
+    Where
+        STUD.FINDING Like('%1')        
+    Group By
+        STUD.FMODULEAPID,
+        STUD.CAMPUS,
+        STUD.PRESENT_ID,
+        STUD.ENROL_ID,
+        STUD.MODULE
+    ;"""
+    if s_period == "prev":
+        s_sql = s_sql.replace("%VSS%", "VSSPREV")
+    else:
+        s_sql = s_sql.replace("%VSS%", "VSSCURR")
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
     # BUILD LIST OF MODULES PLUS STATS
     print("Build summary of modules levied from transactions...")
+
+    # TODO Delete
     sr_file = "X030ab_Trans_feemodu"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+
+    sr_file = "X030bb_Trans_feemodu"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "Create table " + sr_file + " AS" + """
     Select
         TRAN.FMODAPID,
@@ -5272,14 +5350,19 @@ def student_fee(s_period='curr', s_year='0'):
         TRAN.FMODAPID,
         TRAN.ENROL_ID
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = s_sql.replace("%TRANCODE%", s_modu_trancode)
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # CALCULATE THE MODULE FEES LEVIED PER STUDENT
     print("Calculate the module fees levied per student...")
+
+    # TODO Dlete
     sr_file = "X030ab_Trans_feemodu_stud"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+
+    sr_file = "X030bb_Trans_feemodu_stud"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "Create table " + sr_file + " AS" + """
     Select
         TRAN.STUDENT,
@@ -5305,17 +5388,21 @@ def student_fee(s_period='curr', s_year='0'):
         TRAN.FMODAPID,
         TRAN.ENROL_ID
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = s_sql.replace("%TRANCODE%", s_modu_trancode)
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # NOTE - Function fully functional. Take long time to complete (30min). Not used at the moment.
+
+    # TODO Delete
+    sr_file = "X030ac_Trans_feemodu_mode"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+
     """
     # CALCULATE THE STATISTIC MODE FOR EACH QUALIFICATION
     print("Calculate the module transaction statistic mode...")
     i_value: int = 0
-    sr_file = "X030ac_Trans_feemodu_mode"
+    sr_file = "X030bc_Trans_feemodu_mode"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute("CREATE TABLE " + sr_file + " (FMODAPID INT, ENROL_ID INT, AMOUNT REAL)")
     for qual in so_curs.execute("SELECT FMODAPID, ENROL_ID FROM X030ab_Trans_feemodu").fetchall():
@@ -5347,7 +5434,13 @@ def student_fee(s_period='curr', s_year='0'):
 
     # BUILD SUMMARY OF ALL MODULES PRESENTED
     print("Build summary of all modules presented...")
+
+    # TODO Delete
     sr_file = "X030ad_Stud_modu_present"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+
+    sr_file = "X030bd_Stud_modu_present"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "Create table " + sr_file + " AS" + """
     Select
         STUD.KENROLMENTPRESENTATIONID,
@@ -5365,7 +5458,6 @@ def student_fee(s_period='curr', s_year='0'):
         STUD.FENROLMENTCATEGORYCODEID,
         STUD.FPRESENTATIONCATEGORYCODEID
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if s_period == "prev":
         s_sql = s_sql.replace("%VSS%", "VSSPREV")
     else:
@@ -5385,110 +5477,56 @@ def student_fee(s_period='curr', s_year='0'):
     # JOIN MODULES PRESENTED AND LEVY LIST
     print("Join modules presented and levy list...")
     sr_file = "X031aa_Modu_nofee_loaded"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "Create Table " + sr_file + " As" + """
     Select
-        PRES.*,
-        LIST.AMOUNT As LIST_AMOUNT,
-        MODU.MODULE,
-        MODU.MODULE_NAME
+        STUD.FMODULEAPID,
+        STUD.CAMPUS,
+        STUD.PRESENT_ID,
+        STUD.PRESENT_CATEGORY,
+        STUD.ENROL_ID,
+        STUD.ENROL_CATEGORY,
+        STUD.MODULE,
+        STUD.MODULE_NAME,
+        STUD.COUNT_STUD,
+        FIAB.COUNT,
+        FIAB.AMOUNT
     From
-        X030ad_Stud_modu_present PRES Left Join
-        X030aa_Fiabd007_summ LIST On LIST.FMODAPID = PRES.FMODULEAPID And LIST.ENROL_ID = PRES.ENROL_ID Left Join
-        VSS.X000_Modules MODU On MODU.KENROLMENTPRESENTATIONID = PRES.KENROLMENTPRESENTATIONID
-    Where
-        LIST.AMOUNT Is Null    
+        X030ac_Stud_module_summ STUD Left Join
+        X030aa_Fiabd007_summ FIAB On FIAB.FMODAPID = STUD.FMODULEAPID
+                And FIAB.CAMPUS = STUD.CAMPUS
+                And FIAB.FPRESENTATIONCATEGORYCODEID = STUD.PRESENT_ID
+                And FIAB.FENROLMENTCATEGORYCODEID = STUD.ENROL_ID
+                And FIAB.MODULE = STUD.MODULE   
     ;"""
-    # s_sql = s_sql.replace("%PERIOD%", s_period)
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
-    # JOIN MODULES PRESENTED AND STUDENT LIST
-    print("Join modules presented and student list...")
-    sr_file = "X031aa_Modu_nofee_loaded_stud"
-    s_sql = "Create Table " + sr_file + " As" + """
-    Select
-        STUD.*,
-        LIST.*
-    From
-        %VSS%.X001_Student_module STUD Inner Join
-        X031aa_Modu_nofee_loaded LIST On LIST.KENROLMENTPRESENTATIONID = STUD.KENROLMENTPRESENTATIONID And
-             LIST.FMODULEAPID = STUD.FMODULEAPID And
-             LIST.ENROL_ID = STUD.FENROLMENTCATEGORYCODEID
-    ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    if s_period == "prev":
-        s_sql = s_sql.replace("%VSS%", "VSSPREV")
-    else:
-        s_sql = s_sql.replace("%VSS%", "VSSCURR")
-    so_curs.execute(s_sql)
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
-    # CREATE SUMMARY OF MODULES
-    # NOTE Exclude SHORT COURSE students
-    print("Build summary of modules...")
-    sr_file = "X031aa_Modu_nofee_loaded_modu"
-    s_sql = "Create Table " + sr_file + " As" + """
-    Select
-        MODU.CAMPUS,
-        MODU.FMODULEAPID,
-        MODU.MODULE,
-        MODU.FPRESENTATIONCATEGORYCODEID As PRESENT_ID,
-        MODU.PRESENT_CATEGORY As PRESENT_CAT,
-        MODU.FENROLMENTCATEGORYCODEID As ENROL_ID,
-        MODU.ENROL_CATEGORY As ENROL_CAT,
-        MODU.MODULE_NAME,
-        Cast(Count(KENROLSTUDID) As INT) As COUNT_STUD
-    From
-        X031aa_Modu_nofee_loaded_stud MODU
-    Where
-        MODU.ENROL_CATEGORY Not Like ('SHORT COURSE')
-    Group By
-        MODU.FMODULEAPID,
-        MODU.FENROLMENTCATEGORYCODEID,
-        MODU.FPRESENTATIONCATEGORYCODEID,
-        MODU.CAMPUS
-    Order By
-        MODULE,
-        ENROL_CAT    
-    ;"""
-    # s_sql = s_sql.replace("%PERIOD%", s_period)
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
-    if funcsys.tablerowcount(so_curs, sr_file) > 0:  # Ignore l_export flag - should export every time
-        print("Export findings...")
-        sx_path = re_path + "/"
-        sx_file = "Student_fee_test_031aa_modu_fee_not_loaded_"  # File X021_findings_list
-        sx_file_dated = sx_file + funcdate.today_file()
-        s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
-        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
-        # funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
-        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
 
     # IDENTIFY FINDINGS
     # NOTE Exclude distance students
     print("Identify findings...")
     sr_file = "X031ab_findings"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         'NWU' As ORG,
-        FIND.CAMPUS As LOC,
+        FIND.CAMPUS AS LOC,
         FIND.FMODULEAPID As ID,
-        FIND.ENROL_ID,
-        FIND.ENROL_CAT,
         FIND.PRESENT_ID,
-        FIND.PRESENT_CAT,
+        FIND.PRESENT_CATEGORY,
+        FIND.ENROL_ID,
+        FIND.ENROL_CATEGORY,
         FIND.MODULE,
         FIND.MODULE_NAME,
         FIND.COUNT_STUD
     From
-        X031aa_Modu_nofee_loaded_modu FIND
+        X031aa_Modu_nofee_loaded FIND
     Where
-        FIND.PRESENT_CAT Not Like ('D%')
+        FIND.AMOUNT Is Null    
+    Order By
+        FIND.ENROL_CATEGORY,
+        FIND.MODULE_NAME    
     ;"""
-
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -5498,71 +5536,21 @@ def student_fee(s_period='curr', s_year='0'):
     print("*** Found " + str(i_finding_before) + " exceptions ***")
     funcfile.writelog("%t FINDING: " + str(i_finding_before) + " MODULE NO FEE LOADED finding(s)")
 
-    # GET PREVIOUS FINDINGS
+    # TODO Delete after first run
     sr_file = "X031ac_get_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    # GET PREVIOUS FINDINGS
     if i_finding_before > 0:
-        print("Import previously reported findings...")
-        so_curs.execute(
-            "CREATE TABLE " + sr_file + """
-            (PROCESS TEXT,
-            FIELD1 INT,
-            FIELD2 TEXT,
-            FIELD3 INT,
-            FIELD4 TEXT,
-            FIELD5 TEXT,
-            DATE_REPORTED TEXT,
-            DATE_RETEST TEXT,
-            REMARK TEXT)
-            """)
-        co = open(ed_path + "302_reported.txt", "r")
-        co_reader = csv.reader(co)
-        # Read the COLUMN database data
-        for row in co_reader:
-            # Populate the column variables
-            if row[0] == "PROCESS":
-                continue
-            elif row[0] != "module no fee loaded":
-                continue
-            else:
-                s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "','" + \
-                         row[
-                             3] + "','" + row[4] + "','" + row[5] + "','" + row[6] + "','" + row[7] + "','" + row[
-                             8] + "')"
-                so_curs.execute(s_cols)
+        i = functest.get_previous_finding(so_curs, ed_path, "302_reported.txt", "module no fee loaded", "ITIIT")
         so_conn.commit()
-        # Close the imported data file
-        co.close()
-        funcfile.writelog("%t IMPORT TABLE: " + ed_path + "302_reported.txt (" + sr_file + ")")
 
-    # SET PREVIOUS FINDINGS
+    # TODO Delete after first run
     sr_file = "X031ac_set_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    # SET PREVIOUS FINDINGS
     if i_finding_before > 0:
-        print("Obtain the latest previous finding...")
-        s_sql = "Create Table " + sr_file + " As" + """
-        Select
-            GET.PROCESS,
-            GET.FIELD1,
-            GET.FIELD2,
-            GET.FIELD3,
-            GET.FIELD4,
-            GET.FIELD5,
-            Max(GET.DATE_REPORTED) As DATE_REPORTED,
-            GET.DATE_RETEST,
-            GET.REMARK
-        From
-            X031ac_get_previous GET
-        Group By
-            GET.FIELD1,
-            GET.FIELD2,
-            GET.FIELD3,
-            GET.FIELD4   
-        ;"""
-        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        so_curs.execute(s_sql)
+        i = functest.set_previous_finding(so_curs)
         so_conn.commit()
-        funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # ADD PREVIOUS FINDINGS
     sr_file = "X031ad_add_previous"
@@ -5581,10 +5569,11 @@ def student_fee(s_period='curr', s_year='0'):
             PREV.REMARK
         From
             X031ab_findings FIND Left Join
-            X031ac_get_previous PREV ON PREV.FIELD1 = FIND.ID And
-                PREV.FIELD2 = FIND.MODULE And
-                PREV.FIELD3 = FIND.ENROL_ID And
-                PREV.FIELD4 = FIND.ENROL_CAT
+            Z001ab_setprev PREV ON PREV.FIELD1 = FIND.ID And
+                PREV.FIELD2 = FIND.LOC And
+                PREV.FIELD3 = FIND.PRESENT_ID And
+                PREV.FIELD4 = FIND.ENROL_ID And
+                PREV.FIELD5 = FIND.MODULE
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
@@ -5601,10 +5590,10 @@ def student_fee(s_period='curr', s_year='0'):
         Select
             PREV.PROCESS,
             PREV.ID AS FIELD1,
-            PREV.MODULE AS FIELD2,
-            PREV.ENROL_ID AS FIELD3,
-            PREV.ENROL_CAT AS FIELD4,
-            '' AS FIELD5,
+            PREV.LOC AS FIELD2,
+            PREV.PRESENT_ID AS FIELD3,
+            PREV.ENROL_ID AS FIELD4,
+            PREV.MODULE AS FIELD5,
             PREV.DATE_REPORTED,
             PREV.DATE_RETEST,
             PREV.REMARK
@@ -5635,52 +5624,21 @@ def student_fee(s_period='curr', s_year='0'):
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
 
-    # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
+    # TODO Delete after first run
     sr_file = "X031af_officer"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    if i_finding_before > 0:
-        if i_finding_after > 0:
-            print("Import reporting officers for mail purposes...")
-            s_sql = "CREATE TABLE " + sr_file + " AS " + """
-            Select
-                OFFICER.LOOKUP,
-                Upper(OFFICER.LOOKUP_CODE) AS CAMPUS,
-                OFFICER.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-                PEOP.NAME_ADDR As NAME,
-                PEOP.EMAIL_ADDRESS
-            From
-                VSS.X000_OWN_LOOKUPS OFFICER Left Join
-                PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = OFFICER.LOOKUP_DESCRIPTION
-            Where
-                OFFICER.LOOKUP = 'stud_fee_test_modu_no_fee_loaded_officer'
-            ;"""
-            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-            so_curs.execute(s_sql)
-            so_conn.commit()
-            funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
+    if i_finding_before > 0 and i_finding_after > 0:
+        i = functest.get_officer(so_curs, "VSS", "stud_fee_test_modu_no_fee_loaded_officer")
+        so_conn.commit()
 
-    # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
+    # TODO Delete after first run
     sr_file = "X031ag_supervisor"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
     if i_finding_before > 0 and i_finding_after > 0:
-        print("Import reporting supervisors for mail purposes...")
-        s_sql = "CREATE TABLE " + sr_file + " AS " + """
-        Select
-            SUPERVISOR.LOOKUP,
-            Upper(SUPERVISOR.LOOKUP_CODE) AS CAMPUS,
-            SUPERVISOR.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-            PEOP.NAME_ADDR As NAME,
-            PEOP.EMAIL_ADDRESS
-        From
-            VSS.X000_OWN_LOOKUPS SUPERVISOR Left Join
-            PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = SUPERVISOR.LOOKUP_DESCRIPTION
-        Where
-            SUPERVISOR.LOOKUP = 'stud_fee_test_modu_no_fee_loaded_supervisor'
-        ;"""
-        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        so_curs.execute(s_sql)
+        i = functest.get_supervisor(so_curs, "VSS", "stud_fee_test_modu_no_fee_loaded_supervisor")
         so_conn.commit()
-        funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # ADD CONTACT DETAILS TO FINDINGS
     sr_file = "X031ah_detail"
@@ -5694,34 +5652,34 @@ def student_fee(s_period='curr', s_year='0'):
             PREV.ID,
             PREV.MODULE,
             PREV.MODULE_NAME,
-            PREV.ENROL_ID,
-            PREV.ENROL_CAT,
             PREV.PRESENT_ID,
-            PREV.PRESENT_CAT,
+            PREV.PRESENT_CATEGORY,
+            PREV.ENROL_ID,
+            PREV.ENROL_CATEGORY,
             PREV.COUNT_STUD,
             CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
-            CAMP_OFF.NAME As CAMP_OFF_NAME,
+            CAMP_OFF.NAME_ADDR As CAMP_OFF_NAME,
             CASE
                 WHEN  CAMP_OFF.EMPLOYEE_NUMBER <> '' THEN CAMP_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
                 ELSE CAMP_OFF.EMAIL_ADDRESS
             END As CAMP_OFF_MAIL,
             CAMP_OFF.EMAIL_ADDRESS As CAMP_OFF_MAIL2,
             CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
-            CAMP_SUP.NAME As CAMP_SUP_NAME,
+            CAMP_SUP.NAME_ADDR As CAMP_SUP_NAME,
             CASE
                 WHEN CAMP_SUP.EMPLOYEE_NUMBER <> '' THEN CAMP_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
                 ELSE CAMP_SUP.EMAIL_ADDRESS
             END As CAMP_SUP_MAIL,
             CAMP_SUP.EMAIL_ADDRESS As CAMP_SUP_MAIL2,
             ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
-            ORG_OFF.NAME As ORG_OFF_NAME,
+            ORG_OFF.NAME_ADDR As ORG_OFF_NAME,
             CASE
                 WHEN ORG_OFF.EMPLOYEE_NUMBER <> '' THEN ORG_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
                 ELSE ORG_OFF.EMAIL_ADDRESS
             END As ORG_OFF_MAIL,
             ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL2,
             ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
-            ORG_SUP.NAME As ORG_SUP_NAME,
+            ORG_SUP.NAME_ADDR As ORG_SUP_NAME,
             CASE
                 WHEN ORG_SUP.EMPLOYEE_NUMBER <> '' THEN ORG_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
                 ELSE ORG_SUP.EMAIL_ADDRESS
@@ -5729,16 +5687,14 @@ def student_fee(s_period='curr', s_year='0'):
             ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL2
         From
             X031ad_add_previous PREV Left Join
-            X031af_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.LOC Left Join
-            X031af_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG Left Join
-            X031ag_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.LOC Left Join
-            X031ag_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG
+            Z001af_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.LOC Left Join
+            Z001af_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG Left Join
+            Z001ag_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.LOC Left Join
+            Z001ag_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG
         Where
-          PREV.PREV_PROCESS IS NULL
+            PREV.PREV_PROCESS Is Null Or
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
-        """
-        WHEN CAMP_OFF.NAME != '' THEN CAMP_OFF.NAME 
-        """
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
         so_conn.commit()
@@ -5754,11 +5710,11 @@ def student_fee(s_period='curr', s_year='0'):
             'MODULE NO FEE LOADED' As Audit_finding,
             FIND.ORG As 'Organization',
             FIND.LOC As 'Campus',
-            FIND.ID As 'Moduleid',
+            FIND.ID As 'Module_id',
             FIND.MODULE As 'Module',
             FIND.MODULE_NAME As 'Module_name',
-            FIND.PRESENT_CAT As 'Present',
-            FIND.ENROL_CAT As 'Enrol',
+            FIND.PRESENT_CATEGORY As 'Present',
+            FIND.ENROL_CATEGORY As 'Enrol',
             FIND.COUNT_STUD As 'Student_count',
             FIND.CAMP_OFF_NAME AS Responsible_Officer,
             FIND.CAMP_OFF_NUMB AS Responsible_Officer_Numb,
@@ -5774,9 +5730,6 @@ def student_fee(s_period='curr', s_year='0'):
             FIND.ORG_SUP_MAIL AS Org_Supervisor_Mail
         From
             X031ah_detail FIND
-        Order by
-            MODULE,
-            ENROL
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
