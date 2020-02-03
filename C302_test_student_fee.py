@@ -2493,19 +2493,11 @@ def student_fee(s_period='curr', s_year='0'):
     funcfile.writelog("%t FINDING: " + str(i_finding_before) + " QUALIFICATION NO FEE LOADED finding(s)")
 
     # GET PREVIOUS FINDINGS
-    # TODO Remove after first run
-    sr_file = "X021ac_get_previous"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    sr_file = "X021ab_findings_list"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
         i = functest.get_previous_finding(so_curs, ed_path, "302_reported.txt", "qualification no fee loaded", "ITTTT")
         so_conn.commit()
 
     # SET PREVIOUS FINDINGS
-    # TODO Remove after first run
-    sr_file = "X021ac_set_previous"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
         i = functest.set_previous_finding(so_curs)
         so_conn.commit()
