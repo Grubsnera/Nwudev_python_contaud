@@ -14,6 +14,7 @@ from _my_modules import funccsv
 from _my_modules import funcdate
 from _my_modules import funcfile
 from _my_modules import funcsys
+from _my_modules import functest
 
 """ INDEX **********************************************************************
 ENVIRONMENT
@@ -61,6 +62,8 @@ so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
 funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
 so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs.sqlite' AS 'KFS'")
 funcfile.writelog("%t ATTACH DATABASE: KFS.SQLITE")
+so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs_curr.sqlite' AS 'KFSCURR'")
+funcfile.writelog("%t ATTACH DATABASE: KFS_CURR.SQLITE")
 
 """ ****************************************************************************
 BEGIN OF SCRIPT
