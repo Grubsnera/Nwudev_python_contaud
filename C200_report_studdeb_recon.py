@@ -236,6 +236,7 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
       CASE
         WHEN ACCOUNT_NBR = '1G02018' THEN 1
         WHEN ACCOUNT_NBR = '1G01772' THEN 2
+        WHEN ACCOUNT_NBR = '1G01773' THEN 2
         WHEN ACCOUNT_NBR = '1G01804' THEN 9
         WHEN ACCOUNT_NBR = '1G02012' THEN 9
         ELSE 0
