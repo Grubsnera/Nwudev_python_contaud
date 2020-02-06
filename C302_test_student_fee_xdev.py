@@ -74,11 +74,13 @@ else:
     s_mba: str = "71500z2381692z2381690z665559"  # Exclude these FQUALLEVELAPID
     s_mpa: str = "665566z618161z618167z618169"  # Exclude these FQUALLEVELAPID
     s_aud: str = "71839z71840z71841z71842z71820z71821z71822z1085390"  # Exclude these FQUALLEVELAPID
-    l_record: bool = True
+    l_record: bool = False
     l_export: bool = True
 
 l_vacuum: bool = False
 l_mail: bool = False
+i_calc = f_reg_fee
+l_reg = True
 
 """*****************************************************************************
 OPEN THE DATABASES
