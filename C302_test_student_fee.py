@@ -286,6 +286,7 @@ def student_fee(s_period='curr', s_year='0'):
 
     # ADD REGISTRATION LEVIED FEES TO THE STUDENTS LIST
     # EXCLUDE ALL NON MAIN QUALIFICATION QUALIFICATIONS
+    # EXCLUDE EMP 10000445 (Mari Prinsloo) as User
     print("Join students and registration fees...")
     sr_file = "X010_Student_feereg"
     s_sql = "CREATE TABLE " + sr_file + " AS" + """
@@ -350,12 +351,15 @@ def student_fee(s_period='curr', s_year='0'):
         STUD.FQUALLEVELAPID,
         STUD.FPROGRAMAPID,
         FEE.TRAN_COUNT,
-        FEE.FUSERBUSINESSENTITYID
+        Case
+            When FEE.FUSERBUSINESSENTITYID = '10000445' Then ''
+            Else FEE.FUSERBUSINESSENTITYID
+        End As FUSERBUSINESSENTITYID
     From
         X000_Student STUD Left Join
         X010_Trans_feereg FEE On FEE.STUDENT = STUD.KSTUDBUSENTID
     Where
-        STUD.ISMAINQUALLEVEL = 1
+        STUD.ISMAINQUALLEVEL = 1 And STUD.ISCONDITIONALREG = 0
     Order by
         STUD.ENROL_CAT,
         STUD.KSTUDBUSENTID      
@@ -475,8 +479,6 @@ def student_fee(s_period='curr', s_year='0'):
         FIND.FUSERBUSINESSENTITYID As USER
     From
         X010aa_Regfee_null FIND
-    Where
-        FIND.ISCONDITIONALREG != 1
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -488,68 +490,21 @@ def student_fee(s_period='curr', s_year='0'):
     print("*** Found " + str(i_finding_before) + " exceptions ***")
     funcfile.writelog("%t FINDING: " + str(i_finding_before) + " REGISTRATION FEE NULL finding(s)")
 
-    # GET PREVIOUS FINDINGS
+    # TODO Delete after run
     sr_file = "X010ac_get_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    # GET PREVIOUS FINDINGS
     if l_reg and i_finding_before > 0:
-        print("Import previously reported findings...")
-        so_curs.execute(
-            "CREATE TABLE " + sr_file + """
-            (PROCESS TEXT,
-            FIELD1 INT,
-            FIELD2 TEXT,
-            FIELD3 TEXT,
-            FIELD4 TEXT,
-            FIELD5 TEXT,
-            DATE_REPORTED TEXT,
-            DATE_RETEST TEXT,
-            REMARK TEXT)
-            """)
-        co = open(ed_path + "302_reported.txt", "r")
-        co_reader = csv.reader(co)
-        # Read the COLUMN database data
-        for row in co_reader:
-            # Populate the column variables
-            if row[0] == "PROCESS":
-                continue
-            elif row[0] != "registration fee null":
-                continue
-            else:
-                s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "','" + \
-                         row[
-                             3] + "','" + row[4] + "','" + row[5] + "','" + row[6] + "','" + row[7] + "','" + row[
-                             8] + "')"
-                so_curs.execute(s_cols)
+        i = functest.get_previous_finding(so_curs, ed_path, "302_reported.txt", "registration fee null", "ITTTT")
         so_conn.commit()
-        # Close the imported data file
-        co.close()
-        funcfile.writelog("%t IMPORT TABLE: " + ed_path + "302_reported.txt (" + sr_file + ")")
 
-    # SET PREVIOUS FINDINGS
+    # TODO Delete after first run
     sr_file = "X010ac_set_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    # SET PREVIOUS FINDINGS
     if l_reg and i_finding_before > 0:
-        print("Obtain the latest previous finding...")
-        s_sql = "Create Table " + sr_file + " As" + """
-        Select
-            GET.PROCESS,
-            GET.FIELD1,
-            GET.FIELD2,
-            GET.FIELD3,
-            GET.FIELD4,
-            GET.FIELD5,
-            Max(GET.DATE_REPORTED) As DATE_REPORTED,
-            GET.DATE_RETEST,
-            GET.REMARK
-        From
-            X010ac_get_previous GET
-        Group By
-            GET.FIELD1        
-        ;"""
-        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        so_curs.execute(s_sql)
+        i = functest.set_previous_finding(so_curs)
         so_conn.commit()
-        funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # ADD PREVIOUS FINDINGS
     sr_file = "X010ad_add_previous"
@@ -568,7 +523,7 @@ def student_fee(s_period='curr', s_year='0'):
             PREV.REMARK
         From
             X010ab_findings FIND Left Join
-            X010ac_set_previous PREV ON PREV.FIELD1 = FIND.STUDENT
+            Z001ab_setprev PREV ON PREV.FIELD1 = FIND.STUDENT
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
@@ -619,52 +574,21 @@ def student_fee(s_period='curr', s_year='0'):
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
 
-    # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
+    # TODO Delete after first run
     sr_file = "X010af_officer"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    if l_reg and i_finding_before > 0:
-        if i_finding_after > 0:
-            print("Import reporting officers for mail purposes...")
-            s_sql = "CREATE TABLE " + sr_file + " AS " + """
-            Select
-                OFFICER.LOOKUP,
-                Upper(OFFICER.LOOKUP_CODE) AS CAMPUS,
-                OFFICER.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-                PEOP.NAME_ADDR As NAME,
-                PEOP.EMAIL_ADDRESS
-            From
-                VSS.X000_OWN_LOOKUPS OFFICER Left Join
-                PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = OFFICER.LOOKUP_DESCRIPTION
-            Where
-                OFFICER.LOOKUP = 'stud_fee_test_reg_fee_null_contact_officer'
-            ;"""
-            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-            so_curs.execute(s_sql)
-            so_conn.commit()
-            funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
+    if l_reg and i_finding_before > 0 and i_finding_after > 0:
+        i = functest.get_officer(so_curs, "VSS", "stud_fee_test_reg_fee_null_contact_officer")
+        so_conn.commit()
 
-    # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
+    # TODO Delete after first run
     sr_file = "X010ag_supervisor"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
     if l_reg and i_finding_before > 0 and i_finding_after > 0:
-        print("Import reporting supervisors for mail purposes...")
-        s_sql = "CREATE TABLE " + sr_file + " AS " + """
-        Select
-            SUPERVISOR.LOOKUP,
-            Upper(SUPERVISOR.LOOKUP_CODE) AS CAMPUS,
-            SUPERVISOR.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-            PEOP.NAME_ADDR As NAME,
-            PEOP.EMAIL_ADDRESS
-        From
-            VSS.X000_OWN_LOOKUPS SUPERVISOR Left Join
-            PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = SUPERVISOR.LOOKUP_DESCRIPTION
-        Where
-            SUPERVISOR.LOOKUP = 'stud_fee_test_reg_fee_null_contact_supervisor'
-        ;"""
-        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        so_curs.execute(s_sql)
+        i = functest.get_supervisor(so_curs, "VSS", "stud_fee_test_reg_fee_null_contact_supervisor")
         so_conn.commit()
-        funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # ADD CONTACT DETAILS TO FINDINGS
     sr_file = "X010ah_detail"
@@ -682,28 +606,28 @@ def student_fee(s_period='curr', s_year='0'):
             Upper(STUD.ENROL_CAT) As ENROL_CAT,
             Upper(STUD.QUAL_TYPE) As QUAL_TYPE,
             CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
-            CAMP_OFF.NAME As CAMP_OFF_NAME,
+            CAMP_OFF.NAME_ADDR As CAMP_OFF_NAME,
             CASE
                 WHEN  CAMP_OFF.EMPLOYEE_NUMBER <> '' THEN CAMP_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
                 ELSE CAMP_OFF.EMAIL_ADDRESS
             END As CAMP_OFF_MAIL,
             CAMP_OFF.EMAIL_ADDRESS As CAMP_OFF_MAIL2,
             CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
-            CAMP_SUP.NAME As CAMP_SUP_NAME,
+            CAMP_SUP.NAME_ADDR As CAMP_SUP_NAME,
             CASE
                 WHEN CAMP_SUP.EMPLOYEE_NUMBER <> '' THEN CAMP_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
                 ELSE CAMP_SUP.EMAIL_ADDRESS
             END As CAMP_SUP_MAIL,
             CAMP_SUP.EMAIL_ADDRESS As CAMP_SUP_MAIL2,
             ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
-            ORG_OFF.NAME As ORG_OFF_NAME,
+            ORG_OFF.NAME_ADDR As ORG_OFF_NAME,
             CASE
                 WHEN ORG_OFF.EMPLOYEE_NUMBER <> '' THEN ORG_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
                 ELSE ORG_OFF.EMAIL_ADDRESS
             END As ORG_OFF_MAIL,
             ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL2,
             ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
-            ORG_SUP.NAME As ORG_SUP_NAME,
+            ORG_SUP.NAME_ADDR As ORG_SUP_NAME,
             CASE
                 WHEN ORG_SUP.EMPLOYEE_NUMBER <> '' THEN ORG_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
                 ELSE ORG_SUP.EMAIL_ADDRESS
@@ -712,7 +636,7 @@ def student_fee(s_period='curr', s_year='0'):
             PREV.USER As USER_NUMB,
             CASE
                 WHEN PREV.USER != '' THEN PEOP.NAME_ADDR
-                WHEN CAMP_OFF.NAME != '' THEN CAMP_OFF.NAME 
+                WHEN CAMP_OFF.NAME_ADDR != '' THEN CAMP_OFF.NAME_ADDR 
                 ELSE ''
             END As USER_NAME,
             CASE
@@ -727,17 +651,18 @@ def student_fee(s_period='curr', s_year='0'):
             END As USER_MAIL2
         From
             X010ad_add_previous PREV Left Join
-            X010af_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.LOC Left Join
-            X010af_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG Left Join
-            X010ag_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.LOC Left Join
-            X010ag_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG Left Join
+            Z001af_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.LOC Left Join
+            Z001af_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG Left Join
+            Z001ag_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.LOC Left Join
+            Z001ag_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG Left Join
             X000_Student STUD On STUD.KSTUDBUSENTID = PREV.STUDENT Left Join
             PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = PREV.USER
         Where
-          PREV.PREV_PROCESS IS NULL
+            PREV.PREV_PROCESS Is Null Or
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         """
-        WHEN CAMP_OFF.NAME != '' THEN CAMP_OFF.NAME 
+        WHEN CAMP_OFF.NAME_ADDR != '' THEN CAMP_OFF.NAME_ADDR 
         """
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -1982,7 +1907,7 @@ def student_fee(s_period='curr', s_year='0'):
         UMPT_REGU INT,
         AMOUNT REAL)
         """)
-    co = open(ed_path + "302_fiapd007_qual_" + s_period + ".csv", "r")
+    co = open(ed_path + "302_fiapd007_qual_" + s_period + ".csv", "r", encoding="utf-8")
     co_reader = csv.reader(co)
     # Read the COLUMN database data
     for row in co_reader:
@@ -5189,7 +5114,7 @@ def student_fee(s_period='curr', s_year='0'):
         TRANSCODE TEXT,
         AMOUNT REAL)
         """)
-    co = open(ed_path + "302_fiapd007_modu_" + s_period + ".csv", "r")
+    co = open(ed_path + "302_fiapd007_modu_" + s_period + ".csv", "r", encoding="utf-8")
     co_reader = csv.reader(co)
     # Read the COLUMN database data
     for row in co_reader:
