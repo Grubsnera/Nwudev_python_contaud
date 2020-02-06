@@ -623,18 +623,10 @@ def people_test_conflict():
     print("*** Found " + str(i_find) + " exceptions ***")
     funcfile.writelog("%t FINDING: " + str(i_find) + " EMPL BANK conflict finding(s)")
 
-    # TODO Delete after next run
-    sr_file = "X100ac_bank_getprev"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-
     # GET PREVIOUS FINDINGS
     if i_find > 0:
         i = functest.get_previous_finding(so_curs, ed_path, "002_reported.txt", "bank_share_emp_ven", "ITTTT")
         so_conn.commit()
-
-    # TODO Delete after next run
-    sr_file = "X100ac_bank_setprev"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 
     # SET PREVIOUS FINDINGS
     if i_find > 0:

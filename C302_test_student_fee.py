@@ -490,17 +490,11 @@ def student_fee(s_period='curr', s_year='0'):
     print("*** Found " + str(i_finding_before) + " exceptions ***")
     funcfile.writelog("%t FINDING: " + str(i_finding_before) + " REGISTRATION FEE NULL finding(s)")
 
-    # TODO Delete after run
-    sr_file = "X010ac_get_previous"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     # GET PREVIOUS FINDINGS
     if l_reg and i_finding_before > 0:
         i = functest.get_previous_finding(so_curs, ed_path, "302_reported.txt", "registration fee null", "ITTTT")
         so_conn.commit()
 
-    # TODO Delete after first run
-    sr_file = "X010ac_set_previous"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     # SET PREVIOUS FINDINGS
     if l_reg and i_finding_before > 0:
         i = functest.set_previous_finding(so_curs)
@@ -574,17 +568,11 @@ def student_fee(s_period='curr', s_year='0'):
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
 
-    # TODO Delete after first run
-    sr_file = "X010af_officer"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
     if l_reg and i_finding_before > 0 and i_finding_after > 0:
         i = functest.get_officer(so_curs, "VSS", "stud_fee_test_reg_fee_null_contact_officer")
         so_conn.commit()
 
-    # TODO Delete after first run
-    sr_file = "X010ag_supervisor"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
     if l_reg and i_finding_before > 0 and i_finding_after > 0:
         i = functest.get_supervisor(so_curs, "VSS", "stud_fee_test_reg_fee_null_contact_supervisor")
@@ -1884,7 +1872,6 @@ def student_fee(s_period='curr', s_year='0'):
     funcfile.writelog("QUALIFICATION FEE MASTER")
 
     # IMPORT QUALIFICATION LEVY LIST
-    # TODO Get latest list from Corlia Report FIABD007
     sr_file = "X020aa_Fiabd007"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     print("Import vss qualification fees...")
@@ -1913,7 +1900,6 @@ def student_fee(s_period='curr', s_year='0'):
     for row in co_reader:
         # Populate the column variables
         # print(row[0])
-        # TODO : "ï»¿" Glitch in 2019 data resolved - Remove if all working
         if "Academic Program Fee Type" in row[0]:
             continue
         else:
@@ -5091,7 +5077,6 @@ def student_fee(s_period='curr', s_year='0'):
     funcfile.writelog("MODULE FEE MASTER")
 
     # IMPORT MODULE LEVY LIST
-    # TODO Get latest list from Corlia Report FIABD007
     sr_file = "X030aa_Fiabd007"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     print("Import vss module fees...")
@@ -5250,11 +5235,6 @@ def student_fee(s_period='curr', s_year='0'):
 
     # BUILD LIST OF MODULES PLUS STATS
     print("Build summary of modules levied from transactions...")
-
-    # TODO Delete
-    sr_file = "X030ab_Trans_feemodu"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-
     sr_file = "X030bb_Trans_feemodu"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "Create table " + sr_file + " AS" + """
@@ -5281,11 +5261,6 @@ def student_fee(s_period='curr', s_year='0'):
 
     # CALCULATE THE MODULE FEES LEVIED PER STUDENT
     print("Calculate the module fees levied per student...")
-
-    # TODO Dlete
-    sr_file = "X030ab_Trans_feemodu_stud"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-
     sr_file = "X030bb_Trans_feemodu_stud"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "Create table " + sr_file + " AS" + """
@@ -5318,11 +5293,6 @@ def student_fee(s_period='curr', s_year='0'):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # NOTE - Function fully functional. Take long time to complete (30min). Not used at the moment.
-
-    # TODO Delete
-    sr_file = "X030ac_Trans_feemodu_mode"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-
     """
     # CALCULATE THE STATISTIC MODE FOR EACH QUALIFICATION
     print("Calculate the module transaction statistic mode...")
@@ -5359,11 +5329,6 @@ def student_fee(s_period='curr', s_year='0'):
 
     # BUILD SUMMARY OF ALL MODULES PRESENTED
     print("Build summary of all modules presented...")
-
-    # TODO Delete
-    sr_file = "X030ad_Stud_modu_present"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-
     sr_file = "X030bd_Stud_modu_present"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "Create table " + sr_file + " AS" + """
@@ -5461,17 +5426,11 @@ def student_fee(s_period='curr', s_year='0'):
     print("*** Found " + str(i_finding_before) + " exceptions ***")
     funcfile.writelog("%t FINDING: " + str(i_finding_before) + " MODULE NO FEE LOADED finding(s)")
 
-    # TODO Delete after first run
-    sr_file = "X031ac_get_previous"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     # GET PREVIOUS FINDINGS
     if i_finding_before > 0:
         i = functest.get_previous_finding(so_curs, ed_path, "302_reported.txt", "module no fee loaded", "ITIIT")
         so_conn.commit()
 
-    # TODO Delete after first run
-    sr_file = "X031ac_set_previous"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     # SET PREVIOUS FINDINGS
     if i_finding_before > 0:
         i = functest.set_previous_finding(so_curs)
@@ -5549,17 +5508,11 @@ def student_fee(s_period='curr', s_year='0'):
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
 
-    # TODO Delete after first run
-    sr_file = "X031af_officer"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
     if i_finding_before > 0 and i_finding_after > 0:
         i = functest.get_officer(so_curs, "VSS", "stud_fee_test_modu_no_fee_loaded_officer")
         so_conn.commit()
 
-    # TODO Delete after first run
-    sr_file = "X031ag_supervisor"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
     if i_finding_before > 0 and i_finding_after > 0:
         i = functest.get_supervisor(so_curs, "VSS", "stud_fee_test_modu_no_fee_loaded_supervisor")
