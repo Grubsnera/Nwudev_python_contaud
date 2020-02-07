@@ -15,6 +15,7 @@ from _my_modules import funcdate
 from _my_modules import funcfile
 from _my_modules import funcmail
 from _my_modules import funcsys
+from _my_modules import functest
 
 """ INDEX **********************************************************************
 ENVIRONMENT
@@ -25,7 +26,7 @@ MASTER FILE LISTS
 PEOPLE BIRTHDAYS
 
 ID NUMBER MASTER FILE
-TEST ID NUMBER BLANK *
+TEST ID NUMBER BLANK
 TEST ID NUMBER INVALID
 TEST ZA DATE OF BIRTH INVALID
 TEST ZA GENDER INVALID
@@ -117,6 +118,8 @@ def People_test_masterfile():
     TEMPORARY SCRIPT (Delete after one run) 2019-05-31
     *****************************************************************************"""    
     # so_curs.execute("DROP TABLE IF EXISTS X007bx_category_invalid) 
+
+    # TODO Complete new method to tests
 
     """ ****************************************************************************
     BEGIN OF SCRIPT
@@ -267,12 +270,11 @@ def People_test_masterfile():
     funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL ID blank finding(s)")
 
     # GET PREVIOUS FINDINGS
-    # NOTE ADD CODE
     sr_file = "X002ac_id_getprev"
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0:
         print("Import previously reported findings...")
-        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,DATE_MAILED TEXT)")
+        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,REMARK TEXT)")
         s_cols = ""
         co = open(ed_path + "001_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -291,6 +293,32 @@ def People_test_masterfile():
         co.close()
         funcfile.writelog("%t IMPORT TABLE: " + ed_path + "001_reported.txt (" + sr_file + ")")
 
+    # SET PREVIOUS FINDINGS
+    sr_file = "X002ac_id_setprev"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_find > 0:
+        print("Obtain the latest previous finding...")
+        s_sql = "Create Table " + sr_file + " As" + """
+        Select
+            GET.PROCESS,
+            GET.FIELD1,
+            GET.FIELD2,
+            GET.FIELD3,
+            GET.FIELD4,
+            GET.FIELD5,
+            Max(GET.DATE_REPORTED) As DATE_REPORTED,
+            GET.DATE_RETEST,
+            GET.REMARK
+        From
+            X002ac_id_getprev GET
+        Group By
+            GET.FIELD1        
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
     # ADD PREVIOUS FINDINGS
     # NOTE ADD CODE
     sr_file = "X002ad_id_addprev"
@@ -299,22 +327,21 @@ def People_test_masterfile():
         print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         SELECT
-          X002ab_id_blank.*,
-          'id_blank' AS PROCESS,
-          '%TODAY%' AS DATE_REPORTED,
-          '%TODAYPLUS%' AS DATE_RETEST,
-          X002ac_id_getprev.PROCESS AS PREV_PROCESS,
-          X002ac_id_getprev.DATE_REPORTED AS PREV_DATE_REPORTED,
-          X002ac_id_getprev.DATE_RETEST AS PREV_DATE_RETEST,
-          X002ac_id_getprev.DATE_MAILED
+            X002ab_id_blank.*,
+            'id_blank' AS PROCESS,
+            '%TODAY%' AS DATE_REPORTED,
+            '%TODAYPLUS%' AS DATE_RETEST,
+            PREV.PROCESS AS PREV_PROCESS,
+            PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
+            PREV.DATE_RETEST AS PREV_DATE_RETEST,
+            PREV.REMARK
         FROM
-          X002ab_id_blank
-          LEFT JOIN X002ac_id_getprev ON X002ac_id_getprev.FIELD1 = X002ab_id_blank.EMP AND
-              X002ac_id_getprev.DATE_RETEST >= Date('%TODAY%')
+            X002ab_id_blank Left Join
+            X002ac_id_setprev PREV ON PREV.FIELD1 = X002ab_id_blank.EMP
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(10))
+        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -326,19 +353,20 @@ def People_test_masterfile():
     if i_find > 0:
         s_sql = "CREATE TABLE "+sr_file+" AS " + """
         SELECT
-          X002ad_id_addprev.PROCESS,
-          X002ad_id_addprev.EMP AS FIELD1,
-          '' AS FIELD2,
-          '' AS FIELD3,
-          '' AS FIELD4,
-          '' AS FIELD5,
-          X002ad_id_addprev.DATE_REPORTED,
-          X002ad_id_addprev.DATE_RETEST,
-          X002ad_id_addprev.DATE_MAILED
+            PREV.PROCESS,
+            PREV.EMP AS FIELD1,
+            '' AS FIELD2,
+            '' AS FIELD3,
+            '' AS FIELD4,
+            '' AS FIELD5,
+            PREV.DATE_REPORTED,
+            PREV.DATE_RETEST,
+            PREV.REMARK
         FROM
-          X002ad_id_addprev
+            X002ad_id_addprev PREV
         WHERE
-          X002ad_id_addprev.PREV_PROCESS IS NULL
+            PREV.PREV_PROCESS IS NULL Or
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""          
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
         so_curs.execute(s_sql)
@@ -575,7 +603,7 @@ def People_test_masterfile():
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0:
         print("Import previously reported findings...")
-        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,DATE_MAILED TEXT)")
+        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,REMARK TEXT)")
         s_cols = ""
         co = open(ed_path + "001_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -594,6 +622,32 @@ def People_test_masterfile():
         co.close()
         funcfile.writelog("%t IMPORT TABLE: " + ed_path + "001_reported.txt (" + sr_file + ")")
 
+    # SET PREVIOUS FINDINGS
+    sr_file = "X002bc_id_setprev"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_find > 0:
+        print("Obtain the latest previous finding...")
+        s_sql = "Create Table " + sr_file + " As" + """
+        Select
+            GET.PROCESS,
+            GET.FIELD1,
+            GET.FIELD2,
+            GET.FIELD3,
+            GET.FIELD4,
+            GET.FIELD5,
+            Max(GET.DATE_REPORTED) As DATE_REPORTED,
+            GET.DATE_RETEST,
+            GET.REMARK
+        From
+            X003ec_get_previous GET
+        Group By
+            GET.FIELD1        
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
     # ADD PREVIOUS FINDINGS
     sr_file = "X002bd_id_addprev"
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
@@ -601,22 +655,21 @@ def People_test_masterfile():
         print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         SELECT
-          X002bb_id_inva.*,
-          'id_invalid' AS PROCESS,
-          '%TODAY%' AS DATE_REPORTED,
-          '%TODAYPLUS%' AS DATE_RETEST,
-          X002bc_id_getprev.PROCESS AS PREV_PROCESS,
-          X002bc_id_getprev.DATE_REPORTED AS PREV_DATE_REPORTED,
-          X002bc_id_getprev.DATE_RETEST AS PREV_DATE_RETEST,
-          X002bc_id_getprev.DATE_MAILED
+            X002bb_id_inva.*,
+            'id_invalid' AS PROCESS,
+            '%TODAY%' AS DATE_REPORTED,
+            '%TODAYPLUS%' AS DATE_RETEST,
+            PREV.PROCESS AS PREV_PROCESS,
+            PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
+            PREV.DATE_RETEST AS PREV_DATE_RETEST,
+            PREV.REMARK
         FROM
-          X002bb_id_inva
-          LEFT JOIN X002bc_id_getprev ON X002bc_id_getprev.FIELD1 = X002bb_id_inva.EMP AND
-              X002bc_id_getprev.DATE_RETEST >= Date('%TODAY%')
+            X002bb_id_inva Left Join
+            X002bc_id_setprev PREV ON PREV.FIELD1 = X002bb_id_inva.EMP
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(10))
+        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -627,19 +680,20 @@ def People_test_masterfile():
     if i_find > 0:
         s_sql = "CREATE TABLE "+sr_file+" AS " + """
         SELECT
-          X002bd_id_addprev.PROCESS,
-          X002bd_id_addprev.EMP AS FIELD1,
-          '' AS FIELD2,
-          '' AS FIELD3,
-          '' AS FIELD4,
-          '' AS FIELD5,
-          X002bd_id_addprev.DATE_REPORTED,
-          X002bd_id_addprev.DATE_RETEST,
-          X002bd_id_addprev.DATE_MAILED
+            PREV.PROCESS,
+            PREV.EMP AS FIELD1,
+            '' AS FIELD2,
+            '' AS FIELD3,
+            '' AS FIELD4,
+            '' AS FIELD5,
+            PREV.DATE_REPORTED,
+            PREV.DATE_RETEST,
+            PREV.REMARK
         FROM
-          X002bd_id_addprev
+            X002bd_id_addprev PREV
         WHERE
-          X002bd_id_addprev.PREV_PROCESS IS NULL
+            PREV.PREV_PROCESS Is Null Or
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
         so_curs.execute(s_sql)
@@ -864,12 +918,11 @@ def People_test_masterfile():
     funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL ID DATEBIRTH invalid finding(s)")
 
     # GET PREVIOUS FINDINGS
-    # NOTE ADD CODE
     sr_file = "X002cc_dob_getprev"
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0:
         print("Import previously reported findings...")
-        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,DATE_MAILED TEXT)")
+        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,REMARK TEXT)")
         s_cols = ""
         co = open(ed_path + "001_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -888,6 +941,32 @@ def People_test_masterfile():
         co.close()
         funcfile.writelog("%t IMPORT TABLE: " + ed_path + "001_reported.txt (" + sr_file + ")")
 
+    # SET PREVIOUS FINDINGS
+    sr_file = "X002cc_dob_setprev"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_find > 0:
+        print("Obtain the latest previous finding...")
+        s_sql = "Create Table " + sr_file + " As" + """
+        Select
+            GET.PROCESS,
+            GET.FIELD1,
+            GET.FIELD2,
+            GET.FIELD3,
+            GET.FIELD4,
+            GET.FIELD5,
+            Max(GET.DATE_REPORTED) As DATE_REPORTED,
+            GET.DATE_RETEST,
+            GET.REMARK
+        From
+            X003ec_get_previous GET
+        Group By
+            GET.FIELD1        
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
     # ADD PREVIOUS FINDINGS
     sr_file = "X002cd_dob_addprev"
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
@@ -895,22 +974,21 @@ def People_test_masterfile():
         print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         SELECT
-          X002cb_dob_inva.*,
-          'dob_invalid' AS PROCESS,
-          '%TODAY%' AS DATE_REPORTED,
-          '%TODAYPLUS%' AS DATE_RETEST,
-          X002cc_dob_getprev.PROCESS AS PREV_PROCESS,
-          X002cc_dob_getprev.DATE_REPORTED AS PREV_DATE_REPORTED,
-          X002cc_dob_getprev.DATE_RETEST AS PREV_DATE_RETEST,
-          X002cc_dob_getprev.DATE_MAILED
+            X002cb_dob_inva.*,
+            'dob_invalid' AS PROCESS,
+            '%TODAY%' AS DATE_REPORTED,
+            '%TODAYPLUS%' AS DATE_RETEST,
+            PREV.PROCESS AS PREV_PROCESS,
+            PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
+            PREV.DATE_RETEST AS PREV_DATE_RETEST,
+            PREV.REMARK
         FROM
-          X002cb_dob_inva
-          LEFT JOIN X002cc_dob_getprev ON X002cc_dob_getprev.FIELD1 = X002cb_dob_inva.EMP AND
-              X002cc_dob_getprev.DATE_RETEST >= Date('%TODAY%')
+            X002cb_dob_inva Left Join
+            X002cc_dob_setprev PREV ON PREV.FIELD1 = X002cb_dob_inva.EMP
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(10))
+        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -921,19 +999,20 @@ def People_test_masterfile():
     if i_find > 0:
         s_sql = "CREATE TABLE "+sr_file+" AS " + """
         SELECT
-          X002cd_dob_addprev.PROCESS,
-          X002cd_dob_addprev.EMP AS FIELD1,
-          '' AS FIELD2,
-          '' AS FIELD3,
-          '' AS FIELD4,
-          '' AS FIELD5,
-          X002cd_dob_addprev.DATE_REPORTED,
-          X002cd_dob_addprev.DATE_RETEST,
-          X002cd_dob_addprev.DATE_MAILED
+            PREV.PROCESS,
+            PREV.EMP AS FIELD1,
+            '' AS FIELD2,
+            '' AS FIELD3,
+            '' AS FIELD4,
+            '' AS FIELD5,
+            PREV.DATE_REPORTED,
+            PREV.DATE_RETEST,
+            PREV.REMARK
         FROM
-          X002cd_dob_addprev
+            X002cd_dob_addprev PREV
         WHERE
-          X002cd_dob_addprev.PREV_PROCESS IS NULL
+            PREV.PREV_PROCESS IS NULL Or
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
         so_curs.execute(s_sql)
@@ -1171,7 +1250,7 @@ def People_test_masterfile():
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0:
         print("Import previously reported findings...")
-        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,DATE_MAILED TEXT)")
+        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,REMARK TEXT)")
         s_cols = ""
         co = open(ed_path + "001_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -1190,6 +1269,32 @@ def People_test_masterfile():
         co.close()
         funcfile.writelog("%t IMPORT TABLE: " + ed_path + "001_reported.txt (" + sr_file + ")")
 
+    # SET PREVIOUS FINDINGS
+    sr_file = "X002dc_sex_setprev"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_find > 0:
+        print("Obtain the latest previous finding...")
+        s_sql = "Create Table " + sr_file + " As" + """
+        Select
+            GET.PROCESS,
+            GET.FIELD1,
+            GET.FIELD2,
+            GET.FIELD3,
+            GET.FIELD4,
+            GET.FIELD5,
+            Max(GET.DATE_REPORTED) As DATE_REPORTED,
+            GET.DATE_RETEST,
+            GET.REMARK
+        From
+            X003ec_get_previous GET
+        Group By
+            GET.FIELD1        
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
     # ADD PREVIOUS FINDINGS
     sr_file = "X002dd_sex_addprev"
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
@@ -1197,22 +1302,21 @@ def People_test_masterfile():
         print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         SELECT
-          X002db_sex_inva.*,
-          'sex_invalid' AS PROCESS,
-          '%TODAY%' AS DATE_REPORTED,
-          '%TODAYPLUS%' AS DATE_RETEST,
-          X002dc_sex_getprev.PROCESS AS PREV_PROCESS,
-          X002dc_sex_getprev.DATE_REPORTED AS PREV_DATE_REPORTED,
-          X002dc_sex_getprev.DATE_RETEST AS PREV_DATE_RETEST,
-          X002dc_sex_getprev.DATE_MAILED
+            X002db_sex_inva.*,
+            'sex_invalid' AS PROCESS,
+            '%TODAY%' AS DATE_REPORTED,
+            '%TODAYPLUS%' AS DATE_RETEST,
+            PREV.PROCESS AS PREV_PROCESS,
+            PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
+            PREV.DATE_RETEST AS PREV_DATE_RETEST,
+            PREV.REMARK
         FROM
-          X002db_sex_inva
-          LEFT JOIN X002dc_sex_getprev ON X002dc_sex_getprev.FIELD1 = X002db_sex_inva.EMP AND
-              X002dc_sex_getprev.DATE_RETEST >= Date('%TODAY%')
+            X002db_sex_inva Left Join
+            X002dc_sex_setprev PREV ON PREV.FIELD1 = X002db_sex_inva.EMP
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(10))
+        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -1223,19 +1327,20 @@ def People_test_masterfile():
     if i_find > 0:
         s_sql = "CREATE TABLE "+sr_file+" AS " + """
         SELECT
-          X002dd_sex_addprev.PROCESS,
-          X002dd_sex_addprev.EMP AS FIELD1,
-          '' AS FIELD2,
-          '' AS FIELD3,
-          '' AS FIELD4,
-          '' AS FIELD5,
-          X002dd_sex_addprev.DATE_REPORTED,
-          X002dd_sex_addprev.DATE_RETEST,
-          X002dd_sex_addprev.DATE_MAILED
+            PREV.PROCESS,
+            PREV.EMP AS FIELD1,
+            '' AS FIELD2,
+            '' AS FIELD3,
+            '' AS FIELD4,
+            '' AS FIELD5,
+            PREV.DATE_REPORTED,
+            PREV.DATE_RETEST,
+            PREV.REMARK
         FROM
-          X002dd_sex_addprev
+            X002dd_sex_addprev PREV
         WHERE
-          X002dd_sex_addprev.PREV_PROCESS IS NULL
+            PREV.PREV_PROCESS IS NULL And
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
         so_curs.execute(s_sql)
@@ -1464,7 +1569,7 @@ def People_test_masterfile():
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0:
         print("Import previously reported findings...")
-        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,DATE_MAILED TEXT)")
+        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,REMARK TEXT)")
         s_cols = ""
         co = open(ed_path + "001_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -1483,30 +1588,54 @@ def People_test_masterfile():
         co.close()
         funcfile.writelog("%t IMPORT TABLE: " + ed_path + "001_reported.txt (" + sr_file + ")")
 
+    # SET PREVIOUS FINDINGS
+    sr_file = "X002ec_id_setprev"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_find > 0:
+        print("Obtain the latest previous finding...")
+        s_sql = "Create Table " + sr_file + " As" + """
+        Select
+            GET.PROCESS,
+            GET.FIELD1,
+            GET.FIELD2,
+            GET.FIELD3,
+            GET.FIELD4,
+            GET.FIELD5,
+            Max(GET.DATE_REPORTED) As DATE_REPORTED,
+            GET.DATE_RETEST,
+            GET.REMARK
+        From
+            X003ec_get_previous GET
+        Group By
+            GET.FIELD1        
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
     # ADD PREVIOUS FINDINGS
-    # NOTE ADD CODE
     sr_file = "X002ed_id_addprev"
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0:
         print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         SELECT
-          X002eb_id_dupl.*,
-          'id_duplicate' AS PROCESS,
-          '%TODAY%' AS DATE_REPORTED,
-          '%TODAYPLUS%' AS DATE_RETEST,
-          X002ec_id_getprev.PROCESS AS PREV_PROCESS,
-          X002ec_id_getprev.DATE_REPORTED AS PREV_DATE_REPORTED,
-          X002ec_id_getprev.DATE_RETEST AS PREV_DATE_RETEST,
-          X002ec_id_getprev.DATE_MAILED
+            X002eb_id_dupl.*,
+            'id_duplicate' AS PROCESS,
+            '%TODAY%' AS DATE_REPORTED,
+            '%TODAYPLUS%' AS DATE_RETEST,
+            PREV.PROCESS AS PREV_PROCESS,
+            PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
+            PREV.DATE_RETEST AS PREV_DATE_RETEST,
+            PREV.REMARK
         FROM
-          X002eb_id_dupl
-          LEFT JOIN X002ec_id_getprev ON X002ec_id_getprev.FIELD1 = X002eb_id_dupl.EMP AND
-              X002ec_id_getprev.DATE_RETEST >= Date('%TODAY%')
+            X002eb_id_dupl Left Join
+            X002ec_id_setprev PREV ON PREV.FIELD1 = X002eb_id_dupl.EMP
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(10))
+        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -1518,19 +1647,20 @@ def People_test_masterfile():
     if i_find > 0:
         s_sql = "CREATE TABLE "+sr_file+" AS " + """
         SELECT
-          X002ed_id_addprev.PROCESS,
-          X002ed_id_addprev.EMP AS FIELD1,
-          '' AS FIELD2,
-          '' AS FIELD3,
-          '' AS FIELD4,
-          '' AS FIELD5,
-          X002ed_id_addprev.DATE_REPORTED,
-          X002ed_id_addprev.DATE_RETEST,
-          X002ed_id_addprev.DATE_MAILED
+            PREV.PROCESS,
+            PREV.EMP AS FIELD1,
+            '' AS FIELD2,
+            '' AS FIELD3,
+            '' AS FIELD4,
+            '' AS FIELD5,
+            PREV.DATE_REPORTED,
+            PREV.DATE_RETEST,
+            PREV.REMARK
         FROM
-          X002ed_id_addprev
+            X002ed_id_addprev PREV
         WHERE
-          X002ed_id_addprev.PREV_PROCESS IS NULL
+            PREV.PREV_PROCESS IS NULL And
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
         so_curs.execute(s_sql)
@@ -1778,7 +1908,7 @@ def People_test_masterfile():
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0:
         print("Import previously reported findings...")
-        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,DATE_MAILED TEXT)")
+        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,REMARK TEXT)")
         s_cols = ""
         co = open(ed_path + "001_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -1797,30 +1927,54 @@ def People_test_masterfile():
         co.close()
         funcfile.writelog("%t IMPORT TABLE: " + ed_path + "001_reported.txt (" + sr_file + ")")
 
+    # SET PREVIOUS FINDINGS
+    sr_file = "X003ac_setprev"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_find > 0:
+        print("Obtain the latest previous finding...")
+        s_sql = "Create Table " + sr_file + " As" + """
+        Select
+            GET.PROCESS,
+            GET.FIELD1,
+            GET.FIELD2,
+            GET.FIELD3,
+            GET.FIELD4,
+            GET.FIELD5,
+            Max(GET.DATE_REPORTED) As DATE_REPORTED,
+            GET.DATE_RETEST,
+            GET.REMARK
+        From
+            X003ac_pass_getprev GET
+        Group By
+            GET.FIELD1        
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
     # ADD PREVIOUS FINDINGS
-    # NOTE ADD CODE
     sr_file = "X003ad_pass_addprev"
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0:
         print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         SELECT
-          X003ab_pass_blank.*,
-          'passport_blank' AS PROCESS,
-          '%TODAY%' AS DATE_REPORTED,
-          '%TODAYPLUS%' AS DATE_RETEST,
-          X003ac_pass_getprev.PROCESS AS PREV_PROCESS,
-          X003ac_pass_getprev.DATE_REPORTED AS PREV_DATE_REPORTED,
-          X003ac_pass_getprev.DATE_RETEST AS PREV_DATE_RETEST,
-          X003ac_pass_getprev.DATE_MAILED
+            X003ab_pass_blank.*,
+            'passport_blank' AS PROCESS,
+            '%TODAY%' AS DATE_REPORTED,
+            '%TODAYPLUS%' AS DATE_RETEST,
+            PREV.PROCESS AS PREV_PROCESS,
+            PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
+            PREV.DATE_RETEST AS PREV_DATE_RETEST,
+            PREV.REMARK
         FROM
-          X003ab_pass_blank
-          LEFT JOIN X003ac_pass_getprev ON X003ac_pass_getprev.FIELD1 = X003ab_pass_blank.EMP AND
-              X003ac_pass_getprev.DATE_RETEST >= Date('%TODAY%')
+            X003ab_pass_blank Left Join
+            X003ac_setprev PREV ON PREV.FIELD1 = X003ab_pass_blank.EMP
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(10))
+        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -1832,19 +1986,20 @@ def People_test_masterfile():
     if i_find > 0:
         s_sql = "CREATE TABLE "+sr_file+" AS " + """
         SELECT
-          X003ad_pass_addprev.PROCESS,
-          X003ad_pass_addprev.EMP AS FIELD1,
-          '' AS FIELD2,
-          '' AS FIELD3,
-          '' AS FIELD4,
-          '' AS FIELD5,
-          X003ad_pass_addprev.DATE_REPORTED,
-          X003ad_pass_addprev.DATE_RETEST,
-          X003ad_pass_addprev.DATE_MAILED
+            PREV.PROCESS,
+            PREV.EMP AS FIELD1,
+            '' AS FIELD2,
+            '' AS FIELD3,
+            '' AS FIELD4,
+            '' AS FIELD5,
+            PREV.DATE_REPORTED,
+            PREV.DATE_RETEST,
+            PREV.REMARK
         FROM
-          X003ad_pass_addprev
+            X003ad_pass_addprev PREV
         WHERE
-          X003ad_pass_addprev.PREV_PROCESS IS NULL
+            PREV.PREV_PROCESS IS NULL Or
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
         so_curs.execute(s_sql)
@@ -2065,7 +2220,7 @@ def People_test_masterfile():
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0:
         print("Import previously reported findings...")
-        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,DATE_MAILED TEXT)")
+        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,REMARK TEXT)")
         s_cols = ""
         co = open(ed_path + "001_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -2084,6 +2239,32 @@ def People_test_masterfile():
         co.close()
         funcfile.writelog("%t IMPORT TABLE: " + ed_path + "001_reported.txt (" + sr_file + ")")
 
+    # SET PREVIOUS FINDINGS
+    sr_file = "X003bc_setprev"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_find > 0:
+        print("Obtain the latest previous finding...")
+        s_sql = "Create Table " + sr_file + " As" + """
+        Select
+            GET.PROCESS,
+            GET.FIELD1,
+            GET.FIELD2,
+            GET.FIELD3,
+            GET.FIELD4,
+            GET.FIELD5,
+            Max(GET.DATE_REPORTED) As DATE_REPORTED,
+            GET.DATE_RETEST,
+            GET.REMARK
+        From
+            X003bc_pass_getprev GET
+        Group By
+            GET.FIELD1        
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
     # ADD PREVIOUS FINDINGS
     # NOTE ADD CODE
     sr_file = "X003bd_pass_addprev"
@@ -2092,22 +2273,21 @@ def People_test_masterfile():
         print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         SELECT
-          X003bb_pass_dupl.*,
-          'passport_duplicate' AS PROCESS,
-          '%TODAY%' AS DATE_REPORTED,
-          '%TODAYPLUS%' AS DATE_RETEST,
-          X003bc_pass_getprev.PROCESS AS PREV_PROCESS,
-          X003bc_pass_getprev.DATE_REPORTED AS PREV_DATE_REPORTED,
-          X003bc_pass_getprev.DATE_RETEST AS PREV_DATE_RETEST,
-          X003bc_pass_getprev.DATE_MAILED
+            X003bb_pass_dupl.*,
+            'passport_duplicate' AS PROCESS,
+            '%TODAY%' AS DATE_REPORTED,
+            '%TODAYPLUS%' AS DATE_RETEST,
+            PREV.PROCESS AS PREV_PROCESS,
+            PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
+            PREV.DATE_RETEST AS PREV_DATE_RETEST,
+            PREV.REMARK
         FROM
-          X003bb_pass_dupl
-          LEFT JOIN X003bc_pass_getprev ON X003bc_pass_getprev.FIELD1 = X003bb_pass_dupl.EMP AND
-              X003bc_pass_getprev.DATE_RETEST >= Date('%TODAY%')
+            X003bb_pass_dupl Left Join
+            X003bc_setprev PREV ON PREV.FIELD1 = X003bb_pass_dupl.EMP
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(10))
+        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -2119,19 +2299,20 @@ def People_test_masterfile():
     if i_find > 0:
         s_sql = "CREATE TABLE "+sr_file+" AS " + """
         SELECT
-          X003bd_pass_addprev.PROCESS,
-          X003bd_pass_addprev.EMP AS FIELD1,
-          '' AS FIELD2,
-          '' AS FIELD3,
-          '' AS FIELD4,
-          '' AS FIELD5,
-          X003bd_pass_addprev.DATE_REPORTED,
-          X003bd_pass_addprev.DATE_RETEST,
-          X003bd_pass_addprev.DATE_MAILED
+            PREV.PROCESS,
+            PREV.EMP AS FIELD1,
+            '' AS FIELD2,
+            '' AS FIELD3,
+            '' AS FIELD4,
+            '' AS FIELD5,
+            PREV.DATE_REPORTED,
+            PREV.DATE_RETEST,
+            PREV.REMARK
         FROM
-          X003bd_pass_addprev
+            X003bd_pass_addprev PREV
         WHERE
-          X003bd_pass_addprev.PREV_PROCESS IS NULL
+            PREV.PREV_PROCESS IS NULL Or
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
         so_curs.execute(s_sql)
@@ -2338,7 +2519,8 @@ def People_test_masterfile():
     From
         X003ea_permit_expire CURR
     Where
-        CURR.PERMIT <> '' And
+        CURR.NUMB <> '' And
+        CURR.EXPIRE_DATE >= Date('1900-01-01') And
         CURR.EXPIRE_DATE < Date('%TODAY%')
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -2353,42 +2535,14 @@ def People_test_masterfile():
     funcfile.writelog("%t FINDING: " + str(i_finding_before) + " EMPL WORK PERMIT EXPIRED finding(s)")
 
     # GET PREVIOUS FINDINGS
-    sr_file = "X003ec_get_previous"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
-        print("Import previously reported findings...")
-        so_curs.execute(
-            "CREATE TABLE " + sr_file + """
-            (PROCESS TEXT,
-            FIELD1 INT,
-            FIELD2 TEXT,
-            FIELD3 TEXT,
-            FIELD4 TEXT,
-            FIELD5 TEXT,
-            DATE_REPORTED TEXT,
-            DATE_RETEST TEXT,
-            DATE_MAILED TEXT)
-            """)
-        s_cols = ""
-        co = open(ed_path + "001_reported.txt", "r")
-        co_reader = csv.reader(co)
-        # Read the COLUMN database data
-        for row in co_reader:
-            # Populate the column variables
-            if row[0] == "PROCESS":
-                continue
-            elif row[0] != "work_permit_expire":
-                continue
-            else:
-                s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "','" + \
-                         row[
-                             3] + "','" + row[4] + "','" + row[5] + "','" + row[6] + "','" + row[7] + "','" + row[
-                             8] + "')"
-                so_curs.execute(s_cols)
+        i = functest.get_previous_finding(so_curs, ed_path, "001_reported.txt", "work_permit_expire", "ITTTT")
         so_conn.commit()
-        # Close the imported data file
-        co.close()
-        funcfile.writelog("%t IMPORT TABLE: " + ed_path + "001_reported.txt (" + sr_file + ")")
+
+    # SET PREVIOUS FINDINGS
+    if i_finding_before > 0:
+        i = functest.set_previous_finding(so_curs)
+        so_conn.commit()
 
     # ADD PREVIOUS FINDINGS
     sr_file = "X003ed_add_previous"
@@ -2404,15 +2558,14 @@ def People_test_masterfile():
             PREV.PROCESS AS PREV_PROCESS,
             PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
             PREV.DATE_RETEST AS PREV_DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X003eb_findings FIND Left Join
-            X003ec_get_previous PREV ON PREV.FIELD1 = FIND.EMP AND
-                PREV.DATE_RETEST >= Date('%TODAY%')
+            Z001ab_setprev PREV ON PREV.FIELD1 = FIND.EMP
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.today_plusdays(30))
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -2432,11 +2585,12 @@ def People_test_masterfile():
             '' AS FIELD5,
             PREV.DATE_REPORTED,
             PREV.DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X003ed_add_previous PREV
         Where
-            PREV.PREV_PROCESS Is Null
+            PREV.PREV_PROCESS Is Null Or
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""        
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -2460,53 +2614,14 @@ def People_test_masterfile():
             funcfile.writelog("%t FINDING: No new findings to export")
 
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
-    sr_file = "X003ef_officer"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    if i_finding_before > 0:
-        if i_finding_after > 0:
-            print("Import reporting officers for mail purposes...")
-            s_sql = "CREATE TABLE " + sr_file + " AS " + """
-            Select
-                OFFICER.LOOKUP,
-                OFFICER.LOOKUP_CODE AS CAMPUS,
-                OFFICER.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-                PEOP.NAME_ADDR As NAME,
-                PEOP.EMAIL_ADDRESS
-            From
-                PEOPLE.X000_OWN_HR_LOOKUPS OFFICER Left Join
-                PEOPLE.X002_PEOPLE_CURR PEOP ON
-                    PEOP.EMPLOYEE_NUMBER = OFFICER.LOOKUP_DESCRIPTION
-            Where
-                OFFICER.LOOKUP = 'TEST_WORK_PERMIT_EXPIRE_OFFICER'
-            ;"""
-            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-            so_curs.execute(s_sql)
-            so_conn.commit()
-            funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    if i_finding_before > 0 and i_finding_after > 0:
+        i = functest.get_officer(so_curs, "HR", "TEST_WORK_PERMIT_EXPIRE_OFFICER")
+        so_conn.commit()
 
     # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
-    sr_file = "X003eg_supervisor"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0 and i_finding_after > 0:
-        print("Import reporting supervisors for mail purposes...")
-        s_sql = "CREATE TABLE " + sr_file + " AS " + """
-        Select
-            SUPERVISOR.LOOKUP,
-            SUPERVISOR.LOOKUP_CODE AS CAMPUS,
-            SUPERVISOR.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-            PEOP.NAME_ADDR As NAME,
-            PEOP.EMAIL_ADDRESS
-        From
-            PEOPLE.X000_OWN_HR_LOOKUPS SUPERVISOR Left Join
-            PEOPLE.X002_PEOPLE_CURR PEOP ON 
-                PEOP.EMPLOYEE_NUMBER = SUPERVISOR.LOOKUP_DESCRIPTION
-        Where
-            SUPERVISOR.LOOKUP = 'TEST_WORK_PERMIT_EXPIRE_SUPERVISOR'
-        ;"""
-        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        so_curs.execute(s_sql)
+        i = functest.get_supervisor(so_curs, "HR", "TEST_WORK_PERMIT_EXPIRE_SUPERVISOR")
         so_conn.commit()
-        funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # ADD CONTACT DETAILS TO FINDINGS
     sr_file = "X003eh_detail"
@@ -2524,26 +2639,27 @@ def People_test_masterfile():
             PREV.PERMIT,
             PREV.EXPIRE_DATE,
             CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
-            CAMP_OFF.NAME As CAMP_OFF_NAME,
+            CAMP_OFF.NAME_ADDR As CAMP_OFF_NAME,
             CAMP_OFF.EMAIL_ADDRESS As CAMP_OFF_MAIL,
             CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
-            CAMP_SUP.NAME As CAMP_SUP_NAME,
+            CAMP_SUP.NAME_ADDR As CAMP_SUP_NAME,
             CAMP_SUP.EMAIL_ADDRESS As CAMP_SUP_MAIL,
             ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
-            ORG_OFF.NAME As ORG_OFF_NAME,
+            ORG_OFF.NAME_ADDR As ORG_OFF_NAME,
             ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL,
             ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
-            ORG_SUP.NAME As ORG_SUP_NAME,
+            ORG_SUP.NAME_ADDR As ORG_SUP_NAME,
             ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL
         From
             X003ed_add_previous PREV
             Left Join PEOPLE.X002_PEOPLE_CURR PEOP On PEOP.EMPLOYEE_NUMBER = PREV.EMP
-            Left Join X003ef_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.LOC
-            Left Join X003ef_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG
-            Left Join X003eg_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.LOC
-            Left Join X003eg_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG
+            Left Join Z001af_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.LOC
+            Left Join Z001af_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG
+            Left Join Z001ag_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.LOC
+            Left Join Z001ag_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG
         Where
-          PREV.PREV_PROCESS IS NULL
+            PREV.PREV_PROCESS Is Null Or
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -2694,7 +2810,7 @@ def People_test_masterfile():
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0:
         print("Import previously reported findings...")
-        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,DATE_MAILED TEXT)")
+        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,REMARK TEXT)")
         s_cols = ""
         co = open(ed_path + "001_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -2713,6 +2829,32 @@ def People_test_masterfile():
         co.close()
         funcfile.writelog("%t IMPORT TABLE: " + ed_path + "001_reported.txt (" + sr_file + ")")
 
+    # SET PREVIOUS FINDINGS
+    sr_file = "X004ac_setprev"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_find > 0:
+        print("Obtain the latest previous finding...")
+        s_sql = "Create Table " + sr_file + " As" + """
+        Select
+            GET.PROCESS,
+            GET.FIELD1,
+            GET.FIELD2,
+            GET.FIELD3,
+            GET.FIELD4,
+            GET.FIELD5,
+            Max(GET.DATE_REPORTED) As DATE_REPORTED,
+            GET.DATE_RETEST,
+            GET.REMARK
+        From
+            X004ac_bank_getprev GET
+        Group By
+            GET.FIELD1        
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
     # ADD PREVIOUS FINDINGS
     sr_file = "X004ad_bank_addprev"
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
@@ -2720,46 +2862,45 @@ def People_test_masterfile():
         print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         SELECT
-          X004ab_bank_dupl.*,
-          'bank_duplicate' AS PROCESS,
-          '%TODAY%' AS DATE_REPORTED,
-          '%TODAYPLUS%' AS DATE_RETEST,
-          X004ac_bank_getprev.PROCESS AS PREV_PROCESS,
-          X004ac_bank_getprev.DATE_REPORTED AS PREV_DATE_REPORTED,
-          X004ac_bank_getprev.DATE_RETEST AS PREV_DATE_RETEST,
-          X004ac_bank_getprev.DATE_MAILED
+            X004ab_bank_dupl.*,
+            'bank_duplicate' AS PROCESS,
+            '%TODAY%' AS DATE_REPORTED,
+            '%TODAYPLUS%' AS DATE_RETEST,
+            PREV.PROCESS AS PREV_PROCESS,
+            PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
+            PREV.DATE_RETEST AS PREV_DATE_RETEST,
+            PREV.REMARK
         FROM
-          X004ab_bank_dupl
-          LEFT JOIN X004ac_bank_getprev ON X004ac_bank_getprev.FIELD1 = X004ab_bank_dupl.EMP AND
-              X004ac_bank_getprev.DATE_RETEST >= Date('%TODAY%')
+            X004ab_bank_dupl Left Join
+            X004ac_setprev PREV ON PREV.FIELD1 = X004ab_bank_dupl.EMP
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(20000))
+        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.cur_yearend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD LIST TO UPDATE FINDINGS
-    # NOTE ADD CODE
     sr_file = "X004ae_bank_newprev"
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0:
         s_sql = "CREATE TABLE "+sr_file+" AS " + """
         SELECT
-          X004ad_bank_addprev.PROCESS,
-          X004ad_bank_addprev.EMP AS FIELD1,
-          '' AS FIELD2,
-          '' AS FIELD3,
-          '' AS FIELD4,
-          '' AS FIELD5,
-          X004ad_bank_addprev.DATE_REPORTED,
-          X004ad_bank_addprev.DATE_RETEST,
-          X004ad_bank_addprev.DATE_MAILED
+            PREV.PROCESS,
+            PREV.EMP AS FIELD1,
+            '' AS FIELD2,
+            '' AS FIELD3,
+            '' AS FIELD4,
+            '' AS FIELD5,
+            PREV.DATE_REPORTED,
+            PREV.DATE_RETEST,
+            PREV.REMARK
         FROM
-          X004ad_bank_addprev
+            X004ad_bank_addprev PREV
         WHERE
-          X004ad_bank_addprev.PREV_PROCESS IS NULL
+            PREV.PREV_PROCESS IS NULL Or
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
         so_curs.execute(s_sql)
@@ -3002,7 +3143,7 @@ def People_test_masterfile():
             FIELD5 TEXT,
             DATE_REPORTED TEXT,
             DATE_RETEST TEXT,
-            DATE_MAILED TEXT)
+            REMARK TEXT)
             """)
         s_cols = ""
         co = open(ed_path + "001_reported.txt", "r")
@@ -3039,7 +3180,7 @@ def People_test_masterfile():
             PREV.PROCESS AS PREV_PROCESS,
             PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
             PREV.DATE_RETEST AS PREV_DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X004cb_findings FIND
             LEFT JOIN X004cc_get_previous PREV ON PREV.FIELD1 = FIND.EMP AND
@@ -3067,7 +3208,7 @@ def People_test_masterfile():
             '' AS FIELD5,
             PREV.DATE_REPORTED,
             PREV.DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X004cd_add_previous PREV
         Where
@@ -3414,7 +3555,7 @@ def People_test_masterfile():
             FIELD5 TEXT,
             DATE_REPORTED TEXT,
             DATE_RETEST TEXT,
-            DATE_MAILED TEXT)
+            REMARK TEXT)
             """)
         s_cols = ""
         co = open(ed_path + "001_reported.txt", "r")
@@ -3449,7 +3590,7 @@ def People_test_masterfile():
           X004bc_bank_getprev.PROCESS AS PREV_PROCESS,
           X004bc_bank_getprev.DATE_REPORTED AS PREV_DATE_REPORTED,
           X004bc_bank_getprev.DATE_RETEST AS PREV_DATE_RETEST,
-          X004bc_bank_getprev.DATE_MAILED
+          X004bc_bank_getprev.REMARK
         FROM
           X004bb_bank_verify
           LEFT JOIN X004bc_bank_getprev ON X004bc_bank_getprev.FIELD1 = X004bb_bank_verify.EMP AND
@@ -3478,7 +3619,7 @@ def People_test_masterfile():
           '' AS FIELD5,
           X004bd_bank_addprev.DATE_REPORTED,
           X004bd_bank_addprev.DATE_RETEST,
-          X004bd_bank_addprev.DATE_MAILED
+          X004bd_bank_addprev.REMARK
         FROM
           X004bd_bank_addprev
         WHERE
@@ -3762,7 +3903,7 @@ def People_test_masterfile():
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0:
         print("Import previously reported findings...")
-        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,DATE_MAILED TEXT)")
+        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,REMARK TEXT)")
         s_cols = ""
         co = open(ed_path + "001_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -3796,7 +3937,7 @@ def People_test_masterfile():
           X005ac_paye_getprev.PROCESS AS PREV_PROCESS,
           X005ac_paye_getprev.DATE_REPORTED AS PREV_DATE_REPORTED,
           X005ac_paye_getprev.DATE_RETEST AS PREV_DATE_RETEST,
-          X005ac_paye_getprev.DATE_MAILED
+          X005ac_paye_getprev.REMARK
         FROM
           X005ab_paye_blank
           LEFT JOIN X005ac_paye_getprev ON X005ac_paye_getprev.FIELD1 = X005ab_paye_blank.EMP AND
@@ -3804,7 +3945,7 @@ def People_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(30))
+        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -3824,7 +3965,7 @@ def People_test_masterfile():
           '' AS FIELD5,
           X005ad_paye_addprev.DATE_REPORTED,
           X005ad_paye_addprev.DATE_RETEST,
-          X005ad_paye_addprev.DATE_MAILED
+          X005ad_paye_addprev.REMARK
         FROM
           X005ad_paye_addprev
         WHERE
@@ -4092,7 +4233,7 @@ def People_test_masterfile():
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0:
         print("Import previously reported findings...")
-        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,DATE_MAILED TEXT)")
+        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,REMARK TEXT)")
         s_cols = ""
         co = open(ed_path + "001_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -4126,7 +4267,7 @@ def People_test_masterfile():
           X005bc_paye_getprev.PROCESS AS PREV_PROCESS,
           X005bc_paye_getprev.DATE_REPORTED AS PREV_DATE_REPORTED,
           X005bc_paye_getprev.DATE_RETEST AS PREV_DATE_RETEST,
-          X005bc_paye_getprev.DATE_MAILED
+          X005bc_paye_getprev.REMARK
         FROM
           X005bb_paye_inva
           LEFT JOIN X005bc_paye_getprev ON X005bc_paye_getprev.FIELD1 = X005bb_paye_inva.EMP AND
@@ -4134,7 +4275,7 @@ def People_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(10))
+        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -4154,7 +4295,7 @@ def People_test_masterfile():
           '' AS FIELD5,
           X005bd_paye_addprev.DATE_REPORTED,
           X005bd_paye_addprev.DATE_RETEST,
-          X005bd_paye_addprev.DATE_MAILED
+          X005bd_paye_addprev.REMARK
         FROM
           X005bd_paye_addprev
         WHERE
@@ -4380,7 +4521,7 @@ def People_test_masterfile():
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0:
         print("Import previously reported findings...")
-        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,DATE_MAILED TEXT)")
+        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,REMARK TEXT)")
         s_cols = ""
         co = open(ed_path + "001_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -4414,7 +4555,7 @@ def People_test_masterfile():
           X005cc_paye_getprev.PROCESS AS PREV_PROCESS,
           X005cc_paye_getprev.DATE_REPORTED AS PREV_DATE_REPORTED,
           X005cc_paye_getprev.DATE_RETEST AS PREV_DATE_RETEST,
-          X005cc_paye_getprev.DATE_MAILED
+          X005cc_paye_getprev.REMARK
         FROM
           X005cb_paye_dupl
           LEFT JOIN X005cc_paye_getprev ON X005cc_paye_getprev.FIELD1 = X005cb_paye_dupl.EMP AND
@@ -4422,7 +4563,7 @@ def People_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(10))
+        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -4442,7 +4583,7 @@ def People_test_masterfile():
           '' AS FIELD5,
           X005cd_paye_addprev.DATE_REPORTED,
           X005cd_paye_addprev.DATE_RETEST,
-          X005cd_paye_addprev.DATE_MAILED
+          X005cd_paye_addprev.REMARK
         FROM
           X005cd_paye_addprev
         WHERE
@@ -4696,7 +4837,7 @@ def People_test_masterfile():
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0:
         print("Import previously reported findings...")
-        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,DATE_MAILED TEXT)")
+        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,REMARK TEXT)")
         s_cols = ""
         co = open(ed_path + "001_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -4730,7 +4871,7 @@ def People_test_masterfile():
           X006ac_name_getprev.PROCESS AS PREV_PROCESS,
           X006ac_name_getprev.DATE_REPORTED AS PREV_DATE_REPORTED,
           X006ac_name_getprev.DATE_RETEST AS PREV_DATE_RETEST,
-          X006ac_name_getprev.DATE_MAILED
+          X006ac_name_getprev.REMARK
         FROM
           X006ab_name_dupl
           LEFT JOIN X006ac_name_getprev ON X006ac_name_getprev.FIELD1 = X006ab_name_dupl.EMP AND
@@ -4758,7 +4899,7 @@ def People_test_masterfile():
           '' AS FIELD5,
           X006ad_name_addprev.DATE_REPORTED,
           X006ad_name_addprev.DATE_RETEST,
-          X006ad_name_addprev.DATE_MAILED
+          X006ad_name_addprev.REMARK
         FROM
           X006ad_name_addprev
         WHERE
@@ -5182,7 +5323,7 @@ def People_test_masterfile():
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0:
         print("Import previously reported findings...")
-        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,DATE_MAILED TEXT)")
+        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,REMARK TEXT)")
         s_cols = ""
         co = open(ed_path + "001_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -5215,7 +5356,7 @@ def People_test_masterfile():
           PREV.PROCESS AS PREV_PROCESS,
           PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
           PREV.DATE_RETEST AS PREV_DATE_RETEST,
-          PREV.DATE_MAILED
+          PREV.REMARK
         From
           X007ab_detail FIND Left Join
           X007ac_getprev PREV ON PREV.FIELD1 = FIND.EMPLOYEE_NUMBER AND
@@ -5223,7 +5364,7 @@ def People_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(10))
+        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -5242,7 +5383,7 @@ def People_test_masterfile():
           '' AS FIELD5,
           FIND.DATE_REPORTED,
           FIND.DATE_RETEST,
-          FIND.DATE_MAILED
+          FIND.REMARK
         From
           X007ad_addprev FIND
         Where
@@ -5460,7 +5601,7 @@ def People_test_masterfile():
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0:
         print("Import previously reported findings...")
-        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,DATE_MAILED TEXT)")
+        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,REMARK TEXT)")
         s_cols = ""
         co = open(ed_path + "001_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -5493,7 +5634,7 @@ def People_test_masterfile():
           PREV.PROCESS AS PREV_PROCESS,
           PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
           PREV.DATE_RETEST AS PREV_DATE_RETEST,
-          PREV.DATE_MAILED
+          PREV.REMARK
         From
           X007bb_detail FIND Left Join
           X007bc_getprev PREV ON PREV.FIELD1 = FIND.EMPLOYEE_NUMBER AND
@@ -5501,7 +5642,7 @@ def People_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(10))
+        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -5520,7 +5661,7 @@ def People_test_masterfile():
           '' AS FIELD5,
           FIND.DATE_REPORTED,
           FIND.DATE_RETEST,
-          FIND.DATE_MAILED
+          FIND.REMARK
         From
           X007bd_addprev FIND
         Where
@@ -5768,7 +5909,7 @@ def People_test_masterfile():
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     if i_find > 0:
         print("Import previously reported findings...")
-        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,DATE_MAILED TEXT)")
+        so_curs.execute("CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,REMARK TEXT)")
         s_cols = ""
         co = open(ed_path + "001_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -5801,7 +5942,7 @@ def People_test_masterfile():
           PREV.PROCESS AS PREV_PROCESS,
           PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
           PREV.DATE_RETEST AS PREV_DATE_RETEST,
-          PREV.DATE_MAILED
+          PREV.REMARK
         From
           X007cb_detail FIND Left Join
           X007cc_getprev PREV ON PREV.FIELD1 = FIND.EMPLOYEE_NUMBER AND
@@ -5809,7 +5950,7 @@ def People_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(10))
+        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -5828,7 +5969,7 @@ def People_test_masterfile():
           '' AS FIELD5,
           FIND.DATE_REPORTED,
           FIND.DATE_RETEST,
-          FIND.DATE_MAILED
+          FIND.REMARK
         From
           X007cd_addprev FIND
         Where
@@ -6123,7 +6264,7 @@ def People_test_masterfile():
     if i_find > 0:
         print("Import previously reported findings...")
         so_curs.execute(
-            "CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,DATE_MAILED TEXT)")
+            "CREATE TABLE " + sr_file + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT,REMARK TEXT)")
         s_cols = ""
         co = open(ed_path + "001_reported.txt", "r")
         co_reader = csv.reader(co)
@@ -6159,7 +6300,7 @@ def People_test_masterfile():
           PREV.PROCESS AS PREV_PROCESS,
           PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
           PREV.DATE_RETEST AS PREV_DATE_RETEST,
-          PREV.DATE_MAILED
+          PREV.REMARK
         From
           X007db_detail FIND Left Join
           X007dc_getprev PREV ON PREV.FIELD1 = FIND.EMPLOYEE_NUMBER AND
@@ -6167,7 +6308,7 @@ def People_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%", funcdate.today_plusdays(10))
+        s_sql = s_sql.replace("%TODAYPLUS%", funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -6186,7 +6327,7 @@ def People_test_masterfile():
           '' AS FIELD5,
           FIND.DATE_REPORTED,
           FIND.DATE_RETEST,
-          FIND.DATE_MAILED
+          FIND.REMARK
         From
           X007dd_addprev FIND
         Where
@@ -6479,7 +6620,7 @@ def People_test_masterfile():
             FIELD5 TEXT,
             DATE_REPORTED TEXT,
             DATE_RETEST TEXT,
-            DATE_MAILED TEXT)
+            REMARK TEXT)
             """)
         s_cols = ""
         co = open(ed_path + "001_reported.txt", "r")
@@ -6516,7 +6657,7 @@ def People_test_masterfile():
             PREV.PROCESS AS PREV_PROCESS,
             PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
             PREV.DATE_RETEST AS PREV_DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X008ab_findings FIND Left Join
             X008ac_get_previous PREV ON PREV.FIELD1 = FIND.EMP AND
@@ -6544,7 +6685,7 @@ def People_test_masterfile():
             '' AS FIELD5,
             PREV.DATE_REPORTED,
             PREV.DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X008ad_add_previous PREV
         Where
@@ -6783,7 +6924,7 @@ def People_test_masterfile():
             FIELD5 TEXT,
             DATE_REPORTED TEXT,
             DATE_RETEST TEXT,
-            DATE_MAILED TEXT)
+            REMARK TEXT)
             """)
         s_cols = ""
         co = open(ed_path + "001_reported.txt", "r")
@@ -6820,7 +6961,7 @@ def People_test_masterfile():
             PREV.PROCESS AS PREV_PROCESS,
             PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
             PREV.DATE_RETEST AS PREV_DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X008bb_findings FIND Left Join
             X008bc_get_previous PREV ON PREV.FIELD1 = FIND.EMP AND
@@ -6848,7 +6989,7 @@ def People_test_masterfile():
             '' AS FIELD5,
             PREV.DATE_REPORTED,
             PREV.DATE_RETEST,
-            PREV.DATE_MAILED
+            PREV.REMARK
         From
             X008bd_add_previous PREV
         Where
