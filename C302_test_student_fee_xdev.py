@@ -52,6 +52,10 @@ re_path = "R:/Vss/" + s_year
 
 if s_period == "prev":
     f_reg_fee = 1830.00
+    d_sem1_con = "2019-03-05"
+    d_sem1_dis = "2019-03-05"
+    d_sem2_con = "2019-08-09"
+    d_sem2_dis = "2019-08-09"
     so_file = "Vss_test_fee_prev.sqlite"  # Source database
     s_reg_trancode: str = "095"
     s_qual_trancode: str = "004"
@@ -65,6 +69,10 @@ if s_period == "prev":
     l_export: bool = True
 else:
     f_reg_fee = 1930.00
+    d_sem1_con = "2020-02-17"
+    d_sem1_dis = "2020-03-09"
+    d_sem2_con = "2020-07-31"
+    d_sem2_dis = "2020-08-15"
     so_file = "Vss_test_fee.sqlite"  # Source database
     s_reg_trancode: str = "095"
     s_qual_trancode: str = "004"
