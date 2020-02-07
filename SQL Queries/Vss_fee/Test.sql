@@ -1,13 +1,7 @@
 ﻿Select
-    FIND.FMODULEAPID,
-    FIND.CAMPUS,
-    FIND.PRESENT_ID,
-    FIND.PRESENT_CATEGORY,
-    FIND.ENROL_ID,
-    FIND.ENROL_CATEGORY,
-    FIND.MODULE,
-    FIND.MODULE_NAME,
-    FIND.COUNT,
-    FIND.AMOUNT
+    X020ba_Student_master.FEE_LEVIED_TYPE,
+    Count(X020ba_Student_master.VALID) As Count_VALID
 From
-    X031aa_Modu_nofee_loaded FIND
+    X020ba_Student_master
+Group By
+    X020ba_Student_master.FEE_LEVIED_TYPE
