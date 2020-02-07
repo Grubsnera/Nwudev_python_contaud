@@ -108,7 +108,12 @@ def studentlist(so_conn, re_path, s_period='curr', s_year='2019', l_export=False
         QUAL.FOS_KACADEMICPROGRAMID,
         STUD.FPROGRAMAPID,
         QUAL.FENROLMENTCATEGORYCODEID,
-        QUAL.FPRESENTATIONCATEGORYCODEID
+        QUAL.FPRESENTATIONCATEGORYCODEID,
+        Case
+            When STUD.ENROLHISTORYYEAR > 6 Then 6
+            Else STUD.ENROLHISTORYYEAR
+        End As FEEHISTORYYEAR,
+        strftime("%Y", STUD.STARTDATE) - strftime("%Y", STUD.DATEQUALLEVELSTARTED) + 1 As CALCHISTORYYEAR
     From
         QUALLEVELENROLSTUD STUD Left Join
         VSS.X000_Codedescription BLAC ON BLAC.KCODEDESCID = STUD.FBLACKLISTCODEID Left Join
@@ -129,7 +134,7 @@ def studentlist(so_conn, re_path, s_period='curr', s_year='2019', l_export=False
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     # Export the data
-    if l_export == True:
+    if l_export:
         print("Export students all...")
         sr_filet = sr_file
         sx_path = re_path + s_year + "/"
