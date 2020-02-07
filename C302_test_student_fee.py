@@ -35,6 +35,7 @@ TEST REGISTRATION FEE CONTACT ABNORMAL
 QUALIFICATION FEE MASTER 1
 QUALIFICATION FEE TEST NO FEE LOADED
 QUALIFICATION FEE MASTER 2
+QUALIFICATION FEE REPORTS
 UPDATE FEE SHOULD BE COLUMN
 QUALIFICATION FEE TEST NO TRANSACTION CONTACT (1 NO TRANSACTION)
 QUALIFICATION FEE TEST NEGATIVE TRANSACTION (2 NEGATIVE TRANSACTION)
@@ -3149,6 +3150,38 @@ def student_fee(s_period='curr', s_year='0'):
         TRAN_COUNT: The number of qualification (type 004) transactions on the student account.
         NAME:ADDR:  The name of the employee who did the last qualification fee transaction on the student account.
     """
+
+    """*****************************************************************************
+    QUALIFICATION FEE REPORTS
+    *****************************************************************************"""
+    print("QUALIFICATION FEE REPORTS")
+    funcfile.writelog("QUALIFICATION FEE REPORTS")
+
+    # SUMMARIZE QUALIFICATION FEE INCOME
+    print("Summarize qualification fee income...")
+    sr_file = "X020ca_Report_qual_income_summ"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "Create Table " + sr_file + " As " + """
+    Select
+        STUD.ORGUNIT_NAME As Faculty,
+        STUD.CAMPUS As Campus,
+        STUD.FEE_LEVIED_TYPE As Fee_type,
+        STUD.PRESENT_CAT As Present_category,
+        STUD.ENROL_CAT As Enrol_category,
+        Count(STUD.KSTUDBUSENTID) As Student_count,
+        Sum(STUD.FEE_LEVIED) As Total_income
+    From
+        X020ba_Student_master STUD
+    Group By
+        STUD.ORGUNIT_NAME,
+        STUD.CAMPUS,
+        STUD.FEE_LEVIED_TYPE,
+        STUD.PRESENT_CAT,
+        STUD.ENROL_CAT
+    ;"""
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """*****************************************************************************
     QUALIFICATION FEE TEST NO TRANSACTION CONTACT
