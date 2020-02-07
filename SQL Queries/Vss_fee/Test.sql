@@ -1,7 +1,16 @@
 ﻿Select
-    X020ba_Student_master.FEE_LEVIED_TYPE,
-    Count(X020ba_Student_master.VALID) As Count_VALID
+    STUD.ORGUNIT_NAME As Faculty,
+    STUD.CAMPUS As Campus,
+    STUD.FEE_LEVIED_TYPE As Fee_type,
+    STUD.PRESENT_CAT As Present_category,
+    STUD.ENROL_CAT As Enrol_category,
+    Count(STUD.KSTUDBUSENTID) As Student_count,
+    Sum(STUD.FEE_LEVIED) As Total_income
 From
-    X020ba_Student_master
+    X020ba_Student_master STUD
 Group By
-    X020ba_Student_master.FEE_LEVIED_TYPE
+    STUD.ORGUNIT_NAME,
+    STUD.CAMPUS,
+    STUD.FEE_LEVIED_TYPE,
+    STUD.PRESENT_CAT,
+    STUD.ENROL_CAT
