@@ -36,7 +36,7 @@ QUALIFICATION FEE MASTER 1
 QUALIFICATION FEE TEST NO FEE LOADED
 QUALIFICATION FEE MASTER 2
 UPDATE FEE SHOULD BE COLUMN
-QUALIFICATION FEE TEST NO TRANSACTION (1 NO TRANSACTION)
+QUALIFICATION FEE TEST NO TRANSACTION CONTACT (1 NO TRANSACTION)
 QUALIFICATION FEE TEST NEGATIVE TRANSACTION (2 NEGATIVE TRANSACTION)
 QUALIFICATION FEE TEST ZERO TRANSACTION (3 ZERO TRANSACTION)
 QUALIFICATION FEE TEST HALF TRANSACTION (4 HALF TRANSACTION)
@@ -1998,8 +1998,14 @@ def student_fee(s_period='curr', s_year='0'):
         CAST(COUNT(TRAN.STUDENT) As INT) As TRAN_COUNT,
         CAST(TOTAL(TRAN.AMOUNT) AS REAL) AS FEE_QUAL,
         MAX(TRAN.AUDITDATETIME),
-        TRAN.FUSERBUSINESSENTITYID,
-        PEOP.NAME_ADDR,
+        Case
+            When TRAN.FUSERBUSINESSENTITYID = '10000445' Then ''
+            Else TRAN.FUSERBUSINESSENTITYID
+        End As FUSERBUSINESSENTITYID,
+        Case
+            When TRAN.FUSERBUSINESSENTITYID = '10000445' Then ''
+            Else PEOP.NAME_ADDR
+        End As NAME_ADDR,
         TRAN.FAUDITUSERCODE,
         TRAN.SYSTEM_DESC
     From
@@ -2025,8 +2031,14 @@ def student_fee(s_period='curr', s_year='0'):
         CAST(COUNT(TRAN.STUDENT) As INT) As TRAN_COUNT,
         CAST(TOTAL(TRAN.AMOUNT) AS REAL) AS FEE_QUAL,
         MAX(TRAN.AUDITDATETIME),
-        TRAN.FUSERBUSINESSENTITYID,
-        PEOP.NAME_ADDR,
+        Case
+            When TRAN.FUSERBUSINESSENTITYID = '10000445' Then ''
+            Else TRAN.FUSERBUSINESSENTITYID
+        End As FUSERBUSINESSENTITYID,
+        Case
+            When TRAN.FUSERBUSINESSENTITYID = '10000445' Then ''
+            Else PEOP.NAME_ADDR
+        End As NAME_ADDR,
         TRAN.FAUDITUSERCODE,
         TRAN.SYSTEM_DESC
     From
@@ -2669,7 +2681,9 @@ def student_fee(s_period='curr', s_year='0'):
             When STUD.QUALIFICATION_NAME Like ('%OCCASIONAL STUD%') Then '9 OCCASIONAL STUDENT'
             When STUD.QUALIFICATION_NAME Like ('%OCCATIONAL STUD%') Then '9 OCCASIONAL STUDENT'
             When STUD.QUALIFICATION_NAME Like ('%MTH IN%') Then '9 MTH STUDENT'
-            When FEES.FEE_QUAL Is Null Then '1 NO TRANSACTION'
+            When FEES.FEE_QUAL Is Null And MODE.AMOUNT Is Null Then '1 NO TRANS/NO FEE'
+            When FEES.FEE_QUAL Is Null And MODE.AMOUNT = 0 Then '1 NO TRANS/ZERO FEE'
+            When FEES.FEE_QUAL Is Null Then '1 NO TRANS/WITH FEE'
             When FEES.FEE_QUAL < 0 Then '2 NEGATIVE TRANSACTION'
             When FEES.FEE_QUAL = 0 Then '3 ZERO TRANSACTION'
             When FEES.FEE_QUAL = Round(MODE.AMOUNT/2,2) Then '4 HALF TRANSACTION'
@@ -2784,9 +2798,13 @@ def student_fee(s_period='curr', s_year='0'):
             CONV.FQUALLEVELAPID = STUD.FQUALLEVELAPID Left join
         X020af_Trans_feeburs_stud BURS On BURS.STUDENT = STUD.KSTUDBUSENTID     
     Where
-        STUD.PRESENT_CAT Like ('C%') And
         FIND.KSTUDBUSENTID Is Null    
     ;"""
+    """
+    Where
+        STUD.PRESENT_CAT Like ('C%') And
+        FIND.KSTUDBUSENTID Is Null    
+    """
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -2798,7 +2816,7 @@ def student_fee(s_period='curr', s_year='0'):
     CASE
 
         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'D%' Then 'DP DISTANCE POSTGRADUATE' 
-        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'D%' Then 'DU DISTANCE UNDERGRADUATE' 
+        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'D%' Then 'DU DISTANCE UNDERGRADUATE' 
 
         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM1 Is Null Then '43 CP NULL SEM FULL PAYMENT RQD' 
         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM9 > 0 Then '49 CP FULL PAYMENT RQD' 
@@ -3133,10 +3151,10 @@ def student_fee(s_period='curr', s_year='0'):
     """
 
     """*****************************************************************************
-    QUALIFICATION FEE TEST NO TRANSACTION
+    QUALIFICATION FEE TEST NO TRANSACTION CONTACT
     *****************************************************************************"""
-    print("QUALIFICATION FEE TEST NO TRANSACTION")
-    funcfile.writelog("QUALIFICATION FEE TEST NO TRANSACTION")
+    print("QUALIFICATION FEE TEST NO TRANSACTION CONTACT")
+    funcfile.writelog("QUALIFICATION FEE TEST NO TRANSACTION CONTACT")
 
     # FILES NEEDED
     # X020ba_Student_master
@@ -3154,7 +3172,8 @@ def student_fee(s_period='curr', s_year='0'):
         X020ba_Student_master STUD
     Where
         STUD.VALID = 0 And
-        STUD.FEE_LEVIED_TYPE Like ('1%')
+        STUD.FEE_LEVIED_TYPE Like ('1 NO TRANS/WITH FEE') And
+        STUD.FEE_SHOULD_BE Like ('% C%')        
     Order By
         STUD.CAMPUS,
         STUD.FEE_SHOULD_BE,
@@ -3164,7 +3183,7 @@ def student_fee(s_period='curr', s_year='0'):
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     so_conn.commit()
-    if funcsys.tablerowcount(so_curs, sr_file) > 0:  # Ignore l_export flag - should export every time
+    if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
         print("Export findings...")
         sx_path = re_path + "/"
         sx_file = "Student_fee_test_021bx_qual_fee_no_transaction_studentlist_"
@@ -3198,70 +3217,21 @@ def student_fee(s_period='curr', s_year='0'):
     print("*** Found " + str(i_finding_before) + " exceptions ***")
     funcfile.writelog("%t FINDING: " + str(i_finding_before) + " QUALIFICATION NULL FEE NOTRAN finding(s)")
 
-    # GET PREVIOUS FINDINGS
+    # TODO Delete after first run on 20200210
     sr_file = "X021bc_get_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    # GET PREVIOUS FINDINGS
     if i_finding_before > 0:
-        print("Import previously reported findings...")
-        so_curs.execute(
-            "CREATE TABLE " + sr_file + """
-            (PROCESS TEXT,
-            FIELD1 INT,
-            FIELD2 TEXT,
-            FIELD3 REAL,
-            FIELD4 TEXT,
-            FIELD5 TEXT,
-            DATE_REPORTED TEXT,
-            DATE_RETEST TEXT,
-            REMARK TEXT)
-            """)
-        co = open(ed_path + "302_reported.txt", "r")
-        co_reader = csv.reader(co)
-        # Read the COLUMN database data
-        for row in co_reader:
-            # Populate the column variables
-            if row[0] == "PROCESS":
-                continue
-            elif row[0] != "qualification no transaction":
-                continue
-            else:
-                s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "','" + \
-                         row[
-                             3] + "','" + row[4] + "','" + row[5] + "','" + row[6] + "','" + row[7] + "','" + row[
-                             8] + "')"
-                so_curs.execute(s_cols)
+        i = functest.get_previous_finding(so_curs, ed_path, "302_reported.txt", "qualification no transaction", "ITTTT")
         so_conn.commit()
-        # Close the imported data file
-        co.close()
-        funcfile.writelog("%t IMPORT TABLE: " + ed_path + "302_reported.txt (" + sr_file + ")")
 
-    # SET PREVIOUS FINDINGS
+    # TODO Delete after first run on 20200210
     sr_file = "X021bc_set_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    # SET PREVIOUS FINDINGS
     if i_finding_before > 0:
-        print("Obtain the latest previous finding...")
-        s_sql = "Create Table " + sr_file + " As" + """
-        Select
-            GET.PROCESS,
-            GET.FIELD1,
-            GET.FIELD2,
-            GET.FIELD3,
-            GET.FIELD4,
-            GET.FIELD5,
-            Max(GET.DATE_REPORTED) As DATE_REPORTED,
-            GET.DATE_RETEST,
-            GET.REMARK
-        From
-            X021bc_get_previous GET
-        Group By
-            GET.FIELD1,
-            GET.FIELD2,
-            GET.FIELD3        
-        ;"""
-        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        so_curs.execute(s_sql)
+        i = functest.set_previous_finding(so_curs)
         so_conn.commit()
-        funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # ADD PREVIOUS FINDINGS
     sr_file = "X021bd_add_previous"
@@ -3280,11 +3250,9 @@ def student_fee(s_period='curr', s_year='0'):
             PREV.REMARK
         From
             X021bb_findings FIND Left Join
-            X021bc_set_previous PREV ON PREV.FIELD1 = FIND.ID And
-                PREV.FIELD2 = FIND.QUALIFICATION And
-                PREV.FIELD3 = FIND.FEE_LEVIED
+            Z001ab_setprev PREV ON PREV.FIELD1 = FIND.ID And
+                PREV.FIELD2 = FIND.QUALIFICATION
         ;"""
-        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
         s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
         so_curs.execute(s_sql)
@@ -3300,7 +3268,7 @@ def student_fee(s_period='curr', s_year='0'):
             PREV.PROCESS,
             PREV.ID AS FIELD1,
             PREV.QUALIFICATION AS FIELD2,
-            PREV.FEE_LEVIED AS FIELD3,
+            '' AS FIELD3,
             '' AS FIELD4,
             '' AS FIELD5,
             PREV.DATE_REPORTED,
@@ -3333,52 +3301,21 @@ def student_fee(s_period='curr', s_year='0'):
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
 
-    # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
+    # TODO Delete after first run on 20200210
     sr_file = "X021bf_officer"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    if i_finding_before > 0:
-        if i_finding_after > 0:
-            print("Import reporting officers for mail purposes...")
-            s_sql = "CREATE TABLE " + sr_file + " AS " + """
-            Select
-                OFFICER.LOOKUP,
-                Upper(OFFICER.LOOKUP_CODE) AS CAMPUS,
-                OFFICER.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-                PEOP.NAME_ADDR As NAME,
-                PEOP.EMAIL_ADDRESS
-            From
-                VSS.X000_OWN_LOOKUPS OFFICER Left Join
-                PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = OFFICER.LOOKUP_DESCRIPTION
-            Where
-                OFFICER.LOOKUP = 'stud_fee_test_qual_no_fee_transaction_officer'
-            ;"""
-            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-            so_curs.execute(s_sql)
-            so_conn.commit()
-            funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
+    if i_finding_before > 0 and i_finding_after > 0:
+        i = functest.get_officer(so_curs, "VSS", "stud_fee_test_qual_no_fee_transaction_officer")
+        so_conn.commit()
 
-    # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
+    # TODO Delete after first run on 20200210
     sr_file = "X021bg_supervisor"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
     if i_finding_before > 0 and i_finding_after > 0:
-        print("Import reporting supervisors for mail purposes...")
-        s_sql = "CREATE TABLE " + sr_file + " AS " + """
-        Select
-            SUPERVISOR.LOOKUP,
-            Upper(SUPERVISOR.LOOKUP_CODE) AS CAMPUS,
-            SUPERVISOR.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-            PEOP.NAME_ADDR As NAME,
-            PEOP.EMAIL_ADDRESS
-        From
-            VSS.X000_OWN_LOOKUPS SUPERVISOR Left Join
-            PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = SUPERVISOR.LOOKUP_DESCRIPTION
-        Where
-            SUPERVISOR.LOOKUP = 'stud_fee_test_qual_no_fee_transaction_supervisor'
-        ;"""
-        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        so_curs.execute(s_sql)
+        i = functest.get_supervisor(so_curs, "VSS", "stud_fee_test_qual_no_fee_transaction_supervisor")
         so_conn.commit()
-        funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # ADD CONTACT DETAILS TO FINDINGS
     sr_file = "X021bh_detail"
@@ -3399,28 +3336,28 @@ def student_fee(s_period='curr', s_year='0'):
             MAST.RESULTPASSDATE,
             MAST.DISCONTINUEDATE,
             CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
-            CAMP_OFF.NAME As CAMP_OFF_NAME,
+            CAMP_OFF.NAME_ADDR As CAMP_OFF_NAME,
             CASE
                 WHEN  CAMP_OFF.EMPLOYEE_NUMBER <> '' THEN CAMP_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
                 ELSE CAMP_OFF.EMAIL_ADDRESS
             END As CAMP_OFF_MAIL,
             CAMP_OFF.EMAIL_ADDRESS As CAMP_OFF_MAIL2,
             CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
-            CAMP_SUP.NAME As CAMP_SUP_NAME,
+            CAMP_SUP.NAME_ADDR As CAMP_SUP_NAME,
             CASE
                 WHEN CAMP_SUP.EMPLOYEE_NUMBER <> '' THEN CAMP_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
                 ELSE CAMP_SUP.EMAIL_ADDRESS
             END As CAMP_SUP_MAIL,
             CAMP_SUP.EMAIL_ADDRESS As CAMP_SUP_MAIL2,
             ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
-            ORG_OFF.NAME As ORG_OFF_NAME,
+            ORG_OFF.NAME_ADDR As ORG_OFF_NAME,
             CASE
                 WHEN ORG_OFF.EMPLOYEE_NUMBER <> '' THEN ORG_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
                 ELSE ORG_OFF.EMAIL_ADDRESS
             END As ORG_OFF_MAIL,
             ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL2,
             ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
-            ORG_SUP.NAME As ORG_SUP_NAME,
+            ORG_SUP.NAME_ADDR As ORG_SUP_NAME,
             CASE
                 WHEN ORG_SUP.EMPLOYEE_NUMBER <> '' THEN ORG_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
                 ELSE ORG_SUP.EMAIL_ADDRESS
@@ -3431,15 +3368,16 @@ def student_fee(s_period='curr', s_year='0'):
             X021bd_add_previous PREV Left Join
             X021ba_Qual_nofee_transaction MAST On MAST.KSTUDBUSENTID = PREV.ID And
                 MAST.QUALIFICATION = PREV.QUALIFICATION Left Join
-            X021bf_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.LOC Left Join
-            X021bf_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG Left Join
-            X021bg_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.LOC Left Join
-            X021bg_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG
+            Z001af_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.LOC Left Join
+            Z001af_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG Left Join
+            Z001ag_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.LOC Left Join
+            Z001ag_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG
         Where
-          PREV.PREV_PROCESS IS NULL
+            PREV.PREV_PROCESS Is Null Or
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         """
-        WHEN CAMP_OFF.NAME != '' THEN CAMP_OFF.NAME 
+        WHEN CAMP_OFF.NAME_ADDR != '' THEN CAMP_OFF.NAME_ADDR 
         """
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
