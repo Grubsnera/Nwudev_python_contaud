@@ -144,7 +144,7 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
         ELSE 'Potchefstroom'
       END AS CAMPUS,
       CASE
-        WHEN SUBSTR(TRANSDATE,6,5)='01-01' AND INSTR('001z031z061',TRANSCODE)>0 THEN '00'
+        WHEN INSTR('001z031z061',TRANSCODE)>0 THEN '00'
         WHEN strftime('%Y',TRANSDATE)>strftime('%Y',POSTDATEDTRANSDATE) And
          Strftime('%Y',POSTDATEDTRANSDATE) = '%CYEAR%' THEN strftime('%m',POSTDATEDTRANSDATE)
         ELSE strftime('%m',TRANSDATE)
@@ -164,6 +164,15 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
     WHERE
       TRANSCODE <> ''
     ;"""
+    """
+      CASE
+        WHEN SUBSTR(TRANSDATE,6,5)='01-01' AND INSTR('001z031z061',TRANSCODE)>0 THEN '00'
+        WHEN strftime('%Y',TRANSDATE)>strftime('%Y',POSTDATEDTRANSDATE) And
+         Strftime('%Y',POSTDATEDTRANSDATE) = '%CYEAR%' THEN strftime('%m',POSTDATEDTRANSDATE)
+        ELSE strftime('%m',TRANSDATE)
+      END AS MONTH,
+
+    """
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     s_sql = s_sql.replace("%CYEAR%", s_year)
     s_sql = s_sql.replace("%VSS%", s_vss)
