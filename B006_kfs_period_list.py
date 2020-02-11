@@ -736,7 +736,8 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
         ACC.ORG_NM,
         ACC.ACCOUNT_NM,
         ACC.FIN_OBJ_CD_NM,
-        ACC.ACCT_TYP_NM
+        ACC.ACCT_TYP_NM,
+        ACC.ACCT_FSC_OFC_UID
     From
         X001aa_Report_payments PAYMENT Left Join
         KFS.X000_Document DOC On DOC.DOC_HDR_ID = PAYMENT.EDOC Left Join
