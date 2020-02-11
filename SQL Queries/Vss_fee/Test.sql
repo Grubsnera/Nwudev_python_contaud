@@ -1,16 +1,22 @@
 ﻿Select
-    STUD.ORGUNIT_NAME As Faculty,
-    STUD.CAMPUS As Campus,
-    STUD.FEE_LEVIED_TYPE As Fee_type,
-    STUD.PRESENT_CAT As Present_category,
-    STUD.ENROL_CAT As Enrol_category,
-    Count(STUD.KSTUDBUSENTID) As Student_count,
-    Sum(STUD.FEE_LEVIED) As Total_income
+    X020ba_Student_master.FQUALLEVELAPID,
+    X020ba_Student_master.CAMPUS,
+    X020ba_Student_master.PRESENT_CAT,
+    X020ba_Student_master.ENROL_CAT,
+    X020ba_Student_master.QUALIFICATION,
+    X020ba_Student_master.QUALIFICATION_NAME,
+    Count(X020ba_Student_master.VALID) As COUNT
 From
-    X020ba_Student_master STUD
+    X020ba_Student_master
+Where
+    X020ba_Student_master.FEE_LEVIED_TYPE = '1 NO TRANS/ZERO FEE' And
+    X020ba_Student_master.FEE_SHOULD_BE Like ('4%')
 Group By
-    STUD.ORGUNIT_NAME,
-    STUD.CAMPUS,
-    STUD.FEE_LEVIED_TYPE,
-    STUD.PRESENT_CAT,
-    STUD.ENROL_CAT
+    X020ba_Student_master.FQUALLEVELAPID,
+    X020ba_Student_master.CAMPUS,
+    X020ba_Student_master.PRESENT_CAT,
+    X020ba_Student_master.ENROL_CAT,
+    X020ba_Student_master.QUALIFICATION,
+    X020ba_Student_master.QUALIFICATION_NAME,
+    X020ba_Student_master.FEE_LEVIED_TYPE,
+    X020ba_Student_master.FEE_SHOULD_BE
