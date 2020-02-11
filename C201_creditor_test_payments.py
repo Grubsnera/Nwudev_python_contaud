@@ -8,11 +8,13 @@ ENVIRONMENT
 OPEN THE DATABASES
 BEGIN OF SCRIPT
 TEST CREDITOR DUPLICATE PAYMENT METHOD 1 (VENDOR,INVNBR,INVDT,AMOUNT)
+TEST PAYMENT INITIATOR FISCAL SAME
 TEST CREDITOR BANK VERIFICATION
 TEST EMPLOYEE APPROVE OWN PAYMENT
 TEST EMPLOYEE INITIATE OWN PAYMENT
 END OF SCRIPT
 *****************************************************************************"""
+
 
 def Creditor_test_payments():
 
@@ -22,7 +24,6 @@ def Creditor_test_payments():
 
     # IMPORT PYTHON MODULES
     import csv
-    import datetime
     import sqlite3
     import sys
 
@@ -30,10 +31,11 @@ def Creditor_test_payments():
     sys.path.append('S:/_my_modules')
 
     # IMPORT OWN MODULES
-    import funcfile
-    import funccsv
-    import funcdate
-    import funcsys
+    from _my_modules import funcfile
+    from _my_modules import funccsv
+    from _my_modules import funcdate
+    from _my_modules import funcsys
+    from _my_modules import functest
 
     # OPEN THE SCRIPT LOG FILE
     print("---------------------------")    
@@ -813,6 +815,335 @@ def Creditor_test_payments():
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """ ****************************************************************************
+    TEST PAYMENT INITIATOR FISCAL SAME
+    *****************************************************************************"""
+    print("BEGIN OF SCRIPT")
+    funcfile.writelog("BEGIN OF SCRIPT")
+
+    # DECLARE TEST VARIABLES
+    i_finding_before: int = 0  # Number of findings before previous reported findings
+    i_finding_after: int = 0  # Number of new findings to report
+
+    # IDENTIFY TRANSACTIONS WHERE INITIATOR IS ALSO THE FISCAL OFFICER
+    print("Identify transactions initiator and fiscal officer same...")
+    sr_file: str = "X001ca_Same_initiator_fiscaloff"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "Create Table " + sr_file + " As " + """
+    Select
+        LIST.*
+    From
+        KFSCURR.X001ad_Report_payments_accroute LIST
+    Where
+        LIST.INIT_EMP_NO != '' And LIST.INIT_EMP_NO = LIST.ACCT_FSC_OFC_UID
+    ;"""
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
+        print("Export findings...")
+        sx_path = re_path + "/"
+        sx_file = "Creditor_test_001ca_paym_same_init_fiscal_"
+        sx_file_dated = sx_file + funcdate.today_file()
+        s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
+        # funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
+        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
+
+    # IDENTIFY FINDINGS
+    # NOTES
+    # Only payments up to R5000
+    print("Identify findings...")
+    sr_file = "X001cb_findings"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        FIND.EDOC,
+        FIND.VEndOR_ID,
+        FIND.PAYEE_NAME,
+        FIND.PAYEE_TYP_DESC,
+        FIND.PMT_DT,
+        FIND.INV_NBR,
+        FIND.NET_PMT_AMT,
+        Case
+            When FIND.DOC_TYPE Like('CDV%') Then FIND.DOC_TYPE
+            When FIND.DOC_TYPE Like('PDV%') Then FIND.DOC_TYPE
+            When FIND.DOC_TYPE Like('DV%') Then FIND.DOC_TYPE
+            Else 'OTHER'
+        End As DOC_TYPE,
+        FIND.INIT_DATE,
+        FIND.INIT_EMP_NO,
+        FIND.ACC_COST_STRING,
+        FIND.ACC_AMOUNT,
+        FIND.ORG_NM,
+        FIND.ACCOUNT_NM,
+        FIND.FIN_OBJ_CD_NM,
+        FIND.ACC_DESC    
+    From
+        X001ca_Same_initiator_fiscaloff FIND
+    Where
+        FIND.NET_PMT_AMT <= 5000
+    Order By
+        FIND.INIT_EMP_NO,
+        FIND.VEndOR_ID,
+        FIND.PMT_DT        
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # COUNT THE NUMBER OF FINDINGS
+    i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
+    print("*** Found " + str(i_finding_before) + " exceptions ***")
+    funcfile.writelog("%t FINDING: " + str(i_finding_before) + " INITIATOR FISCAL OFFICER SAME finding(s)")
+
+    # GET PREVIOUS FINDINGS
+    if i_finding_before > 0:
+        i = functest.get_previous_finding(so_curs, ed_path, "201_reported.txt", "initiator fiscal officer same",
+                                          "IITTR")
+        so_conn.commit()
+
+    # SET PREVIOUS FINDINGS
+    if i_finding_before > 0:
+        i = functest.set_previous_finding(so_curs)
+        so_conn.commit()
+
+    # ADD PREVIOUS FINDINGS
+    sr_file = "X001cd_add_previous"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        print("Join previously reported to current findings...")
+        s_sql = "CREATE TABLE " + sr_file + " AS" + """
+        Select
+            FIND.*,
+            'initiator fiscal officer same' AS PROCESS,
+            '%TODAY%' AS DATE_REPORTED,
+            '%DAYS%' AS DATE_RETEST,
+            PREV.PROCESS AS PREV_PROCESS,
+            PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
+            PREV.DATE_RETEST AS PREV_DATE_RETEST,
+            PREV.REMARK
+        From
+            X001cb_findings FIND Left Join
+            Z001ab_setprev PREV ON
+                PREV.FIELD1 = FIND.EDOC And
+                PREV.FIELD2 = FIND.INIT_EMP_NO And
+                PREV.FIELD3 = FIND.INIT_DATE And
+                PREV.FIELD4 = FIND.ACC_COST_STRING And
+                PREV.FIELD5 = FIND.ACC_AMOUNT
+        ;"""
+        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_yearend())
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD LIST TO UPDATE FINDINGS
+    sr_file = "X001ce_new_previous"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            PREV.PROCESS,
+            PREV.EDOC AS FIELD1,
+            Cast(PREV.INIT_EMP_NO As Int) AS FIELD2,
+            PREV.INIT_DATE AS FIELD3,
+            PREV.ACC_COST_STRING AS FIELD4,
+            Cast(PREV.ACC_AMOUNT As REAL) AS FIELD5,
+            PREV.DATE_REPORTED,
+            PREV.DATE_RETEST,
+            PREV.REMARK
+        From
+            X001cd_add_previous PREV
+        Where
+            PREV.PREV_PROCESS Is Null Or
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+        # Export findings to previous reported file
+        i_finding_after = funcsys.tablerowcount(so_curs, sr_file)
+        if i_finding_after > 0:
+            print("*** " + str(i_finding_after) + " Finding(s) to report ***")
+            sx_path = ed_path
+            sx_file = "201_reported"
+            # Read the header data
+            s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+            # Write the data
+            if l_record:
+                funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
+                funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
+                funcfile.writelog("%t EXPORT DATA: " + sr_file)
+        else:
+            print("*** No new findings to report ***")
+            funcfile.writelog("%t FINDING: No new findings to export")
+
+    # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
+    if i_finding_before > 0 and i_finding_after > 0:
+        i = functest.get_officer(so_curs, "HR", "TEST_INITIATOR_FISCALOFFICER_SAME_OFFICER")
+        so_conn.commit()
+
+    # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
+    if i_finding_before > 0 and i_finding_after > 0:
+        i = functest.get_supervisor(so_curs, "HR", "TEST_INITIATOR_FISCALOFFICER_SAME_SUPERVISOR")
+        so_conn.commit()
+
+    # ADD CONTACT DETAILS TO FINDINGS
+    sr_file = "X001ch_detail"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0 and i_finding_after > 0:
+        print("Add contact details to findings...")
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            PREV.EDOC,
+            PREV.VEndOR_ID,
+            PREV.PAYEE_NAME,
+            PREV.PAYEE_TYP_DESC,
+            PREV.PMT_DT,
+            PREV.INV_NBR,
+            PREV.NET_PMT_AMT,
+            PREV.DOC_TYPE,
+            PREV.INIT_DATE,
+            PREV.INIT_EMP_NO,
+            PREV.ACC_COST_STRING,
+            PREV.ACC_AMOUNT,
+            PREV.ORG_NM,
+            PREV.ACCOUNT_NM,
+            PREV.FIN_OBJ_CD_NM,
+            PREV.ACC_DESC,
+            CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
+            CAMP_OFF.NAME_ADDR As CAMP_OFF_NAME,
+            Case
+                When  CAMP_OFF.EMPLOYEE_NUMBER <> '' Then CAMP_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                Else CAMP_OFF.EMAIL_ADDRESS
+            End As CAMP_OFF_MAIL,
+            CAMP_OFF.EMAIL_ADDRESS As CAMP_OFF_MAIL2,
+            CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
+            CAMP_SUP.NAME_ADDR As CAMP_SUP_NAME,
+            Case
+                When CAMP_SUP.EMPLOYEE_NUMBER <> '' Then CAMP_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                Else CAMP_SUP.EMAIL_ADDRESS
+            End As CAMP_SUP_MAIL,
+            CAMP_SUP.EMAIL_ADDRESS As CAMP_SUP_MAIL2,
+            ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
+            ORG_OFF.NAME_ADDR As ORG_OFF_NAME,
+            Case
+                When ORG_OFF.EMPLOYEE_NUMBER <> '' Then ORG_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                Else ORG_OFF.EMAIL_ADDRESS
+            End As ORG_OFF_MAIL,
+            ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL2,
+            ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
+            ORG_SUP.NAME_ADDR As ORG_SUP_NAME,
+            Case
+                When ORG_SUP.EMPLOYEE_NUMBER <> '' Then ORG_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                Else ORG_SUP.EMAIL_ADDRESS
+            End As ORG_SUP_MAIL,
+            ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL2,
+            PREV.INIT_EMP_NO As USER_NUMB,
+            Case
+                When PREV.INIT_EMP_NO != '' Then PEOP.NAME_ADDR
+                When CAMP_OFF.NAME_ADDR != '' Then CAMP_OFF.NAME_ADDR 
+                Else ''
+            End As USER_NAME,
+            Case
+                When PREV.INIT_EMP_NO != '' Then PREV.INIT_EMP_NO||'@nwu.ac.za'
+                When CAMP_OFF.EMPLOYEE_NUMBER != '' Then CAMP_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                Else ''
+            End As USER_MAIL,
+            Case
+                When PREV.INIT_EMP_NO != '' Then PEOP.EMAIL_ADDRESS
+                When CAMP_OFF.EMPLOYEE_NUMBER != '' Then CAMP_OFF.EMAIL_ADDRESS
+                Else ''
+            End As USER_MAIL2
+        From
+            X001cd_add_previous PREV Left Join
+            Z001af_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.DOC_TYPE Left Join
+            Z001af_officer ORG_OFF On ORG_OFF.CAMPUS = 'NWU' Left Join
+            Z001ag_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.DOC_TYPE Left Join
+            Z001ag_supervisor ORG_SUP On ORG_SUP.CAMPUS = 'NWU' Left Join
+            PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = PREV.INIT_EMP_NO
+        Where
+            PREV.PREV_PROCESS Is Null Or
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
+        ;"""
+        """
+        When CAMP_OFF.NAME_ADDR != '' Then CAMP_OFF.NAME_ADDR 
+        """
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
+    sr_file = "X001cx_Same_initiator_fiscaloff"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    print("Build the final report")
+    if i_finding_before > 0 and i_finding_after > 0:
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            'INITIATOR FISCAL OFFICER SAME' As Audit_finding,
+            FIND.EDOC As Edoc,
+            FIND.VENDOR_ID As Vendor_id,
+            FIND.PAYEE_NAME As Payee_name,
+            FIND.PAYEE_TYP_DESC As Payee_type,
+            FIND.PMT_DT As Payment_date,
+            FIND.INV_NBR As Invoice_number,
+            FIND.NET_PMT_AMT As Payment_amount,
+            FIND.DOC_TYPE As Doc_type,
+            FIND.INIT_DATE As Date_initiated,
+            FIND.USER_NUMB As User_numb,
+            FIND.USER_NAME As User_name,
+            FIND.ACC_COST_STRING As Account,
+            FIND.ACC_AMOUNT As Amount,
+            FIND.ORG_NM As Acc_org_name,
+            FIND.ACCOUNT_NM As Acc_name,
+            FIND.FIN_OBJ_CD_NM As Acc_object,
+            FIND.ACC_DESC As Description,
+            FIND.CAMP_OFF_NAME AS Responsible_Officer,
+            FIND.CAMP_OFF_NUMB AS Responsible_Officer_Numb,
+            FIND.CAMP_OFF_MAIL AS Responsible_Officer_Mail,
+            FIND.CAMP_SUP_NAME AS Supervisor,
+            FIND.CAMP_SUP_NUMB AS Supervisor_Numb,
+            FIND.CAMP_SUP_MAIL AS Supervisor_Mail,
+            FIND.ORG_OFF_NAME AS Org_Officer,
+            FIND.ORG_OFF_NUMB AS Org_Officer_Numb,
+            FIND.ORG_OFF_MAIL AS Org_Officer_Mail,
+            FIND.ORG_SUP_NAME AS Org_Supervisor,
+            FIND.ORG_SUP_NUMB AS Org_Supervisor_Numb,
+            FIND.ORG_SUP_MAIL AS Org_Supervisor_Mail,
+            FIND.USER_MAIL As User_mail
+        From
+            X001ch_detail FIND
+        Order By
+            User_numb,
+            Vendor_id,
+            Date_initiated        
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+        # Export findings
+        if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
+            print("Export findings...")
+            sx_path = re_path + "/"
+            sx_file = "Student_fee_test_021dx_qual_fee_negative_transaction_"
+            sx_file_dated = sx_file + funcdate.today_file()
+            s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+            funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
+            funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
+            funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
+    else:
+        s_sql = "CREATE TABLE " + sr_file + " (" + """
+        BLANK TEXT
+        );"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    """ ****************************************************************************
     TEST CREDITOR BANK VERIFICATION
     *****************************************************************************"""
     print("TEST CREDITOR BANK VERIFICATION")
@@ -1249,7 +1580,7 @@ def Creditor_test_payments():
             DATE_MAILED TEXT)
             """)
         s_cols = ""
-        co = open(ed_path + "001_reported.txt", "r")
+        co = open(ed_path + "201_reported.txt", "r")
         co_reader = csv.reader(co)
         # Read the COLUMN database data
         for row in co_reader:
@@ -1267,7 +1598,7 @@ def Creditor_test_payments():
         so_conn.commit()
         # Close the imported data file
         co.close()
-        funcfile.writelog("%t IMPORT TABLE: " + ed_path + "001_reported.txt (" + sr_file + ")")
+        funcfile.writelog("%t IMPORT TABLE: " + ed_path + "201_reported.txt (" + sr_file + ")")
 
     # ADD PREVIOUS FINDINGS
     sr_file = "X003ad_add_previous"
@@ -1559,7 +1890,7 @@ def Creditor_test_payments():
             DATE_MAILED TEXT)
             """)
         s_cols = ""
-        co = open(ed_path + "001_reported.txt", "r")
+        co = open(ed_path + "201_reported.txt", "r")
         co_reader = csv.reader(co)
         # Read the COLUMN database data
         for row in co_reader:
@@ -1577,7 +1908,7 @@ def Creditor_test_payments():
         so_conn.commit()
         # Close the imported data file
         co.close()
-        funcfile.writelog("%t IMPORT TABLE: " + ed_path + "001_reported.txt (" + sr_file + ")")
+        funcfile.writelog("%t IMPORT TABLE: " + ed_path + "201_reported.txt (" + sr_file + ")")
 
     # ADD PREVIOUS FINDINGS
     sr_file = "X003bd_add_previous"
