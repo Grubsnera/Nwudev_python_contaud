@@ -363,7 +363,8 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
         ACC.ORG_NM,
         ACC.ACCOUNT_NM,
         OBJ.FIN_OBJ_CD_NM,
-        ACC.ACCT_TYP_NM
+        ACC.ACCT_TYP_NM,
+        ACC.ACCT_FSC_OFC_UID
     From
         FP_ACCT_LINES_T LINE Left Join
         KFS.X000_Account ACC ON ACC.FIN_COA_CD = LINE.FIN_COA_CD And
