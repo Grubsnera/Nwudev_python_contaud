@@ -3250,17 +3250,11 @@ def student_fee(s_period='curr', s_year='0'):
     print("*** Found " + str(i_finding_before) + " exceptions ***")
     funcfile.writelog("%t FINDING: " + str(i_finding_before) + " QUALIFICATION NULL FEE NOTRAN finding(s)")
 
-    # TODO Delete after first run on 20200210
-    sr_file = "X021bc_get_previous"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     # GET PREVIOUS FINDINGS
     if i_finding_before > 0:
         i = functest.get_previous_finding(so_curs, ed_path, "302_reported.txt", "qualification no transaction", "ITTTT")
         so_conn.commit()
 
-    # TODO Delete after first run on 20200210
-    sr_file = "X021bc_set_previous"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     # SET PREVIOUS FINDINGS
     if i_finding_before > 0:
         i = functest.set_previous_finding(so_curs)
@@ -3334,17 +3328,11 @@ def student_fee(s_period='curr', s_year='0'):
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
 
-    # TODO Delete after first run on 20200210
-    sr_file = "X021bf_officer"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
     if i_finding_before > 0 and i_finding_after > 0:
         i = functest.get_officer(so_curs, "VSS", "stud_fee_test_qual_no_fee_transaction_officer")
         so_conn.commit()
 
-    # TODO Delete after first run on 20200210
-    sr_file = "X021bg_supervisor"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
     if i_finding_before > 0 and i_finding_after > 0:
         i = functest.get_supervisor(so_curs, "VSS", "stud_fee_test_qual_no_fee_transaction_supervisor")
