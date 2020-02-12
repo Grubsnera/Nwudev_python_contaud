@@ -1,7 +1,10 @@
 TEST VERSION METHOD NOTES (Implemented 12 Feb 2020)
 ---------------------------------------------------
 
-V1.0.9 (Previous implemented Jan 2020)
+V1.0.8 (Implemented Jan 2020)
+01. Implemented set previous step to make sure that the LAST previous finding is used in the lookup of previous tests.
+
+V1.0.9 (Implemented Jan 2020)
 01. Implemented generic function functest to get and set previous, and get officer and supervisor.
 
 V2.0.0 (12 Feb 2020)
