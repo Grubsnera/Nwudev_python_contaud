@@ -26,6 +26,7 @@ def get_previous_finding(o_cursor, s_path, s_source, s_key, s_format="ITTTT"):
     print("Import previously reported findings...")
 
     # DECLARE / BUILD VARIABLES
+    s_key = s_key.lower()
     s_formatt: str = "(PROCESS TEXT, "
     for i in range(5):
         # print(s_format[i:i + 1])
@@ -116,6 +117,8 @@ def get_officer(o_cursor, s_source="HR", s_key=""):
     :return: Number of records
     """
 
+    # DECLARE / BUILD VARIABLES
+
     # SET PREVIOUS FINDINGS
     sr_file = "Z001af_officer"
     o_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -152,6 +155,8 @@ def get_supervisor(o_cursor, s_source="HR", s_key=""):
     :param s_key: Officer search key
     :return: Number of records
     """
+
+    # DECLARE / BUILD VARIABLES
 
     # SET PREVIOUS FINDINGS
     sr_file = "Z001ag_supervisor"
