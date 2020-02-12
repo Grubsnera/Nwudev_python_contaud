@@ -1658,7 +1658,7 @@ def Creditor_test_payments():
         if i_coun > 0:
             print("*** " + str(i_coun) + " Finding(s) to report ***")
             sx_path = ed_path
-            sx_file = "001_reported"
+            sx_file = "201_reported"
             # Read the header data
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             # Write the data
@@ -1968,7 +1968,7 @@ def Creditor_test_payments():
         if i_coun > 0:
             print("*** " + str(i_coun) + " Finding(s) to report ***")
             sx_path = ed_path
-            sx_file = "001_reported"
+            sx_file = "201_reported"
             # Read the header data
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             # Write the data
