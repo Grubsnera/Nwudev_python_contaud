@@ -1807,7 +1807,9 @@ def People_test_masterfile():
         MASTER.PASSPORT AS NUMB,
         MASTER.PERMIT,
         MASTER.PERMIT_EXPIRE,
-        MASTER.NATIONALITY AS NAT
+        MASTER.NATIONALITY AS NAT,
+        MASTER.POSITION_NAME As POSITION,
+        MASTER.ADDRESS_SARS        
     From
         PEOPLE.X002_PEOPLE_CURR MASTER
     ;"""
