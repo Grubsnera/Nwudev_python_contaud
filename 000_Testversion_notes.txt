@@ -1,0 +1,21 @@
+TEST VERSION METHOD NOTES (Implemented 12 Feb 2020)
+---------------------------------------------------
+
+V1.0.9 (Previous implemented Jan 2020)
+01. Implemented generic function functest to get and set previous, and get officer and supervisor.
+
+V2.0.0 (12 Feb 2020)
+01. Add s_fprefix variable. Easier to maintain an script new tests.
+02. Add s_finding variable. Use the same finding description everywhere.
+03. File naming convention:
+    a_? = Full name and all bulk findings.
+    b_finding = Findings selected to go forward.
+    c_getprev = Replaced by generic function functest.get_previous_finding producing Z001aa_getprev
+    c_setprev = Replaced by generic function functest.set_previous_finding producing Z001ab_setprev
+    d_addprev = Merge b_finding with previous findings.
+    e_newprev = Build new table to export as previous findings.
+    f_officer = Replaced by generic function functest.get_officer and produce Z001af_officer.
+    g_supervisor = Replaced by generic function functest.get_supervisor and produce Z001ag_supervisor.
+    h_detail = Merge findings, officers, supervisors and any other related data.
+    x_? = Build final export finding file with audit finding and nice readable column names.
+04. Re-affirm use of i_finding_before and i_finding_after variables.
