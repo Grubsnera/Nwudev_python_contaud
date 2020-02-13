@@ -36,7 +36,7 @@ TEST ADDRESS DUPLICATE (In development)
 PASSPORT NUMBER MASTER FILE
 TEST PASSPORT NUMBER BLANK (V1.0.8)
 TEST PASSPORT NUMBER DUPLICATE (V1.0.8)
-TEST WORK PERMIT EXPIRED (V1.0.9)
+TEST WORK PERMIT EXPIRED (V2.0.0)
 
 BANK NUMBER MASTER FILE
 TEST BANK NUMBER DUPLICATE (V1.0.8)
@@ -93,7 +93,7 @@ def People_test_masterfile():
     so_file = "People_test_masterfile.sqlite" # Source database
     s_sql = "" # SQL statements
     l_record = True
-    l_export = True
+    l_export = False
     l_mail = False
     l_vacuum = False
 
@@ -117,9 +117,6 @@ def People_test_masterfile():
     """ ****************************************************************************
     TEMPORARY SCRIPT (Delete after one run) 2019-05-31
     *****************************************************************************"""    
-    # so_curs.execute("DROP TABLE IF EXISTS X007bx_category_invalid) 
-
-    # TODO Complete new method to tests
 
     """ ****************************************************************************
     BEGIN OF SCRIPT
@@ -866,9 +863,6 @@ def People_test_masterfile():
 
     # BUILD TABLE WITH NOT EMPTY ID NUMBERS
     print("Build not empty ID number table...")
-    # TODO Delete after first run on 13 Feb 2020
-    sr_file = s_fprefix + "a_dob_calc"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     sr_file = s_fprefix + "a_iddob_invalid"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -902,9 +896,6 @@ def People_test_masterfile():
 
     # SELECT ALL EMPLOYEES WITH AN INVALID ID NUMBER
     print("Select all employees with an invalid date of birth...")
-    # TODO Delete after first run on 13 Feb 2020
-    sr_file = s_fprefix + "b_dob_inva"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     sr_file = s_fprefix + "b_finding"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -928,28 +919,19 @@ def People_test_masterfile():
     # COUNT THE NUMBER OF FINDINGS
     i_finding_before = funcsys.tablerowcount(so_curs, sr_file)
     print("*** Found " + str(i_finding_before) + " exceptions ***")
-    funcfile.writelog("%t FINDING: " + str(i_finding_before) + s_finding + " invalid finding(s)")
+    funcfile.writelog("%t FINDING: " + str(i_finding_before) + " " + s_finding + " invalid finding(s)")
 
     # GET PREVIOUS FINDINGS
-    # TODO Delete after first run on 13 Feb 2020
-    sr_file = s_fprefix + "c_dob_getprev"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
         i = functest.get_previous_finding(so_curs, ed_path, "001_reported.txt", s_finding, "ITTTT")
         so_conn.commit()
 
     # SET PREVIOUS FINDINGS
-    # TODO Delete after first run on 13 Feb 2020
-    sr_file = "X002cc_dob_setprev"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
         i = functest.set_previous_finding(so_curs)
         so_conn.commit()
 
     # ADD PREVIOUS FINDINGS
-    # TODO Delete after first run on 13 Feb 2020
-    sr_file = s_fprefix + "d_dob_addprev"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     sr_file = s_fprefix + "d_addprev"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
@@ -977,9 +959,6 @@ def People_test_masterfile():
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD LIST TO UPDATE FINDINGS
-    # TODO Delete after first run on 13 Feb 2020
-    sr_file = s_fprefix + "e_dob_newprev"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     sr_file = s_fprefix + "e_newprev"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
@@ -1023,25 +1002,16 @@ def People_test_masterfile():
             funcfile.writelog("%t FINDING: No new findings to export")
 
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
-    # TODO Delete after first run on 13 Feb 2020
-    sr_file = s_fprefix + "f_offi"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0 and i_finding_after > 0:
         i = functest.get_officer(so_curs, "HR", "TEST " + s_finding + " OFFICER")
         so_conn.commit()
 
     # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
-    # TODO Delete after first run on 13 Feb 2020
-    sr_file = "X002cg_supe"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0 and i_finding_after > 0:
         i = functest.get_supervisor(so_curs, "HR", "TEST " + s_finding + " SUPERVISOR")
         so_conn.commit()
 
     # ADD CONTACT DETAILS TO FINDINGS
-    # TODO Delete after first run on 13 Feb 2020
-    sr_file = s_fprefix + "h_dob_cont"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     sr_file = s_fprefix + "h_detail"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0 and i_finding_after > 0:
@@ -1083,10 +1053,6 @@ def People_test_masterfile():
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
-
-    # TODO Delete after first run on 13 Feb 2020
-    sr_file = s_fprefix + "x_dob_invalid"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     sr_file = s_fprefix + "x_iddob_invalid"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0 and i_finding_after > 0:
@@ -2449,30 +2415,65 @@ def People_test_masterfile():
     funcfile.writelog("WORK PERMIT EXPIRED")
 
     # DECLARE TEST VARIABLES
+    s_fprefix: str = "X003e"
+    s_finding: str = "EMPLOYEE WORK PERMIT EXPIRED"
     i_finding_after: int = 0
 
     # OBTAIN TEST DATA
     print("Obtain test data and add employee details...")
-    sr_file: str = "X003ea_permit_expire"
+    sr_file: str = s_fprefix + "a_work_permit_expire"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         MASTER.ORG,
         MASTER.LOC,
         MASTER.EMP,
+        MASTER.IDNO,
         MASTER.NUMB,
         MASTER.PERMIT,
-        Substr(Replace(MASTER.PERMIT_EXPIRE,'/','-'),1,10) As EXPIRE_DATE
+        Substr(Replace(MASTER.PERMIT_EXPIRE,'/','-'),1,10) As EXPIRE_DATE,
+        MASTER.POSITION,
+        MASTER.ADDRESS_SARS,
+        '' As VALID
     From
         X003_pass_master MASTER
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
+    # UPDATE SELECT FIELD WITH POSSIBLE FINDINGS
+    print("Update column valid...")
+    s_sql = "Update " + sr_file + """
+        Set VALID =
+        Case
+            When PERMIT Like('PRP%') Then '0 PRP Permit'
+            When PERMIT <> '' And IDNO <> '' Then '0 RSA ID number'
+            When
+                PERMIT <> '' And
+                POSITION Like('EXTRA%')
+            Then '0 Extraordinary position'
+            When
+                NUMB <> '' And
+                EXPIRE_DATE >= Date('1900-01-01') And
+                EXPIRE_DATE < Date('%TODAY%')
+            Then '1 Select with date'
+            When
+                PERMIT <> '' And
+                EXPIRE_DATE = ''
+            Then '1 Select no date'        
+        End;"""
+    s_sql = s_sql.replace("%TODAY%", funcdate.today_plusdays(30))
+    so_curs.execute(s_sql)
+    so_conn.commit()
+
     # IDENTIFY FINDINGS
+    # TOTO Delete after first run
+    sr_file = s_fprefix + "b_findings"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     print("Identify findings...")
-    sr_file = "X003eb_findings"
+    sr_file = s_fprefix + "b_finding"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         CURR.ORG,
@@ -2482,13 +2483,11 @@ def People_test_masterfile():
         CURR.PERMIT,
         CURR.EXPIRE_DATE
     From
-        X003ea_permit_expire CURR
+        %FILEP%a_work_permit_expire CURR
     Where
-        CURR.NUMB <> '' And
-        CURR.EXPIRE_DATE >= Date('1900-01-01') And
-        CURR.EXPIRE_DATE < Date('%TODAY%')
+        CURR.VALID Like('1%')
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = s_sql.replace("%FILEP%", s_fprefix)
     s_sql = s_sql.replace("%TODAY%", funcdate.today())
     so_curs.execute(s_sql)
     so_conn.commit()
@@ -2497,11 +2496,11 @@ def People_test_masterfile():
     # COUNT THE NUMBER OF FINDINGS
     i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
     print("*** Found " + str(i_finding_before) + " exceptions ***")
-    funcfile.writelog("%t FINDING: " + str(i_finding_before) + " EMPL WORK PERMIT EXPIRED finding(s)")
+    funcfile.writelog("%t FINDING: " + str(i_finding_before) + " " + s_finding + " finding(s)")
 
     # GET PREVIOUS FINDINGS
     if i_finding_before > 0:
-        i = functest.get_previous_finding(so_curs, ed_path, "001_reported.txt", "work_permit_expire", "ITTTT")
+        i = functest.get_previous_finding(so_curs, ed_path, "001_reported.txt", s_finding, "ITTTT")
         so_conn.commit()
 
     # SET PREVIOUS FINDINGS
@@ -2510,14 +2509,17 @@ def People_test_masterfile():
         so_conn.commit()
 
     # ADD PREVIOUS FINDINGS
-    sr_file = "X003ed_add_previous"
+    # TODO Delete after first run
+    sr_file = s_fprefix + "d_add_previous"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sr_file = s_fprefix + "d_addprev"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
         print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         Select
             FIND.*,
-            'work_permit_expire' AS PROCESS,
+            Lower('%FINDING%') AS PROCESS,
             '%TODAY%' AS DATE_REPORTED,
             '%DAYS%' AS DATE_RETEST,
             PREV.PROCESS AS PREV_PROCESS,
@@ -2525,10 +2527,11 @@ def People_test_masterfile():
             PREV.DATE_RETEST AS PREV_DATE_RETEST,
             PREV.REMARK
         From
-            X003eb_findings FIND Left Join
+            %FILEP%b_finding FIND Left Join
             Z001ab_setprev PREV ON PREV.FIELD1 = FIND.EMP
         ;"""
-        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        s_sql = s_sql.replace("%FINDING%", s_finding)
+        s_sql = s_sql.replace("%FILEP%", s_fprefix)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
         s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
         so_curs.execute(s_sql)
@@ -2536,8 +2539,10 @@ def People_test_masterfile():
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD LIST TO UPDATE FINDINGS
-    # NOTE ADD CODE
-    sr_file = "X003ee_new_previous"
+    # TODO Delete after first run
+    sr_file = s_fprefix + "e_new_previous"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sr_file = s_fprefix + "e_newprev"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -2552,12 +2557,12 @@ def People_test_masterfile():
             PREV.DATE_RETEST,
             PREV.REMARK
         From
-            X003ed_add_previous PREV
+            %FILEP%d_addprev PREV
         Where
             PREV.PREV_PROCESS Is Null Or
             PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""        
         ;"""
-        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        s_sql = s_sql.replace("%FILEP%", s_fprefix)
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -2580,16 +2585,16 @@ def People_test_masterfile():
 
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
     if i_finding_before > 0 and i_finding_after > 0:
-        i = functest.get_officer(so_curs, "HR", "TEST_WORK_PERMIT_EXPIRE_OFFICER")
+        i = functest.get_officer(so_curs, "HR", "TEST " + s_finding + " OFFICER")
         so_conn.commit()
 
     # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
     if i_finding_before > 0 and i_finding_after > 0:
-        i = functest.get_supervisor(so_curs, "HR", "TEST_WORK_PERMIT_EXPIRE_SUPERVISOR")
+        i = functest.get_supervisor(so_curs, "HR", "TEST " + s_finding + " SUPERVISOR")
         so_conn.commit()
 
     # ADD CONTACT DETAILS TO FINDINGS
-    sr_file = "X003eh_detail"
+    sr_file = s_fprefix + "h_detail"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0 and i_finding_after > 0:
         print("Add contact details to findings...")
@@ -2616,7 +2621,7 @@ def People_test_masterfile():
             ORG_SUP.NAME_ADDR As ORG_SUP_NAME,
             ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL
         From
-            X003ed_add_previous PREV
+            %FILEP%d_addprev PREV
             Left Join PEOPLE.X002_PEOPLE_CURR PEOP On PEOP.EMPLOYEE_NUMBER = PREV.EMP
             Left Join Z001af_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.LOC
             Left Join Z001af_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG
@@ -2626,13 +2631,13 @@ def People_test_masterfile():
             PREV.PREV_PROCESS Is Null Or
             PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
-        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        s_sql = s_sql.replace("%FILEP%", s_fprefix)
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
-    sr_file = "X003ex_work_permit_expire"
+    sr_file = s_fprefix + "x_work_permit_expire"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     print("Build the final report")
     if i_finding_before > 0 and i_finding_after > 0:
@@ -2657,11 +2662,10 @@ def People_test_masterfile():
             FIND.ORG_SUP_NAME AS Org_Supervisor,
             FIND.ORG_SUP_NUMB AS Org_Supervisor_Numb,
             FIND.ORG_SUP_MAIL AS Org_Supervisor_Mail            
-
         From
-            X003eh_detail FIND
+            %FILEP%h_detail FIND
         ;"""
-        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        s_sql = s_sql.replace("%FILEP%", s_fprefix)
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -2669,7 +2673,7 @@ def People_test_masterfile():
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
             sx_path = re_path + funcdate.cur_year() + "/"
-            sx_file = "People_test_003ex_work_permit_expire_"
+            sx_file = "Peoplemaster_test_" + s_fprefix + "_" + s_finding.lower() + "_"
             sx_file_dated = sx_file + funcdate.today_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
