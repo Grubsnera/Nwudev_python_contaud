@@ -2509,9 +2509,6 @@ def People_test_masterfile():
         so_conn.commit()
 
     # ADD PREVIOUS FINDINGS
-    # TODO Delete after first run
-    sr_file = s_fprefix + "d_add_previous"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     sr_file = s_fprefix + "d_addprev"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
@@ -2539,9 +2536,6 @@ def People_test_masterfile():
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD LIST TO UPDATE FINDINGS
-    # TODO Delete after first run
-    sr_file = s_fprefix + "e_new_previous"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     sr_file = s_fprefix + "e_newprev"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
