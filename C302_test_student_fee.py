@@ -32,9 +32,11 @@ TEST REGISTRATION FEE CONTACT NEGATIVE
 TEST REGISTRATION FEE CONTACT ZERO
 TEST REGISTRATION FEE CONTACT ABNORMAL
 
-QUALIFICATION FEE MASTER 1
+QUALIFICATION FEE MASTER 1 (Prepare FIAB lists)
 QUALIFICATION FEE TEST NO FEE LOADED (V1.0.9)
-QUALIFICATION FEE MASTER 2
+QUALIFICATION FEE MASTER 2 (Prepare data for incorrectly loaded fees)
+QUALIFICATION FEE TEST FEE LOADED INCORRECTLY (V2.0.0)
+QUALIFICATION FEE MASTER 3 (Join students & transactions)
 QUALIFICATION FEE REPORTS
 UPDATE FEE SHOULD BE COLUMN
 QUALIFICATION FEE TEST NO TRANSACTION CONTACT (V1.0.9)(1 NO TRANSACTION)
@@ -2315,7 +2317,9 @@ def student_fee(s_period='curr', s_year='0'):
         STUD.KSTUDBUSENTID,
         STUD.CAMPUS,
         STUD.FQUALLEVELAPID,
+        STUD.FENROLMENTCATEGORYCODEID As ENROL_ID,
         STUD.ENROL_CAT,
+        STUD.FPRESENTATIONCATEGORYCODEID As PRESENT_ID,
         STUD.PRESENT_CAT,
         FIAB.COUNT,
         FIAB.AMOUNT,
@@ -2640,10 +2644,420 @@ def student_fee(s_period='curr', s_year='0'):
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """*****************************************************************************
-    QUALIFICATION FEE MASTER 2 - JOIN STUDENT AND TRANSACTION AND NO FEE LOADED TEST
+    QUALIFICATION FEE MASTER 2 - JOIN QUALIFICATIONS PRESENTED AND FIAB LIST
     *****************************************************************************"""
-    print("QUALIFICATION FEE MASTER")
-    funcfile.writelog("QUALIFICATION FEE MASTER")
+    print("QUALIFICATION FEE MASTER 2")
+    funcfile.writelog("QUALIFICATION FEE MASTER 2")
+
+    # NOTE - This code is place here because it rely on
+    #   table X021aa_Qual_nofee_loaded prepared in the
+    #   QUALIFICATION FEE TEST NO FEE LOADED
+
+    # BUILD SUMMARY OF QUALIFICATIONS PRESENTED
+    print("Build summary of qualifications with no linked levies...")
+    sr_file = "X022aa_Qual_present_summary"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "Create table " + sr_file + " AS" + """
+    Select
+        LOAD.FQUALLEVELAPID,
+        LOAD.CAMPUS,
+        LOAD.ENROL_ID,
+        LOAD.ENROL_CAT,
+        LOAD.PRESENT_ID,
+        LOAD.PRESENT_CAT,
+        LOAD.QUALIFICATION,
+        LOAD.QUALIFICATION_NAME,
+        Count(LOAD.KSTUDBUSENTID) As COUNT_STUD
+    From
+        X021aa_Qual_nofee_loaded LOAD
+    Where
+        LOAD.FINDING Like ('1%')
+    Group By
+        LOAD.FQUALLEVELAPID,
+        LOAD.CAMPUS,
+        LOAD.ENROL_ID,
+        LOAD.PRESENT_ID
+    ;"""
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    so_conn.commit()
+
+    # IDENTIFY FIAB ENTRIES WHICG IS PRESENTED
+    print("Identify FIAB entries which is presented...")
+    sr_file = "X022ab_Qual_present_fiablist"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "Create table " + sr_file + " AS" + """
+    Select
+        FIAB.FQUALLEVELAPID,
+        FIAB.CAMPUS,
+        FIAB.FPRESENTATIONCATEGORYCODEID,
+        FIAB.FENROLMENTCATEGORYCODEID,
+        FIAB.AMOUNT
+    From
+        X020aa_Fiabd007_summ FIAB Inner Join
+        X021ga_Qual_present_summ PRES On PRES.FQUALLEVELAPID = FIAB.FQUALLEVELAPID
+                And PRES.CAMPUS = FIAB.CAMPUS
+                And PRES.PRESENT_ID = FIAB.FPRESENTATIONCATEGORYCODEID
+                And PRES.ENROL_ID = FIAB.FENROLMENTCATEGORYCODEID
+    Group By
+        FIAB.FQUALLEVELAPID,
+        FIAB.FPRESENTATIONCATEGORYCODEID,
+        FIAB.FENROLMENTCATEGORYCODEID,
+        FIAB.AMOUNT
+    ;"""
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    so_conn.commit()
+
+    # IDENTIFY FIAB ENTRIES WITH MORE THAN ONE CLASS FEE
+    print("Identify FIAB entries with more than one class fee...")
+    sr_file = "X022ac_Qual_present_count"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "Create table " + sr_file + " AS" + """
+    Select
+        SUMM.FQUALLEVELAPID,
+        SUMM.FPRESENTATIONCATEGORYCODEID,
+        SUMM.FENROLMENTCATEGORYCODEID,
+        Count(SUMM.AMOUNT) As COUNT_OCC
+    From
+        X022ab_Qual_present_fiablist SUMM
+    Group By
+        SUMM.FQUALLEVELAPID,
+        SUMM.FPRESENTATIONCATEGORYCODEID,
+        SUMM.FENROLMENTCATEGORYCODEID
+    Having
+        COUNT_OCC > 1    
+    ;"""
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    so_conn.commit()
+
+    # IDENTIFY FIAB ENTRIES WITH DIFFERENT AMOUNTS
+    print("Identify FIAB entries with different amounts...")
+    sr_file = "X022ad_Qual_present_merge"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "Create table " + sr_file + " AS" + """
+    Select
+        FIAB.FQUALLEVELAPID,
+        FIAB.CAMPUS,
+        PRES.PRESENT_ID,
+        PRES.PRESENT_CAT,
+        PRES.ENROL_ID,
+        PRES.ENROL_CAT,
+        PRES.QUALIFICATION,
+        PRES.QUALIFICATION_NAME,
+        PRES.COUNT_STUD,
+        FIAB.AMOUNT
+    From
+        X022ab_Qual_present_fiablist FIAB Inner Join
+        X022aa_Qual_present_summary PRES On PRES.FQUALLEVELAPID = FIAB.FQUALLEVELAPID
+                And PRES.CAMPUS = FIAB.CAMPUS
+                And PRES.PRESENT_ID = FIAB.FPRESENTATIONCATEGORYCODEID
+                And PRES.ENROL_ID = FIAB.FENROLMENTCATEGORYCODEID Inner Join
+        X022ac_Qual_present_count COUN On COUN.FQUALLEVELAPID = FIAB.FQUALLEVELAPID
+                And COUN.FPRESENTATIONCATEGORYCODEID = FIAB.FPRESENTATIONCATEGORYCODEID
+                And COUN.FENROLMENTCATEGORYCODEID = FIAB.FENROLMENTCATEGORYCODEID
+    ;"""
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    so_conn.commit()
+
+    # IDENTIFY FIAB ENTRIES WITH DIFFERENT AMOUNTS
+    print("Identify FIAB entries with different amounts...")
+    sr_file = "X022ae_Qual_present_final"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "Create table " + sr_file + " AS" + """
+    Select
+        MERG.*,
+        MERG.FQUALLEVELAPID As FQUALLEVELAPID1,
+        MERG.CAMPUS As CAMPUS1,
+        Count(MERG.PRESENT_ID) As COUNT_OCC
+    From
+        X022ad_Qual_present_merge MERG
+    Group By
+        MERG.FQUALLEVELAPID,
+        MERG.CAMPUS
+    Order by
+        QUALIFICATION,
+        CAMPUS    
+    ;"""
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    so_conn.commit()
+
+    """*****************************************************************************
+    QUALIFICATION FEE TEST FEE LOADED INCORRECTLY
+    *****************************************************************************"""
+    print("QUALIFICATION FEE TEST FEE LOADED INCORRECTLY")
+    funcfile.writelog("QUALIFICATION FEE TEST FEE LOADED INCORRECTLY")
+
+    # FILES NEEDED
+    # X022ae_Qual_present_final
+
+    # DECLARE TEST VARIABLES
+    s_fprefix: str = "X022b"
+    s_finding: str = "QUALIFICATION FEE LOADED INCORRECTLY"
+    s_xfile: str = "302_reported.txt"
+    i_finding_before: int = 0
+    i_finding_after: int = 0
+
+    # OBTAIN TEST DATA
+    print("Obtain test data...")
+    sr_file: str = s_fprefix + "a_fee_loaded_incorrectly"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        TEST.FQUALLEVELAPID,
+        TEST.CAMPUS,
+        TEST.PRESENT_ID,
+        TEST.PRESENT_CAT,
+        TEST.ENROL_ID,
+        TEST.ENROL_CAT,
+        TEST.QUALIFICATION,
+        TEST.QUALIFICATION_NAME,
+        TEST.COUNT_STUD,
+        TEST.AMOUNT,
+        TEST.COUNT_OCC
+    From
+        X022ae_Qual_present_final TEST
+    ;"""
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # SELECT TEST DATA
+    print("Identify findings...")
+    sr_file = s_fprefix + "b_finding"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        'NWU' As ORG,
+        FIND.CAMPUS As LOC,    
+        FIND.QUALIFICATION,
+        FIND.QUALIFICATION_NAME,
+        FIND.FQUALLEVELAPID,
+        FIND.PRESENT_ID,
+        FIND.PRESENT_CAT,
+        FIND.ENROL_ID,
+        FIND.ENROL_CAT,
+        FIND.COUNT_STUD,
+        FIND.AMOUNT
+    From
+        %FILEP%a_fee_loaded_incorrectly FIND
+    Where
+        FIND.COUNT_OCC = 1
+    ;"""
+    s_sql = s_sql.replace("%FILEP%", s_fprefix)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # COUNT THE NUMBER OF FINDINGS
+    i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
+    print("*** Found " + str(i_finding_before) + " exceptions ***")
+    funcfile.writelog("%t FINDING: " + str(i_finding_before) + " " + s_finding + " finding(s)")
+
+    # GET PREVIOUS FINDINGS
+    if i_finding_before > 0:
+        i = functest.get_previous_finding(so_curs, ed_path, s_xfile, s_finding, "ITIIT")
+        so_conn.commit()
+
+    # SET PREVIOUS FINDINGS
+    if i_finding_before > 0:
+        i = functest.set_previous_finding(so_curs)
+        so_conn.commit()
+
+    # ADD PREVIOUS FINDINGS
+    sr_file = s_fprefix + "d_addprev"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        print("Join previously reported to current findings...")
+        s_sql = "CREATE TABLE " + sr_file + " AS" + """
+        Select
+            FIND.*,
+            Lower('%FINDING%') AS PROCESS,
+            '%TODAY%' AS DATE_REPORTED,
+            '%DAYS%' AS DATE_RETEST,
+            PREV.PROCESS AS PREV_PROCESS,
+            PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
+            PREV.DATE_RETEST AS PREV_DATE_RETEST,
+            PREV.REMARK
+        From
+            %FILEP%b_finding FIND Left Join
+            Z001ab_setprev PREV ON PREV.FIELD1 = FIND.FQUALLEVELAPID And
+                PREV.FIELD2 = FIND.LOC And
+                PREV.FIELD3 = FIND.PRESENT_ID And
+                PREV.FIELD4 = FIND.ENROL_ID And
+                PREV.FIELD5 = FIND.QUALIFICATION
+        ;"""
+        s_sql = s_sql.replace("%FINDING%", s_finding)
+        s_sql = s_sql.replace("%FILEP%", s_fprefix)
+        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD LIST TO UPDATE FINDINGS
+    sr_file = s_fprefix + "e_newprev"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            PREV.PROCESS,
+            PREV.FQUALLEVELAPID AS FIELD1,
+            PREV.LOC AS FIELD2,
+            PREV.PRESENT_ID AS FIELD3,
+            PREV.ENROL_ID AS FIELD4,
+            PREV.QUALIFICATION AS FIELD5,
+            PREV.DATE_REPORTED,
+            PREV.DATE_RETEST,
+            PREV.REMARK
+        From
+            %FILEP%d_addprev PREV
+        Where
+            PREV.PREV_PROCESS Is Null Or
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""        
+        ;"""
+        s_sql = s_sql.replace("%FILEP%", s_fprefix)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+        # Export findings to previous reported file
+        i_finding_after = funcsys.tablerowcount(so_curs, sr_file)
+        if i_finding_after > 0:
+            print("*** " + str(i_finding_after) + " Finding(s) to report ***")
+            sx_path = ed_path
+            sx_file = s_xfile[:-4]
+            # Read the header data
+            s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+            # Write the data
+            if l_record:
+                funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
+                funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
+                funcfile.writelog("%t EXPORT DATA: " + sr_file)
+        else:
+            print("*** No new findings to report ***")
+            funcfile.writelog("%t FINDING: No new findings to export")
+
+    # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
+    if i_finding_before > 0 and i_finding_after > 0:
+        i = functest.get_officer(so_curs, "VSS", "TEST " + s_finding + " OFFICER")
+        so_conn.commit()
+
+    # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
+    if i_finding_before > 0 and i_finding_after > 0:
+        i = functest.get_supervisor(so_curs, "VSS", "TEST " + s_finding + " SUPERVISOR")
+        so_conn.commit()
+
+    # ADD CONTACT DETAILS TO FINDINGS
+    sr_file = s_fprefix + "h_detail"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0 and i_finding_after > 0:
+        print("Add contact details to findings...")
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            PREV.ORG,
+            PREV.LOC,
+            PREV.QUALIFICATION,
+            PREV.QUALIFICATION_NAME,
+            PREV.FQUALLEVELAPID,
+            PREV.PRESENT_ID,
+            PREV.PRESENT_CAT,
+            PREV.ENROL_ID,
+            PREV.ENROL_CAT,
+            PREV.COUNT_STUD,
+            PREV.AMOUNT,    
+            CAMP_OFF.EMPLOYEE_NUMBER As CAMP_OFF_NUMB,
+            CAMP_OFF.NAME_ADDR As CAMP_OFF_NAME,
+            CAMP_OFF.EMAIL_ADDRESS As CAMP_OFF_MAIL,
+            CAMP_SUP.EMPLOYEE_NUMBER As CAMP_SUP_NUMB,
+            CAMP_SUP.NAME_ADDR As CAMP_SUP_NAME,
+            CAMP_SUP.EMAIL_ADDRESS As CAMP_SUP_MAIL,
+            ORG_OFF.EMPLOYEE_NUMBER As ORG_OFF_NUMB,
+            ORG_OFF.NAME_ADDR As ORG_OFF_NAME,
+            ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL,
+            ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
+            ORG_SUP.NAME_ADDR As ORG_SUP_NAME,
+            ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL
+        From
+            %FILEP%d_addprev PREV
+            Left Join Z001af_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.LOC
+            Left Join Z001af_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG
+            Left Join Z001ag_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.LOC
+            Left Join Z001ag_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG
+        Where
+            PREV.PREV_PROCESS Is Null Or
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
+        ;"""
+        s_sql = s_sql.replace("%FILEP%", s_fprefix)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
+    sr_file = s_fprefix + "x_work_permit_expire"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    print("Build the final report")
+    if i_finding_before > 0 and i_finding_after > 0:
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            '%FIND%' As Audit_finding,
+            FIND.ORG As Organization,
+            FIND.LOC As Campus,
+            FIND.FQUALLEVELAPID As Qualification_id,
+            FIND.QUALIFICATION As Qualification,
+            FIND.QUALIFICATION_NAME As Qualification_name,
+            FIND.PRESENT_ID As Present_id,
+            FIND.PRESENT_CAT As Present_category,
+            FIND.ENROL_ID As Enrol_id,
+            FIND.ENROL_CAT As Enrol_category,
+            FIND.COUNT_STUD As Student_count,
+            FIND.AMOUNT As Fee_amount,    
+            FIND.CAMP_OFF_NAME AS Responsible_Officer,
+            FIND.CAMP_OFF_NUMB AS Responsible_Officer_Numb,
+            FIND.CAMP_OFF_MAIL AS Responsible_Officer_Mail,
+            FIND.CAMP_SUP_NAME AS Supervisor,
+            FIND.CAMP_SUP_NUMB AS Supervisor_Numb,
+            FIND.CAMP_SUP_MAIL AS Supervisor_Mail,
+            FIND.ORG_OFF_NAME AS Org_Officer,
+            FIND.ORG_OFF_NUMB AS Org_Officer_Numb,
+            FIND.ORG_OFF_MAIL AS Org_Officer_Mail,
+            FIND.ORG_SUP_NAME AS Org_Supervisor,
+            FIND.ORG_SUP_NUMB AS Org_Supervisor_Numb,
+            FIND.ORG_SUP_MAIL AS Org_Supervisor_Mail            
+        From
+            %FILEP%h_detail FIND
+        ;"""
+        s_sql = s_sql.replace("%FIND%", s_finding)
+        s_sql = s_sql.replace("%FILEP%", s_fprefix)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+        # Export findings
+        if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
+            print("Export findings...")
+            sx_path = re_path + "/"
+            sx_file = "Qualification_test_" + s_fprefix + "_" + s_finding.lower() + "_"
+            sx_file_dated = sx_file + funcdate.today_file()
+            s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+            funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
+            funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
+            funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
+    else:
+        s_sql = "CREATE TABLE " + sr_file + " (" + """
+        BLANK TEXT
+        );"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    """*****************************************************************************
+    QUALIFICATION FEE MASTER 3 - JOIN STUDENT AND TRANSACTION AND NO FEE LOADED TEST
+    *****************************************************************************"""
+    print("QUALIFICATION FEE MASTER 3")
+    funcfile.writelog("QUALIFICATION FEE MASTER 3")
 
     # Short course students already removed in OBTAIN STUDENTS
     # Remove NON CONTACT students
@@ -3874,7 +4288,7 @@ def student_fee(s_period='curr', s_year='0'):
     # DECLARE VARIABLES
     i_finding_after: int = 0
 
-    # ISOLATE QUALIFICATIONS WITH NO TRANSACTIONS - CONTACT STUDENTS ONLY
+    # ISOLATE QUALIFICATIONS WITH ZERO TRANSACTIONS
     print("Isolate qualifications with zero value transactions...")
     sr_file = "X021ca_Qual_zerofee_transaction"
     s_sql = "Create table " + sr_file + " AS" + """
@@ -3894,7 +4308,7 @@ def student_fee(s_period='curr', s_year='0'):
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     so_conn.commit()
-    if funcsys.tablerowcount(so_curs, sr_file) > 0:  # Ignore l_export flag - should export every time
+    if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
         print("Export findings...")
         sx_path = re_path + "/"
         sx_file = "Student_fee_test_021cx_qual_fee_zero_transaction_studentlist_"
@@ -3914,7 +4328,9 @@ def student_fee(s_period='curr', s_year='0'):
         FIND.KSTUDBUSENTID As ID,
         FIND.QUALIFICATION,
         FIND.FEE_LEVIED,
-        FIND.FUSERBUSINESSENTITYID As USER
+        FIND.FUSERBUSINESSENTITYID As USER,
+        FIND.NAME_ADDR As USER_NAME,
+        FIND.SYSTEM_DESC
     From
         X021ca_Qual_zerofee_transaction FIND
     ;"""
@@ -4156,22 +4572,19 @@ def student_fee(s_period='curr', s_year='0'):
                 ELSE ORG_SUP.EMAIL_ADDRESS
             END As ORG_SUP_MAIL,
             ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL2,
-            PREV.USER As USER_NUMB,
-            CASE
-                WHEN PREV.USER != '' THEN PEOP.NAME_ADDR
-                WHEN CAMP_OFF.NAME != '' THEN CAMP_OFF.NAME 
-                ELSE ''
-            END As USER_NAME,
-            CASE
-                WHEN PREV.USER != '' THEN PREV.USER||'@nwu.ac.za'
-                WHEN CAMP_OFF.EMPLOYEE_NUMBER != '' THEN CAMP_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
-                ELSE ''
-            END As USER_MAIL,
-            CASE
-                WHEN PREV.USER != '' THEN PEOP.EMAIL_ADDRESS
-                WHEN CAMP_OFF.EMPLOYEE_NUMBER != '' THEN CAMP_OFF.EMAIL_ADDRESS
-                ELSE ''
-            END As USER_MAIL2
+            Case
+                When PREV.USER_NAME != '' Then PREV.USER
+                Else CAMP_OFF.EMPLOYEE_NUMBER
+            End As U_NUMB,
+            Case
+                When PREV.USER_NAME != '' Then PREV.USER_NAME
+                Else CAMP_OFF.NAME
+            End As U_NAME, 
+            Case
+                When PREV.USER_NAME != '' Then PREV.USER||'@nwu.ac.za'
+                Else CAMP_OFF.EMAIL_ADDRESS
+            End As U_MAIL, 
+            PREV.SYSTEM_DESC        
         From
             X021cd_add_previous PREV Left Join
             X021ca_Qual_zerofee_transaction MAST On MAST.KSTUDBUSENTID = PREV.ID And
@@ -4179,8 +4592,7 @@ def student_fee(s_period='curr', s_year='0'):
             X021cf_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.LOC Left Join
             X021cf_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG Left Join
             X021cg_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.LOC Left Join
-            X021cg_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG Left Join
-            PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = PREV.USER
+            X021cg_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG
         Where
           PREV.PREV_PROCESS IS NULL
         ;"""
@@ -4223,9 +4635,9 @@ def student_fee(s_period='curr', s_year='0'):
             FIND.ORG_SUP_NAME AS Org_Supervisor,
             FIND.ORG_SUP_NUMB AS Org_Supervisor_Numb,
             FIND.ORG_SUP_MAIL AS Org_Supervisor_Mail,
-            FIND.USER_NAME As User,
-            FIND.USER_NUMB As User_Numb,
-            FIND.USER_MAIL As User_Mail
+            FIND.U_NAME As User,
+            FIND.U_NUMB As User_Numb,
+            FIND.U_MAIL As User_Mail
         From
             X021ch_detail FIND
         Order by
