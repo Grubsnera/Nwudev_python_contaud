@@ -2695,7 +2695,7 @@ def student_fee(s_period='curr', s_year='0'):
         FIAB.AMOUNT
     From
         X020aa_Fiabd007_summ FIAB Inner Join
-        X021ga_Qual_present_summ PRES On PRES.FQUALLEVELAPID = FIAB.FQUALLEVELAPID
+        X022aa_Qual_present_summary PRES On PRES.FQUALLEVELAPID = FIAB.FQUALLEVELAPID
                 And PRES.CAMPUS = FIAB.CAMPUS
                 And PRES.PRESENT_ID = FIAB.FPRESENTATIONCATEGORYCODEID
                 And PRES.ENROL_ID = FIAB.FENROLMENTCATEGORYCODEID
@@ -2996,7 +2996,7 @@ def student_fee(s_period='curr', s_year='0'):
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
-    sr_file = s_fprefix + "x_work_permit_expire"
+    sr_file = s_fprefix + "x_fee_loaded_incorrectly"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     print("Build the final report")
     if i_finding_before > 0 and i_finding_after > 0:
@@ -3008,9 +3008,7 @@ def student_fee(s_period='curr', s_year='0'):
             FIND.FQUALLEVELAPID As Qualification_id,
             FIND.QUALIFICATION As Qualification,
             FIND.QUALIFICATION_NAME As Qualification_name,
-            FIND.PRESENT_ID As Present_id,
             FIND.PRESENT_CAT As Present_category,
-            FIND.ENROL_ID As Enrol_id,
             FIND.ENROL_CAT As Enrol_category,
             FIND.COUNT_STUD As Student_count,
             FIND.AMOUNT As Fee_amount,    
