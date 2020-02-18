@@ -68,7 +68,7 @@ if funcdate.today_dayname() in "TueWedThuFriSat":
             funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:A001_oracle_to_sqlite',
                           'NWUIAPython: Success: A001_oracle_to_sqlite')
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:A001_oracle_to_sqlite',
+        funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:A001_oracle_to_sqlite',
                            'NWUIAPython: Fail: A001_oracle_to_sqlite')
 else:
     print("ORACLE to SQLITE do not run on Sundays and Mondays")
@@ -86,7 +86,7 @@ if funcdate.today_dayname() in "MonTueWedThuFriSatSun":
             funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:A002_log',
                           'NWUIAPython: Success: A002_log')
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:A002_log',
+        funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:A002_log',
                            'NWUIAPython: Fail: A002_log')
 else:
     print("LOGS run every day")
@@ -104,7 +104,7 @@ if funcdate.today_dayname() in "TueWedThuFriSat":
             funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:B001_people_lists',
                           'NWUIAPython: Success: B001_people_lists')
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:B001_people_lists',
+        funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:B001_people_lists',
                            'NWUIAPython: Fail: B001_people_lists')
 else:
     print("PEOPLE lists do not run on Sundays and Mondays")
@@ -122,7 +122,7 @@ if funcdate.today_dayname() in "TueWedThuFriSat":
             funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:B002_kfs_lists',
                           'NWUIAPython: Success: B002_kfs_lists')
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:B002_kfs_lists',
+        funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:B002_kfs_lists',
                            'NWUIAPython: Fail: B002_kfs_lists')
 else:
     print("KFS lists do not run on Sundays and Mondays")
@@ -141,7 +141,7 @@ if funcdate.today_dayname() in "TueWedThuFriSat":
             funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:B006_kfs_period_list',
                           'NWUIAPython: Success: B006_kfs_period_list')
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:B006_kfs_period_list',
+        funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:B006_kfs_period_list',
                            'NWUIAPython: Fail: B006_kfs_period_list')
 else:
     print("KFS GL and Payment lists do not run on Sundays and Mondays")
@@ -156,7 +156,7 @@ if funcdate.today_dayname() in "TueWedThuFriSat":
             funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:B006_kfs_period_list_prev',
                           'NWUIAPython: Success: B006_kfs_period_list_prev')
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:B006_kfs_period_list_prev',
+        funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:B006_kfs_period_list_prev',
                            'NWUIAPython: Fail: B006_kfs_period_list_prev')
 else:
     print("KFS GL and Payment lists do not run on Sundays and Mondays")
@@ -174,7 +174,7 @@ if funcdate.today_dayname() in "TueWedThuFriSat":
             funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:B003_vss_lists',
                           'NWUIAPython: Success: B003_vss_lists')
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:B003_vss_lists',
+        funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:B003_vss_lists',
                            'NWUIAPython: Fail: B003_vss_lists')
 else:
     print("VSS lists do not run on Sundays and Mondays")
@@ -192,7 +192,7 @@ if funcdate.today_dayname() in "TueWedThuFriSat":
             funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:B007_vss_period_list',
                           'NWUIAPython: Success: B007_vss_period_list')
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:B007_vss_period_list',
+        funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:B007_vss_period_list',
                            'NWUIAPython: Fail: B007_vss_period_list')
 else:
     print("VSS PERIOD LISTS do not run on Sundays and Mondays")
@@ -210,7 +210,7 @@ if funcdate.today_dayname() in "MonTueWedThuFri":
             funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:C003_people_list_masterfile',
                           'NWUIAPython: Success: C003_people_list_masterfile')
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:C003_people_list_masterfile',
+        funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:C003_people_list_masterfile',
                            'NWUIAPython: Fail: C003_people_list_masterfile')
 else:
     print("PEOPLE MASTERFILE LISTS do not run on Saturdays and Sundays")
@@ -228,7 +228,7 @@ if funcdate.today_dayname() in "MonTueWedThuFri":
             funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:C001_people_test_masterfile',
                           'NWUIAPython: Success: C001_people_test_masterfile')
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:C001_people_test_masterfile',
+        funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:C001_people_test_masterfile',
                            'NWUIAPython: Fail: C001_people_test_masterfile')
 else:
     print("PEOPLE MASTER FILE TESTS do not run on Saturdays and Sundays")
@@ -246,7 +246,7 @@ if funcdate.today_dayname() in "MonTueWedThuFri":
             funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:C002_people_test_conflict',
                           'NWUIAPython: Success: C002_people_test_conflict')
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:C002_people_test_conflict',
+        funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:C002_people_test_conflict',
                            'NWUIAPython: Fail: C002_people_test_conflict')
 else:
     print("PEOPLE CONFLICT TESTS do not run on Saturdays and Sundays")
@@ -264,7 +264,7 @@ if funcdate.today_dayname() in "MonTueWedThuFri":
             funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:C201_creditor_test_payments',
                           'NWUIAPython: Success: C201_creditor_test_payments')
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:C201_creditor_test_payments',
+        funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:C201_creditor_test_payments',
                            'NWUIAPython: Fail: C201_creditor_test_payments')
 else:
     print("KFS CREDITOR PAYMENT TESTS do not run on Saturdays and Sundays")
@@ -281,7 +281,7 @@ if funcdate.today_dayname() in "MonTueWedThuFri":
         if l_mail:
             funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:C202_gl_test_transactions', 'NWUIAPython: Success: C202_gl_test_transactions')
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:C202_gl_test_transactions', 'NWUIAPython: Fail: C202_gl_test_transactions')
+        funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:C202_gl_test_transactions', 'NWUIAPython: Fail: C202_gl_test_transactions')
 else:
     print("GL TEST TRANSACTIONS TESTS do not run on Saturdays and Sundays")
     funcfile.writelog("SCRIPT: C202_gl_test_transactions: DO NOT RUN ON SATURDAYS AND SUNDAYS")
@@ -300,7 +300,7 @@ if funcdate.today_dayname() in "MonTueWedThuFri":
             funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:C200_report_studdeb_recon',
                           'NWUIAPython: Success: C200_report_studdeb_recon')
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:C200_report_studdeb_recon',
+        funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:C200_report_studdeb_recon',
                            'NWUIAPython: Fail: C200_report_studdeb_recon')
 else:
     print("C200_REPORT_STUDDEB_RECON only run on 1-4 and 10th of the month")
@@ -318,7 +318,7 @@ if funcdate.cur_day() in "01z13":
             funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:C300_test_student_general',
                           'NWUIAPython: Success: C300_test_student_general')
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:C300_test_student_general',
+        funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:C300_test_student_general',
                            'NWUIAPython: Fail: C300_test_student_general')
 else:
     print("C300_TEST_STUDENT_GENERAL only run on 1st of the month")
@@ -337,7 +337,7 @@ if funcdate.today_dayname() in "MonTueWedThuFri":
             funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:C302_test_student_fee',
                           'NWUIAPython: Success: C302_test_student_fee')
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:C302_test_student_fee',
+        funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:C302_test_student_fee',
                            'NWUIAPython: Fail: C302_test_student_fee')
 else:
     print("VSS STUDENT FEE TESTS do not run on Saturdays and Sundays")
@@ -355,7 +355,7 @@ if funcdate.today_dayname() in "MonTueWedThuFri":
             funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:C301_report_student_deferment',
                           'NWUIAPython: Success: C301_report_student_deferment')
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:C301_report_student_deferment',
+        funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:C301_report_student_deferment',
                            'NWUIAPython: Fail: C301_report_student_deferment')
 else:
     print("VSS STUDENT DEFERMENT MASTER FILE do not run on Saturdays and Sundays")
@@ -373,7 +373,7 @@ if funcdate.today_dayname() in "TueWedThuFriSat":
             funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:B005_mysql_lists(Web_ia_nwu)',
                           'NWUIAPython: Success: B005_mysql_lists (Web_ia_nwu)')
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:B005_mysql_lists(Web_ia_nwu)',
+        funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:B005_mysql_lists(Web_ia_nwu)',
                            'NWUIAPython: Fail: B005_mysql_lists (Web_ia_nwu)')
 else:
     print("MYSQL lists do not run on Sundays and Mondays")
@@ -391,7 +391,7 @@ if funcdate.today_dayname() in "TueWedThuFriSat":
             funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:B005_mysql_lists(Mysql_ia_server)',
                           'NWUIAPython: Success: B005_mysql_lists (Mysql_ia_server)')
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIAPython:Fail:B005_mysql_lists(Mysql_ia_server)',
+        funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:B005_mysql_lists(Mysql_ia_server)',
                            'NWUIAPython: Fail: B005_mysql_lists (Mysql_ia_server)')
 else:
     print("MYSQL lists do not run on Sundays and Mondays")
