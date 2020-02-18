@@ -3407,6 +3407,8 @@ def student_fee(s_period='curr', s_year='0'):
         STUD.ISMAINQUALLEVEL,
         STUD.ENROLACADEMICYEAR,
         STUD.ENROLHISTORYYEAR,
+        STUD.CALCHISTORYYEAR,
+        STUD.FEEHISTORYYEAR,        
         STUD.SEM0,
         STUD.SEM1,
         STUD.SEM2,
@@ -3452,6 +3454,15 @@ def student_fee(s_period='curr', s_year='0'):
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
+        print("Export findings...")
+        sx_path = re_path + "/"
+        sx_file = "Student_fee_test_020bx_qual_fee_studentlist_"
+        sx_file_dated = sx_file + funcdate.today_file()
+        s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
+        # funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
+        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
 
     # LIST OF STUDENTS REGISTERED FOR MARK ONLY AND THEIR MODULES
     print("Build list of student module marks...")
