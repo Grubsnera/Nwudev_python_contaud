@@ -860,6 +860,7 @@ def People_test_masterfile():
     # VARIABLES
     s_fprefix: str = 'X002c'
     s_finding: str = 'ID DOB INVALID'
+    s_xfile: str = "001_reported.txt"
 
     # BUILD TABLE WITH NOT EMPTY ID NUMBERS
     print("Build not empty ID number table...")
@@ -923,7 +924,7 @@ def People_test_masterfile():
 
     # GET PREVIOUS FINDINGS
     if i_finding_before > 0:
-        i = functest.get_previous_finding(so_curs, ed_path, "001_reported.txt", s_finding, "ITTTT")
+        i = functest.get_previous_finding(so_curs, ed_path, s_xfile, s_finding, "ITTTT")
         so_conn.commit()
 
     # SET PREVIOUS FINDINGS
@@ -989,7 +990,7 @@ def People_test_masterfile():
             print("*** " + str(i_finding_after) + " Finding(s) to report ***")
             sr_filet = sr_file
             sx_path = ed_path
-            sx_file = "001_reported"
+            sx_file = s_xfile[:-4]
             # Read the header data
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             # Write the data
@@ -2417,6 +2418,7 @@ def People_test_masterfile():
     # DECLARE TEST VARIABLES
     s_fprefix: str = "X003e"
     s_finding: str = "EMPLOYEE WORK PERMIT EXPIRED"
+    s_xfile:str = "001_reported.txt"
     i_finding_after: int = 0
 
     # OBTAIN TEST DATA
@@ -2500,7 +2502,7 @@ def People_test_masterfile():
 
     # GET PREVIOUS FINDINGS
     if i_finding_before > 0:
-        i = functest.get_previous_finding(so_curs, ed_path, "001_reported.txt", s_finding, "ITTTT")
+        i = functest.get_previous_finding(so_curs, ed_path, s_xfile, s_finding, "ITTTT")
         so_conn.commit()
 
     # SET PREVIOUS FINDINGS
@@ -2565,7 +2567,7 @@ def People_test_masterfile():
         if i_finding_after > 0:
             print("*** " + str(i_finding_after) + " Finding(s) to report ***")
             sx_path = ed_path
-            sx_file = "001_reported"
+            sx_file = s_xfile[:-4]
             # Read the header data
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             # Write the data
