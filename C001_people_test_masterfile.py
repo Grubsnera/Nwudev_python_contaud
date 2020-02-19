@@ -2450,9 +2450,9 @@ def People_test_masterfile():
         Set VALID =
         Case
             When PERMIT Like('PRP%') Then '0 PRP Permit'
-            When PERMIT <> '' And IDNO <> '' Then '0 RSA ID number'
+            When NUMB <> '' And IDNO <> '' Then '0 RSA ID number'
             When
-                PERMIT <> '' And
+                NUMB <> '' And
                 POSITION Like('EXTRA%')
             Then '0 Extraordinary position'
             When
@@ -2461,7 +2461,7 @@ def People_test_masterfile():
                 EXPIRE_DATE < Date('%TODAY%')
             Then '1 Select with date'
             When
-                PERMIT <> '' And
+                NUMB <> '' And
                 EXPIRE_DATE = ''
             Then '1 Select no date'        
         End;"""
