@@ -2845,7 +2845,8 @@ def student_fee(s_period='curr', s_year='0'):
     From
         %FILEP%a_fee_loaded_incorrectly FIND
     Where
-        FIND.COUNT_OCC = 1
+        FIND.COUNT_OCC = 1 And
+        FIND.AMOUNT = 0.00
     ;"""
     s_sql = s_sql.replace("%FILEP%", s_fprefix)
     so_curs.execute(s_sql)
