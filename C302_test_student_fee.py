@@ -41,7 +41,7 @@ QUALIFICATION FEE REPORTS
 UPDATE FEE SHOULD BE COLUMN
 QUALIFICATION FEE TEST NO TRANSACTION CONTACT (V1.0.9)(1 NO TRANSACTION)
 QUALIFICATION FEE TEST NEGATIVE TRANSACTION (2 NEGATIVE TRANSACTION)
-QUALIFICATION FEE TEST ZERO TRANSACTION (3 ZERO TRANSACTION)
+QUALIFICATION FEE TEST ZERO TRANSACTION CONTACT (3 ZERO TRANSACTION)
 QUALIFICATION FEE TEST HALF TRANSACTION (4 HALF TRANSACTION)
 QUALIFICATION FEE TEST ABNORMAL TRANSACTION (6 ABNORMAL TRANSACTION)
 
@@ -102,7 +102,7 @@ def student_fee(s_period='curr', s_year='0'):
         l_export: bool = True
     else:
         f_reg_fee = 1930.00
-        d_sem1_con = "2020-02-17"
+        d_sem1_con = "2020-02-21"
         d_sem1_dis = "2020-03-09"
         d_sem2_con = "2020-07-31"
         d_sem2_dis = "2020-08-15"
@@ -3626,7 +3626,7 @@ def student_fee(s_period='curr', s_year='0'):
     Select
         STUD.*
     From
-        X020ba_Student_master STUD
+        X020bx_Student_master_sort STUD
     Where
         STUD.VALID = 0 And
         STUD.FEE_LEVIED_TYPE Like ('1 NO TRANS/WITH FEE') And
@@ -4287,10 +4287,10 @@ def student_fee(s_period='curr', s_year='0'):
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """*****************************************************************************
-    QUALIFICATION FEE TEST ZERO TRANSACTION
+    QUALIFICATION FEE TEST ZERO TRANSACTION CONTACT
     *****************************************************************************"""
-    print("QUALIFICATION FEE TEST ZERO TRANSACTION")
-    funcfile.writelog("QUALIFICATION FEE TEST ZERO TRANSACTION")
+    print("QUALIFICATION FEE TEST ZERO TRANSACTION CONTACT")
+    funcfile.writelog("QUALIFICATION FEE TEST ZERO TRANSACTION CONTACT")
 
     # FILES NEEDED
     # X020ba_Student_master
@@ -4305,10 +4305,11 @@ def student_fee(s_period='curr', s_year='0'):
     Select
         STUD.*
     From
-        X020ba_Student_master STUD
+        X020bx_Student_master_sort STUD
     Where
         STUD.VALID = 0 And
-        STUD.FEE_LEVIED_TYPE Like ('3%')
+        STUD.FEE_LEVIED_TYPE Like ('3%') And
+        STUD.FEE_SHOULD_BE Like ('% C%')      
     Order By
         STUD.CAMPUS,
         STUD.FEE_SHOULD_BE,
@@ -4604,7 +4605,8 @@ def student_fee(s_period='curr', s_year='0'):
             X021cg_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.LOC Left Join
             X021cg_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG
         Where
-          PREV.PREV_PROCESS IS NULL
+            PREV.PREV_PROCESS Is Null Or
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         """
         WHEN CAMP_OFF.NAME != '' THEN CAMP_OFF.NAME 
