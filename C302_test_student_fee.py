@@ -41,8 +41,8 @@ QUALIFICATION FEE REPORTS
 UPDATE FEE SHOULD BE COLUMN
 QUALIFICATION FEE TEST NO TRANSACTION CONTACT (V1.0.9)(1 NO TRANSACTION)
 QUALIFICATION FEE TEST NEGATIVE TRANSACTION (2 NEGATIVE TRANSACTION)
-QUALIFICATION FEE TEST ZERO TRANSACTION CONTACT (3 ZERO TRANSACTION)
-QUALIFICATION FEE TEST HALF TRANSACTION (4 HALF TRANSACTION)
+QUALIFICATION FEE TEST ZERO TRANSACTION CONTACT (V1.0.9)(3 ZERO TRANSACTION)
+QUALIFICATION FEE TEST HALF TRANSACTION CONTACT (V1.0.9)(4 HALF TRANSACTION)
 QUALIFICATION FEE TEST ABNORMAL TRANSACTION (6 ABNORMAL TRANSACTION)
 
 MODULE FEE MASTER 1
@@ -4682,10 +4682,10 @@ def student_fee(s_period='curr', s_year='0'):
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """*****************************************************************************
-    QUALIFICATION FEE TEST HALF TRANSACTION
+    QUALIFICATION FEE TEST HALF TRANSACTION CONTACT
     *****************************************************************************"""
-    print("QUALIFICATION FEE TEST HALF TRANSACTION")
-    funcfile.writelog("QUALIFICATION FEE TEST HALF TRANSACTION")
+    print("QUALIFICATION FEE TEST HALF TRANSACTION CONTACT")
+    funcfile.writelog("QUALIFICATION FEE TEST HALF TRANSACTION CONTACT")
 
     # FILES NEEDED
     # X020ba_Student_master
@@ -4704,7 +4704,8 @@ def student_fee(s_period='curr', s_year='0'):
     Where
         STUD.VALID = 0 And
         STUD.FEE_LEVIED_TYPE Like ('4%') And
-        STUD.FEE_COUNT_HALF < 2
+        STUD.FEE_COUNT_HALF < 2 And
+        STUD.FEE_SHOULD_BE Like ('% C%')        
     Order By
         STUD.CAMPUS,
         STUD.FEE_SHOULD_BE,
@@ -4714,15 +4715,6 @@ def student_fee(s_period='curr', s_year='0'):
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     so_conn.commit()
-    if funcsys.tablerowcount(so_curs, sr_file) > 0:  # Ignore l_export flag - should export every time
-        print("Export findings...")
-        sx_path = re_path + "/"
-        sx_file = "Student_fee_test_021ex_qual_fee_half_transaction_studentlist_"
-        sx_file_dated = sx_file + funcdate.today_file()
-        s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
-        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
-        # funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
-        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
 
     # IDENTIFY FINDINGS
     print("Identify findings...")
@@ -4734,7 +4726,9 @@ def student_fee(s_period='curr', s_year='0'):
         FIND.KSTUDBUSENTID As ID,
         FIND.QUALIFICATION,
         FIND.FEE_LEVIED,
-        FIND.FUSERBUSINESSENTITYID As USER
+        FIND.FUSERBUSINESSENTITYID As USER,
+        FIND.NAME_ADDR As USER_NAME,
+        FIND.SYSTEM_DESC    
     From
         X021ea_Qual_halffee_transaction FIND
     ;"""
@@ -4976,22 +4970,19 @@ def student_fee(s_period='curr', s_year='0'):
                 ELSE ORG_SUP.EMAIL_ADDRESS
             END As ORG_SUP_MAIL,
             ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL2,
-            PREV.USER As USER_NUMB,
-            CASE
-                WHEN PREV.USER != '' THEN PEOP.NAME_ADDR
-                WHEN CAMP_OFF.NAME != '' THEN CAMP_OFF.NAME 
-                ELSE ''
-            END As USER_NAME,
-            CASE
-                WHEN PREV.USER != '' THEN PREV.USER||'@nwu.ac.za'
-                WHEN CAMP_OFF.EMPLOYEE_NUMBER != '' THEN CAMP_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
-                ELSE ''
-            END As USER_MAIL,
-            CASE
-                WHEN PREV.USER != '' THEN PEOP.EMAIL_ADDRESS
-                WHEN CAMP_OFF.EMPLOYEE_NUMBER != '' THEN CAMP_OFF.EMAIL_ADDRESS
-                ELSE ''
-            END As USER_MAIL2
+            Case
+                When PREV.USER_NAME != '' Then PREV.USER
+                Else CAMP_OFF.EMPLOYEE_NUMBER
+            End As U_NUMB,
+            Case
+                When PREV.USER_NAME != '' Then PREV.USER_NAME
+                Else CAMP_OFF.NAME
+            End As U_NAME, 
+            Case
+                When PREV.USER_NAME != '' Then PREV.USER||'@nwu.ac.za'
+                Else CAMP_OFF.EMAIL_ADDRESS
+            End As U_MAIL, 
+            PREV.SYSTEM_DESC          
         From
             X021ed_add_previous PREV Left Join
             X021ea_Qual_halffee_transaction MAST On MAST.KSTUDBUSENTID = PREV.ID And
@@ -4999,10 +4990,10 @@ def student_fee(s_period='curr', s_year='0'):
             X021ef_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.LOC Left Join
             X021ef_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG Left Join
             X021eg_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.LOC Left Join
-            X021eg_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG Left Join
-            PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = PREV.USER
+            X021eg_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG
         Where
-          PREV.PREV_PROCESS IS NULL
+            PREV.PREV_PROCESS Is Null Or
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         """
         WHEN CAMP_OFF.NAME != '' THEN CAMP_OFF.NAME 
@@ -5043,9 +5034,9 @@ def student_fee(s_period='curr', s_year='0'):
             FIND.ORG_SUP_NAME AS Org_Supervisor,
             FIND.ORG_SUP_NUMB AS Org_Supervisor_Numb,
             FIND.ORG_SUP_MAIL AS Org_Supervisor_Mail,
-            FIND.USER_NAME As User,
-            FIND.USER_NUMB As User_Numb,
-            FIND.USER_MAIL As User_Mail
+            FIND.U_NAME As User,
+            FIND.U_NUMB As User_Numb,
+            FIND.U_MAIL As User_Mail        
         From
             X021eh_detail FIND
         Order by
