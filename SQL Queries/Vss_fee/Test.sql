@@ -1,12 +1,9 @@
 ﻿Select
-    MERG.*,
-    MERG.FQUALLEVELAPID As FQUALLEVELAPID1,
-    MERG.CAMPUS As CAMPUS1,
-    Count(MERG.PRESENT_ID) As COUNT_OCC
+    X021gx_qual_fee_overcharge.Campus,
+    X021gx_qual_fee_overcharge.Tran_owner,
+    Count(X021gx_qual_fee_overcharge.Student) As Count_Student
 From
-    X021ga_Qual_present_dmerg MERG
+    X021gx_qual_fee_overcharge
 Group By
-    MERG.FQUALLEVELAPID,
-    MERG.CAMPUS
-Having
-    Count(MERG.PRESENT_ID) = 1
+    X021gx_qual_fee_overcharge.Campus,
+    X021gx_qual_fee_overcharge.Tran_owner
