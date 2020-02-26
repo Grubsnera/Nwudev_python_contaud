@@ -148,10 +148,10 @@ funcfile.writelog("COMPLETED: C302_TEST_STUDENT_FEE")
 # COMPLETE HEADING
 print("Complete message...")
 sr_file = "X_"
+so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 s_sql = "Create Table " + sr_file + " As" + """
 """
 # s_sql = s_sql.replace("%PERIOD%", s_period)
-so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 so_curs.execute(s_sql)
 funcfile.writelog("%t BUILD TABLE: " + sr_file)
 """
