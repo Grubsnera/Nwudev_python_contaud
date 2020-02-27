@@ -22,3 +22,6 @@ V2.0.0 (12 Feb 2020)
     h_detail = Merge findings, officers, supervisors and any other related data.
     x_? = Build final export finding file with audit finding and nice readable column names.
 04. Re-affirm use of i_finding_before and i_finding_after variables.
+
+V2.0.1 (27 Feb 2020)
+01. Add s_fname: str = "reg_fee_zero" variable.
