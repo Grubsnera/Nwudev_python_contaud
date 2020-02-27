@@ -1,15 +1,13 @@
 ﻿Select
-    X001ae_Report_payments_accroute_curr.PAYEE_NAME,
-    X001ae_Report_payments_accroute_curr.ORG_NM,
-    X001ae_Report_payments_accroute_curr.VENDOR_TYPE,
-    X001ae_Report_payments_accroute_curr.DOC_TYPE,
-    Sum(X001ae_Report_payments_accroute_curr.ACC_AMOUNT) As Sum_ACC_AMOUNT
+    VEND.VNDR_ID As VENDOR_ID,
+    PHON.PHONE,
+    PHON.MOBILE,
+    CONT.CONTACT,
+    CONT.ATTENTION,
+    CONT.EMAIL,
+    CONT.PHONE As PHONEC,
+    CONT.MOBILE As MOBILEC
 From
-    X001ae_Report_payments_accroute_curr
-Where
-    X001ae_Report_payments_accroute_curr.VENDOR_TYPE = 'V'
-Group By
-    X001ae_Report_payments_accroute_curr.PAYEE_NAME,
-    X001ae_Report_payments_accroute_curr.ORG_NM,
-    X001ae_Report_payments_accroute_curr.VENDOR_TYPE,
-    X001ae_Report_payments_accroute_curr.DOC_TYPE
+    PUR_VNDR_DTL_T VEND Left Join
+    X001af_vendor_phone PHON On PHON.VNDR_HDR_GNRTD_ID = VEND.VNDR_HDR_GNRTD_ID Inner Join
+    X001ae_vendor_contact CONT On CONT.VNDR_HDR_GNRTD_ID = VEND.VNDR_HDR_GNRTD_ID
