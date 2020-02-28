@@ -59,7 +59,7 @@ BEGIN OF SCRIPT
 print("BEGIN OF SCRIPT")
 funcfile.writelog("BEGIN OF SCRIPT")
 
-""" ****************************************************************************
+"""*****************************************************************************
 END OF SCRIPT
 *****************************************************************************"""
 print("END OF SCRIPT")
@@ -72,3 +72,15 @@ so_conn.close()
 # CLOSE THE LOG WRITER
 funcfile.writelog("-----------------------------")
 funcfile.writelog("COMPLETED: B002_KFS_LISTS_DEV")
+
+"""
+# COMPLETE HEADING
+print("Complete message...")
+sr_file = "X_"
+so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+s_sql = "Create Table " + sr_file + " As" + """
+"""
+# s_sql = s_sql.replace("%PERIOD%", s_period)
+so_curs.execute(s_sql)
+funcfile.writelog("%t BUILD TABLE: " + sr_file)
+"""
