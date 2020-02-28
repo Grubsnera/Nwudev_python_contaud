@@ -412,6 +412,171 @@ def kfs_lists():
     so_conn.commit()
     funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
+    # BUILD CONTACT NAMES EMAIL PHONE MOBILE LIST
+    print("Build contact email phone and mobile list...")
+    sr_file = "X001ae_vendor_contact"
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
+    s_sql = "Create View " + sr_file + " As" + """
+    Select
+        CONT.VNDR_HDR_GNRTD_ID,
+        CONT.VNDR_CNTCT_GNRTD_ID,
+        CONT.VNDR_CNTCT_TYP_CD As CONTACT_TYPE,
+        Trim(Upper(CONT.VNDR_CNTCT_NM)) As CONTACT,
+        Trim(Upper(CONT.VNDR_ATTN_NM)) As ATTENTION,
+        Lower(CONT.VNDR_CNTCT_EMAIL_ADDR) As EMAIL,
+        PHON.VNDR_PHN_NBR As PHONE,
+        MOBI.VNDR_PHN_NBR As MOBILE
+    From
+        PUR_VNDR_CNTCT_T CONT Left Join
+        PUR_VNDR_CNTCT_PHN_NBR_T PHON On PHON.VNDR_CNTCT_GNRTD_ID = CONT.VNDR_CNTCT_GNRTD_ID And PHON.VNDR_PHN_TYP_CD = 'PH' Left Join
+        PUR_VNDR_CNTCT_PHN_NBR_T MOBI On MOBI.VNDR_CNTCT_GNRTD_ID = CONT.VNDR_CNTCT_GNRTD_ID And MOBI.VNDR_PHN_TYP_CD = 'MB'
+    Group By
+        CONT.VNDR_HDR_GNRTD_ID
+    Order By
+        CONT.VNDR_HDR_GNRTD_ID,
+        CONTACT_TYPE
+    ;"""
+    # s_sql = s_sql.replace("%PERIOD%", s_period)
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
+
+    # BUILD VENDOR PHONE MOBILE LIST
+    print("Build vendor phone and mobile list...")
+    sr_file = "X001af_vendor_phone"
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
+    s_sql = "Create View " + sr_file + " As" + """
+    Select
+        PHON.VNDR_HDR_GNRTD_ID,
+        PHON.VNDR_PHN_GNRTD_ID,
+        LAND.VNDR_PHN_NBR As PHONE,
+        MOBI.VNDR_PHN_NBR As MOBILE
+    From
+        PUR_VNDR_PHN_NBR_T PHON Left Join
+        PUR_VNDR_PHN_NBR_T LAND On LAND.VNDR_PHN_GNRTD_ID = PHON.VNDR_PHN_GNRTD_ID And LAND.VNDR_PHN_TYP_CD = 'PH' Left Join
+        PUR_VNDR_PHN_NBR_T MOBI On MOBI.VNDR_PHN_GNRTD_ID = PHON.VNDR_PHN_GNRTD_ID And MOBI.VNDR_PHN_TYP_CD = 'MB'
+    Group By
+        PHON.VNDR_HDR_GNRTD_ID
+    Order By
+        PHON.VNDR_HDR_GNRTD_ID
+    ;"""
+    # s_sql = s_sql.replace("%PERIOD%", s_period)
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
+
+    # BUILD VENDOR MASTER CONTACT LIST
+    print("Build vendor master contact list...")
+    sr_file = "X001ag_contact_comb"
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
+    s_sql = "Create View " + sr_file + " As" + """
+    Select
+        VEND.VNDR_ID As VENDOR_ID,
+        PHON.PHONE,
+        PHON.MOBILE,
+        CONT.CONTACT,
+        CONT.ATTENTION,
+        CONT.EMAIL,
+        CONT.PHONE As PHONEC,
+        CONT.MOBILE As MOBILEC
+    From
+        PUR_VNDR_DTL_T VEND Left Join
+        X001af_vendor_phone PHON On PHON.VNDR_HDR_GNRTD_ID = VEND.VNDR_HDR_GNRTD_ID Left Join
+        X001ae_vendor_contact CONT On CONT.VNDR_HDR_GNRTD_ID = VEND.VNDR_HDR_GNRTD_ID
+    ;"""
+    # s_sql = s_sql.replace("%PERIOD%", s_period)
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
+
+    # BUILD VENDOR MASTER COMBINED CONTACT LIST
+    print("Build vendor master combined contact list...")
+    sr_file = "X000_Contact"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "Create Table " + sr_file + " As" + """
+    Select
+        CONT.VENDOR_ID AS VENDOR_ID,
+        CONT.CONTACT,
+        CONT.ATTENTION,
+        CONT.EMAIL,
+        CONT.PHONE,
+        CONT.MOBILE,
+        CONT.PHONEC AS PHONEC,
+        CONT.MOBILEC AS MOBILEC,
+        CASE
+            WHEN CONT.PHONE != '' THEN Replace(Trim(CONT.PHONE),' ','') || '~'
+            ELSE ''
+        END As NUMBERS
+    From
+        X001ag_contact_comb CONT
+    Order By
+        VENDOR_ID    
+    ;"""
+    # s_sql = s_sql.replace("%PERIOD%", s_period)
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # UPDATE NUMBERS COLUMN WITH MOBILE
+    print("Update numbers with mobile...")
+    so_curs.execute("Update X000_Contact " + """
+                    Set NUMBERS = 
+                    Case
+                        When Trim(MOBILE) != '' And Instr(NUMBERS, Replace(Trim(MOBILE), ' ', '')) != 0 THEN NUMBERS
+                        When Trim(MOBILE) != '' THEN NUMBERS || Replace(Trim(MOBILE),' ','') || '~'
+                        Else NUMBERS
+                    End
+                    ;""")
+
+    # UPDATE NUMBERS COLUMN WITH PHONEC
+    print("Update numbers with phonec...")
+    so_curs.execute("Update X000_Contact " + """
+                    Set NUMBERS = 
+                    Case
+                        When Trim(PHONEC) != '' And Instr(NUMBERS, Replace(Trim(PHONEC), ' ', '')) != 0 THEN NUMBERS
+                        When Trim(PHONEC) != '' THEN NUMBERS || Replace(Trim(PHONEC),' ','') || '~'
+                        Else NUMBERS
+                    End
+                    ;""")
+
+    # UPDATE NUMBERS COLUMN WITH MOBILEC
+    print("Update numbers with mobilec...")
+    so_curs.execute("Update X000_Contact " + """
+                    Set NUMBERS = 
+                    Case
+                        When Trim(MOBILEC) != '' And Instr(NUMBERS, Replace(Trim(MOBILEC), ' ', '')) != 0 THEN NUMBERS
+                        When Trim(MOBILEC) != '' THEN NUMBERS || Replace(Trim(MOBILEC),' ','') || '~'
+                        Else NUMBERS
+                    End
+                    ;""")
+
+    # UPDATE NUMBERS REMOVE SPECIAL CHARACTERS FROM NUMBERS
+    for i in range(5):
+        print("Remove special characters...")
+        so_curs.execute("Update X000_Contact " + """
+                        Set NUMBERS = 
+                        Case
+                            When NUMBERS Like('%-%') Then Replace(NUMBERS, '-', '')
+                            When NUMBERS Like('%(%') Then Replace(NUMBERS, '(', '')
+                            When NUMBERS Like('%)%') Then Replace(NUMBERS, ')', '')
+                            When NUMBERS Like('%*%') Then Replace(NUMBERS, '*', '')
+                            When NUMBERS Like('%;%') Then Replace(NUMBERS, ';', '')                        
+                            When NUMBERS Like('%.%') Then Replace(NUMBERS, '.', '')                        
+                            When NUMBERS Like('%+27%') Then Replace(NUMBERS, '+27', '0')
+                            When NUMBERS Like('%UNKNOWN%') Then Replace(NUMBERS, 'UNKNOWN'||'~', '')
+                            When NUMBERS Like('%geennommerbeskikbaar%') Then Replace(NUMBERS, 'geennommerbeskikbaar'||'~', '')
+                            When NUMBERS Like('%NONE%') Then Replace(NUMBERS, 'NONE'||'~', '')
+                            When NUMBERS Like('%N/A%') Then Replace(NUMBERS, 'N/A'||'~', '')
+                            When NUMBERS Like('%Fon:%') Then Replace(NUMBERS, 'Fon:', '')
+                            When NUMBERS Like('%Tel:%') Then Replace(NUMBERS, 'Tel:', '')
+                            When Trim(EMAIL) != '' And Instr(NUMBERS,EMAIL) > 0 THEN Replace(NUMBERS, EMAIL || '~', '')
+                            When NUMBERS Like('%O%') Then Replace(NUMBERS, 'O', '0')
+                            Else NUMBERS
+                        End
+                        ;""")
+
+    # TRIM UNWANTED CHARACTERS
+    print("Trim unwanted characters...")
+    so_curs.execute("Update X000_Contact " + """
+                    Set NUMBERS = Trim(NUMBERS,'~')
+                    ;""")
+
     # BUILD VENDOR TABLE
     print("Build vendor master file...")
     sr_file = "X000_Vendor"
@@ -426,8 +591,12 @@ def kfs_lists():
         BANK.VEND_MAIL,
         BANK.EMPL_BANK,
         BANK.STUD_BANK,
+        CONT.NUMBERS,
         ADDR.FAX,
         ADDR.EMAIL,
+        CONT.CONTACT,
+        CONT.ATTENTION,
+        CONT.EMAIL AS EMAIL_CONTACT,
         ADDR.ADDRESS,
         ADDR.URL,
         ADDR.STATE_CD,
@@ -449,7 +618,8 @@ def kfs_lists():
         PUR_VNDR_DTL_T DETAIL Left Join
         PUR_VNDR_HDR_T HEADER On HEADER.VNDR_HDR_GNRTD_ID = DETAIL.VNDR_HDR_GNRTD_ID Left Join
         X001ac_vendor_address_comb ADDR On ADDR.VENDOR_ID = DETAIL.VNDR_ID Left Join
-        X001ad_vendor_bankacc BANK On BANK.VENDOR_ID = DETAIL.VNDR_ID
+        X001ad_vendor_bankacc BANK On BANK.VENDOR_ID = DETAIL.VNDR_ID Left Join
+        X000_Contact CONT On CONT.VENDOR_ID = DETAIL.VNDR_ID
     Order by
         VNDR_NM,
         VENDOR_ID
