@@ -3202,8 +3202,10 @@ def student_fee(s_period='curr', s_year='0'):
         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM9 > 0 Then '49 CU FULL PAYMENT RQD' 
         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM8 > 0 Then '48 CU FULL PAYMENT RQD' 
         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM7 > 0 Then '47 CU FULL PAYMENT RQD' 
-        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM1 = 0 And SEM2 = 0 And SEM7 = 0 Then '44 CU ZERO SEM FULL PAYMENT RQD' 
+        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM1 = 0 And SEM2 = 0 And SEM7 = 0 Then '44 CU ZERO SEM FULL PAYMENT RQD'
+        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM2 = 1 And SEM1 = 0 And ISMAINQUALLEVEL = 0 Then '12 CU 2ND SEM NOTMAIN NO PAYMENT RQD' 
         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM2 > 0 And SEM1 = 0 Then '42 CU 2ND SEM HALF PAYMENT RQD' 
+        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM1 = 1 And SEM2 = 0 And ISMAINQUALLEVEL = 0 Then '11 CU 1ST SEM NOTMAIN NO PAYMENT RQD'
         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null And SEM1 > 0 And SEM2 = 0 Then '41 CU 1ST SEM HALF PAYMENT RQD' 
         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC Is Null Then '40 CU FULL PAYMENT RQD' 
 
@@ -3235,6 +3237,10 @@ def student_fee(s_period='curr', s_year='0'):
                         When FEE_LEVIED_TYPE Like '2%' Then 0
                         When FEE_LEVIED_TYPE Like '9%' Then 1
 
+                        When FEE_SHOULD_BE Like '11%' And FEE_LEVIED_TYPE Like '4%' Then 3
+                        When FEE_SHOULD_BE Like '11%' And FEE_LEVIED_TYPE Like '5%' Then 3
+                        When FEE_SHOULD_BE Like '12%' And FEE_LEVIED_TYPE Like '4%' Then 3
+                        When FEE_SHOULD_BE Like '12%' And FEE_LEVIED_TYPE Like '5%' Then 3
                         When FEE_SHOULD_BE Like '1%' And FEE_LEVIED_TYPE Like '1%' Then 1
                         When FEE_SHOULD_BE Like '1%' And FEE_LEVIED_TYPE Like '3%' Then 1
                         When FEE_SHOULD_BE Like '1%' And FEE_LEVIED_TYPE Like '4%' Then 2
@@ -3471,6 +3477,7 @@ def student_fee(s_period='curr', s_year='0'):
         VALID:  0 = Qualification fee invalid.
                 1 = Qualification fee valid.
                 2 = Qualification fee overcharge.
+                3 = Qualification fee overcharge. Not main qualification need 1 module for degree.
         FEE_LEVIED: Total qualification fee levied on the student account per qualification.
         FEE_MODE: Qualification fee loaded onto system which constitute full fee.
         FEE_MODE_HALF: Half or 50% of the FEE_MODE.
@@ -3487,6 +3494,8 @@ def student_fee(s_period='curr', s_year='0'):
                             DP = Distance postgraduate
                             DU = Distance undergraduate
                         10 NO PAYMENT RQD: No qualification fee should be levied.
+                        11 CU 1ST SEM NOTMAIN NO PAYMENT RQD: Not main qualification need 1 first semester module for degree. 
+                        12 CU 2ND SEM NOTMAIN NO PAYMENT RQD: Not main qualification need 1 second semester module for degree. 
                         20 DISC 1ST HALF PAYMENT RQD: Discontinued in first semester. Levy 50%.
                         30 DISC 2ND FULL PAYMENT RQD: Discontinued in second semester. Levy 100%.
                         40 FULL PAYMENT RQD: Student studied full year. Levy 100%.
