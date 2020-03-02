@@ -13,6 +13,7 @@ cur_month		This month in MM format ex 01
 cur_monthbegin 		This month begin date in YYYY-MM-DD format ex 2018-01-01
 cur_monthend 		This month end date in YYYY-MM-DD format ex 2018-01-31
 cur_monthendfile	This month end date in YYYYMMDD format ex 20190131
+cur_monthendnext    This month end in YYYY-MM-DD format, but next month end date in x days before current month end. 
 cur_monthfile           This month in YYYYMM format ex 201902
 cur_year		This year in YYYY format ex 2018
 cur_yearbegin		This year begin date in YYYY-MM-DD format ex 2018-01-01
