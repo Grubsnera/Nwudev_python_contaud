@@ -78,14 +78,68 @@ def cur_monthendfile():
         else:
             s_retu = "28"
     return cur_year() + cur_month() + s_retu #Current month end file
-	
+
+
+# Function This month end date in YYYY-MM-DD format ex 2018-01-31
+def cur_monthendnext(i_days=7):
+    """
+    Function to return month end date. Return next month if i_days (default=7) before current month end.
+    December will return next year January month end date.
+    :param i_days: Number of days before month end
+    :return: Month end date in YYYY-MM-DD format
+    """
+
+    # SET VARIABLES
+    s_year = cur_year()
+    s_month = cur_month()
+    if s_month in "01z03z05z07z08z10z12":
+        s_lastd = "31"
+    elif s_month in "04z06z09z11":
+        s_lastd = "30"
+    else:
+        if calendar.isleap(int(s_year)):
+            s_lastd = "29"
+        else:
+            s_lastd = "28"
+    a_today = datetime.date.today()
+    b_month = datetime.date(int(s_year), int(s_month), int(s_lastd))
+    diff = b_month - a_today
+
+    # CALCULATION
+    if diff.days <= i_days:
+        i_year = int(s_year)
+        i_month = int(s_month)
+        if i_month == 12:
+            i_year += 1
+            s_year = str(i_year)
+            s_month = "01"
+        else:
+            i_month += 1
+            if i_month < 10:
+                s_month = "0" + str(i_month)
+            else:
+                s_month = str(i_month)
+        if s_month in "01z03z05z07z08z10z12":
+            s_lastd = "31"
+        elif s_month in "04z06z09z11":
+            s_lastd = "30"
+        else:
+            if calendar.isleap(int(s_year)):
+                s_lastd = "29"
+            else:
+                s_lastd = "28"
+    return s_year + "-" + s_month + "-" + s_lastd  # Return month end
+
+
 #Function This month date in YYYYMM format ex 201801
 def cur_monthfile():
     return cur_year() + cur_month() #Current month file
 
+
 #Function This year in YYYY format ex 2018
 def cur_year():
     return datetime.date.today().strftime("%Y") #Current year
+
 
 #Function This year begin date in YYYY-MM-DD format ex 2018-01-01
 def cur_yearbegin():
