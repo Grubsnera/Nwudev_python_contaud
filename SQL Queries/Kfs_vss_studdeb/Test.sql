@@ -1,9 +1,7 @@
 ﻿Select
-    TYPE.STUDENT,
-    Count(TYPE.BAL_CLOS) As Total_BAL_CLOS,
-    Total(TYPE.BAL_OPEN) As Total_BAL_OPEN,
-    Total(TYPE.DIFF_BAL) As Total_DIFF_BAL
+    X021ax_balance_multiple_campus.Campus,
+    Count(X021ax_balance_multiple_campus.Student) As Count_Student
 From
-    X002dd_vss_closing_open_differ TYPE
+    X021ax_balance_multiple_campus
 Group By
-    TYPE.STUDENT
+    X021ax_balance_multiple_campus.Campus
