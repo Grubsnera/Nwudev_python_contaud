@@ -22,6 +22,7 @@ from _my_modules import funccsv
 from _my_modules import funcfile
 from _my_modules import funcsys
 from _my_modules import funcmysql
+from _my_modules import functest
 
 """ CONTENTS *******************************************************************
 ENVIRONMENT
@@ -42,7 +43,7 @@ TEST BURSARY INGL NOVSS (UNCOMPLETE)
 TEST BURSARY INVSS NOGL
 TEST BURSARY VSS GL DIFFERENT CAMPUS
 BALANCE ON MORE THAN ONE CAMPUS
-TEST STUDENT BALANCE ON MORE THAN ONE CAMPUS 
+TEST STUDENT BALANCE MULTIPLE CAMPUS (V2.0.1) 
 END OF SCRIPT
 *****************************************************************************"""
 
@@ -74,7 +75,7 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
     funcfile.writelog("---------------------------------")
     funcfile.writelog("ENVIRONMENT")
 
-    # Declare variables
+    # DECLARE VARIABLES
     s_year: str = s_yyyy
     so_path = "W:/Kfs_vss_studdeb/" #Source database path
     if s_period == "curr":
@@ -3960,19 +3961,28 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """*************************************************************************
-    TEST STUDENT BALANCE ON MORE THAN ONE CAMPUS 
+    TEST STUDENT BALANCE MULTIPLE CAMPUS 
     *************************************************************************"""
-    print("TEST STUDENT BALANCE ON MORE THAN ONE CAMPUS")
-    funcfile.writelog("TEST STUDENT BALANCE ON MORE THAN ONE CAMPUS")
+    print("TEST STUDENT BALANCE MULTIPLE CAMPUS")
+    funcfile.writelog("TEST STUDENT BALANCE MULTIPLE CAMPUS")
+
+    # TODO Delete after first run on 3 Mar 2020
+    sr_file = "X020_Balance_per_campus"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sr_file = "X020_Count_per_campus"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sr_file = "X020_Students"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 
     # BUILD A LIST OF STUDENT BALANCES PER CAMPUS
     print("Build balance per campus list...")
-    sr_file = "X020_Balance_per_campus"
+    sr_file = "X020aa_Balance_per_campus"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         TRAN.STUDENT_VSS,
         TRAN.CAMPUS_VSS,
-        Round(Total(TRAN.AMOUNT_VSS),2) As BALANCE
+        Cast(Round(Total(TRAN.AMOUNT_VSS),2) As REAL) As BALANCE
     From
         X002ab_vss_transort TRAN
     Group By
@@ -3981,34 +3991,34 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
     Having
         Round(Total(TRAN.AMOUNT_VSS),2) <> 0.00    
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # COUNT THE NUMBER OF BALANCES PER CAMPUS
     print("Build count per campus list...")
-    sr_file = "X020_Count_per_campus"
+    sr_file = "X020ab_Count_per_campus"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         STUD.STUDENT_VSS,
         Cast(Count(STUD.CAMPUS_VSS) As INT) As COUNT,
-        Total(STUD.BALANCE) As BALANCE
+        Cast(Round(Total(STUD.BALANCE),2) As REAL) As BALANCE
     From
-        X020_Balance_per_campus STUD
+        X020aa_Balance_per_campus STUD
     Group By
         STUD.STUDENT_VSS
     Having
         Count(STUD.CAMPUS_VSS) > 1
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # LIST THE STUDENTS
     print("Build students list...")
-    sr_file = "X020_Students"
+    sr_file = "X020ac_Students"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         COUNT.STUDENT_VSS,
@@ -4017,13 +4027,315 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
         CAMP.BALANCE,
         COUNT.BALANCE As BALANCE_TOTAL
     From
-        X020_Count_per_campus COUNT Inner Join
-        X020_Balance_per_campus CAMP On CAMP.STUDENT_VSS = COUNT.STUDENT_VSS
+        X020ab_Count_per_campus COUNT Inner Join
+        X020aa_Balance_per_campus CAMP On CAMP.STUDENT_VSS = COUNT.STUDENT_VSS
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # FILES NEEDED
+    # X020ac_Students
+    # X020aa_Balance_per_campus
+
+    # DECLARE TEST VARIABLES
+    s_fprefix: str = "X021a"
+    s_fname: str = "balance_multiple_campus"
+    s_finding: str = "STUDENT BALANCE MULTIPLE CAMPUS"
+    s_xfile: str = "200_reported.txt"
+    i_finding_before: int = 0
+    i_finding_after: int = 0
+
+    # OBTAIN TEST DATA
+    print("Obtain test data...")
+    sr_file: str = s_fprefix + "a_" + s_fname
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        MAST.CAMPUS,
+        STUD.STUDENT_VSS As STUDENT,
+        STUD.COUNT As COUNT,
+        CAST(CASE
+            WHEN MAFI.BALANCE Is Null THEN 0
+            ELSE MAFI.BALANCE
+        END As REAL) As MAF_BALANCE,
+        CAST(CASE
+            WHEN POTC.BALANCE Is Null THEN 0
+            ELSE POTC.BALANCE
+        END As REAL) As POT_BALANCE,
+        CAST(CASE
+            WHEN VAAL.BALANCE Is Null THEN 0
+            ELSE VAAL.BALANCE
+        END As REAL) As VTC_BALANCE,
+        CAST(STUD.BALANCE_TOTAL As REAL) As BALANCE
+    From
+        X020ac_Students STUD Left Join
+        %VSS%.X001_Student MAST On MAST.KSTUDBUSENTID = STUD.STUDENT_VSS And
+            MAST.ISMAINQUALLEVEL = 1 Left Join
+        X020aa_Balance_per_campus MAFI On MAFI.STUDENT_VSS = STUD.STUDENT_VSS And
+            MAFI.CAMPUS_VSS Like('M%') Left Join
+        X020aa_Balance_per_campus POTC On POTC.STUDENT_VSS = STUD.STUDENT_VSS And
+            POTC.CAMPUS_VSS Like('P%') Left Join
+        X020aa_Balance_per_campus VAAL On VAAL.STUDENT_VSS = STUD.STUDENT_VSS And
+            VAAL.CAMPUS_VSS Like('V%')
+    Group By
+        STUD.STUDENT_VSS,
+        STUD.COUNT,
+        STUD.BALANCE_TOTAL
+    ;"""
+    s_sql = s_sql.replace("%VSS%", s_vss)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
+        print("Export findings...")
+        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_file = "Student_balance_test_" + s_fprefix + "_" + s_finding.lower() + "_studentlist_"
+        sx_file_dated = sx_file + funcdate.today_file()
+        s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
+        # funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
+        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
+
+    # SELECT TEST DATA
+    print("Identify findings...")
+    sr_file = s_fprefix + "b_finding"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        'NWU' As ORG,
+        FIND.CAMPUS As LOC,
+        FIND.STUDENT,
+        FIND.COUNT,
+        FIND.MAF_BALANCE,
+        FIND.POT_BALANCE,
+        FIND.VTC_BALANCE,
+        FIND.BALANCE
+    From
+        %FILEP%%FILEN% FIND
+    ;"""
+    s_sql = s_sql.replace("%FILEP%", s_fprefix)
+    s_sql = s_sql.replace("%FILEN%", "a_" + s_fname)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # COUNT THE NUMBER OF FINDINGS
+    i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
+    print("*** Found " + str(i_finding_before) + " exceptions ***")
+    funcfile.writelog("%t FINDING: " + str(i_finding_before) + " " + s_finding + " finding(s)")
+
+    # GET PREVIOUS FINDINGS
+    if i_finding_before > 0:
+        i = functest.get_previous_finding(so_curs, ed_path, s_xfile, s_finding, "IRRRR")
+        so_conn.commit()
+
+    # SET PREVIOUS FINDINGS
+    if i_finding_before > 0:
+        i = functest.set_previous_finding(so_curs)
+        so_conn.commit()
+
+    # ADD PREVIOUS FINDINGS
+    sr_file = s_fprefix + "d_addprev"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        print("Join previously reported to current findings...")
+        s_sql = "CREATE TABLE " + sr_file + " AS" + """
+        Select
+            FIND.*,
+            Lower('%FINDING%') AS PROCESS,
+            '%TODAY%' AS DATE_REPORTED,
+            '%DAYS%' AS DATE_RETEST,
+            PREV.PROCESS AS PREV_PROCESS,
+            PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
+            PREV.DATE_RETEST AS PREV_DATE_RETEST,
+            PREV.REMARK
+        From
+            %FILEP%b_finding FIND Left Join
+            Z001ab_setprev PREV ON PREV.FIELD1 = FIND.STUDENT And
+                PREV.FIELD2 = FIND.MAF_BALANCE And
+                PREV.FIELD3 = FIND.POT_BALANCE And
+                PREV.FIELD4 = FIND.VTC_BALANCE And
+                PREV.FIELD5 = FIND.BALANCE
+        ;"""
+        s_sql = s_sql.replace("%FINDING%", s_finding)
+        s_sql = s_sql.replace("%FILEP%", s_fprefix)
+        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD LIST TO UPDATE FINDINGS
+    sr_file = s_fprefix + "e_newprev"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            PREV.PROCESS,
+            PREV.STUDENT AS FIELD1,
+            PREV.MAF_BALANCE AS FIELD2,
+            PREV.POT_BALANCE AS FIELD3,
+            PREV.VTC_BALANCE AS FIELD4,
+            PREV.BALANCE AS FIELD5,
+            PREV.DATE_REPORTED,
+            PREV.DATE_RETEST,
+            PREV.REMARK
+        From
+            %FILEP%d_addprev PREV
+        Where
+            PREV.PREV_PROCESS Is Null Or
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""        
+        ;"""
+        s_sql = s_sql.replace("%FILEP%", s_fprefix)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+        # Export findings to previous reported file
+        i_finding_after = funcsys.tablerowcount(so_curs, sr_file)
+        if i_finding_after > 0:
+            print("*** " + str(i_finding_after) + " Finding(s) to report ***")
+            sx_path = ed_path
+            sx_file = s_xfile[:-4]
+            # Read the header data
+            s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+            # Write the data
+            if l_record:
+                funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
+                funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
+                funcfile.writelog("%t EXPORT DATA: " + sr_file)
+        else:
+            print("*** No new findings to report ***")
+            funcfile.writelog("%t FINDING: No new findings to export")
+
+    # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
+    if i_finding_before > 0 and i_finding_after > 0:
+        i = functest.get_officer(so_curs, "VSS", "TEST " + s_finding + " OFFICER")
+        so_conn.commit()
+
+    # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
+    if i_finding_before > 0 and i_finding_after > 0:
+        i = functest.get_supervisor(so_curs, "VSS", "TEST " + s_finding + " SUPERVISOR")
+        so_conn.commit()
+
+        # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
+        if i_finding_before > 0 and i_finding_after > 0:
+            i = functest.get_supervisor(so_curs, "VSS", "TEST " + s_finding + " SUPERVISOR")
+            so_conn.commit()
+
+    # ADD CONTACT DETAILS TO FINDINGS
+    sr_file = s_fprefix + "h_detail"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0 and i_finding_after > 0:
+        print("Add contact details to findings...")
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            PREV.ORG,
+            PREV.LOC,
+            PREV.STUDENT,
+            PREV.COUNT,
+            PREV.MAF_BALANCE,
+            PREV.POT_BALANCE,
+            PREV.VTC_BALANCE,
+            PREV.BALANCE,
+            CAMP_OFF.EMPLOYEE_NUMBER AS CAMP_OFF_NUMB,
+            CAMP_OFF.NAME_ADDR AS CAMP_OFF_NAME,
+            CASE
+                WHEN  CAMP_OFF.EMPLOYEE_NUMBER != '' THEN CAMP_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                ELSE CAMP_OFF.EMAIL_ADDRESS
+            END AS CAMP_OFF_MAIL,
+            CAMP_OFF.EMAIL_ADDRESS AS CAMP_OFF_MAIL2,        
+            CAMP_SUP.EMPLOYEE_NUMBER AS CAMP_SUP_NUMB,
+            CAMP_SUP.NAME_ADDR AS CAMP_SUP_NAME,
+            CASE
+                WHEN CAMP_SUP.EMPLOYEE_NUMBER != '' THEN CAMP_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                ELSE CAMP_SUP.EMAIL_ADDRESS
+            END AS CAMP_SUP_MAIL,
+            CAMP_SUP.EMAIL_ADDRESS AS CAMP_SUP_MAIL2,
+            ORG_OFF.EMPLOYEE_NUMBER AS ORG_OFF_NUMB,
+            ORG_OFF.NAME_ADDR AS ORG_OFF_NAME,
+            CASE
+                WHEN ORG_OFF.EMPLOYEE_NUMBER != '' THEN ORG_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                ELSE ORG_OFF.EMAIL_ADDRESS
+            END AS ORG_OFF_MAIL,
+            ORG_OFF.EMAIL_ADDRESS AS ORG_OFF_MAIL2,
+            ORG_SUP.EMPLOYEE_NUMBER AS ORG_SUP_NUMB,
+            ORG_SUP.NAME_ADDR AS ORG_SUP_NAME,
+            CASE
+                WHEN ORG_SUP.EMPLOYEE_NUMBER != '' THEN ORG_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                ELSE ORG_SUP.EMAIL_ADDRESS
+            END AS ORG_SUP_MAIL,
+            ORG_SUP.EMAIL_ADDRESS AS ORG_SUP_MAIL2
+        From
+            %FILEP%d_addprev PREV Left Join
+            Z001af_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.LOC Left Join
+            Z001af_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG Left Join
+            Z001ag_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.LOC Left Join
+            Z001ag_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG
+        Where
+            PREV.PREV_PROCESS Is Null Or
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
+        ;"""
+        s_sql = s_sql.replace("%FILEP%", s_fprefix)
+        s_sql = s_sql.replace("%FILEN%", "a_" + s_fname)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
+    sr_file = s_fprefix + "x_" + s_fname
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    print("Build the final report")
+    if i_finding_before > 0 and i_finding_after > 0:
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            '%FIND%' As Audit_finding,
+            FIND.ORG As Organization,
+            FIND.LOC As Campus,
+            FIND.STUDENT As Student,
+            FIND.COUNT As Campus_count,
+            FIND.MAF_BALANCE As Maf_balance,
+            FIND.POT_BALANCE As Pot_balance,
+            FIND.VTC_BALANCE As Vtc_balance,
+            FIND.BALANCE As Account_balance,        
+            FIND.CAMP_OFF_NAME AS Responsible_Officer,
+            FIND.CAMP_OFF_NUMB AS Responsible_Officer_Numb,
+            FIND.CAMP_OFF_MAIL AS Responsible_Officer_Mail,
+            FIND.CAMP_SUP_NAME AS Supervisor,
+            FIND.CAMP_SUP_NUMB AS Supervisor_Numb,
+            FIND.CAMP_SUP_MAIL AS Supervisor_Mail,
+            FIND.ORG_OFF_NAME AS Org_Officer,
+            FIND.ORG_OFF_NUMB AS Org_Officer_Numb,
+            FIND.ORG_OFF_MAIL AS Org_Officer_Mail,
+            FIND.ORG_SUP_NAME AS Org_Supervisor,
+            FIND.ORG_SUP_NUMB AS Org_Supervisor_Numb,
+            FIND.ORG_SUP_MAIL AS Org_Supervisor_Mail            
+        From
+            %FILEP%h_detail FIND
+        ;"""
+        s_sql = s_sql.replace("%FIND%", s_finding)
+        s_sql = s_sql.replace("%FILEP%", s_fprefix)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+        # Export findings
+        if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
+            print("Export findings...")
+            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_file = "Student_balance_test_" + s_fprefix + "_" + s_finding.lower() + "_"
+            sx_file_dated = sx_file + funcdate.today_file()
+            s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+            funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
+            funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
+            funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
+    else:
+        s_sql = "CREATE TABLE " + sr_file + " (" + """
+        BLANK TEXT
+        );"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """*************************************************************************
     END OF SCRIPT
