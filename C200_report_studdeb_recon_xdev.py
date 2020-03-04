@@ -13,6 +13,7 @@ from _my_modules import funcdate
 from _my_modules import funcsys
 from _my_modules import funccsv
 from _my_modules import funcmysql
+from _my_modules import functest
 
 # OPEN THE LOG
 funcfile.writelog("Now")
@@ -23,22 +24,40 @@ print("C200_REPORT_STUDDEB_RECON")
 print("-------------------------")
 
 # DECLARE VARIABLES
+gl_month = '03'
+s_period="curr"
+s_yyyy="2020"
+s_year: str = s_yyyy
 so_path = "W:/Kfs_vss_studdeb/"  # Source database path
-so_file = "Kfs_vss_studdeb.sqlite"  # Source database
+if s_period == "curr":
+    s_year = funcdate.cur_year()
+    so_file = "Kfs_vss_studdeb.sqlite"  # Source database
+    s_kfs = "KFSCURR"
+    s_vss = "VSSCURR"
+elif s_period == "prev":
+    s_year = funcdate.prev_year()
+    so_file = "Kfs_vss_studdeb_prev.sqlite"  # Source database
+    s_kfs = "KFSPREV"
+    s_vss = "VSSPREV"
+else:
+    so_file = "Kfs_vss_studdeb_" + s_year + ".sqlite"  # Source database
+    s_kfs = ""
+    s_vss = ""
 re_path = "R:/Debtorstud/"  # Results
 ed_path = "S:/_external_data/"  # External data
-gl_month = '09'
+s_sql = ""  # SQL statements
 l_mail = False
-l_export = False
+l_export = True
 l_record = False
-s_burs_code = '042z052z381z500'
+l_vacuum = False
+s_burs_code = '042z052z381z500'  # Current bursary transaction codes
 
 # OPEN THE SOURCE
 with sqlite3.connect(so_path + so_file) as so_conn:
     so_curs = so_conn.cursor()
 funcfile.writelog("OPEN DATABASE: " + so_file)
 
-# Attach data sources
+# ATTACH DATA SOURCES
 so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
 funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
 so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs_curr.sqlite' AS 'KFSCURR'")
