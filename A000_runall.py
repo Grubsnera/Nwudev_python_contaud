@@ -310,8 +310,7 @@ else:
 VSS STUDENT MASTER FILE TESTS
 ****************************************************************************"""
 
-# TODO Change back to "01z13" after 3 March 2020
-if funcdate.cur_day() in "02z13":
+if funcdate.cur_day() in "01z13":
     import C300_test_student_general
     try:
         C300_test_student_general.test_student_general()
