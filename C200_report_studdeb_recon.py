@@ -3966,14 +3966,6 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
     print("TEST STUDENT BALANCE MULTIPLE CAMPUS")
     funcfile.writelog("TEST STUDENT BALANCE MULTIPLE CAMPUS")
 
-    # TODO Delete after first run on 3 Mar 2020
-    sr_file = "X020_Balance_per_campus"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    sr_file = "X020_Count_per_campus"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    sr_file = "X020_Students"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-
     # BUILD A LIST OF STUDENT BALANCES PER CAMPUS
     print("Build balance per campus list...")
     sr_file = "X020aa_Balance_per_campus"
