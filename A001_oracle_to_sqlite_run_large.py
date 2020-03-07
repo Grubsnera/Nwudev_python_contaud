@@ -8,13 +8,18 @@ Created: 5 Jul 2019
 from _my_modules import funcdate
 from _my_modules import funcfile
 from _my_modules import funcmail
+from _my_modules import funcsms
 from _my_modules import funcsys
 
 # DECLARE VARIABLES
+l_mess = True
 l_mail = True
 
 if l_mail:
     funcmail.Mail('std_success_gmail', 'Python:Success:Start A001_oracle_to_sqlite_large', 'NWUIAPython: Success: Start A001_oracle_to_sqlite_large')
+
+if l_mess:
+    funcsms.send_wa()
 
 funcfile.writelog("Now")
 funcfile.writelog("SCRIPT: A001_ORACLE_TO_SQLITE_RUN_LARGE")
