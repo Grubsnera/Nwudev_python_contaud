@@ -116,6 +116,7 @@ dmypy.json
 # Albert
 /*.csv
 funcmysql.py
+funcsms.py
 .idea/
 _external_data/
 History/
