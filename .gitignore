@@ -115,6 +115,7 @@ dmypy.json
 
 # Albert
 /*.csv
+funcmail.py
 funcmysql.py
 funcsms.py
 .idea/
