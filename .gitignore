@@ -114,6 +114,7 @@ dmypy.json
 .pyre/
 
 # Albert
+/README.md
 /*.csv
 _my_modules/funcmail.py
 _my_modules/funcmysql.py
