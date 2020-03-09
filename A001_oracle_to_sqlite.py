@@ -68,7 +68,7 @@ def oracle_to_sqlite(s_table="000b_Table.csv"):
         funcfile.writelog("DECLARED: public variables")
 
     if l_mail:
-        funcsms.send_telegram(' ' + 'A001_ORACLE_TO_SQLITE started')
+        funcsms.send_telegram('A001_ORACLE_TO_SQLITE')
 
     # DATABASE from text ***********************************************************
 
