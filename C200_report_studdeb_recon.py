@@ -22,6 +22,7 @@ from _my_modules import funccsv
 from _my_modules import funcfile
 from _my_modules import funcsys
 from _my_modules import funcmysql
+from _my_modules import funcsms
 from _my_modules import functest
 
 """ CONTENTS *******************************************************************
@@ -65,16 +66,6 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
     ENVIRONMENT
     *************************************************************************"""
 
-    # Open the script log file ******************************************************
-    print("-------------------------")
-    print("C200_REPORT_STUDDEB_RECON")
-    print("-------------------------")
-    print("ENVIRONMENT")
-    funcfile.writelog("Now")
-    funcfile.writelog("SCRIPT: C200_REPORT_STUDDEB_RECON")
-    funcfile.writelog("---------------------------------")
-    funcfile.writelog("ENVIRONMENT")
-
     # DECLARE VARIABLES
     s_year: str = s_yyyy
     so_path = "W:/Kfs_vss_studdeb/" #Source database path
@@ -95,11 +86,25 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
     re_path = "R:/Debtorstud/" #Results
     ed_path = "S:/_external_data/" #External data
     s_sql = "" #SQL statements
+    l_mess = True
     l_mail = True
     l_export = True
     l_record = True
     l_vacuum = False
     s_burs_code = '042z052z381z500' # Current bursary transaction codes
+
+    # Open the script log file ******************************************************
+    print("-------------------------")
+    print("C200_REPORT_STUDDEB_RECON")
+    print("-------------------------")
+    print("ENVIRONMENT")
+    funcfile.writelog("Now")
+    funcfile.writelog("SCRIPT: C200_REPORT_STUDDEB_RECON")
+    funcfile.writelog("---------------------------------")
+    funcfile.writelog("ENVIRONMENT")
+
+    if l_mess:
+        funcsms.send_telegram(' ' + 'C200_REPORT_STUDDEB_RECON')
 
     """*************************************************************************
     OPEN DATABASES
@@ -4196,6 +4201,8 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                funcsms.send_telegram('  ' + str(i_finding_after) + s_finding)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")

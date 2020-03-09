@@ -13,20 +13,22 @@ from _my_modules import funcdate
 from _my_modules import funcfile
 from _my_modules import funcstr
 from _my_modules import funcsys
+from _my_modules import funcsms
 
 # from __future__ import generators
 # wait = input("PRESS ENTER TO CONTINUE.")
 
 
 def oracle_to_sqlite(s_table="000b_Table.csv"):
+    """
 
-    # Open the script log file ******************************************************
-    funcfile.writelog("Now")
-    funcfile.writelog("SCRIPT: A001_ORACLE_TO_SQLITE")
-    funcfile.writelog("-----------------------------")
-    ilog_severity = 1
+    :param s_table:
+    :return: Nothing
+    """
 
-    # Declare the global variables ************************************************
+    # DECLARE VARIABLES
+
+    l_mail: bool = True
 
     sl_path = "S:/"
 
@@ -56,8 +58,17 @@ def oracle_to_sqlite(s_table="000b_Table.csv"):
 
     ssql_create = ""  # Sql to create a table
 
+    # LOG
+    funcfile.writelog("Now")
+    funcfile.writelog("SCRIPT: A001_ORACLE_TO_SQLITE")
+    funcfile.writelog("-----------------------------")
+    ilog_severity = 1
+
     if ilog_severity >= 2:
         funcfile.writelog("DECLARED: public variables")
+
+    if l_mail:
+        funcsms.send_telegram(' ' + 'A001_ORACLE_TO_SQLITE started')
 
     # DATABASE from text ***********************************************************
 

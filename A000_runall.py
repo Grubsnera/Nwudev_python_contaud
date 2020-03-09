@@ -4,6 +4,7 @@
 from _my_modules import funcfile
 from _my_modules import funcmail
 from _my_modules import funcdate
+from _my_modules import funcsms
 from _my_modules import funcsys
 
 """ SCRIPT TO RUN ON A SCHEDULED TIME FOR ALL PYTHON SCRIPTS *******************
@@ -44,9 +45,13 @@ ENVIRONMENT
 
 # DECLARE VARIABLES
 l_mail = True
+l_mess = True
 
+# MESSAGES TO ADMIN
 if l_mail:
     funcmail.Mail('std_success_gmail', 'Python:Success:Start_runall', 'NWUIAPython: Success: Start runall')
+if l_mess:
+    funcsms.send_telegram('A000_RUN_ALL started')
 
 # OPEN THE SCRIPT LOG FILE
 print("------------")
@@ -409,3 +414,5 @@ funcfile.writelog("-----------------------")
 # SEND MAIL TO INDICATE THE SUCCESSFUL COMPLETION OF ALL PYTHON SCRIPTS
 if l_mail:
     funcmail.Mail("python_log")
+if l_mess:
+    funcsms.send_telegram('A000_RUN_ALL finished')

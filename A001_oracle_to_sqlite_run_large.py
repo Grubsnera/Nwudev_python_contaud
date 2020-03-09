@@ -15,11 +15,11 @@ from _my_modules import funcsys
 l_mess = True
 l_mail = True
 
+# MESSAGES TO ADMIN
 if l_mail:
     funcmail.Mail('std_success_gmail', 'Python:Success:Start A001_oracle_to_sqlite_large', 'NWUIAPython: Success: Start A001_oracle_to_sqlite_large')
-
 if l_mess:
-    funcsms.send_wa()
+    funcsms.send_telegram('A001_ORACLE_TO_SQLITE_RUN_LARGE started')
 
 funcfile.writelog("Now")
 funcfile.writelog("SCRIPT: A001_ORACLE_TO_SQLITE_RUN_LARGE")
@@ -43,4 +43,6 @@ funcfile.writelog("------------------------------------------")
 # SEND MAIL TO INDICATE THE SUCCESSFUL COMPLETION OF ALL PYTHON SCRIPTS
 if l_mail:
     funcmail.Mail("python_log")
+if l_mess:
+    funcsms.send_telegram('A001_ORACLE_TO_SQLITE_RUN_LARGE finished')
 
