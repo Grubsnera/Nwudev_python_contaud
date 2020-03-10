@@ -31,6 +31,9 @@ PYTHON: S:\ virtual drive.
 Python version:
 3.8.2 on 8 Mar 2020
 
+Anaconda version:
+1.9.12 on 10 Mar 2020
+
 PyPi python-telegram-bot (https://pypi.org/project/python-telegram-bot/) version:
 12.4.2 on 8 Mar 2020
 
