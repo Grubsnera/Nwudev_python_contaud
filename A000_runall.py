@@ -51,7 +51,7 @@ l_mess = True
 if l_mail:
     funcmail.Mail('std_success_gmail', 'Python:Success:Start_runall', 'NWUIAPython: Success: Start runall')
 if l_mess:
-    funcsms.send_telegram('A000_RUN_ALL')
+    funcsms.send_telegram('Download data (kfs) and run tests.')
 
 # OPEN THE SCRIPT LOG FILE
 print("------------")
@@ -415,4 +415,4 @@ funcfile.writelog("-----------------------")
 if l_mail:
     funcmail.Mail("python_log")
 if l_mess:
-    funcsms.send_telegram('A000_RUN_ALL finished')
+    funcsms.send_telegram('Finished with running all tests.')

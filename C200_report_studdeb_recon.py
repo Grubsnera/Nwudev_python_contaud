@@ -104,7 +104,7 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
     funcfile.writelog("ENVIRONMENT")
 
     if l_mess:
-        funcsms.send_telegram('C200_REPORT_STUDDEB_RECON')
+        funcsms.send_telegram('Testing student debtor reconciliations.')
 
     """*************************************************************************
     OPEN DATABASES
@@ -4039,6 +4039,7 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
     s_fprefix: str = "X021a"
     s_fname: str = "balance_multiple_campus"
     s_finding: str = "STUDENT BALANCE MULTIPLE CAMPUS"
+    s_desc: str = "Student accounts have a balance on more than one campus."
     s_xfile: str = "200_reported.txt"
     i_finding_before: int = 0
     i_finding_after: int = 0
@@ -4202,7 +4203,7 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
             if l_mess:
-                funcsms.send_telegram(str(i_finding_after) + ' ' + s_finding)
+                funcsms.send_telegram(str(i_finding_after) + ' ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")

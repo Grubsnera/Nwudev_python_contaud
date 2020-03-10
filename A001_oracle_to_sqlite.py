@@ -28,7 +28,8 @@ def oracle_to_sqlite(s_table="000b_Table.csv"):
 
     # DECLARE VARIABLES
 
-    l_mail: bool = True
+    l_mess: bool = True
+    i_mess: int = 0
 
     sl_path = "S:/"
 
@@ -67,9 +68,6 @@ def oracle_to_sqlite(s_table="000b_Table.csv"):
     if ilog_severity >= 2:
         funcfile.writelog("DECLARED: public variables")
 
-    if l_mail:
-        funcsms.send_telegram('A001_ORACLE_TO_SQLITE')
-
     # DATABASE from text ***********************************************************
 
     # Read the database parameters from the 01_Database.csv file
@@ -100,6 +98,7 @@ def oracle_to_sqlite(s_table="000b_Table.csv"):
             de_sch = row[6]
             so_dri = row[7]
             so_dnq = row[8]
+            i_mess = 0
 
         # Open the source ORACLE database
         # print("DSN="+so_dsn+";PWD="+so_pwd)
@@ -170,6 +169,10 @@ def oracle_to_sqlite(s_table="000b_Table.csv"):
                     tb_ord = row[5]  # SQL sort clause
                     tb_alt = row[6]  # Table alternative name
                     tb_sch = row[7]  # Table schedule
+                    if l_mess and i_mess == 0:
+                        i_mess += 1
+                        funcsms.send_telegram('Importing ' + de_fil.lower() + ' data from oracle.')
+
                 else:
                     continue
 
@@ -420,5 +423,8 @@ def oracle_to_sqlite(s_table="000b_Table.csv"):
     # Close the log writer *********************************************************
     funcfile.writelog("--------------------------------")
     funcfile.writelog("COMPLETED: A001_ORACLE_TO_SQLITE")
+
+    if l_mess:
+        funcsms.send_telegram('Finished importing data from oracle.')
 
     return
