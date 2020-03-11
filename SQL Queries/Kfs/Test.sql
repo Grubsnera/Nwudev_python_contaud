@@ -1,13 +1,9 @@
 ﻿Select
-    VEND.VNDR_ID As VENDOR_ID,
-    PHON.PHONE,
-    PHON.MOBILE,
-    CONT.CONTACT,
-    CONT.ATTENTION,
-    CONT.EMAIL,
-    CONT.PHONE As PHONEC,
-    CONT.MOBILE As MOBILEC
+    X001ad_Report_payments_accroute.*,
+    X001ad_Report_payments_accroute.VENDOR_ID As VENDOR_ID1,
+    X001ad_Report_payments_accroute.INIT_EMP_NAME As INIT_EMP_NAME1
 From
-    PUR_VNDR_DTL_T VEND Left Join
-    X001af_vendor_phone PHON On PHON.VNDR_HDR_GNRTD_ID = VEND.VNDR_HDR_GNRTD_ID Inner Join
-    X001ae_vendor_contact CONT On CONT.VNDR_HDR_GNRTD_ID = VEND.VNDR_HDR_GNRTD_ID
+    X001ad_Report_payments_accroute
+Where
+    X001ad_Report_payments_accroute.VENDOR_ID = '11274298-0' And
+    X001ad_Report_payments_accroute.INIT_EMP_NAME Like ('%PYB VAN BLERK%')
