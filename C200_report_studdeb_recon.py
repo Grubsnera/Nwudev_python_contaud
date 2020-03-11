@@ -104,7 +104,7 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
     funcfile.writelog("ENVIRONMENT")
 
     if l_mess:
-        funcsms.send_telegram('Testing student debtor reconciliations.')
+        funcsms.send_telegram('Testing <b>student debtor</b> reconciliations.')
 
     """*************************************************************************
     OPEN DATABASES
@@ -4203,7 +4203,7 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
             if l_mess:
-                funcsms.send_telegram(str(i_finding_after) + ' ' + s_desc)
+                funcsms.send_telegram(str(i_finding_after) + ' <b>' + s_desc + '</b>')
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")

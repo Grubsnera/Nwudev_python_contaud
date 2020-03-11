@@ -7,4 +7,5 @@ from _my_modules import funcsms
 # IMPORT OWN MODULES
 
 # SEND FIRST MESSAGE
-print(funcsms.send_telegram('Test message from telegram @nwuia_bot'))
+print(funcsms.send_telegram('Test message from <b>Telegram @nwuia_bot</b> robot.'))
+

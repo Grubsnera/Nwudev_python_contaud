@@ -171,7 +171,7 @@ def oracle_to_sqlite(s_table="000b_Table.csv"):
                     tb_sch = row[7]  # Table schedule
                     if l_mess and i_mess == 0:
                         i_mess += 1
-                        funcsms.send_telegram('Importing ' + de_fil.lower() + ' data from oracle.')
+                        funcsms.send_telegram('Importing <b>' + de_fil.lower() + '</b> from oracle.')
 
                 else:
                     continue
