@@ -171,7 +171,7 @@ def oracle_to_sqlite(s_table="000b_Table.csv"):
                     tb_sch = row[7]  # Table schedule
                     if l_mess and i_mess == 0:
                         i_mess += 1
-                        funcsms.send_telegram('Building <b>' + de_fil.lower() + '</b>.')
+                        funcsms.send_telegram('', '', 'Building <b>' + de_fil.lower() + '</b>.')
 
                 else:
                     continue
@@ -425,6 +425,6 @@ def oracle_to_sqlite(s_table="000b_Table.csv"):
     funcfile.writelog("COMPLETED: A001_ORACLE_TO_SQLITE")
 
     if l_mess:
-        funcsms.send_telegram('Completed building of sqlite data tables.')
+        funcsms.send_telegram('', '', 'Completed building of sqlite data tables.')
 
     return

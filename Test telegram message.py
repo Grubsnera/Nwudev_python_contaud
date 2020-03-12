@@ -2,10 +2,10 @@
 # CAN BE DELETED - NO PERMANENT CODE STORED HERE
 
 # SYSTEM MODULES
-from _my_modules import funcsms
+import csv
 
 # IMPORT OWN MODULES
+from _my_modules import funcsms
 
 # SEND FIRST MESSAGE
-print(funcsms.send_telegram('Test message from <b>Telegram @nwuia_bot</b> robot.'))
-
+print(funcsms.send_telegram("Dear", "administrator", 'Test message from <b>Telegram @nwuia_bot</b> robot.'))
