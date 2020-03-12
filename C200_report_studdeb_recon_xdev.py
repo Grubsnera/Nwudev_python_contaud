@@ -13,6 +13,7 @@ from _my_modules import funcdate
 from _my_modules import funcsys
 from _my_modules import funccsv
 from _my_modules import funcmysql
+from _my_modules import funcsms
 from _my_modules import functest
 
 # OPEN THE LOG
@@ -46,6 +47,7 @@ else:
 re_path = "R:/Debtorstud/"  # Results
 ed_path = "S:/_external_data/"  # External data
 s_sql = ""  # SQL statements
+l_mess = False
 l_mail = False
 l_export = True
 l_record = False

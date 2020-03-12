@@ -19,7 +19,7 @@ l_mail = True
 if l_mail:
     funcmail.Mail('std_success_gmail', 'Python:Success:Start A001_oracle_to_sqlite_large', 'NWUIAPython: Success: Start A001_oracle_to_sqlite_large')
 if l_mess:
-    funcsms.send_telegram('Downloading <b>large people and vss data</b> from oracle.')
+    funcsms.send_telegram('Downloading <b>people and vss</b> large data from oracle.')
 
 funcfile.writelog("Now")
 funcfile.writelog("SCRIPT: A001_ORACLE_TO_SQLITE_RUN_LARGE")
