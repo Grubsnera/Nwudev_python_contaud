@@ -13,6 +13,7 @@ import sys
 from _my_modules import funccsv
 from _my_modules import funcdate
 from _my_modules import funcfile
+from _my_modules import funcsms
 from _my_modules import funcsys
 from _my_modules import functest
 
@@ -27,15 +28,6 @@ END OF SCRIPT
 ENVIRONMENT
 *****************************************************************************"""
 
-# OPEN THE SCRIPT LOG FILE
-print("-----------------------------")    
-print("C002_PEOPLE_TEST_CONFLICT_DEV")
-print("-----------------------------")
-funcfile.writelog("Now")
-funcfile.writelog("SCRIPT: C002_PEOPLE_TEST_CONFLICT_DEV")
-funcfile.writelog("-------------------------------------")
-ilog_severity = 1
-
 # DECLARE VARIABLES
 so_path = "W:/People_conflict/"  # Source database path
 re_path = "R:/People/"  # Results path
@@ -43,8 +35,21 @@ ed_path = "S:/_external_data/"  # external data path
 so_file = "People_conflict.sqlite"  # Source database
 s_sql = ""  # SQL statements
 l_export = False
+l_mess = False
 l_mail = False
 l_record = False
+
+# OPEN THE SCRIPT LOG FILE
+print("-----------------------------")
+print("C002_PEOPLE_TEST_CONFLICT_DEV")
+print("-----------------------------")
+funcfile.writelog("Now")
+funcfile.writelog("SCRIPT: C002_PEOPLE_TEST_CONFLICT_DEV")
+funcfile.writelog("-------------------------------------")
+ilog_severity = 1
+
+if l_mess:
+    funcsms.send_telegram('', 'administrator', 'Testing employee <b>conflict of interest</b>.')
 
 """*****************************************************************************
 OPEN THE DATABASES
