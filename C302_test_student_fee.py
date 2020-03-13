@@ -14,6 +14,7 @@ from _my_modules import funcdate
 from _my_modules import funcfile
 from _my_modules import funcstat
 from _my_modules import funcsys
+from _my_modules import funcsms
 from _my_modules import functest
 
 """ INDEX **********************************************************************
@@ -66,14 +67,6 @@ def student_fee(s_period='curr', s_year='0'):
     ENVIRONMENT
     *****************************************************************************"""
 
-    # SCRIPT LOG FILE
-    funcfile.writelog("Now")
-    funcfile.writelog("SCRIPT: C302_TEST_STUDENT_FEE")
-    funcfile.writelog("-----------------------------")
-    print("---------------------")    
-    print("C302_TEST_STUDENT_FEE")
-    print("---------------------")
-
     # DECLARE VARIABLES
     if s_year == '0':
         if s_period == "prev":
@@ -122,6 +115,19 @@ def student_fee(s_period='curr', s_year='0'):
 
     l_vacuum: bool = False
     l_mail: bool = False
+    l_mess:bool = True
+    s_desc: str = ""
+
+    # SCRIPT LOG FILE
+    funcfile.writelog("Now")
+    funcfile.writelog("SCRIPT: C302_TEST_STUDENT_FEE")
+    funcfile.writelog("-----------------------------")
+    print("---------------------")
+    print("C302_TEST_STUDENT_FEE")
+    print("---------------------")
+
+    if l_mess:
+        funcsms.send_telegram('', 'administrator', 'Testing <b>student fee</b> income.')
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -446,6 +452,7 @@ def student_fee(s_period='curr', s_year='0'):
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
+    s_desc = "Registration fee null or not levied."
 
     # IDENTIFY REGISTRATION FEES CONTACT NOT LEVIED
     # EXCLUDE DISTANCE STUDENTS
@@ -577,6 +584,8 @@ def student_fee(s_period='curr', s_year='0'):
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -741,6 +750,7 @@ def student_fee(s_period='curr', s_year='0'):
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
+    s_desc = "Registration fee is a credit or negative amount."
 
     # IDENTIFY REGISTRATION FEES CONTACT NEGATIVES
     print("Identify negative registration fees...")
@@ -925,6 +935,8 @@ def student_fee(s_period='curr', s_year='0'):
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -1133,6 +1145,7 @@ def student_fee(s_period='curr', s_year='0'):
     s_xfile: str = "302_reported.txt"
     i_finding_before: int = 0
     i_finding_after: int = 0
+    s_desc = "Registration fee transactions has no value."
 
     # OBTAIN TEST DATA
     print("Obtain test data...")
@@ -1269,6 +1282,8 @@ def student_fee(s_period='curr', s_year='0'):
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -1432,6 +1447,7 @@ def student_fee(s_period='curr', s_year='0'):
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
+    s_desc = "Registration fee abnormal."
 
     # IDENTIFY REGISTRATION FEE AMOUNTS NOT MODE
     print("Identify abnormal registration fees...")
@@ -1611,6 +1627,8 @@ def student_fee(s_period='curr', s_year='0'):
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -2234,6 +2252,7 @@ def student_fee(s_period='curr', s_year='0'):
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
+    s_desc = "No qualification fee loaded."
 
     # ISOLATE QUALIFICATIONS WITH NO LINKED LEVIES
     print("identify qualifications with no linked levies...")
@@ -2437,6 +2456,8 @@ def student_fee(s_period='curr', s_year='0'):
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -2727,6 +2748,7 @@ def student_fee(s_period='curr', s_year='0'):
     s_xfile: str = "302_reported.txt"
     i_finding_before: int = 0
     i_finding_after: int = 0
+    s_desc = "Qualification fee incorrectly loaded and differ between campuses."
 
     # OBTAIN TEST DATA
     print("Obtain test data...")
@@ -2864,6 +2886,8 @@ def student_fee(s_period='curr', s_year='0'):
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -3554,6 +3578,7 @@ def student_fee(s_period='curr', s_year='0'):
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
+    s_desc = "No qualification fee levied for contact students."
 
     # ISOLATE QUALIFICATIONS WITH NO TRANSACTIONS - CONTACT STUDENTS ONLY
     print("Isolate qualifications with no transactions...")
@@ -3684,6 +3709,8 @@ def student_fee(s_period='curr', s_year='0'):
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -3838,6 +3865,7 @@ def student_fee(s_period='curr', s_year='0'):
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
+    s_desc = "Qualification fee a credit or negative amount for contact student."
 
     # ISOLATE QUALIFICATIONS WITH NO TRANSACTIONS - CONTACT STUDENTS ONLY
     print("Isolate qualifications with negative value transactions...")
@@ -4024,6 +4052,8 @@ def student_fee(s_period='curr', s_year='0'):
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -4233,6 +4263,7 @@ def student_fee(s_period='curr', s_year='0'):
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
+    s_desc = "Qualification fee transactions amount to no value for caontact students."
 
     # ISOLATE QUALIFICATIONS WITH ZERO TRANSACTIONS
     print("Isolate qualifications with zero value transactions...")
@@ -4422,6 +4453,8 @@ def student_fee(s_period='curr', s_year='0'):
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -4628,6 +4661,7 @@ def student_fee(s_period='curr', s_year='0'):
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
+    s_desc = "Qualification fee half levied for contact student."
 
     # ISOLATE QUALIFICATIONS WITH HALF TRANSACTIONS - CONTACT STUDENTS ONLY
     print("Isolate qualifications with half value transactions...")
@@ -4809,6 +4843,8 @@ def student_fee(s_period='curr', s_year='0'):
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -5015,6 +5051,7 @@ def student_fee(s_period='curr', s_year='0'):
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
+    s_desc = "Qualification fee abnormal amount for contact student."
 
     # ISOLATE QUALIFICATIONS WITH ABNORMAL TRANSACTIONS - CONTACT STUDENTS ONLY
     print("Isolate qualifications with abnormal value transactions...")
@@ -5204,6 +5241,8 @@ def student_fee(s_period='curr', s_year='0'):
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -5411,6 +5450,7 @@ def student_fee(s_period='curr', s_year='0'):
     s_xfile: str = "302_reported.txt"
     i_finding_before: int = 0
     i_finding_after: int = 0
+    s_desc = "Student account overcharged with qualification fee."
 
     # OBTAIN TEST DATA
     print("Obtain test data...")
@@ -5548,6 +5588,8 @@ def student_fee(s_period='curr', s_year='0'):
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -5728,6 +5770,7 @@ def student_fee(s_period='curr', s_year='0'):
     s_xfile: str = "302_reported.txt"
     i_finding_before: int = 0
     i_finding_after: int = 0
+    s_desc = "Contact student account overcharged for a secondary qualification."
 
     # OBTAIN TEST DATA
     print("Obtain test data...")
@@ -5866,6 +5909,8 @@ def student_fee(s_period='curr', s_year='0'):
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -6324,6 +6369,7 @@ def student_fee(s_period='curr', s_year='0'):
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
+    s_desc = "Module fee not loaded."
 
     # JOIN MODULES PRESENTED AND LEVY LIST
     print("Join modules presented and levy list...")
@@ -6465,6 +6511,8 @@ def student_fee(s_period='curr', s_year='0'):
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")

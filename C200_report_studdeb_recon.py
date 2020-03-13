@@ -92,6 +92,7 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
     l_record = True
     l_vacuum = False
     s_burs_code = '042z052z381z500' # Current bursary transaction codes
+    s_desc: str = ""  # Variable used as message for telegram messaging
 
     # Open the script log file ******************************************************
     print("-------------------------")
@@ -104,7 +105,7 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
     funcfile.writelog("ENVIRONMENT")
 
     if l_mess:
-        funcsms.send_telegram('', '', 'Testing <b>student debtor</b> reconciliations.')
+        funcsms.send_telegram('', 'administrator', 'Testing <b>student debtor</b> reconciliations.')
 
     """*************************************************************************
     OPEN DATABASES
@@ -1580,6 +1581,7 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
+    s_desc: str = "Vss and GL transactions do not agree."
 
     # OBTAIN TEST DATA
     print("Identify vss gl differences...")
@@ -1739,6 +1741,8 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -1907,6 +1911,7 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
+    s_desc: str = "Transaction recorded in vss but not in the gl."
 
     # OBTAIN TEST DATA
     print("Identify vss gl differences...")
@@ -2063,6 +2068,8 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -2227,6 +2234,7 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
+    s_desc: str = "Transaction recorded in the gl but not in vss."
 
     # OBTAIN TEST DATA
     print("Identify transactions in the gl but not in vss...")
@@ -2379,6 +2387,8 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -2545,6 +2555,7 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
+    s_desc: str = "Bursary transaction summary amounts differ between vss and the gl."
 
     # OBTAIN TEST DATA
     print("Identify vss gl bursary differences...")
@@ -2702,6 +2713,8 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -3303,6 +3316,7 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
+    s_desc: str = "Bursary transaction in vss but not in the gl."
 
     # IDENTIFY TRANSACTIONS
     print("Test bursary transactions in vss not in gl...")
@@ -3465,6 +3479,8 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -3637,6 +3653,7 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
+    s_desc: str = "Vss bursary posted to another campus in the gl."
 
     # IDENTIFY TRANSACTIONS
     print("Test bursary transactions posted to different campus in gl...")
@@ -3797,6 +3814,8 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -4203,7 +4222,7 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
             if l_mess:
-                funcsms.send_telegram('', '', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")

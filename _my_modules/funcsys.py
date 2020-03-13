@@ -26,7 +26,7 @@ def ErrMessage(e, l_mail=False, s_subject='', s_body=''):
     if l_mail and s_subject != '' and s_body != '':
         s_body = s_body + '\n' + type(e).__name__ + '\n' + "".join(e.args)
         funcmail.Mail('std_fail_gmail', s_subject, s_body)
-        funcsms.send_telegram('', '', s_body)
+        funcsms.send_telegram('', 'administrator', s_body)
     funcfile.writelog("%t ERROR: " + type(e).__name__)
     funcfile.writelog("%t ERROR: " + "".join(e.args))
     return

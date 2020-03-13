@@ -24,4 +24,4 @@ while datetime.datetime.now() < run_start:
     time.sleep(1)
 
 # STOPPED SLEEPING
-funcsms.send_telegram('', '', 'The <b>server</b> sleeping no more!')
+funcsms.send_telegram('', 'administrator', 'The <b>server</b> sleeping no more!')
