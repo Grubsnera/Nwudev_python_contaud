@@ -13,6 +13,7 @@ import sys
 from _my_modules import funccsv
 from _my_modules import funcdate
 from _my_modules import funcfile
+from _my_modules import funcsms
 from _my_modules import funcsys
 from _my_modules import functest
 
@@ -39,15 +40,6 @@ def people_test_conflict():
     ENVIRONMENT
     *****************************************************************************"""
 
-    # OPEN THE SCRIPT LOG FILE
-    print("-----------------------------")    
-    print("C002_PEOPLE_TEST_CONFLICT_DEV")
-    print("-----------------------------")
-    funcfile.writelog("Now")
-    funcfile.writelog("SCRIPT: C002_PEOPLE_TEST_CONFLICT_DEV")
-    funcfile.writelog("-------------------------------------")
-    ilog_severity = 1
-
     # DECLARE VARIABLES
     so_path = "W:/People_conflict/" #Source database path
     re_path = "R:/People/" # Results path
@@ -56,7 +48,20 @@ def people_test_conflict():
     s_sql = "" # SQL statements
     l_export: bool = False
     l_mail: bool = False
+    l_mess: bool = False
     l_record: bool = True
+
+    # OPEN THE SCRIPT LOG FILE
+    print("-----------------------------")
+    print("C002_PEOPLE_TEST_CONFLICT_DEV")
+    print("-----------------------------")
+    funcfile.writelog("Now")
+    funcfile.writelog("SCRIPT: C002_PEOPLE_TEST_CONFLICT_DEV")
+    funcfile.writelog("-------------------------------------")
+    ilog_severity = 1
+
+    if l_mess:
+        funcsms.send_telegram('', 'administrator', 'Testing employee <b>conflict of interest</b>.')
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -581,6 +586,7 @@ def people_test_conflict():
     # DECLARE TEST VARIABLES
     i_find = 0  # Number of findings before previous reported findings
     i_coun = 0  # Number of new findings to report
+    s_desc: str = "Employee and vendor <b>share a bank account</b>."
 
     # BUILD TABLE WITH VENDOR BANK ACCOUNT NUMBERS
     print("Merge employees and vendors on bank account...")
@@ -698,6 +704,8 @@ def people_test_conflict():
                 funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_coun) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -743,7 +751,13 @@ def people_test_conflict():
             ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL,
             ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
             ORG_SUP.NAME_ADDR As ORG_SUP_NAME,
-            ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL
+            ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL,
+            OFF_AUD.EMPLOYEE_NUMBER As AUD_OFF_NUMB,
+            OFF_AUD.NAME_ADDR As AUD_OFF_NAME,
+            OFF_AUD.EMAIL_ADDRESS As AUD_OFF_MAIL,
+            SUP_AUD.EMPLOYEE_NUMBER As AUD_SUP_NUMB,
+            SUP_AUD.NAME_ADDR As AUD_SUP_NAME,
+            SUP_AUD.EMAIL_ADDRESS As AUD_SUP_MAIL
         From
             X100ad_bank_addprev PREV
             Left Join PEOPLE.X002_PEOPLE_CURR PERSON On PERSON.EMPLOYEE_NUMBER = PREV.EMP
@@ -752,8 +766,10 @@ def people_test_conflict():
             Left Join X001_declarations_curr DECLARE On DECLARE.EMPLOYEE = PREV.EMP
             Left Join Z001af_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.LOC
             Left Join Z001af_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG
+            Left Join Z001af_officer OFF_AUD On OFF_AUD.CAMPUS = 'AUD'
             Left Join Z001ag_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.LOC
             Left Join Z001ag_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG
+            Left Join Z001ag_supervisor SUP_AUD On ORG_SUP.CAMPUS = 'AUD'
         WHERE
             PREV.PREV_PROCESS IS NULL Or
             PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""    
@@ -800,7 +816,13 @@ def people_test_conflict():
             FIND.ORG_OFF_MAIL AS ORG_OFFICER_MAIL,
             FIND.ORG_SUP_NAME AS ORG_SUPERVISOR,
             FIND.ORG_SUP_NUMB AS ORG_SUPERVISOR_NUMB,
-            FIND.ORG_SUP_MAIL AS ORG_SUPERVISOR_MAIL
+            FIND.ORG_SUP_MAIL AS ORG_SUPERVISOR_MAIL,
+            FIND.AUD_OFF_NAME AS AUDIT_OFFICER,
+            FIND.AUD_OFF_NUMB AS AUDIT_OFFICER_NUMB,
+            FIND.AUD_OFF_MAIL AS AUDIT_OFFICER_MAIL,
+            FIND.AUD_SUP_NAME AS AUDIT_SUPERVISOR,
+            FIND.AUD_SUP_NUMB AS AUDIT_SUPERVISOR_NUMB,
+            FIND.AUD_SUP_MAIL AS AUDIT_SUPERVISOR_MAIL
         From
             X100ah_bank_addempven FIND
         ;"""
