@@ -7,6 +7,18 @@ V1.0.8 (Implemented Jan 2020)
 V1.0.9 (Implemented Jan 2020)
 01. Implemented generic function functest to get and set previous, and get officer and supervisor.
 
+V1.1.1 (10 Feb 2020)
+01. Add send message facilities. In script add:
+    from _my_modules import funcsms to import own modules
+    l_mess variable to True or False to send or not
+    s_desc variable to host a human like description send as a message.
+    funcsms.send_telegram() to send the messages
+
+V1.1.2 (13 Mar 2020)
+01. Add audit officer and supervisor to test.
+    Use "AUD" in _external_data\001_own_hr_lookups.csv and _external_data\001_own_vss_lookups.csv.
+    Use reference in left join AUD_OFF and AUD_SUP
+
 V2.0.0 (12 Feb 2020)
 01. Add s_fprefix variable. Easier to maintain an script new tests.
 02. Add s_finding variable. Use the same finding description everywhere.
@@ -25,3 +37,18 @@ V2.0.0 (12 Feb 2020)
 
 V2.0.1 (27 Feb 2020)
 01. Add s_fname: str = "reg_fee_zero" variable.
+
+V2.0.2 (10 Feb 2020)
+01. Add send message facilities. In script add:
+    from _my_modules import funcsms to import own modules
+    l_mess variable to True or False to send or not
+    s_desc variable to host a human like description send as a message.
+    funcsms.send_telegram() to send the messages
+
+V2.0.3 (13 Mar 2020)
+01. Add audit officer and supervisor to test.
+    Use "AUD" in _external_data\001_own_hr_lookups.csv and _external_data\001_own_vss_lookups.csv.
+    Use reference in left join AUD_OFF and AUD_SUP
+
+
+
