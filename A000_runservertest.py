@@ -10,6 +10,7 @@ import datetime
 import time
 
 # IMPORT MODULES
+from _my_modules import funcdate
 from _my_modules import funcsms
 
 # SETUP THE ENVIRONMENT
@@ -19,7 +20,10 @@ funcsms.send_whatsapp()
 funcsms.send_telegram('Dear', 'administrator', "The <b>server</b> is up and running!")
 
 # KEEP BOT IDLE
-run_start = datetime.datetime(2020, 3, 12, 13, 48, 0)
+i_year = int(funcdate.cur_year())
+i_month = int(funcdate.cur_month())
+i_day = int(funcdate.cur_day())
+run_start = datetime.datetime(i_year, i_month, i_day, 16, 5, 0)
 while datetime.datetime.now() < run_start:
     time.sleep(1)
 
