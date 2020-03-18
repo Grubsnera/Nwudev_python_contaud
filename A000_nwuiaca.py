@@ -17,7 +17,7 @@ from _my_modules import funcsms
 # DECLARE GLOBAL VARIABLES
 l_run_project: bool = True
 l_message_email: bool = True  # Enable emails communication for the project
-l_message_sms: bool = True  # Enable messaginng for the project
+l_message_sms: bool = True  # Enable messaging for the project
 
 # SETUP THE ENVIRONMENT
 

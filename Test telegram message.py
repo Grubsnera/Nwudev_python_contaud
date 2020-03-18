@@ -8,7 +8,7 @@ import csv
 from _my_modules import funcsms
 
 # FETCH UPDATES
-funcsms.get_telegram()
+print(funcsms.get_telegram_all())
 
 # SEND FIRST MESSAGE
 # print(funcsms.send_telegram("Dear", "administrator", 'Test message from <b>Telegram @nwuia_bot</b> robot.'))
