@@ -111,15 +111,13 @@ def log_capture(s_date=funcdate.yesterday(), l_history=False):
         # 6 = Object s_object
 
         # UNRAVEL THE LOF RECORD LINE
-        s_data = row[0]
+        s_data = row[0].replace("'", "")
+        s_data = s_data.replace('"', "")
+        s_data = s_data.replace(",", "")
         if s_data.find("ERROR:") >= 0:
             s_time = s_data[0:8]
             s_action = "ERROR"
-            if s_data.find("'") >= 0:
-                l_record = False
-                s_object = s_data[16:100].replace("'", "")
-            else:
-                s_object = s_data[16:100].upper()
+            s_object = s_data[16:100].upper()
         elif s_data[0:10] == s_date:
             l_record = False
         elif s_data[0:1] == "-":
