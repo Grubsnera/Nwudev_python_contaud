@@ -21,12 +21,13 @@ def ResultIter(cursor, size=10000):
 def ErrMessage(e, l_mail=False, s_subject='', s_body=''):
     print(type(e))
     print(e)
-    template = "An exception of type {0} occurred. Arguments:{1!r}"
+    template = "An exception of type {0} occurred. Arguments:\n{1!r}"
     message = template.format(type(e).__name__, e.args)
     if l_mail and s_subject != '' and s_body != '':
-        s_body = s_body + " " + type(e).__name__ + " " + "".join(e.args)
-        funcmail.Mail('std_fail_gmail', s_subject, s_body)
-        funcsms.send_telegram('', 'administrator', s_body)
+        s_body1 = s_body + '\n' + type(e).__name__ + '\n' + "".join(e.args)
+        funcmail.Mail('std_fail_gmail', s_subject, s_body1)
+        s_body2 = s_body + ' | ' + type(e).__name__ + ' | ' + "".join(e.args)
+        funcsms.send_telegram('', 'administrator', s_body2)
     funcfile.writelog("%t ERROR: " + type(e).__name__)
     funcfile.writelog("%t ERROR: " + "".join(e.args))
     return
