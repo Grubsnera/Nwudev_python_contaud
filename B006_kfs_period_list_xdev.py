@@ -59,8 +59,9 @@ funcfile.writelog("OPEN DATABASE: " + so_file)
 # ATTACH DATA SOURCES
 so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs.sqlite' AS 'KFS'")
 funcfile.writelog("%t ATTACH DATABASE: KFS.SQLITE")
-so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs_prev.sqlite' AS 'KFSPREV'")
-funcfile.writelog("%t ATTACH DATABASE: KFS_PREV.SQLITE")
+if s_period == "curr":
+    so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs_prev.sqlite' AS 'KFSPREV'")
+    funcfile.writelog("%t ATTACH DATABASE: KFS_PREV.SQLITE")
 so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
 funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
 
