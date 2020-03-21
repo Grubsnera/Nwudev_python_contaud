@@ -11,6 +11,7 @@ import csv
 # IMPORT OWN MODULES
 from _my_modules import funcdate
 from _my_modules import funcfile
+from _my_modules import funcsys
 
 """ INDEX **********************************************************************
 ENVIRONMENT
@@ -66,7 +67,7 @@ def log_capture(s_date=funcdate.yesterday(), l_history=False):
 
     # OPEN SQLITE SOURCE table
     print("Open sqlite database...")
-    with sqlite3.connect(so_path+so_file) as so_conn:
+    with sqlite3.connect(so_path + so_file) as so_conn:
         so_curs = so_conn.cursor()
     funcfile.writelog("OPEN DATABASE: " + so_file)
 
@@ -149,15 +150,15 @@ def log_capture(s_date=funcdate.yesterday(), l_history=False):
 
         # SAVE THE RECORD
         if l_record:
-            s_cols = "INSERT INTO " + sr_file + " VALUES("\
-                     "'" + s_data + "',"\
-                     "'" + s_date + "'," \
-                     "'" + s_time + "'," \
-                     "'" + s_script + "'," \
-                     "'" + s_base + "'," \
-                     "'" + s_action + "'," \
-                     "'" + s_object + "'" \
-                     ")"
+            s_cols = "INSERT INTO " + sr_file + " VALUES(" \
+                                                "'" + s_data + "'," \
+                                                               "'" + s_date + "'," \
+                                                                              "'" + s_time + "'," \
+                                                                                             "'" + s_script + "'," \
+                                                                                                              "'" + s_base + "'," \
+                                                                                                                             "'" + s_action + "'," \
+                                                                                                                                              "'" + s_object + "'" \
+                                                                                                                                                               ")"
             # print(s_cols)
             so_curs.execute(s_cols)
 
@@ -234,7 +235,6 @@ def log_capture(s_date=funcdate.yesterday(), l_history=False):
 
     # ADD CURRENT LOG TO HISTORY
     if l_history:
-
         sr_file = "X002aa_log_history"
         so_curs.execute(
             "CREATE TABLE IF NOT EXISTS " + sr_file + """
@@ -274,3 +274,10 @@ def log_capture(s_date=funcdate.yesterday(), l_history=False):
     funcfile.writelog("COMPLETED: A002_LOG")
 
     return
+
+
+if __name__ == '__main__':
+    try:
+        log_capture(funcdate.today(), False)
+    except Exception as e:
+        funcsys.ErrMessage(e)
