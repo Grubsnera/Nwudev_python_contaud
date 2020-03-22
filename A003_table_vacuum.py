@@ -10,6 +10,7 @@ import sqlite3
 # IMPORT OWN MODULES
 from _my_modules import funcfile
 from _my_modules import funcsms
+from _my_modules import funcsys
 
 """ INDEX **********************************************************************
 ENVIRONMENT
@@ -42,7 +43,7 @@ def table_vacuum():
 
     # SEND MESSAGE
     if l_mess:
-        funcsms.send_telegram("", "administrator", "<b>Vacuming</b> the test finding database tables.")
+        funcsms.send_telegram("", "administrator", "<b>Vacuuming</b> the test finding database tables.")
 
     """*****************************************************************************
     BEGIN OF SCRIPT
@@ -103,3 +104,10 @@ def table_vacuum():
     funcfile.writelog("COMPLETED: A003_TABLE_VACUUM")
 
     return
+
+
+if __name__ == '__main__':
+    try:
+        table_vacuum()
+    except Exception as e:
+        funcsys.ErrMessage(e)
