@@ -1124,6 +1124,9 @@ def people_test_conflict():
             FIND.AUD_SUP_MAIL AS Audit_Supervisor_Mail
         From
             %FILEP%h_detail FIND
+        Order By
+            FIND.VENDOR_MAIL,
+            FIND.VENDOR_NAME            
         ;"""
         s_sql = s_sql.replace("%FIND%", s_finding)
         s_sql = s_sql.replace("%FILEP%", s_file_prefix)
