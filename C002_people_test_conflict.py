@@ -48,7 +48,7 @@ def people_test_conflict():
     so_file = "People_conflict.sqlite" # Source database
     l_export: bool = False
     l_mail: bool = False
-    l_mess: bool = False
+    l_mess: bool = True
     l_record: bool = True
 
     # OPEN THE SCRIPT LOG FILE
@@ -1010,8 +1010,8 @@ def people_test_conflict():
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
             if l_mess:
-                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(
-                    i_finding_before) + '</b> ' + s_description)
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_before) + '/' + str(
+                    i_finding_after) + '</b> ' + s_description)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
