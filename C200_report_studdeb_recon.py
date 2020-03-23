@@ -11,10 +11,6 @@
 # Import python modules
 import csv
 import sqlite3
-import sys
-
-# Add own module path
-sys.path.append('S:/_my_modules')
 
 # Import own modules
 from _my_modules import funcdate
@@ -4170,11 +4166,7 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
             PREV.REMARK
         From
             %FILEP%b_finding FIND Left Join
-            Z001ab_setprev PREV ON PREV.FIELD1 = FIND.STUDENT And
-                PREV.FIELD2 = FIND.MAF_BALANCE And
-                PREV.FIELD3 = FIND.POT_BALANCE And
-                PREV.FIELD4 = FIND.VTC_BALANCE And
-                PREV.FIELD5 = FIND.BALANCE
+            Z001ab_setprev PREV ON PREV.FIELD1 = FIND.STUDENT
         ;"""
         s_sql = s_sql.replace("%FINDING%", s_finding)
         s_sql = s_sql.replace("%FILEP%", s_fprefix)
