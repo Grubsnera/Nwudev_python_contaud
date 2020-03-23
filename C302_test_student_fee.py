@@ -270,6 +270,9 @@ def student_fee(s_period='curr', s_year='0'):
     print("REGISTRATION FEE MASTER")
     funcfile.writelog("REGISTRATION FEE MASTER")
 
+    # DECLARE LOCAL VARIABLES
+    l_reg:bool = False
+
     # CALCULATE THE REGISTRATION FEES LEVIED PER STUDENT
     print("Calculate the registration fee transactions...")
     sr_file = "X010_Trans_feereg"
