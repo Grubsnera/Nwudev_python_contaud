@@ -69,6 +69,8 @@ so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs.sqlite' AS 'KFS'")
 funcfile.writelog("%t ATTACH DATABASE: KFS.SQLITE")
 so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs_curr.sqlite' AS 'KFSCURR'")
 funcfile.writelog("%t ATTACH DATABASE: KFS_CURR.SQLITE")
+so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss_curr.sqlite' AS 'VSSCURR'")
+funcfile.writelog("%t ATTACH DATABASE: VSS_CURR.SQLITE")
 
 """*****************************************************************************
 BEGIN OF SCRIPT
