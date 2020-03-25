@@ -1,17 +1,11 @@
 ﻿Select
-    X100_bank_emp.ORG,
-    X100_bank_emp.LOC,
-    X100_bank_emp.EMP,
-    X100_bank_emp.ACC_TYPE,
-    X100_bank_emp.ACC_BRANCH,
-    X100_bank_emp.ACC_NUMBER,
-    X100_bank_emp.ACC_RELATION,
-    X100_bank_ven.VENDOR_ID,
-    X100_bank_ven.VENDOR_NAME,
-    X100_bank_ven.VENDOR_BANK,
-    X001_declarations_curr.DECLARATION_DATE,
-    X001_declarations_curr.STATUS
+    NEW.VENDOR_CATEGORY,
+    NEW.VENDOR_ID,
+    NEW.VENDOR_MAIL,
+    CNG.VENDOR_CATEGORY As VENDOR_CATEGORY1,
+    CNG.VENDOR_ID As VENDOR_ID1,
+    CNG.VENDOR_MAIL_OLD,
+    CNG.VENDOR_MAIL_NEW
 From
-    X100_bank_emp Inner Join
-    X100_bank_ven On X100_bank_ven.VENDOR_BANK = X100_bank_emp.ACC_NUMBER Left Join
-    X001_declarations_curr On X001_declarations_curr.EMPLOYEE = X100_bank_emp.EMP
+    X100baac_employee_vendor_share_email NEW Left Join
+    X100bab_employee_vendor_share_email CNG On CNG.VENDOR_ID = NEW.VENDOR_ID
