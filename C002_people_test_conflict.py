@@ -81,6 +81,8 @@ def people_test_conflict():
     funcfile.writelog("%t ATTACH DATABASE: KFS.SQLITE")
     so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs_curr.sqlite' AS 'KFSCURR'")
     funcfile.writelog("%t ATTACH DATABASE: KFS_CURR.SQLITE")
+    so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss_curr.sqlite' AS 'VSSCURR'")
+    funcfile.writelog("%t ATTACH DATABASE: VSS_CURR.SQLITE")
 
     """ ****************************************************************************
     BEGIN OF SCRIPT
@@ -868,12 +870,116 @@ def people_test_conflict():
     s_finding: str = "EMPLOYEE VENDOR SHARE EMAIL ADDRESS"
     s_report_file: str = "002_reported.txt"
 
-    # OBTAIN TEST DATA
+    # OBTAIN TEST DATA FOR CURRENT ACTIVE VENDORS - NEW VENDORS
+    sr_file: str = s_file_prefix + "aa_" + s_file_name
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     print("Obtain test data...")
-    sr_file: str = s_file_prefix + "a_" + s_file_name
+    sr_file: str = s_file_prefix + "aaa_" + s_file_name
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
+        VEND.VENDOR_ID,
+        Lower(VEND.VEND_MAIL) As VENDOR_MAIL
+    From
+        KFS.X000_Vendor VEND
+    Where
+        VEND.DOBJ_MAINT_CD_ACTV_IND = 'Y'
+    ;"""
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # GET PREVIOUS VENDORS - NEW VENDORS
+    sr_file: str = s_file_prefix + "aab_" + s_file_name
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    print("Import previous vendors...")
+    so_curs.execute("CREATE TABLE " + sr_file + "(VENDOR_ID_PREV TEXT,VENDOR_MAIL_PREV TEXT)")
+    s_cols = ""
+    co = open(ed_path + "201_vendor_new.csv", "r")
+    co_reader = csv.reader(co)
+    # Read the COLUMN database data
+    for row in co_reader:
+        # Populate the column variables
+        if row[0] == "VENDOR_ID":
+            continue
+        else:
+            s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "')"
+            so_curs.execute(s_cols)
+    so_conn.commit()
+    # Close the impoted data file
+    co.close()
+    funcfile.writelog("%t IMPORT TABLE: " + ed_path + "201_vendor_new.csv (" + sr_file + ")")
+
+    # EXPORT THE PREVIOUS VENDORS AS BACKUP - NEW VENDORS
+    print("Export previous vendor details...")
+    sr_filet: str = s_file_prefix + "aab_" + s_file_name
+    sx_path = ed_path
+    sx_file = "201_vendor_new_prev"
+    s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
+    funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
+
+    # EXPORT THE CURRENT VENDORS - NEW VENDORS
+    print("Export current vendor details...")
+    sr_filet: str = s_file_prefix + "aaa_" + s_file_name
+    sx_path = ed_path
+    sx_file = "201_vendor_new"
+    s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
+    funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
+
+    # COMBINE CURRENT AND PREVIOUS VENDORS  - NEW VENDORS WITH NWU.AC.ZA MAIL
+    print("Combine current and previous vendors...")
+    sr_file: str = s_file_prefix + "aac_" + s_file_name
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        'NEW VENDOR' As VENDOR_CATEGORY,
+        NEW.VENDOR_ID,
+        Lower(NEW.VENDOR_MAIL) As VENDOR_MAIL
+    From
+        X100baaa_employee_vendor_share_email NEW Left Join
+        X100baab_employee_vendor_share_email OLD On OLD.VENDOR_ID_PREV = NEW.VENDOR_ID
+    Where
+        Lower(NEW.VENDOR_MAIL) Like ('%nwu.ac.za%') And
+        OLD.VENDOR_ID_PREV Is Null
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # COMBINE CURRENT AND PREVIOUS VENDORS  - CURRENT VENDOR CHANGED TO NWU.AC.ZA
+    print("Combine current and previous vendors...")
+    sr_file: str = s_file_prefix + "ab_" + s_file_name
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        'CHANGED VENDOR' As VENDOR_CATEGORY,
+        NEW.VENDOR_ID,
+        NEW.VENDOR_MAIL As VENDOR_MAIL_OLD,
+        OLD.VENDOR_MAIL_PREV As VENDOR_MAIL_NEW
+    From
+        X100baaa_employee_vendor_share_email NEW Left Join
+        X100baab_employee_vendor_share_email OLD On OLD.VENDOR_ID_PREV = NEW.VENDOR_ID
+    Where
+        NEW.VENDOR_MAIL != OLD.VENDOR_MAIL_PREV And
+        NEW.VENDOR_MAIL Not Like ('%nwu.ac.za%') And
+        OLD.VENDOR_MAIL_PREV Like ('%nwu.ac.za%')
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # OBTAIN TEST DATA FOR CURRENT ACTIVE VENDORS - CATEGORY CURRENT ACTIVE VENDOR
+    # TODO - Delete after first run
+    sr_file: str = s_file_prefix + "a_" + s_file_name
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    print("Obtain test data...")
+    sr_file: str = s_file_prefix + "ac_" + s_file_name
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        'CURRENT VENDOR' As VENDOR_CATEGORY,
         VEND.VENDOR_ID,
         VEND.VNDR_NM As VENDOR_NAME,
         VEND.VNDR_TYP_CD As VENDOR_TYPE,
@@ -886,26 +992,77 @@ def people_test_conflict():
     From
         KFS.X000_Vendor VEND Left Join
         KFSCURR.X002aa_Report_payments_summary SUMM On SUMM.VENDOR_ID = VEND.VENDOR_ID Left Join
-        PEOPLE.X002_PEOPLE_CURR PEOP On PEOP.EMPLOYEE_NUMBER = Substr(VEND.VENDOR_ID,1,8)
+        PEOPLE.X002_PEOPLE_CURR_YEAR PEOP On PEOP.EMPLOYEE_NUMBER = Substr(VEND.VENDOR_ID,1,8) Left Join
+        PEOPLE.X002_PEOPLE_PREV_YEAR PREP On PREP.EMPLOYEE_NUMBER = Substr(VEND.VENDOR_ID,1,8) Left Join
+        VSSCURR.X001_STUDENT STUD On Cast(STUD.KSTUDBUSENTID As TEXT) = Substr(VEND.VENDOR_ID,1,8)
     Where
         Lower(VEND.VEND_MAIL) Like ('%nwu.ac.za%') And
         VEND.DOBJ_MAINT_CD_ACTV_IND = 'Y' And
-        Substr(VEND.VENDOR_ID,1,8) != Substr(VEND.VEND_MAIL,1,8) And
+        SUMM.VENDOR_ID Is Not Null And
         PEOP.EMPLOYEE_NUMBER Is Null And
-        SUMM.VENDOR_ID Is Not Null
+        PREP.EMPLOYEE_NUMBER Is Null And
+        STUD.KSTUDBUSENTID Is Null And
+        Substr(VEND.VENDOR_ID, 1, 8) != Substr(VEND.VEND_MAIL, 1, 8)
     ;"""
+    # Substr(VEND.VENDOR_ID, 1, 8) != Substr(VEND.VEND_MAIL, 1, 8) And
+    # PEOP.EMPLOYEE_NUMBER Is Null
+    # PREP.EMPLOYEE_NUMBER Is Null
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
-    if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-        print("Export findings...")
-        sx_path = re_path
-        sx_file = s_file_prefix + "_" + s_finding.lower() + "_list_"
-        sx_file_dated = sx_file + funcdate.today_file()
-        s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
-        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
-        # funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
-        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
+
+    # COMBINE VENDOR FINDINGS
+    print("Create combined table...")
+    sr_file: str = s_file_prefix + "ad_" + s_file_name
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(
+        "CREATE TABLE " + sr_file + "(VENDOR_CATEGORY TEXT, VENDOR_ID TEXT, VENDOR_MAIL TEXT, VENDOR_MAIL_NEW TEXT)")
+    # NEW VENDOR
+    print("Add new vendors...")
+    data_file: str = s_file_prefix + "aac_" + s_file_name
+    s_sql = "INSERT INTO " + sr_file + \
+            "(VENDOR_CATEGORY, VENDOR_ID, VENDOR_MAIL)" \
+            " SELECT VENDOR_CATEGORY, VENDOR_ID, VENDOR_MAIL FROM " + \
+            data_file + \
+            ";"
+    so_curs.execute(s_sql)
+    # CHANGED VENDOR
+    print("Add changed vendors...")
+    data_file: str = s_file_prefix + "ab_" + s_file_name
+    s_sql = "INSERT INTO " + sr_file + \
+            "(VENDOR_CATEGORY, VENDOR_ID, VENDOR_MAIL, VENDOR_MAIL_NEW)" \
+            " SELECT VENDOR_CATEGORY, VENDOR_ID, VENDOR_MAIL_OLD, VENDOR_MAIL_NEW FROM " + \
+            data_file + \
+            ";"
+    so_curs.execute(s_sql)
+    # CURRENT VENDOR VENDOR
+    print("Add current vendors...")
+    data_file: str = s_file_prefix + "ac_" + s_file_name
+    s_sql = "INSERT INTO " + sr_file + \
+            "(VENDOR_CATEGORY, VENDOR_ID, VENDOR_MAIL)" \
+            " SELECT VENDOR_CATEGORY, VENDOR_ID, VENDOR_MAIL FROM " + \
+            data_file + \
+            ";"
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t COMBINE TABLE: " + sr_file)
+
+    # SELECT TEST DATA
+    print("Identify findings...")
+    sr_file: str = s_file_prefix + "ae_" + s_file_name
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        *
+    From
+        %FILEP%%FILEN% COMB Left Join
+        KFS.X000_Vendor VEND On VEND.VENDOR_ID = COMB.VENDOR_ID    
+    ;"""
+    s_sql = s_sql.replace("%FILEP%", s_file_prefix)
+    s_sql = s_sql.replace("%FILEN%", "ad_" + s_file_name)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # SELECT TEST DATA
     print("Identify findings...")
@@ -915,15 +1072,16 @@ def people_test_conflict():
     Select
         'NWU' As ORG,
         FIND.VENDOR_ID,
-        FIND.VENDOR_TYPE,
-        FIND.VENDOR_MAIL
+        FIND.VENDOR_MAIL,
+        FIND.VNDR_TYP_CD As VENDOR_TYPE,
+        FIND.VENDOR_CATEGORY
     From
         %FILEP%%FILEN% FIND
     Order by
         VENDOR_ID
     ;"""
     s_sql = s_sql.replace("%FILEP%", s_file_prefix)
-    s_sql = s_sql.replace("%FILEN%", "a_" + s_file_name)
+    s_sql = s_sql.replace("%FILEN%", "ae_" + s_file_name)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -980,7 +1138,7 @@ def people_test_conflict():
             PREV.PROCESS,
             PREV.VENDOR_ID AS FIELD1,
             PREV.VENDOR_MAIL AS FIELD2,
-            '' AS FIELD3,
+            PREV.VENDOR_CATEGORY AS FIELD3,
             '' AS FIELD4,
             '' AS FIELD5,
             PREV.DATE_REPORTED,
@@ -1035,9 +1193,20 @@ def people_test_conflict():
         Select
             PREV.ORG,
             PREV.VENDOR_ID,
-            FIND.VENDOR_NAME,
+            FIND.VNDR_NM As VENDOR_NAME,
             PREV.VENDOR_TYPE,
             PREV.VENDOR_MAIL,
+            FIND.EMAIL As VENDOR_MAIL_ALT,
+            FIND.EMAIL_CONTACT As VENDOR_MAIL_CON,
+            FIND.VENDOR_CATEGORY,
+            CASE
+                WHEN PEOP.EMPLOYEE_NUMBER Is Not Null THEN 'EMPLOYEE'
+                WHEN STUD.KSTUDBUSENTID Is Not Null THEN 'STUDENT'
+                ELSE 'VENDOR'
+            END As VENDOR_CLASS,
+            SUMM.MAX_PMT_DT As PAY_DATE,
+            SUMM.SUM_NET_PMT_AMT As PAY_AMOUNT,
+            SUMM.COUNT_TRAN As COUNT_TRAN,
             CAMP_OFF.EMPLOYEE_NUMBER AS CAMP_OFF_NUMB,
             CAMP_OFF.NAME_ADDR AS CAMP_OFF_NAME,
             CASE
@@ -1074,19 +1243,22 @@ def people_test_conflict():
             AUD_SUP.EMAIL_ADDRESS As AUD_SUP_MAIL
         From
             %FILEP%d_addprev PREV Left Join
+            %FILEP%%FILEN% FIND On FIND.VENDOR_ID = PREV.VENDOR_ID,
             Z001af_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.VENDOR_TYPE Left Join
             Z001af_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG Left Join
             Z001af_officer AUD_OFF On AUD_OFF.CAMPUS = 'AUD' Left Join
             Z001ag_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.VENDOR_TYPE Left Join
             Z001ag_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG Left Join
             Z001ag_supervisor AUD_SUP On AUD_SUP.CAMPUS = 'AUD' Left Join
-            %FILEP%%FILEN% FIND On FIND.VENDOR_ID = PREV.VENDOR_ID
+            PEOPLE.X002_PEOPLE_CURR_YEAR PEOP On PEOP.EMPLOYEE_NUMBER = Substr(PREV.VENDOR_ID,1,8) Left Join
+            VSSCURR.X001_STUDENT STUD On Cast(STUD.KSTUDBUSENTID As TEXT) = Substr(PREV.VENDOR_ID,1,8) Left Join
+            KFSCURR.X002aa_Report_payments_summary SUMM On SUMM.VENDOR_ID = PREV.VENDOR_ID
         Where
             PREV.PREV_PROCESS Is Null Or
             PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
         s_sql = s_sql.replace("%FILEP%", s_file_prefix)
-        s_sql = s_sql.replace("%FILEN%", "a_" + s_file_name)
+        s_sql = s_sql.replace("%FILEN%", "ae_" + s_file_name)
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -1099,11 +1271,18 @@ def people_test_conflict():
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             '%FIND%' As Audit_finding,
-            FIND.ORG As Organization,
             FIND.VENDOR_ID As Vendor_id,
             FIND.VENDOR_NAME As Vendor_name,
+            FIND.VENDOR_MAIL Mail,
+            FIND.VENDOR_MAIL_ALT As Mail_alternate,
+            FIND.VENDOR_MAIL_CON As Mail_contact,
+            FIND.VENDOR_CATEGORY As Vendor_category,
+            FIND.VENDOR_CLASS As Vendor_class,
             FIND.VENDOR_TYPE As Vendor_type,
-            FIND.VENDOR_MAIL Responsible_Mail,
+            FIND.ORG As Organization,
+            FIND.PAY_DATE As Last_transaction_date,
+            FIND.PAY_AMOUNT As Total_amount,
+            FIND.COUNT_TRAN As Transaction_count,
             FIND.CAMP_OFF_NAME AS Responsible_Officer,
             FIND.CAMP_OFF_NUMB AS Responsible_Officer_Numb,
             FIND.CAMP_OFF_MAIL AS Responsible_Officer_Mail,
@@ -1126,6 +1305,7 @@ def people_test_conflict():
             %FILEP%h_detail FIND
         Order By
             FIND.VENDOR_MAIL,
+            FIND.VENDOR_CATEGORY,
             FIND.VENDOR_NAME            
         ;"""
         s_sql = s_sql.replace("%FIND%", s_finding)
