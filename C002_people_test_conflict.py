@@ -867,7 +867,7 @@ def people_test_conflict():
     s_description = "Employee and vendor <b>share an email address.</b>"
     s_file_name: str = "employee_vendor_share_email"
     s_file_prefix: str = "X100b"
-    s_finding: str = "EMPLOYEE VENDOR SHARE EMAIL ADDRESS"
+    s_finding: str = "VENDOR EMAIL INVALID"
     s_report_file: str = "002_reported.txt"
 
     # OBTAIN TEST DATA FOR CURRENT ACTIVE VENDORS - NEW VENDORS
@@ -911,22 +911,24 @@ def people_test_conflict():
     funcfile.writelog("%t IMPORT TABLE: " + ed_path + "201_vendor_new.csv (" + sr_file + ")")
 
     # EXPORT THE PREVIOUS VENDORS AS BACKUP - NEW VENDORS
-    print("Export previous vendor details...")
-    sr_filet: str = s_file_prefix + "aab_" + s_file_name
-    sx_path = ed_path
-    sx_file = "201_vendor_new_prev"
-    s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-    funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
+    if l_record:
+        print("Export previous vendor details...")
+        sr_filet: str = s_file_prefix + "aab_" + s_file_name
+        sx_path = ed_path
+        sx_file = "201_vendor_new_prev"
+        s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
+        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
 
     # EXPORT THE CURRENT VENDORS - NEW VENDORS
-    print("Export current vendor details...")
-    sr_filet: str = s_file_prefix + "aaa_" + s_file_name
-    sx_path = ed_path
-    sx_file = "201_vendor_new"
-    s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-    funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
+    if l_record:
+        print("Export current vendor details...")
+        sr_filet: str = s_file_prefix + "aaa_" + s_file_name
+        sx_path = ed_path
+        sx_file = "201_vendor_new"
+        s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
+        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
 
     # COMBINE CURRENT AND PREVIOUS VENDORS  - NEW VENDORS WITH NWU.AC.ZA MAIL
     print("Combine current and previous vendors...")
@@ -1053,10 +1055,18 @@ def people_test_conflict():
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
-        *
+        COMB.*,
+        VEND.*,
+        CASE
+            WHEN PEOP.EMPLOYEE_NUMBER Is Not Null THEN 'EMPLOYEE'
+            WHEN STUD.KSTUDBUSENTID Is Not Null THEN 'STUDENT'
+            ELSE 'VENDOR'
+        END As VENDOR_CLASS    
     From
         %FILEP%%FILEN% COMB Left Join
-        KFS.X000_Vendor VEND On VEND.VENDOR_ID = COMB.VENDOR_ID    
+        KFS.X000_Vendor VEND On VEND.VENDOR_ID = COMB.VENDOR_ID Left Join
+        PEOPLE.X002_PEOPLE_CURR_YEAR PEOP On PEOP.EMPLOYEE_NUMBER = Substr(COMB.VENDOR_ID,1,8) Left Join
+        VSSCURR.X001_STUDENT STUD On Cast(STUD.KSTUDBUSENTID As TEXT) = Substr(COMB.VENDOR_ID,1,8)        
     ;"""
     s_sql = s_sql.replace("%FILEP%", s_file_prefix)
     s_sql = s_sql.replace("%FILEN%", "ad_" + s_file_name)
@@ -1073,8 +1083,10 @@ def people_test_conflict():
         'NWU' As ORG,
         FIND.VENDOR_ID,
         FIND.VENDOR_MAIL,
+        FIND.VENDOR_MAIL_NEW,        
         FIND.VNDR_TYP_CD As VENDOR_TYPE,
-        FIND.VENDOR_CATEGORY
+        FIND.VENDOR_CATEGORY,
+        FIND.VENDOR_CLASS
     From
         %FILEP%%FILEN% FIND
     Order by
@@ -1139,7 +1151,7 @@ def people_test_conflict():
             PREV.VENDOR_ID AS FIELD1,
             PREV.VENDOR_MAIL AS FIELD2,
             PREV.VENDOR_CATEGORY AS FIELD3,
-            '' AS FIELD4,
+            PREV.VENDOR_CLASS AS FIELD4,
             '' AS FIELD5,
             PREV.DATE_REPORTED,
             PREV.DATE_RETEST,
@@ -1196,14 +1208,11 @@ def people_test_conflict():
             FIND.VNDR_NM As VENDOR_NAME,
             PREV.VENDOR_TYPE,
             PREV.VENDOR_MAIL,
+            PREV.VENDOR_MAIL_NEW,
             FIND.EMAIL As VENDOR_MAIL_ALT,
             FIND.EMAIL_CONTACT As VENDOR_MAIL_CON,
             FIND.VENDOR_CATEGORY,
-            CASE
-                WHEN PEOP.EMPLOYEE_NUMBER Is Not Null THEN 'EMPLOYEE'
-                WHEN STUD.KSTUDBUSENTID Is Not Null THEN 'STUDENT'
-                ELSE 'VENDOR'
-            END As VENDOR_CLASS,
+            PREV.VENDOR_CLASS,
             SUMM.MAX_PMT_DT As PAY_DATE,
             SUMM.SUM_NET_PMT_AMT As PAY_AMOUNT,
             SUMM.COUNT_TRAN As COUNT_TRAN,
@@ -1250,8 +1259,6 @@ def people_test_conflict():
             Z001ag_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.VENDOR_TYPE Left Join
             Z001ag_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG Left Join
             Z001ag_supervisor AUD_SUP On AUD_SUP.CAMPUS = 'AUD' Left Join
-            PEOPLE.X002_PEOPLE_CURR_YEAR PEOP On PEOP.EMPLOYEE_NUMBER = Substr(PREV.VENDOR_ID,1,8) Left Join
-            VSSCURR.X001_STUDENT STUD On Cast(STUD.KSTUDBUSENTID As TEXT) = Substr(PREV.VENDOR_ID,1,8) Left Join
             KFSCURR.X002aa_Report_payments_summary SUMM On SUMM.VENDOR_ID = PREV.VENDOR_ID
         Where
             PREV.PREV_PROCESS Is Null Or
@@ -1271,18 +1278,19 @@ def people_test_conflict():
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             '%FIND%' As Audit_finding,
-            FIND.VENDOR_ID As Vendor_id,
-            FIND.VENDOR_NAME As Vendor_name,
-            FIND.VENDOR_MAIL Mail,
-            FIND.VENDOR_MAIL_ALT As Mail_alternate,
-            FIND.VENDOR_MAIL_CON As Mail_contact,
             FIND.VENDOR_CATEGORY As Vendor_category,
             FIND.VENDOR_CLASS As Vendor_class,
             FIND.VENDOR_TYPE As Vendor_type,
-            FIND.ORG As Organization,
+            FIND.VENDOR_ID As Vendor_id,
+            FIND.VENDOR_NAME As Vendor_name,
+            FIND.VENDOR_MAIL As Mail_address,
+            FIND.VENDOR_MAIL_NEW As Mail_new,
+            FIND.VENDOR_MAIL_ALT As Mail_alternate,
+            FIND.VENDOR_MAIL_CON As Mail_contact,
             FIND.PAY_DATE As Last_transaction_date,
             FIND.PAY_AMOUNT As Total_amount,
             FIND.COUNT_TRAN As Transaction_count,
+            FIND.ORG As Organization,
             FIND.CAMP_OFF_NAME AS Responsible_Officer,
             FIND.CAMP_OFF_NUMB AS Responsible_Officer_Numb,
             FIND.CAMP_OFF_MAIL AS Responsible_Officer_Mail,
@@ -1304,8 +1312,9 @@ def people_test_conflict():
         From
             %FILEP%h_detail FIND
         Order By
-            FIND.VENDOR_MAIL,
             FIND.VENDOR_CATEGORY,
+            FIND.VENDOR_CLASS,
+            FIND.VENDOR_MAIL,
             FIND.VENDOR_NAME            
         ;"""
         s_sql = s_sql.replace("%FIND%", s_finding)
