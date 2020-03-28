@@ -7,7 +7,6 @@ Author: Albert J v Rensburg (NWU21162395)
 # IMPORT PYTHON MODULES
 import csv
 import sqlite3
-import sys
 
 # IMPORT OWN MODULES
 from _my_modules import funccsv
@@ -42,12 +41,11 @@ def people_test_conflict():
     *****************************************************************************"""
 
     # DECLARE VARIABLES
-    so_path = "W:/People_conflict/" #Source database path
+    so_path = "W:/People_conflict/"   # Source database path
     re_path = "R:/People/" + funcdate.cur_year() + "/"  # Results path
-    ed_path = "S:/_external_data/" #external data path
-    so_file = "People_conflict.sqlite" # Source database
+    ed_path = "S:/_external_data/"   # external data path
+    so_file = "People_conflict.sqlite"  # Source database
     l_export: bool = False
-    l_mail: bool = False
     l_mess: bool = True
     l_record: bool = True
 
@@ -58,7 +56,6 @@ def people_test_conflict():
     funcfile.writelog("Now")
     funcfile.writelog("SCRIPT: C002_PEOPLE_TEST_CONFLICT_DEV")
     funcfile.writelog("-------------------------------------")
-    ilog_severity = 1
 
     if l_mess:
         funcsms.send_telegram('', 'administrator', 'Testing employee <b>conflict of interest</b>.')
@@ -240,8 +237,8 @@ def people_test_conflict():
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     s_sqlp = s_sql
-    s_sql = s_sql.replace("%CYEARB%",funcdate.cur_yearbegin())
-    s_sql = s_sql.replace("%CYEARE%",funcdate.cur_yearend())
+    s_sql = s_sql.replace("%CYEARB%", funcdate.cur_yearbegin())
+    s_sql = s_sql.replace("%CYEARE%", funcdate.cur_yearend())
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
@@ -250,10 +247,10 @@ def people_test_conflict():
     print("Build previous declarations...")
     sr_file = "X001_declarations_prev"
     s_sql = s_sqlp
-    s_sql = s_sql.replace("X001_declarations_curr",sr_file)
-    s_sql = s_sql.replace("X002_PEOPLE_CURR_YEAR","X002_PEOPLE_PREV_YEAR")
-    s_sql = s_sql.replace("%CYEARB%",funcdate.prev_yearbegin())
-    s_sql = s_sql.replace("%CYEARE%",funcdate.prev_yearend())
+    s_sql = s_sql.replace("X001_declarations_curr", sr_file)
+    s_sql = s_sql.replace("X002_PEOPLE_CURR_YEAR", "X002_PEOPLE_PREV_YEAR")
+    s_sql = s_sql.replace("%CYEARB%", funcdate.prev_yearbegin())
+    s_sql = s_sql.replace("%CYEARE%", funcdate.prev_yearend())
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
@@ -338,9 +335,9 @@ def people_test_conflict():
     print("Build previous interests...")
     sr_file = "X002_interests_prev"
     s_sql = s_sqlp
-    s_sql = s_sql.replace("X002_interests_curr",sr_file)
-    s_sql = s_sql.replace("X001_declarations_curr","X001_declarations_prev")
-    s_sql = s_sql.replace("X002_PEOPLE_CURR_YEAR","X002_PEOPLE_PREV_YEAR")
+    s_sql = s_sql.replace("X002_interests_curr", sr_file)
+    s_sql = s_sql.replace("X001_declarations_curr", "X001_declarations_prev")
+    s_sql = s_sql.replace("X002_PEOPLE_CURR_YEAR", "X002_PEOPLE_PREV_YEAR")
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
@@ -586,7 +583,6 @@ def people_test_conflict():
     funcfile.writelog("TEST EMPLOYEE VENDOR COMMON BANK")
 
     # DECLARE TEST VARIABLES
-    i_find = 0  # Number of findings before previous reported findings
     i_coun = 0  # Number of new findings to report
     s_desc: str = "Employee and vendor <b>share a bank account</b>."
 
@@ -633,12 +629,12 @@ def people_test_conflict():
 
     # GET PREVIOUS FINDINGS
     if i_find > 0:
-        i = functest.get_previous_finding(so_curs, ed_path, "002_reported.txt", "bank_share_emp_ven", "ITTTT")
+        functest.get_previous_finding(so_curs, ed_path, "002_reported.txt", "bank_share_emp_ven", "ITTTT")
         so_conn.commit()
 
     # SET PREVIOUS FINDINGS
     if i_find > 0:
-        i = functest.set_previous_finding(so_curs)
+        functest.set_previous_finding(so_curs)
         so_conn.commit()
 
     # ADD PREVIOUS FINDINGS
@@ -714,12 +710,12 @@ def people_test_conflict():
 
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
     if i_find > 0 and i_coun > 0:
-        i = functest.get_officer(so_curs, "HR", "TEST_BANKACC_CONFLICT_VENDOR_OFFICER")
+        functest.get_officer(so_curs, "HR", "TEST_BANKACC_CONFLICT_VENDOR_OFFICER")
         so_conn.commit()
 
     # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
     if i_find > 0 and i_coun > 0:
-        i = functest.get_supervisor(so_curs, "HR", "TEST_BANKACC_CONFLICT_VENDOR_SUPERVISOR")
+        functest.get_supervisor(so_curs, "HR", "TEST_BANKACC_CONFLICT_VENDOR_SUPERVISOR")
         so_conn.commit()
 
     # ADD CONTACT DETAILS TO FINDINGS
@@ -833,7 +829,7 @@ def people_test_conflict():
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
         # Export findings
-        if l_export == True and funcsys.tablerowcount(so_curs, sr_file) > 0:
+        if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
             sr_filet = sr_file
             sx_path = re_path
@@ -862,7 +858,6 @@ def people_test_conflict():
     # X020bx_Student_master_sort
 
     # DECLARE TEST VARIABLES
-    i_finding_before: int = 0
     i_finding_after: int = 0
     s_description = "Employee and vendor <b>share an email address.</b>"
     s_file_name: str = "employee_vendor_share_email"
@@ -894,7 +889,6 @@ def people_test_conflict():
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     print("Import previous vendors...")
     so_curs.execute("CREATE TABLE " + sr_file + "(VENDOR_ID_PREV TEXT,VENDOR_MAIL_PREV TEXT)")
-    s_cols = ""
     co = open(ed_path + "201_vendor_new.csv", "r")
     co_reader = csv.reader(co)
     # Read the COLUMN database data
@@ -1105,12 +1099,12 @@ def people_test_conflict():
 
     # GET PREVIOUS FINDINGS
     if i_finding_before > 0:
-        i = functest.get_previous_finding(so_curs, ed_path, s_report_file, s_finding, "TTTTT")
+        functest.get_previous_finding(so_curs, ed_path, s_report_file, s_finding, "TTTTT")
         so_conn.commit()
 
     # SET PREVIOUS FINDINGS
     if i_finding_before > 0:
-        i = functest.set_previous_finding(so_curs)
+        functest.set_previous_finding(so_curs)
         so_conn.commit()
 
     # ADD PREVIOUS FINDINGS
@@ -1188,12 +1182,12 @@ def people_test_conflict():
 
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
     if i_finding_before > 0 and i_finding_after > 0:
-        i = functest.get_officer(so_curs, "HR", "TEST " + s_finding + " OFFICER")
+        functest.get_officer(so_curs, "HR", "TEST " + s_finding + " OFFICER")
         so_conn.commit()
 
     # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
     if i_finding_before > 0 and i_finding_after > 0:
-        i = functest.get_supervisor(so_curs, "HR", "TEST " + s_finding + " SUPERVISOR")
+        functest.get_supervisor(so_curs, "HR", "TEST " + s_finding + " SUPERVISOR")
         so_conn.commit()
 
     # ADD CONTACT DETAILS TO FINDINGS
