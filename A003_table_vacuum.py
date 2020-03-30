@@ -30,6 +30,7 @@ def table_vacuum():
     *****************************************************************************"""
 
     # DECLARE VARIABLES
+    s_root: str = "S:/"
     l_mess: bool = True
     i_counter: int = 0
 
@@ -52,7 +53,7 @@ def table_vacuum():
     funcfile.writelog("BEGIN OF SCRIPT")
 
     # READ THE TEXT FILE
-    co = open("000d_Table_vacuum.csv", newline=None)
+    co = open(s_root + "000d_Table_vacuum.csv", newline=None)
     co_reader = csv.reader(co)
 
     # READ THE CONTACTS TABLE ROW BY ROW
