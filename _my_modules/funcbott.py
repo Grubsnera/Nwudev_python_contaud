@@ -1,4 +1,3 @@
-import time
 import datetime
 import logging
 from _my_modules import funcconf
@@ -26,8 +25,6 @@ def help(update, context):
     """Send a message when the command /help is issued."""
     print('/HELP COMMAND')
     print('-------------')
-    print(update)
-    print(context)
     update.message.reply_text("Bot commands:\n"
                               "/help: This message\n"
                               "/set: Set a timer\n"
@@ -36,8 +33,6 @@ def help(update, context):
 
 def echo(update, context):
     """Echo the user message."""
-    print(update)
-    print(context)
     if update.message.text.lower() == "hi"\
         or update.message.text == "✋"\
         or update.message.text == "🤝":
@@ -48,13 +43,6 @@ def echo(update, context):
     #     set_schedule(update, msg)
     else:
         update.message.reply_text("I'm sorry, I do not understand that command!")
-
-
-def alarm(context):
-    """Send the alarm message."""
-    job = context.job
-    print(context.job)
-    context.bot.send_message(job.context, text='Beep!')
 
 
 def set_schedule(update, context):
