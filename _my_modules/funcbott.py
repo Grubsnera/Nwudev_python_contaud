@@ -1,5 +1,12 @@
+import time
 import datetime
+import logging
+from _my_modules import funcconf
 from _my_modules import funcdate
+
+# ENABLE LOGGING
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def hi(update, context):
     """Send a message when the command /help is issued."""
@@ -9,13 +16,18 @@ def hi(update, context):
                               "\n"
                               "<b>What information do you want?</b>\n"
                               "\n"
-                              "Reply with a number (or emoji) at any time to get the latest information on the topic:\n"
+                              "Reply with a number, command (or emoji) at any time to get the latest information on the topic:\n"
                               "\n"
-                              "/set: Set a timer", 'HTML')
+                              "/set: Set a schedule 🕰\n"
+                              "/stop: Stop me! 🕰", "HTML")
 
 
 def help(update, context):
     """Send a message when the command /help is issued."""
+    print('/HELP COMMAND')
+    print('-------------')
+    print(update)
+    print(context)
     update.message.reply_text("Bot commands:\n"
                               "/help: This message\n"
                               "/set: Set a timer\n"
@@ -30,6 +42,10 @@ def echo(update, context):
         or update.message.text == "✋"\
         or update.message.text == "🤝":
         hi(update, hi)
+    # elif update.message.text.lower() == "set"\
+    #     or update.message.text == "🕰":
+    #     msg = {'args': ['?']}
+    #     set_schedule(update, msg)
     else:
         update.message.reply_text("I'm sorry, I do not understand that command!")
 
@@ -43,9 +59,7 @@ def alarm(context):
 
 def set_schedule(update, context):
     """Add a job to the queue."""
-    global d_run_large
-    global d_run_test
-    chat_id = update.message.chat_id
+
     try:
 
         # args[0] set what?
@@ -54,16 +68,21 @@ def set_schedule(update, context):
             update.message.reply_text('Setting up <b>evening (large)</b> data schedule!', 'HTML')
         elif s_type == "test":
             update.message.reply_text('Setting up <b>morning</b> data and test schedule!', 'HTML')
+        elif s_type == "vacuum":
+            update.message.reply_text('Setting up <b>vacuuming</b> of data tables!', 'HTML')
         else:
-            update.message.reply_text('❗️Sorry, <b>schedule type</b> unknown!\n'
-                                      '\n'
-                                      'Currently set to: ✅\n'
-                                      '<b>large</b> = ' + datetime.datetime.strftime(d_run_large, '%c') + '\n'
-                                      '<b>test</b> = ' + datetime.datetime.strftime(d_run_test, '%c') + '\n'
-                                      '\n'
-                                      '<b>Type</b> must be: ❎\n'
-                                      '<b>large</b>: Large data evening schedule\n'
-                                      '<b>test</b>: Test run morning schedule', 'HTML')
+            update.message.reply_text('❗️Usage: /set type year month day hour minute:\n'
+                                      'Where:\n'
+                                      'type = <b>vacuum</b> Vacuum schedule to optimize data\n'
+                                      'type = <b>large</b> Evening schedule to run large data\n'
+                                      'type = <b>test</b> Morning schedule to run tests\n'
+                                      'year = This <b>year</b> or next year format YYYY\n'
+                                      'month = <b>Month</b> to run schedule format -m\n'
+                                      'day = <b>Day</b> to run schedule format -d\n'
+                                      'hour = <b>Hour</b> to run schedule format -H\n'
+                                      'minute = <b>Minute</b> to run schedule format -M\n'
+                                      '- Please allow at least 5 minutes. 🤔\n'
+                                      '- and we cannot go back in time. 😜', 'HTML')
             return
 
         # args should have values
@@ -104,37 +123,36 @@ def set_schedule(update, context):
             update.message.reply_text('❗️Sorry, minute 0 to 59 only!', 'HTML')
             return
 
+        if datetime.datetime(i_year, i_month, i_day, i_hour, i_minute, 0) < datetime.datetime.now():
+            update.message.reply_text('❗️Sorry, we cannot go back in time!', 'HTML')
+            return
+
         # global d_run_large
+        if s_type == "vacuum":
+            funcconf.d_run_vacuum = datetime.datetime(i_year, i_month, i_day, i_hour, i_minute, 0)
+
         if s_type == "large":
-            d_run_large = datetime.datetime(i_year, i_month, i_day, i_hour, i_minute, 0)
+            funcconf.d_run_large = datetime.datetime(i_year, i_month, i_day, i_hour, i_minute, 0)
 
         if s_type == "test":
-            d_run_test = datetime.datetime(i_year, i_month, i_day, i_hour, i_minute, 0)
+            funcconf.d_run_test = datetime.datetime(i_year, i_month, i_day, i_hour, i_minute, 0)
 
         update.message.reply_text('Scheduler successfully set!', 'HTML')
 
     except (IndexError, ValueError):
-        update.message.reply_text('❗️Usage: /set <type> <year> <month> <day> <hour> <minute>')
-
-
-def unset(update, context):
-    """Remove the job if the user changed their mind."""
-    if 'job' not in context.chat_data:
-        update.message.reply_text('You have no active timer')
-        return
-
-    job = context.chat_data['job']
-    job.schedule_removal()
-    del context.chat_data['job']
-
-    update.message.reply_text('Timer successfully unset!')
+            update.message.reply_text('🕰 Schedule currently set to:\n'
+                                      '<b>vacuum</b> = ' + datetime.datetime.strftime(funcconf.d_run_vacuum, '%a %Y-%m-%d') +
+                                      ' ' + datetime.datetime.strftime(funcconf.d_run_vacuum, '%H:%M:%S') + '\n'
+                                      '<b>large</b> = ' + datetime.datetime.strftime(funcconf.d_run_large, '%a %Y-%m-%d') +
+                                      ' ' + datetime.datetime.strftime(funcconf.d_run_large, '%H:%M:%S') + '\n'
+                                      '<b>test</b> = ' + datetime.datetime.strftime(funcconf.d_run_test, '%a %Y-%m-%d') +
+                                      ' ' + datetime.datetime.strftime(funcconf.d_run_test, '%H:%M:%S') + '\n', 'HTML')
 
 
 def stop(update, context):
     """Send a message when the command /start is issued."""
     update.message.reply_text('Stopping me!')
-    global l_run_project
-    l_run_project = False
+    funcconf.l_run_project = False
     return exit(SystemExit)
 
 
