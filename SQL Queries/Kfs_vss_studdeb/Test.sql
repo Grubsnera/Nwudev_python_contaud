@@ -1,7 +1,7 @@
 ﻿Select
-    X021ax_balance_multiple_campus.Campus,
-    Count(X021ax_balance_multiple_campus.Student) As Count_Student
+    X002da_vss_student_balance_clos.CAMPUS,
+    Total(X002da_vss_student_balance_clos.BALANCE) As Total_BALANCE
 From
-    X021ax_balance_multiple_campus
+    X002da_vss_student_balance_clos
 Group By
-    X021ax_balance_multiple_campus.Campus
+    X002da_vss_student_balance_clos.CAMPUS

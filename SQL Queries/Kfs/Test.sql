@@ -1,9 +1,22 @@
 ﻿Select
-    X000_Vendor.VNDR_TYP_CD,
-    X000_Vendor.DOBJ_MAINT_CD_ACTV_IND,
-    Count(X000_Vendor.VENDOR_ID) As Count_VENDOR_ID
+    PAYM.EDOC,
+    PAYM.VENDOR_ID,
+    PAYM.INIT_EMP_NO,
+    PAYM.PMT_DT,
+    PAYM.NET_PMT_AMT,
+    PAYM.FIN_OBJ_CD_NM,
+    PAYM.VENDOR_TYPE
 From
-    X000_Vendor
+    X001ad_Report_payments_accroute PAYM
+Where
+    PAYM.VENDOR_ID != '' And
+    PAYM.NET_PMT_AMT <= 5000 And
+    PAYM.FIN_OBJ_CD_NM != '' And
+    PAYM.VENDOR_TYPE = 'V'
 Group By
-    X000_Vendor.VNDR_TYP_CD,
-    X000_Vendor.DOBJ_MAINT_CD_ACTV_IND
+    PAYM.EDOC,
+    PAYM.VENDOR_ID,
+    PAYM.INIT_EMP_NO,
+    PAYM.PMT_DT,
+    PAYM.FIN_OBJ_CD_NM,
+    PAYM.VENDOR_TYPE
