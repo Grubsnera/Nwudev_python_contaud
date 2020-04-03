@@ -1,5 +1,6 @@
 """
 Script to define global variables
+Test
 """
 
 # IMPORT PYTHON PACKAGES

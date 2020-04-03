@@ -1,3 +1,6 @@
+"""
+Bot commands
+"""
 import datetime
 import logging
 from _my_modules import funcconf
