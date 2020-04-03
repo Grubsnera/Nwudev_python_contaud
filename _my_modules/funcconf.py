@@ -7,7 +7,7 @@ import time
 import datetime
 
 # IMPORT OWN MODULES
-from _my_modules import funcdate
+from _my_modules import funcdate  # Own modules
 
 # DECLARE GLOBAL VARIABLES
 l_mail_project: bool = True  # Flag to indicate project sending emails.
