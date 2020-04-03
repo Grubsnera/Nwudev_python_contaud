@@ -1,5 +1,6 @@
 """
 Bot commands
+Test
 """
 import datetime
 import logging
