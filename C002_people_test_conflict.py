@@ -764,7 +764,7 @@ def people_test_conflict():
             Left Join X001_declarations_curr DECLARE On DECLARE.EMPLOYEE = PREV.EMP
             Left Join Z001af_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.LOC
             Left Join Z001af_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG
-            Left Join Z001af_officer OFF_AUD On AUD_OFF.CAMPUS = 'AUD'
+            Left Join Z001af_officer AUD_OFF On AUD_OFF.CAMPUS = 'AUD'
             Left Join Z001ag_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.LOC
             Left Join Z001ag_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG
             Left Join Z001ag_supervisor AUD_SUP On AUD_SUP.CAMPUS = 'AUD'
@@ -866,8 +866,6 @@ def people_test_conflict():
     s_report_file: str = "002_reported.txt"
 
     # OBTAIN TEST DATA FOR CURRENT ACTIVE VENDORS - NEW VENDORS
-    sr_file: str = s_file_prefix + "aa_" + s_file_name
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     print("Obtain test data...")
     sr_file: str = s_file_prefix + "aaa_" + s_file_name
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -950,16 +948,29 @@ def people_test_conflict():
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         'CHANGED VENDOR' As VENDOR_CATEGORY,
-        NEW.VENDOR_ID,
-        NEW.VENDOR_MAIL As VENDOR_MAIL_OLD,
-        OLD.VENDOR_MAIL_PREV As VENDOR_MAIL_NEW
+        OLD.VENDOR_ID_PREV As VENDOR_ID,
+        OLD.VENDOR_MAIL_PREV As VENDOR_MAIL_OLD,
+        NEW.VENDOR_MAIL As VENDOR_MAIL_NEW,
+        Case
+            When OLD.VENDOR_MAIL_PREV Not Like('%nwu.ac.za%') And
+                NEW.VENDOR_MAIL Not Like('%nwu.ac.za%')
+                Then '1 NO NWU TO NO NWU'
+            When OLD.VENDOR_MAIL_PREV Not Like('%nwu.ac.za%') And
+                NEW.VENDOR_MAIL Like('%nwu.ac.za%')
+                Then '2 NO NWU TO NWU'
+            When OLD.VENDOR_MAIL_PREV Like('%nwu.ac.za%') And
+                NEW.VENDOR_MAIL Not Like('%nwu.ac.za%')
+                Then '3 NWU TO NO NWU'
+            When Substr(OLD.VENDOR_ID_PREV, 1, 8) = Substr(NEW.VENDOR_MAIL, 1, 8) And
+                NEW.VENDOR_MAIL Like('%nwu.ac.za%')
+                Then '4 NWU TO NWU'     
+            Else '0'
+        End As TEST_TYPE 
     From
-        X100baaa_employee_vendor_share_email NEW Left Join
-        X100baab_employee_vendor_share_email OLD On OLD.VENDOR_ID_PREV = NEW.VENDOR_ID
+        X100baab_employee_vendor_share_email OLD Left Join
+        X100baaa_employee_vendor_share_email NEW On NEW.VENDOR_ID = OLD.VENDOR_ID_PREV
     Where
-        NEW.VENDOR_MAIL != OLD.VENDOR_MAIL_PREV And
-        NEW.VENDOR_MAIL Not Like ('%nwu.ac.za%') And
-        OLD.VENDOR_MAIL_PREV Like ('%nwu.ac.za%')
+        OLD.VENDOR_MAIL_PREV != NEW.VENDOR_MAIL
     """
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -967,9 +978,6 @@ def people_test_conflict():
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # OBTAIN TEST DATA FOR CURRENT ACTIVE VENDORS - CATEGORY CURRENT ACTIVE VENDOR
-    # TODO - Delete after first run
-    sr_file: str = s_file_prefix + "a_" + s_file_name
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     print("Obtain test data...")
     sr_file: str = s_file_prefix + "ac_" + s_file_name
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -995,6 +1003,7 @@ def people_test_conflict():
         Lower(VEND.VEND_MAIL) Like ('%nwu.ac.za%') And
         VEND.DOBJ_MAINT_CD_ACTV_IND = 'Y' And
         SUMM.VENDOR_ID Is Not Null And
+        Cast(SUMM.COUNT_TRAN As INT) > 1 And
         PEOP.EMPLOYEE_NUMBER Is Null And
         PREP.EMPLOYEE_NUMBER Is Null And
         STUD.KSTUDBUSENTID Is Null And
@@ -1029,6 +1038,7 @@ def people_test_conflict():
             "(VENDOR_CATEGORY, VENDOR_ID, VENDOR_MAIL, VENDOR_MAIL_NEW)" \
             " SELECT VENDOR_CATEGORY, VENDOR_ID, VENDOR_MAIL_OLD, VENDOR_MAIL_NEW FROM " + \
             data_file + \
+            " WHERE TEST_TYPE Like('0%')" + \
             ";"
     so_curs.execute(s_sql)
     # CURRENT VENDOR VENDOR
@@ -1083,6 +1093,8 @@ def people_test_conflict():
         FIND.VENDOR_CLASS
     From
         %FILEP%%FILEN% FIND
+    Where
+        FIND.VENDOR_CLASS Like('VENDOR%')        
     Order by
         VENDOR_ID
     ;"""
