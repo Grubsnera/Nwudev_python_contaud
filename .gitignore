@@ -116,6 +116,7 @@ dmypy.json
 # Albert
 /README.md
 /*.csv
+_my_modules/funcbott.py
 _my_modules/funcconf.py
 _my_modules/funcmail.py
 _my_modules/funcmysql.py
