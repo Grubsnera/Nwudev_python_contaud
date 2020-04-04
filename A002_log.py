@@ -9,8 +9,10 @@ import sqlite3
 import csv
 
 # IMPORT OWN MODULES
+from _my_modules import funcconf
 from _my_modules import funcdate
 from _my_modules import funcfile
+from _my_modules import funcsms
 from _my_modules import funcsys
 
 """ INDEX **********************************************************************
@@ -43,14 +45,12 @@ def log_capture(s_date=funcdate.yesterday(), l_history=False):
     print("--------")
 
     # DECLARE VARIABLES
-    ed_path = "S:/_external_data/"  # External data path
     so_path = "W:/Admin/"  # Source database path
     so_file = "Admin.sqlite"  # Source database
     ld_path = "S:/Logs/"
 
     # DECLARE SCRIPT VARIABLES
     l_record: bool = True
-    s_data = ""
     s_date_file: str = s_date.replace("-", "")
     s_time: str = ""
     s_script: str = ""
@@ -268,6 +268,10 @@ def log_capture(s_date=funcdate.yesterday(), l_history=False):
         funcfile.writelog("%t VACUUM DATABASE: " + so_file)
     so_conn.commit()
     so_conn.close()
+
+    # MESSAGE
+    if funcconf.l_mess_project:
+        funcsms.send_telegram("", "administrator", "Updated <b>log</b> history!")
 
     # CLOSE THE LOG WRITER *********************************************************
     funcfile.writelog("-------------------")
