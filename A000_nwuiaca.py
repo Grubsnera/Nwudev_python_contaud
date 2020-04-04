@@ -13,9 +13,10 @@ from threading import Thread
 # IMPORT OWN MODULES
 from _my_modules import funcconf
 from _my_modules import funcsys
+from _my_modules import funcfile
 
 # SET TO TRUE FOR ACTIVE NWU USE OR COMMENT OUT
-# funcconf.l_tel_use_nwu = False
+funcconf.l_tel_use_nwu = True
 
 # ENABLE LOGGING
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -34,6 +35,11 @@ def main():
     # IMPORT OWN MODULES
     from _my_modules import funcbott
     from _my_modules import funcsms
+
+    # LOGGING
+    funcfile.writelog("Now")
+    funcfile.writelog("SCRIPT: OPEN PROJECT NWU INTERNAL AUDIT CONTINUOUS AUDIT")
+    funcfile.writelog("--------------------------------------------------------")
 
     # START THE BOT
     if funcconf.l_tel_use_nwu:
@@ -60,7 +66,8 @@ def main():
     funcsms.send_telegram("Dear", "administrator", "the <b>server</b> is up and running, and you may talk to me!")
 
     RunVacuum().start()
-    print("Starting vacuum thread")
+    RunLarge().start()
+    RunSmall().start()
 
     # START THE BOT
     updater.start_polling()
@@ -90,30 +97,37 @@ class RunVacuum(Thread):
         import A003_table_vacuum
 
         # DECLARE VARIABLES
-        l_clock: bool = True  # Display the local clock
-        i_sleep: int = 1  # Sleeping time in seconds
+        l_clock: bool = False  # Display the local clock
+        i_sleep: int = 60  # Sleeping time in seconds
+
+        # SEND MESSAGE TO INDICATE START OF VACUUM THREAD
+        if funcconf.l_mess_project:
+            funcsms.send_telegram("Dear", "administrator", "vacuum thread started!")
 
         # DO UNTIL GLOCAL l_run_project IS FALSE
         while funcconf.l_run_project:
 
             # DISPLAY THE LOCAL TIME
             if l_clock:
-                print(time.strftime("%T", time.localtime()))
+                print("VACUUM thread" + time.strftime("%T", time.localtime()))
 
             # SEND MESSAGE TO INDICATE START OF WORKING DAY
-            if time.strftime("%R", time.localtime()) == "07:45":
-                funcsms.send_telegram("Dear", "administrator", "your working day started, and I'm up and running!")
-                time.sleep(60)
+            if funcconf.l_mess_project:
+                if time.strftime("%R", time.localtime()) == "07:45":
+                    funcsms.send_telegram("Dear", "administrator", "your working day started, and I'm up and running!")
+                    time.sleep(60)
 
             # SEND MESSAGE TO INDICATE LUNCH TIME
-            if time.strftime("%R", time.localtime()) == "12:55":
-                funcsms.send_telegram("Dear", "administrator", "how about going for a walk, while I'm keeping up!")
-                time.sleep(60)
+            if funcconf.l_mess_project:
+                if time.strftime("%R", time.localtime()) == "12:55":
+                    funcsms.send_telegram("Dear", "administrator", "how about going for a walk, while I'm keeping up!")
+                    time.sleep(60)
 
             # SEND MESSAGE TO INDICATE WORKING DAY END
-            if time.strftime("%R", time.localtime()) == "16:30":
-                funcsms.send_telegram("Dear", "administrator", "you've done your part today, while I'm prepping!")
-                time.sleep(60)
+            if funcconf.l_mess_project:
+                if time.strftime("%R", time.localtime()) == "16:30":
+                    funcsms.send_telegram("Dear", "administrator", "you've done your part today, while I'm prepping!")
+                    time.sleep(60)
 
             # RUN THE VACUUM SCRIPT
             if datetime.datetime.now() >= funcconf.d_run_vacuum:
@@ -133,15 +147,189 @@ class RunVacuum(Thread):
                 try:
 
                     A003_table_vacuum.table_vacuum()
-                    funcmail.Mail('std_success_gmail',
-                                  'NWUIACA:Success:A003_table_vacuum',
-                                  'NWUIACA: Success: A003_table_vacuum')
+                    if funcconf.l_mail_project:
+                        funcmail.Mail('std_success_gmail',
+                                      'NWUIACA:Success:A003_table_vacuum',
+                                      'NWUIACA: Success: A003_table_vacuum')
 
                 except Exception as err:
 
-                    funcsys.ErrMessage(err, True,
+                    funcsys.ErrMessage(err, funcconf.l_mail_project,
                                        "NWUIACA:Fail:A003_table_vacuum",
                                        "NWUIACA: Fail: A003_table_vacuum")
+
+            # SLEEPER
+            time.sleep(i_sleep)
+
+
+class RunLarge(Thread):
+
+    def run(self):
+        """
+        Thread to execute the vacuum script.
+        :return:
+        """
+
+        # IMPORT PYTHON PACKAGES
+        import datetime
+        import time
+
+        # IMPORT OWN MODULES
+        from _my_modules import funcdate
+        from _my_modules import funcfile
+        from _my_modules import funcmail
+        from _my_modules import funcsms
+
+        # IMPORT SCRIPTS
+        import A001_oracle_to_sqlite
+
+        # DECLARE VARIABLES
+        l_clock: bool = False  # Display the local clock
+        i_sleep: int = 60  # Sleeping time in seconds
+
+        # SEND MESSAGE TO INDICATE START OF LARGE THREAD
+        if funcconf.l_mess_project:
+            funcsms.send_telegram("Dear", "administrator", "large data thread started!")
+
+        # DO UNTIL GLOBAL l_run_project IS FALSE
+        while funcconf.l_run_project:
+
+            # DISPLAY THE LOCAL TIME
+            if l_clock:
+                print("LARGE thread" + time.strftime("%T", time.localtime()))
+
+            # RUN THE LARGE SCRIPT
+            if datetime.datetime.now() >= funcconf.d_run_large:
+
+                # SET DATE AND TIME FOR NEXT RUN
+                if time.strftime("%R", time.localtime()) <= "17:55":
+                    funcconf.d_run_large = datetime.datetime.strptime(funcdate.today() +
+                                                                      " 18:00:00",
+                                                                      "%Y-%m-%d %H:%M:%S")
+                else:
+                    funcconf.d_run_large = datetime.datetime.strptime(funcdate.today() +
+                                                                      " 18:00:00",
+                                                                      "%Y-%m-%d %H:%M:%S") \
+                                           + datetime.timedelta(days=1)
+
+                # MESSAGES
+                if funcconf.l_mess_project:
+                    funcsms.send_telegram('', 'administrator',
+                                          '<b>Large</b> schedule started.')
+
+                # IMPORT PEOPLE DATA IN THE LARGE SCHEDULE
+                s_project: str = "A001_oracle_to_sqlite(people)"
+                # RUN ONLY MONDAYS TO FRIDAYS
+                if funcdate.today_dayname() in "MonTueWedThuFri":
+                    try:
+                        A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - people.csv", "PEOPLE")
+                        if funcconf.l_mail_project:
+                            funcmail.Mail('std_success_gmail',
+                                          'NWUIACA:Success:' + s_project,
+                                          'NWUIACA: Success: ' + s_project)
+                    except Exception as err:
+                        funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                           "NWUIACA:Fail:" + s_project,
+                                           "NWUIACA: Fail: " + s_project)
+                else:
+                    print("ORACLE to SQLITE LARGE do not run on Saturdays and Sundays")
+                    funcfile.writelog("SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
+
+                # SEND MAIL TO INDICATE THE SUCCESSFUL COMPLETION OF SMALL SCHEDULE
+                if funcconf.l_mail_project:
+                    funcmail.Mail('std_success_gmail', 'Python:Success:Finished:LargeSchedule',
+                                  'NWUIAPython: Success: Finished : Large schedule')
+                    funcmail.Mail("python_log")
+
+                if funcconf.l_mess_project:
+                    funcsms.send_telegram('', 'administrator',
+                                          '<b>Large</b> schedule finished.')
+
+            # SLEEPER
+            time.sleep(i_sleep)
+
+
+class RunSmall(Thread):
+
+    def run(self):
+        """
+        Thread to execute the vacuum script.
+        :return:
+        """
+
+        # IMPORT PYTHON PACKAGES
+        import datetime
+        import time
+
+        # IMPORT OWN MODULES
+        from _my_modules import funcdate
+        from _my_modules import funcfile
+        from _my_modules import funcmail
+        from _my_modules import funcsms
+
+        # IMPORT SCRIPTS
+        import A001_oracle_to_sqlite
+
+        # DECLARE VARIABLES
+        l_clock: bool = False  # Display the local clock
+        i_sleep: int = 60  # Sleeping time in seconds
+
+        # SEND MESSAGE TO INDICATE START OF LARGE THREAD
+        if funcconf.l_mess_project:
+            funcsms.send_telegram("Dear", "administrator", "small schedule thread started!")
+
+        # DO UNTIL GLOBAL l_run_project IS FALSE
+        while funcconf.l_run_project:
+
+            # DISPLAY THE LOCAL TIME
+            if l_clock:
+                print("SMALL thread" + time.strftime("%T", time.localtime()))
+
+            # RUN THE SMALL SCHEDULE
+            if datetime.datetime.now() >= funcconf.d_run_small:
+
+                # SET DATE AND TIME FOR NEXT RUN
+                if time.strftime("%R", time.localtime()) <= "23:59":
+                    funcconf.d_run_small = datetime.datetime.strptime(funcdate.today() + " 23:00:00",
+                                                                      "%Y-%m-%d %H:%M:%S") + \
+                                           datetime.timedelta(hours=3)
+                else:
+                    funcconf.d_run_small = datetime.datetime.strptime(funcdate.today() + " 23:00:00",
+                                                                      "%Y-%m-%d %H:%M:%S") + \
+                                           datetime.timedelta(days=1, hours=3)
+
+                # MESSAGES
+                if funcconf.l_mess_project:
+                    funcsms.send_telegram('', 'administrator',
+                                          '<b>Small</b> schedule started.')
+
+                # IMPORT KFS DATA IN THE SMALL SCHEDULE
+                s_project: str = "A001_oracle_to_sqlite(kfs)"
+                # RUN ONLY MONDAYS TO FRIDAYS
+                if funcdate.today_dayname() in "TueWedThuFriSat":
+                    try:
+                        A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - kfs.csv", "KFS")
+                        if funcconf.l_mail_project:
+                            funcmail.Mail('std_success_gmail',
+                                          'NWUIACA:Success:' + s_project,
+                                          'NWUIACA: Success: ' + s_project)
+                    except Exception as err:
+                        funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                           "NWUIACA:Fail:" + s_project,
+                                           "NWUIACA: Fail: " + s_project)
+                else:
+                    print("ORACLE to SQLITE LARGE do not run on Sundays and Mondays")
+                    funcfile.writelog("SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SUNDAYS AND MONDAYS")
+
+                # SEND MAIL TO INDICATE THE SUCCESSFUL COMPLETION OF SMALL SCHEDULE
+                if funcconf.l_mail_project:
+                    funcmail.Mail('std_success_gmail', 'Python:Success:Finished:SmallSchedule',
+                                  'NWUIAPython: Success: Finished : Small schedule')
+                    funcmail.Mail("python_log")
+
+                if funcconf.l_mess_project:
+                    funcsms.send_telegram('', 'administrator',
+                                          '<b>Small</b> schedule finished.')
 
             # SLEEPER
             time.sleep(i_sleep)
