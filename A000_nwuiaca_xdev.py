@@ -5,13 +5,39 @@ Author: Albert B Janse van Rensburg (NWU:21162395)
 Date created: 17 Mar 2020
 Updated:
 """
+""" INDEX
+START BOT AND CREATE UPDATER (main)
+
+THREAD TO RUN VACUUM SCRIPT (runvacuum)
+VACUUM TEST FINDING TABLES
+
+THREAD TO RUN LARGE SCRIPT
+IMPORT PEOPLE (A001_oracle_to_sqlite(people))(MonTueWedThuFri)
+IMPORT VSS (A001_oracle_to_sqlite(vss))(MonTueWedThuFri)
+
+THREAD TO RUN SMALL SCRIPT
+IMPORT KFS (A001_oracle_to_sqlite(kfs))(TueWedThuFriSat)
+
+THREAD TO RUN TEST SCRIPT
+UPDATE LOG (A002_log) "MonTueWedThuFriSatSun"
+
+"""
 
 # IMPORT PYTHON PACKAGES
+import datetime
 import logging
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from threading import Thread
+import time
 
 # IMPORT OWN MODULES
+from _my_modules import funcbott
 from _my_modules import funcconf
+from _my_modules import funcdate
+from _my_modules import funcfile
+from _my_modules import funcmail
+from _my_modules import funcsms
+from _my_modules import funcsys
 
 # SET TO TRUE FOR ACTIVE NWU USE OR COMMENT OUT
 funcconf.l_tel_use_nwu = False
@@ -23,17 +49,9 @@ logger = logging.getLogger(__name__)
 
 def main():
     """
-    Create the updater
+    START BOT AND CREATE UPDATER
     :return: Nothing
     """
-
-    # IMPORT PYTHON PACKAGES
-    from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-
-    # IMPORT OWN MODULES
-    from _my_modules import funcbott
-    from _my_modules import funcfile
-    from _my_modules import funcsms
 
     # LOGGING
     funcfile.writelog("Now")
@@ -82,19 +100,11 @@ class RunVacuum(Thread):
 
     def run(self):
         """
-        Thread to execute the vacuum script.
-        :return:
+        THREAD TO RUN VACUUM SCRIPT
+        :return: Nothing
         """
 
-        # IMPORT PYTHON PACKAGES
-        import datetime
-        import time
-
         # IMPORT OWN MODULES
-        from _my_modules import funcdate
-        from _my_modules import funcmail
-        from _my_modules import funcsms
-        from _my_modules import funcsys
         import A003_table_vacuum
 
         # DECLARE VARIABLES
@@ -173,20 +183,9 @@ class RunLarge(Thread):
 
     def run(self):
         """
-        Thread to execute the large schedule.
-        :return:
+        THREAD TO RUN LARGE SCRIPT
+        :return: Nothing
         """
-
-        # IMPORT PYTHON PACKAGES
-        import datetime
-        import time
-
-        # IMPORT OWN MODULES
-        from _my_modules import funcdate
-        from _my_modules import funcfile
-        from _my_modules import funcmail
-        from _my_modules import funcsms
-        from _my_modules import funcsys
 
         # IMPORT SCRIPTS
         import A001_oracle_to_sqlite
@@ -227,7 +226,6 @@ class RunLarge(Thread):
 
                 # IMPORT PEOPLE
                 s_project: str = "A001_oracle_to_sqlite(people)"
-                # RUN ONLY MONDAYS TO FRIDAYS
                 if funcdate.today_dayname() in "MonTueWedThuFri":
                     try:
                         A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - people.csv", "PEOPLE")
@@ -247,7 +245,6 @@ class RunLarge(Thread):
 
                 # IMPORT VSS
                 s_project: str = "A001_oracle_to_sqlite(vss)"
-                # RUN ONLY MONDAYS TO FRIDAYS
                 if funcdate.today_dayname() in "MonTueWedThuFri":
                     try:
                         A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - vss.csv", "VSS")
@@ -283,20 +280,9 @@ class RunSmall(Thread):
 
     def run(self):
         """
-        Thread to execute the small schedule.
-        :return:
+        THREAD TO RUN SMALL SCRIPT
+        :return: Nothing
         """
-
-        # IMPORT PYTHON PACKAGES
-        import datetime
-        import time
-
-        # IMPORT OWN MODULES
-        from _my_modules import funcdate
-        from _my_modules import funcfile
-        from _my_modules import funcmail
-        from _my_modules import funcsms
-        from _my_modules import funcsys
 
         # IMPORT SCRIPTS
         import A001_oracle_to_sqlite
@@ -334,9 +320,8 @@ class RunSmall(Thread):
                     funcsms.send_telegram('', 'administrator',
                                           '<b>Small</b> schedule started.')
 
-                # IMPORT KFS DATA IN THE SMALL SCHEDULE
+                # IMPORT KFS
                 s_project: str = "A001_oracle_to_sqlite(kfs)"
-                # RUN ONLY MONDAYS TO FRIDAYS
                 if funcdate.today_dayname() in "TueWedThuFriSat":
                     try:
                         A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - temp.csv", "KFS")
@@ -374,20 +359,9 @@ class RunTest(Thread):
 
     def run(self):
         """
-        Thread to execute the test schedule.
-        :return:
+        THREAD TO RUN TEST SCRIPT
+        :return: Nothing
         """
-
-        # IMPORT PYTHON PACKAGES
-        import datetime
-        import time
-
-        # IMPORT OWN MODULES
-        from _my_modules import funcdate
-        from _my_modules import funcfile
-        from _my_modules import funcmail
-        from _my_modules import funcsms
-        from _my_modules import funcsys
 
         # IMPORT SCRIPTS
         import A002_log
@@ -425,9 +399,8 @@ class RunTest(Thread):
                     funcsms.send_telegram('', 'administrator',
                                           '<b>Test</b> schedule started.')
 
-                # PUT SCRIPTS HERE
+                # UPDATE LOG
                 s_project: str = "A002_log"
-                # RUN ONLY TWENTY FOUR SEVEN
                 if funcdate.today_dayname() in "MonTueWedThuFriSatSun":
                     try:
                         A002_log.log_capture(funcdate.yesterday(), True)
@@ -458,8 +431,6 @@ class RunTest(Thread):
 
 
 if __name__ == '__main__':
-    from _my_modules import funcsys
-
     try:
         main()
     except Exception as e:
