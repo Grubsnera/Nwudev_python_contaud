@@ -9,26 +9,24 @@ import pyodbc
 import sqlite3
 
 # Import own modules ***********************************************************
+from _my_modules import funcconf
 from _my_modules import funcdate
 from _my_modules import funcfile
 from _my_modules import funcstr
 from _my_modules import funcsys
 from _my_modules import funcsms
 
-# from __future__ import generators
-# wait = input("PRESS ENTER TO CONTINUE.")
-
-
-def oracle_to_sqlite(s_table="000b_Table.csv"):
+def oracle_to_sqlite(s_table="000b_Table - temp.csv", s_tables="TEMP"):
     """
-
-    :param s_table:
+    Script to import data from oracle.
+    :param s_table: Table name of files to convert
+    :param s_tables: Table set name
     :return: Nothing
     """
 
     # DECLARE VARIABLES
 
-    l_mess: bool = True
+    l_mess: bool = funcconf.l_mess_project
     i_mess: int = 0
 
     sl_path = "S:/"
@@ -63,19 +61,19 @@ def oracle_to_sqlite(s_table="000b_Table.csv"):
     funcfile.writelog("Now")
     funcfile.writelog("SCRIPT: A001_ORACLE_TO_SQLITE")
     funcfile.writelog("-----------------------------")
-    ilog_severity = 1
+    funcfile.writelog("TABLESET: " + s_table.upper())
 
-    if ilog_severity >= 2:
-        funcfile.writelog("DECLARED: public variables")
+    # MESSAGE
+    if funcconf.l_mess_project:
+        funcsms.send_telegram('', 'administrator',
+                              'Downloading <b>' + s_tables + '</b> tables from oracle.')
 
     # DATABASE from text ***********************************************************
 
     # Read the database parameters from the 01_Database.csv file
 
-    db = open(sl_path + "000a_Database.csv", "rU")
+    db = open(sl_path + "000a_Database.csv", newline=None)
     db_reader = csv.reader(db)
-    if ilog_severity >= 2:
-        funcfile.writelog("OPENED: 000a_database.csv (DATABASE MASTER LIST)")
 
     # Read the DATABASE database data
 
@@ -126,7 +124,7 @@ def oracle_to_sqlite(s_table="000b_Table.csv"):
         # TABLE info from text *****************************************************
 
         # Read the table parameters from the 02_Table.csv file
-        tb = open(sl_path + s_table, "rU")
+        tb = open(sl_path + s_table, newline=None)
         tb_reader = csv.reader(tb)
 
         # Read the TABLE database data
@@ -179,7 +177,7 @@ def oracle_to_sqlite(s_table="000b_Table.csv"):
             # COLUMN info from text ************************************************
 
             # Read the table parameters from the 02_Table.csv file """
-            co = open(sl_path + "000c_Column.csv", "rU")
+            co = open(sl_path + "000c_Column.csv", newline=None)
             co_reader = csv.reader(co) 
 
             # Read the COLUMN database data
@@ -425,6 +423,12 @@ def oracle_to_sqlite(s_table="000b_Table.csv"):
     funcfile.writelog("COMPLETED: A001_ORACLE_TO_SQLITE")
 
     if l_mess:
-        funcsms.send_telegram('', 'administrator', 'Completed building of sqlite data tables.')
+        funcsms.send_telegram('', 'administrator', 'Completed building <b>' + s_tables + '</b> sqlite tables.')
 
     return
+
+if __name__ == '__main__':
+    try:
+        oracle_to_sqlite()
+    except Exception as e:
+        funcsys.ErrMessage(e)
