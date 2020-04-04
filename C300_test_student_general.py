@@ -95,7 +95,7 @@ def test_student_general():
     tb_name = "X001ac_impo_reported"
     so_curs.execute("DROP TABLE IF EXISTS " + tb_name)
     so_curs.execute("CREATE TABLE " + tb_name + "(PROCESS TEXT,FIELD1 INT,FIELD2 TEXT,FIELD3 TEXT,FIELD4 TEXT,FIELD5 TEXT,DATE_REPORTED TEXT,DATE_RETEST TEXT)")
-    co = open(ed_path + "300_reported.txt", "rU")
+    co = open(ed_path + "300_reported.txt", newline=None)
     co_reader = csv.reader(co)
     # Read the COLUMN database data
     for row in co_reader:

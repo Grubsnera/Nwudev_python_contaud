@@ -70,7 +70,7 @@ def vss_lists():
     so_curs.execute("DROP TABLE IF EXISTS " + tb_name)
     so_curs.execute("CREATE TABLE " + tb_name + "(LOOKUP TEXT,LOOKUP_CODE TEXT,LOOKUP_DESCRIPTION TEXT)")
     s_cols = ""
-    co = open(ed_path + "001_own_vss_lookups.csv", "rU")
+    co = open(ed_path + "001_own_vss_lookups.csv", newline=None)
     co_reader = csv.reader(co)
     for row in co_reader:
         if row[0] == "LOOKUP":
