@@ -6,12 +6,10 @@ Copyright (c) AB Janse van Rensburg 25 May 2018
 # Import python objects
 import sys
 
-# Add own module path
-sys.path.append('S:/_my_modules')
-
 # Import own functions
-import funccsv
-import funcfile
+from _my_modules import funccsv
+from _my_modules import funcfile
+from _my_modules import funcsys
 
 
 def assign01(so_conn, s_table, s_from, s_to, s_on, s_mess):
@@ -266,7 +264,7 @@ def people01(so_conn, s_table, s_source, s_peri, s_mess, s_acti):
     :param s_peri: For which period
     :param s_mess: Print and log message
     :param s_acti: Should list include only active people = Y (or active assignments = N)
-    :return: Nothing
+    :return: int: Number of people
     """
 
     # Print and connect
@@ -464,4 +462,4 @@ def people01(so_conn, s_table, s_source, s_peri, s_mess, s_acti):
         so_conn.commit()
         funcfile.writelog("%t ADD COLUMN: DAY")
 
-    return
+    return funcsys.tablerowcount(so_curs, s_table)
