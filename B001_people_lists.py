@@ -1,6 +1,8 @@
-""" Script to build standard PEOPLE lists
-Created on: 12 Apr 2018
-Author: Albert J v Rensburg (NWU21162395)
+"""
+SCRIPT TO BUILD PEOPLE LISTS
+AUTHOR: Albert J v Rensburg (NWU:21162395)
+CREATED: 12 APR 2018
+MODIFIED: 5 APR 2020
 """
 
 # IMPORT SYSTEM MODULES
@@ -17,7 +19,7 @@ from _my_modules import funcpeople
 from _my_modules import funcsms
 from _my_modules import funcsys
 
-""" Index
+""" INDEX
 ENVIRONMENT
 OPEN THE DATABASES
 BEGIN OF SCRIPT
@@ -1935,16 +1937,17 @@ def people_lists():
 
     funcfile.writelog("%t BUILD TABLE:  X102_PER_ABSENCE_ATTENDANCE_TYPES")
 
-    # Close the connection *********************************************************
-    if l_vacuum:
-        print("Vacuum the database...")
-        so_conn.commit()
-        so_conn.execute('VACUUM')
-        funcfile.writelog("%t VACUUM DATABASE: " + so_file)
+    """ ****************************************************************************
+    End OF SCRIPT
+    *****************************************************************************"""
+    print("END OF SCRIPT")
+    funcfile.writelog("END OF SCRIPT")
+
+    # CLOSE THE DATABASE CONNECTION
     so_conn.commit()
     so_conn.close()
 
-    # Close the log writer *********************************************************
+    # CLOSE THE LOG WRITER
     funcfile.writelog("----------------------------")
     funcfile.writelog("COMPLETED: B001_PEOPLE_LISTS")
 

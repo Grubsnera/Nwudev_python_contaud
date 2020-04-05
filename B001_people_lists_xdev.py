@@ -1,6 +1,8 @@
-""" Development are for PEOPLE LISTS
-Created: 1 Mar 2019
-Author: Albert Janse van Rensburg (NWU21162395)
+"""
+SCRIPT TO BUILD PEOPLE LISTS
+AUTHOR: Albert J v Rensburg (NWU:21162395)
+CREATED: 12 APR 2018
+MODIFIED: 5 APR 2020
 """
 
 # IMPORT SYSTEM MODULES
@@ -8,35 +10,41 @@ import csv
 import sqlite3
 
 # IMPORT OWN MODULES
-from _my_modules import funcfile
+from _my_modules import funcconf
+from _my_modules import funccsv
 from _my_modules import funcdate
+from _my_modules import funcfile
+from _my_modules import funcmail
+from _my_modules import funcpeople
+from _my_modules import funcsms
+from _my_modules import funcsys
 
-""" INDEX **********************************************************************
+""" INDEX
 ENVIRONMENT
 OPEN THE DATABASES
 BEGIN OF SCRIPT
 End OF SCRIPT
-*****************************************************************************"""
+"""
 
 """*****************************************************************************
 ENVIRONMENT
 *****************************************************************************"""
 
-# OPEN THE SCRIPT LOG FILE
-print("-----------------")
-print("B001_PEOPLE_LISTS")
-print("-----------------")
+# SCRIPT LOG
 funcfile.writelog("Now")
 funcfile.writelog("SCRIPT: B001_PEOPLE_LISTS_DEV")
 funcfile.writelog("-----------------------------")
-ilog_severity = 1
+print("---------------------")
+print("B001_PEOPLE_LISTS_DEV")
+print("---------------------")
 
 # DECLARE VARIABLES
-so_path = "W:/People/"
-so_file = "People.sqlite"
-re_path = "R:/People/"
-l_export: bool = False
-l_mail: bool = False
+so_path = "W:/People/"  # Source database path
+so_file = "People.sqlite"  # Source database
+re_path = "R:/People/"  # Results path
+l_export: bool = True
+l_mail: bool = True
+l_vacuum: bool = False
 
 """*****************************************************************************
 OPEN THE DATABASES
@@ -44,11 +52,16 @@ OPEN THE DATABASES
 print("OPEN THE DATABASES")
 funcfile.writelog("OPEN THE DATABASES")
 
-# OPEN THE WORKING DATABASE
+# Open the SQLITE SOURCE file
 with sqlite3.connect(so_path + so_file) as so_conn:
     so_curs = so_conn.cursor()
 funcfile.writelog("OPEN DATABASE: " + so_file)
 
+"""*****************************************************************************
+DO NOT DELETE
+IMPORT OWN LOOKUPS
+DO NOT DELETE
+*****************************************************************************"""
 # Import the X000_OWN_HR_LOOKUPS table
 print("Import own lookups...")
 ed_path = "S:/_external_data/"
@@ -82,8 +95,9 @@ print("END OF SCRIPT")
 funcfile.writelog("END OF SCRIPT")
 
 # CLOSE THE DATABASE CONNECTION
+so_conn.commit()
 so_conn.close()
 
 # CLOSE THE LOG WRITER
-funcfile.writelog("----------------------------")
-funcfile.writelog("COMPLETED: B001_PEOPLE_LISTS")
+funcfile.writelog("--------------------------------")
+funcfile.writelog("COMPLETED: B001_PEOPLE_LISTS_DEV")
