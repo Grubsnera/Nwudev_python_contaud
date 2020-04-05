@@ -1,16 +1,20 @@
 """
 Script to build standard KFS lists
-Created on: 11 Mar 2018
-Copyright: Albert J v Rensburg (NWU:21162395)
+Author: Albert J v Rensburg (NWU:21162395)
+Created: 23 MAY 2018
+Updated 5 APR 2020
 """
 
 # IMPORT PYTHON MODULES
 import sqlite3
 
 # IMPORT OWN MODULES
+from _my_modules import funcconf
 from _my_modules import funcfile
+from _my_modules import funcsms
+from _my_modules import funcsys
 
-""" INDEX **********************************************************************
+""" INDEX
 ENVIRONMENT
 OPEN THE DATABASES
 BEGIN OF SCRIPT
@@ -19,7 +23,7 @@ ACCOUNT MASTER LIST
 VENDOR MASTER LIST
 DOCUMENT MASTER LIST
 END OF SCRIPT
-*****************************************************************************"""
+"""
 
 
 def kfs_lists():
@@ -259,6 +263,10 @@ def kfs_lists():
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: Account list")
+    i = funcsys.tablerowcount(so_curs, sr_file)
+    if funcconf.l_mess_project:
+        funcsms.send_telegram("", "administrator", "<b> " + str(i) + "</b> " + " Accounts.")
+
 
     """ ****************************************************************************
     VENDOR MASTER LIST
@@ -643,6 +651,9 @@ def kfs_lists():
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    i = funcsys.tablerowcount(so_curs, sr_file)
+    if funcconf.l_mess_project:
+        funcsms.send_telegram("", "administrator", "<b> " + str(i) + "</b> " + " Vendors.")
 
     """ ****************************************************************************
     DOCUMENT MASTER LIST
@@ -688,3 +699,10 @@ def kfs_lists():
     funcfile.writelog("COMPLETED: B002_KFS_LISTS")
 
     return
+
+
+if __name__ == '__main__':
+    try:
+        kfs_lists()
+    except Exception as e:
+        funcsys.ErrMessage(e, funcconf.l_mess_project, "B002_kfs_lists", "B002_kfs_lists")
