@@ -13,11 +13,12 @@ VACUUM TEST FINDING TABLES
 
 THREAD TO RUN LARGE SCRIPT
 IMPORT PEOPLE (A001_oracle_to_sqlite(people))(MonTueWedThuFri)
-IMPORT VSS (A001_oracle_to_sqlite(vss))(MonTueWedThuFri)
 PEOPLE LISTS (B001_people_lists)(MonTueWedThuFri)
+IMPORT VSS (A001_oracle_to_sqlite(vss))(MonTueWedThuFri)
 
 THREAD TO RUN SMALL SCRIPT
 IMPORT KFS (A001_oracle_to_sqlite(kfs))(TueWedThuFriSat)
+KFS LISTS (B002_kfs_lists)(TueWedThuFriSat)
 
 THREAD TO RUN TEST SCRIPT
 UPDATE LOG (A002_log) "MonTueWedThuFriSatSun"
@@ -322,6 +323,7 @@ class RunSmall(Thread):
 
         # IMPORT SCRIPTS
         import A001_oracle_to_sqlite
+        import B002_kfs_lists
 
         # DECLARE VARIABLES
         l_clock: bool = False  # Display the local clock
@@ -364,23 +366,46 @@ class RunSmall(Thread):
 
                 # IMPORT KFS
                 s_project: str = "A001_oracle_to_sqlite(kfs)"
-                if funcdate.today_dayname() in "TueWedThuFriSat":
-                    try:
-                        A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - temp.csv", "KFS")
-                        if funcconf.l_mail_project:
-                            funcmail.Mail('std_success_gmail',
-                                          'NWUIACA:Success:' + s_project,
-                                          'NWUIACA: Success: ' + s_project)
-                    except Exception as err:
-                        # DISABLE KFS TESTS
-                        funcconf.l_run_kfs_test = False
-                        funcsys.ErrMessage(err, funcconf.l_mail_project,
-                                           "NWUIACA:Fail:" + s_project,
-                                           "NWUIACA: Fail: " + s_project)
-                else:
-                    print("ORACLE to SQLITE " + s_project + " do not run on Sundays and Mondays")
-                    funcsms.send_telegram("", "administrator", s_project + " do not run sun mon.")
-                    funcfile.writelog("%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SUNDAYS AND MONDAYS")
+                if funcconf.l_run_kfs_test:
+                    if funcdate.today_dayname() in "TueWedThuFriSat":
+                        try:
+                            A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - temp.csv", "KFS")
+                            if funcconf.l_mail_project:
+                                funcmail.Mail('std_success_gmail',
+                                              'NWUIACA:Success:' + s_project,
+                                              'NWUIACA: Success: ' + s_project)
+                        except Exception as err:
+                            # DISABLE KFS TESTS
+                            funcconf.l_run_kfs_test = False
+                            funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                               "NWUIACA:Fail:" + s_project,
+                                               "NWUIACA: Fail: " + s_project)
+                    else:
+                        print("ORACLE to SQLITE " + s_project + " do not run on Sundays and Mondays")
+                        funcsms.send_telegram("", "administrator", s_project + " do not run sun mon.")
+                        funcfile.writelog("%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SUNDAYS AND MONDAYS")
+
+                # KFS LISTS
+                s_project: str = "B002_kfs_lists"
+                if funcconf.l_run_kfs_test:
+                    if funcdate.today_dayname() in "TueWedThuFriSat":
+                        try:
+                            B002_kfs_lists.kfs_lists()
+                            if funcconf.l_mail_project:
+                                funcmail.Mail('std_success_gmail',
+                                              'NWUIACA:Success:' + s_project,
+                                              'NWUIACA: Success: ' + s_project)
+                        except Exception as err:
+                            # DISABLE PEOPLE TESTS
+                            funcconf.l_run_kfs = False
+                            # ERROR MESSAGE
+                            funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                               "NWUIACA:Fail:" + s_project,
+                                               "NWUIACA: Fail: " + s_project)
+                    else:
+                        print("ORACLE to SQLITE " + s_project + " do not run on Sundays Mondays")
+                        funcsms.send_telegram("", "administrator", s_project + " do not run sun mon.")
+                        funcfile.writelog("%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SUNDAYS MONDAYS")
 
                 # SET THE TEST SCHEDULE TWO MINUTES AFTER COMPLETING
                 funcconf.d_run_test = datetime.datetime.now() + datetime.timedelta(minutes=2)
