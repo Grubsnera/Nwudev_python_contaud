@@ -8,11 +8,14 @@ import csv
 import sqlite3
 
 # IMPORT OWN MODULES
+from _my_modules import funcconf
 from _my_modules import funccsv
-from _my_modules import funcfile
 from _my_modules import funcdate
+from _my_modules import funcfile
 from _my_modules import funcmail
 from _my_modules import funcpeople
+from _my_modules import funcsms
+from _my_modules import funcsys
 
 """ Index
 ENVIRONMENT
@@ -1482,7 +1485,10 @@ def people_lists():
                         "Build previous year assignments 2...")
 
     # Build PEOPLE CURRENT ******************************************************
-    funcpeople.people01(so_conn, "X002_PEOPLE_CURR", "X001_ASSIGNMENT_CURR", "CURR", "Build current people...", "Y")
+    i = funcpeople.people01(so_conn, "X002_PEOPLE_CURR", "X001_ASSIGNMENT_CURR", "CURR", "Build current people...", "Y")
+    # MESSAGE
+    if funcconf.l_mess_project:
+        funcsms.send_telegram("", "administrator", "<b> " + str(i) + "</b> " + " Active employees.")
     if l_export:
         # Data export
         sr_file = "X002_PEOPLE_CURR"
@@ -1943,3 +1949,10 @@ def people_lists():
     funcfile.writelog("COMPLETED: B001_PEOPLE_LISTS")
 
     return
+
+
+if __name__ == '__main__':
+    try:
+        people_lists()
+    except Exception as e:
+        funcsys.ErrMessage(e, funcconf.l_mess_project, "B001_people_lists", "B001_people_lists")
