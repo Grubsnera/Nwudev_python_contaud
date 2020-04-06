@@ -69,6 +69,7 @@ def people_lists():
     l_export: bool = True
     l_mail: bool = True
     l_vacuum: bool = False
+    i_count: int = 0
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -1487,10 +1488,7 @@ def people_lists():
                         "Build previous year assignments 2...")
 
     # Build PEOPLE CURRENT ******************************************************
-    i = funcpeople.people01(so_conn, "X002_PEOPLE_CURR", "X001_ASSIGNMENT_CURR", "CURR", "Build current people...", "Y")
-    # MESSAGE
-    if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "<b> " + str(i) + "</b> " + " Active employees.")
+    i_count = funcpeople.people01(so_conn, "X002_PEOPLE_CURR", "X001_ASSIGNMENT_CURR", "CURR", "Build current people...", "Y")
     if l_export:
         # Data export
         sr_file = "X002_PEOPLE_CURR"
@@ -1950,6 +1948,11 @@ def people_lists():
     # CLOSE THE LOG WRITER
     funcfile.writelog("----------------------------")
     funcfile.writelog("COMPLETED: B001_PEOPLE_LISTS")
+
+    # MESSAGE
+    if funcconf.l_mess_project:
+        # ACTIVE EMPLOYEES
+        funcsms.send_telegram("", "administrator", "<b>" + str(i_count) + "</b> Active employees.")
 
     return
 
