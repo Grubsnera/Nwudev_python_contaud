@@ -8,8 +8,11 @@ import sys
 import sqlite3
 
 # Import own modules
+from _my_modules import funcconf
 from _my_modules import funcfile
 from _my_modules import funcmysql
+from _my_modules import funcsms
+from _my_modules import funcsys
 
 """ INDEX **********************************************************************
 ENVIRONMENT
@@ -235,6 +238,7 @@ def mysql_lists(s_database):
     rs_conn.close()
     print("Inserted " + str(i_tota) + " mysql current people...")
     funcfile.writelog("%t POPULATE MYSQL: " + str(i_tota) + " PEOPLE CURRENT rows (ia_people)")
+    funcsms.send_telegram("", "administrator", "Inserted <b>" + str(i_tota) + "</b> mysql current people.")
 
     # Update MYSQL PEOPLE TO WEB FINDING mail trigger ******************************
     if s_database == "Web_ia_nwu":
@@ -483,6 +487,7 @@ def mysql_lists(s_database):
     ms_cnxn.commit()
     print("Inserted " + str(i_tota) + " rows...")
     funcfile.writelog("%t POPULATE MYSQL: " + str(i_tota) + " STUD DEBT MONTHLY BAL rows (ia_finding_5)")
+    funcsms.send_telegram("", "administrator", "Inserted <b>" + str(i_tota) + "</b> mysql student debtor monthly balances.")
 
     """*****************************************************************************
     EXPORT STUD DEBTOR COMPARISON CAMPUS MONTH SUMMARY
@@ -572,3 +577,10 @@ def mysql_lists(s_database):
     funcfile.writelog("COMPLETED: B005_MYSQL_LISTS")
 
     return
+
+
+if __name__ == '__main__':
+    try:
+        mysql_lists("Web_ia_nwu")
+    except Exception as e:
+        funcsys.ErrMessage(e, funcconf.l_mess_project, "B005_mysql_lists", "B005_mysql_lists")
