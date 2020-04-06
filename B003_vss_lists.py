@@ -9,9 +9,11 @@ import csv
 import sqlite3
 
 # IMPORT OWN MODULES
+from _my_modules import funcconf
 from _my_modules import funcdate
 from _my_modules import funcfile
-from _my_modules import funcstudent
+from _my_modules import funcsms
+from _my_modules import funcsys
 
 """ INDEX **********************************************************************
 ENVIRONMENT
@@ -20,7 +22,6 @@ BUILD QUALIFICATION MASTER LIST
 BUILD MODULES
 BUILD PROGRAMS
 BUILD BURSARIES
-BUILD STUDENTS
 STUDENT ACCOUNT TRANSACTIONS
 *****************************************************************************"""
 
@@ -1486,4 +1487,20 @@ def vss_lists():
     funcfile.writelog("-------------------------")
     funcfile.writelog("COMPLETED: B003_VSS_LISTS")
 
+    # MESSAGE
+    if funcconf.l_mess_project:
+        sr_file = "X000_Qualifications"
+        i = funcsys.tablerowcount(so_curs, sr_file)
+        funcsms.send_telegram("", "administrator", "<b>" + str(i) + "</b> Qualifications.")
+        sr_file = "X000_Modules"
+        i = funcsys.tablerowcount(so_curs, sr_file)
+        funcsms.send_telegram("", "administrator", "<b>" + str(i) + "</b> Modules.")
+
     return
+
+
+if __name__ == '__main__':
+    try:
+        vss_lists()
+    except Exception as e:
+        funcsys.ErrMessage(e, funcconf.l_mess_project, "B003_vss_lists", "B003_vss_lists")
