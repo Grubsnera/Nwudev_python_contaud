@@ -1941,18 +1941,21 @@ def people_lists():
     print("END OF SCRIPT")
     funcfile.writelog("END OF SCRIPT")
 
-    # CLOSE THE DATABASE CONNECTION
+    # COMMIT DATA
     so_conn.commit()
+
+    # MESSAGE
+    if funcconf.l_mess_project:
+        # ACTIVE EMPLOYEES
+        funcsms.send_telegram("", "administrator", "<b>" + str(i_count) + "</b> Active employees.")
+
+    # CLOSE THE DATABASE CONNECTION
     so_conn.close()
 
     # CLOSE THE LOG WRITER
     funcfile.writelog("----------------------------")
     funcfile.writelog("COMPLETED: B001_PEOPLE_LISTS")
 
-    # MESSAGE
-    if funcconf.l_mess_project:
-        # ACTIVE EMPLOYEES
-        funcsms.send_telegram("", "administrator", "<b>" + str(i_count) + "</b> Active employees.")
 
     return
 

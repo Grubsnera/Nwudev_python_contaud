@@ -678,18 +678,8 @@ def kfs_lists():
     print("END OF SCRIPT")
     funcfile.writelog("END OF SCRIPT")
 
-    # CLOSE THE DATABASE CONNECTION
-    if l_vacuum:
-        print("Vacuum the database...")
-        so_conn.commit()
-        so_conn.execute('VACUUM')
-        funcfile.writelog("%t VACUUM DATABASE: " + so_file)
+    # COMMIT DATA
     so_conn.commit()
-    so_conn.close()
-
-    # Close the log writer *********************************************************
-    funcfile.writelog("-------------------------")
-    funcfile.writelog("COMPLETED: B002_KFS_LISTS")
 
     # MESSAGE
     if funcconf.l_mess_project:
@@ -700,6 +690,12 @@ def kfs_lists():
         i = funcsys.tablerowcount(so_curs, sr_file)
         funcsms.send_telegram("", "administrator", "<b> " + str(i) + "</b> " + " Vendors.")
 
+    # CLOSE THE DATABASE CONNECTION
+    so_conn.close()
+
+    # Close the log writer *********************************************************
+    funcfile.writelog("-------------------------")
+    funcfile.writelog("COMPLETED: B002_KFS_LISTS")
 
     return
 
