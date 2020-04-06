@@ -14,13 +14,13 @@ Author: Albert J van Rensburg (NWU21162395)
 """ INDEX *********************************************************************
 ENVIRONMENT
 
-ORACLE TO SQLITE (A001_oracle_to_sqlite) "TueWedThuFriSat"
-LOGS (A002_log) "MonTueWedThuFriSatSun" 
+* ORACLE TO SQLITE (A001_oracle_to_sqlite) "TueWedThuFriSat"
+* LOGS (A002_log) "MonTueWedThuFriSatSun" 
 
-PEOPLE LISTS (import B001_people_lists) "TueWedThuFriSat"
-KFS LISTS (import B002_kfs_lists) "TueWedThuFriSat"
+* PEOPLE LISTS (import B001_people_lists) "TueWedThuFriSat"
+* KFS LISTS (import B002_kfs_lists) "TueWedThuFriSat"
 KFS GL AND PAYMENT LISTS (B006_kfs_period_list) "TueWedThuFriSat"
-VSS LISTS (B003_vss_lists) "TueWedThuFriSat"
+* VSS LISTS (B003_vss_lists) "TueWedThuFriSat"
 VSS PERIOD LISTS (B007_vss_period_list) "TueWedThuFriSat"
 
 PEOPLE LIST MASTERFILE (C003_people_list_masterfile) "MonTueWedThuFri"
