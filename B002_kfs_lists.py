@@ -672,15 +672,6 @@ def kfs_lists():
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-    """ ****************************************************************************
-    END OF SCRIPT
-    *****************************************************************************"""
-    print("END OF SCRIPT")
-    funcfile.writelog("END OF SCRIPT")
-
-    # COMMIT DATA
-    so_conn.commit()
-
     # MESSAGE
     if funcconf.l_mess_project:
         sr_file = "X000_Account"
@@ -689,6 +680,15 @@ def kfs_lists():
         sr_file = "X000_Vendor"
         i = funcsys.tablerowcount(so_curs, sr_file)
         funcsms.send_telegram("", "administrator", "<b> " + str(i) + "</b> " + " Vendors.")
+
+    """ ****************************************************************************
+    END OF SCRIPT
+    *****************************************************************************"""
+    print("END OF SCRIPT")
+    funcfile.writelog("END OF SCRIPT")
+
+    # COMMIT DATA
+    so_conn.commit()
 
     # CLOSE THE DATABASE CONNECTION
     so_conn.close()

@@ -1935,6 +1935,11 @@ def people_lists():
 
     funcfile.writelog("%t BUILD TABLE:  X102_PER_ABSENCE_ATTENDANCE_TYPES")
 
+    # MESSAGE
+    if funcconf.l_mess_project:
+        # ACTIVE EMPLOYEES
+        funcsms.send_telegram("", "administrator", "<b>" + str(i_count) + "</b> Active employees.")
+
     """ ****************************************************************************
     End OF SCRIPT
     *****************************************************************************"""
@@ -1944,18 +1949,12 @@ def people_lists():
     # COMMIT DATA
     so_conn.commit()
 
-    # MESSAGE
-    if funcconf.l_mess_project:
-        # ACTIVE EMPLOYEES
-        funcsms.send_telegram("", "administrator", "<b>" + str(i_count) + "</b> Active employees.")
-
     # CLOSE THE DATABASE CONNECTION
     so_conn.close()
 
     # CLOSE THE LOG WRITER
     funcfile.writelog("----------------------------")
     funcfile.writelog("COMPLETED: B001_PEOPLE_LISTS")
-
 
     return
 

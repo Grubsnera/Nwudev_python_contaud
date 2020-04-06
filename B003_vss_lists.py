@@ -1480,15 +1480,6 @@ def vss_lists():
     so_conn.commit()
     funcfile.writelog("%t BUILD VIEW: X000_Transmaster")
 
-    """ ****************************************************************************
-    END OF SCRIPT
-    *****************************************************************************"""
-    print("END OF SCRIPT")
-    funcfile.writelog("END OF SCRIPT")
-
-    # COMMIT DATA
-    so_conn.commit()
-
     # MESSAGE
     if funcconf.l_mess_project:
         sr_file = "X000_Qualifications"
@@ -1497,6 +1488,15 @@ def vss_lists():
         sr_file = "X000_Modules"
         i = funcsys.tablerowcount(so_curs, sr_file)
         funcsms.send_telegram("", "administrator", "<b>" + str(i) + "</b> Modules.")
+
+    """ ****************************************************************************
+    END OF SCRIPT
+    *****************************************************************************"""
+    print("END OF SCRIPT")
+    funcfile.writelog("END OF SCRIPT")
+
+    # COMMIT DATA
+    so_conn.commit()
 
     # CLOSE THE DATABASE CONNECTION
     so_conn.close()
