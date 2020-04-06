@@ -7,6 +7,10 @@ Create: 24 Jan 2018
 # IMPORT SYSTEM OBJECTS
 import datetime
 
+# IMPORT OWN MODULES
+from _my_modules import funcconf
+from _my_modules import funcsys
+
 
 def writelog(s_entry="\n", s_path="S:/Logs/",
              s_file="Python_log_" + datetime.datetime.now().strftime("%Y%m%d") + ".txt"):
@@ -18,7 +22,12 @@ def writelog(s_entry="\n", s_path="S:/Logs/",
     :return: Nothing
     """
 
+    # DECLARE VARIABLES
+    l_Success: bool = False
+    s_project: str = "FUNCFILE:" + s_file
+
     try:
+
         with open(s_path + s_file, 'a') as fl:
             # file opened for writing. write to it here
             # Write the log
@@ -33,7 +42,13 @@ def writelog(s_entry="\n", s_path="S:/Logs/",
             fl.write(s_entry)
             fl.close()
             pass
-    except IOError as x:
-        print('error ', x.errno, ',', x.strerror)
+            l_Success = True
 
-    return
+    except Exception as err:
+
+        l_Success = False
+        funcsys.ErrMessage(err, funcconf.l_mail_project,
+                           "NWUIACA:Fail:" + s_project,
+                           "NWUIACA: Fail: " + s_project)
+
+    return l_Success
