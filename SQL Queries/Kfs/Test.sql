@@ -1,22 +1,7 @@
 ﻿Select
-    PAYM.EDOC,
-    PAYM.VENDOR_ID,
-    PAYM.INIT_EMP_NO,
-    PAYM.PMT_DT,
-    PAYM.NET_PMT_AMT,
-    PAYM.FIN_OBJ_CD_NM,
-    PAYM.VENDOR_TYPE
+    X001aa_Report_payments.DOC_LABEL,
+    Count(X001aa_Report_payments.EDOC) As Count_EDOC
 From
-    X001ad_Report_payments_accroute PAYM
-Where
-    PAYM.VENDOR_ID != '' And
-    PAYM.NET_PMT_AMT <= 5000 And
-    PAYM.FIN_OBJ_CD_NM != '' And
-    PAYM.VENDOR_TYPE = 'V'
+    X001aa_Report_payments
 Group By
-    PAYM.EDOC,
-    PAYM.VENDOR_ID,
-    PAYM.INIT_EMP_NO,
-    PAYM.PMT_DT,
-    PAYM.FIN_OBJ_CD_NM,
-    PAYM.VENDOR_TYPE
+    X001aa_Report_payments.DOC_LABEL
