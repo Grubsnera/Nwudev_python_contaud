@@ -4,27 +4,12 @@
 # SYSTEM MODULES
 
 # IMPORT OWN MODULES
+import datetime
 
-# GET PREVIOUS FINDINGS
-if i_find > 0:
-    i = functest.get_previous_finding(so_curs, ed_path, "?.txt", "?", "ITTTT")
-    print(i)
-    so_conn.commit()
+from _my_modules import funcfile
 
-# SET PREVIOUS FINDINGS
-if i_find > 0:
-    i = functest.set_previous_finding(so_curs)
-    print(i)
-    so_conn.commit()
-
-# IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
-if i_find > 0 and i_coun > 0:
-    i = functest.get_officer(so_curs, "HR", "?")
-    print(i)
-    so_conn.commit()
-
-# IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
-if i_find > 0 and i_coun > 0:
-    i = functest.get_supervisor(so_curs, "HR", "?")
-    print(i)
-    so_conn.commit()
+# LOGGING
+funcfile.writelog("Now")
+funcfile.writelog("SCRIPT: OPEN PROJECT NWU INTERNAL AUDIT CONTINUOUS AUDIT")
+funcfile.writelog("--------------------------------------------------------")
+funcfile.writelog("%t THREAD: SMALL TRHREAD STARTED")
