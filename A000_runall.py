@@ -35,8 +35,8 @@ VSS STUDENT MASTER FILE TESTS (C300_test_student_general)
 VSS STUDENT FEE TESTS AND REPORTS (C302_test_student_fee) "MonTueWedThuFri"
 VSS STUDENT DEFERMENT MASTERFILE (C301_report_student_deferment) "MonTueWedThuFri"
 
-MYSQL LISTS WEB SERVER (B005_mysql_lists) "TueWedThuFriSat"
-MYSQL LISTS ACL SERVER (B005_mysql_lists) "TueWedThuFriSat"
+* MYSQL LISTS WEB SERVER (B005_mysql_lists) "TueWedThuFriSat"
+* MYSQL LISTS ACL SERVER (B005_mysql_lists) "TueWedThuFriSat"
 ****************************************************************************"""
 
 """****************************************************************************
