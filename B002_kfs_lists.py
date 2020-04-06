@@ -263,10 +263,6 @@ def kfs_lists():
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: Account list")
-    i = funcsys.tablerowcount(so_curs, sr_file)
-    if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "<b> " + str(i) + "</b> " + " Accounts.")
-
 
     """ ****************************************************************************
     VENDOR MASTER LIST
@@ -651,9 +647,6 @@ def kfs_lists():
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
-    i = funcsys.tablerowcount(so_curs, sr_file)
-    if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "<b> " + str(i) + "</b> " + " Vendors.")
 
     """ ****************************************************************************
     DOCUMENT MASTER LIST
@@ -697,6 +690,16 @@ def kfs_lists():
     # Close the log writer *********************************************************
     funcfile.writelog("-------------------------")
     funcfile.writelog("COMPLETED: B002_KFS_LISTS")
+
+    # MESSAGE
+    if funcconf.l_mess_project:
+        sr_file = "X000_Account"
+        i = funcsys.tablerowcount(so_curs, sr_file)
+        funcsms.send_telegram("", "administrator", "<b> " + str(i) + "</b> " + " Accounts.")
+        sr_file = "X000_Vendor"
+        i = funcsys.tablerowcount(so_curs, sr_file)
+        funcsms.send_telegram("", "administrator", "<b> " + str(i) + "</b> " + " Vendors.")
+
 
     return
 
