@@ -29,18 +29,19 @@ funcconf.l_tel_use_nwu = True
 START BOT AND CREATE UPDATER (main)
 
 THREAD TO RUN VACUUM SCRIPT (runvacuum)
-VACUUM TEST FINDING TABLES
+VACUUM TEST FINDING TABLES (A003_table_vacuum)(24/7)
 
-THREAD TO RUN LARGE SCRIPT
+THREAD TO RUN LARGE SCRIPT (runlarge)
 IMPORT PEOPLE (A001_oracle_to_sqlite(people))(MonTueWedThuFri)
 PEOPLE LISTS (B001_people_lists)(MonTueWedThuFri)
 IMPORT VSS (A001_oracle_to_sqlite(vss))(MonTueWedThuFri)
+VSS LISTS (B003_vss_lists)(MonTueWedThuFri)
 
-THREAD TO RUN SMALL SCRIPT
+THREAD TO RUN SMALL SCRIPT (runsmall)
 IMPORT KFS (A001_oracle_to_sqlite(kfs))(TueWedThuFriSat)
 KFS LISTS (B002_kfs_lists)(TueWedThuFriSat)
 
-THREAD TO RUN TEST SCRIPT
+THREAD TO RUN TEST SCRIPT (runtest)
 UPDATE LOG (A002_log) "MonTueWedThuFriSatSun"
 
 """
@@ -206,6 +207,7 @@ class RunLarge(Thread):
         # IMPORT SCRIPTS
         import A001_oracle_to_sqlite
         import B001_people_lists
+        import B003_vss_lists
 
         # DECLARE VARIABLES
         l_clock: bool = False  # Display the local clock
@@ -298,6 +300,29 @@ class RunLarge(Thread):
                         if funcdate.today_dayname() in "MonTueWedThuFri":
                             try:
                                 A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - vss.csv", "VSS")
+                                if funcconf.l_mail_project:
+                                    funcmail.Mail('std_success_gmail',
+                                                  'NWUIACA:Success:' + s_project,
+                                                  'NWUIACA: Success: ' + s_project)
+                            except Exception as err:
+                                # DISABLE VSS TESTS
+                                funcconf.l_run_vss_test = False
+                                # ERROR MESSAGE
+                                funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                                   "NWUIACA:Fail:" + s_project,
+                                                   "NWUIACA: Fail: " + s_project)
+                        else:
+                            print("ORACLE to SQLITE " + s_project + " do not run on Saturdays and Sundays")
+                            funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
+                            funcfile.writelog(
+                                "%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
+
+                    # VSS LISTS
+                    s_project: str = "B003_vss_lists"
+                    if funcconf.l_run_vss_test:
+                        if funcdate.today_dayname() in "MonTueWedThuFri":
+                            try:
+                                B003_vss_lists.vss_lists()
                                 if funcconf.l_mail_project:
                                     funcmail.Mail('std_success_gmail',
                                                   'NWUIACA:Success:' + s_project,
