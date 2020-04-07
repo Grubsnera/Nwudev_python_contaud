@@ -8,8 +8,11 @@ Copyright: Albert J v Rensburg (NWU:21162395)
 import sqlite3
 
 # IMPORT OWN MODULES
+from _my_modules import funcconf
 from _my_modules import funcdate
 from _my_modules import funcfile
+from _my_modules import funcsms
+from _my_modules import funcsys
 
 """ IMPORTANT NOTE *************************************************************
 1. This script rely on data from the previous year payments. This script for the
@@ -66,6 +69,9 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
     else:
         so_file = "Kfs_" + s_year + ".sqlite"  # Source database
     l_vacuum = False  # Vacuum database
+
+    # MESSAGE
+    funcsms.send_telegram("", "administrator", "Building <b>kfs " + s_year + "</b> transactions.")
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -147,6 +153,10 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: GL Transaction list")
 
+    # MESSAGE
+    i = funcsys.tablerowcount(so_curs, sr_file)
+    funcsms.send_telegram("", "administrator", "<b>" + str(i) + " " + s_year + "</b> General ledger transactions.")
+
     """ ****************************************************************************
     PAYMENT SUMMARY LIST
     *****************************************************************************"""
@@ -183,6 +193,10 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # MESSAGE
+    i = funcsys.tablerowcount(so_curs, sr_file)
+    funcsms.send_telegram("", "administrator", "<b>" + str(i) + " " + s_year + "</b> Payment transactions.")
 
     """ ****************************************************************************
     PAYMENT INITIATE LIST
@@ -852,3 +866,10 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
     funcfile.writelog("COMPLETED: B006_KFS_PERIOD_LIST")
 
     return
+
+
+if __name__ == '__main__':
+    try:
+        kfs_period_list()
+    except Exception as e:
+        funcsys.ErrMessage(e, funcconf.l_mess_project, "B006_kfs_period_list", "B006_kfs_period_list")
