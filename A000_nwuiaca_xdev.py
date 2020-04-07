@@ -24,6 +24,7 @@ from _my_modules import funcsys
 
 # SET TO TRUE FOR ACTIVE NWU USE OR COMMENT OUT
 funcconf.l_tel_use_nwu = False
+s_path = "S:/Logs/"
 
 """ INDEX
 START BOT AND CREATE UPDATER (main)
@@ -36,10 +37,13 @@ IMPORT PEOPLE (A001_oracle_to_sqlite(people))(MonTueWedThuFri)
 PEOPLE LISTS (B001_people_lists)(MonTueWedThuFri)
 IMPORT VSS (A001_oracle_to_sqlite(vss))(MonTueWedThuFri)
 VSS LISTS (B003_vss_lists)(MonTueWedThuFri)
+VSS PERIOD LIST (B007_vss_period_list)(MonTueWedThuFri)
 
 THREAD TO RUN SMALL SCRIPT (runsmall)
 IMPORT KFS (A001_oracle_to_sqlite(kfs))(TueWedThuFriSat)
 KFS LISTS (B002_kfs_lists)(TueWedThuFriSat)
+KFS PERIOD LISTS CURR (B006_kfs_period_list)(TueWedThuFriSat)
+KFS PERIOD LISTS PREV (B006_kfs_period_list)(TueWedThuFriSat)
 MYSQL UPDATE WEB IA NWU (B005_mysql_lists)(TueWedThuFriSat)
 MYSQL UPDATE IA SERVER (B005_mysql_lists)(TueWedThuFriSat)
 
@@ -187,13 +191,12 @@ class RunVacuum(Thread):
                                            "NWUIACA:Fail:A003_table_vacuum",
                                            "NWUIACA: Fail: A003_table_vacuum")
 
-            # SLEEPER
-            time.sleep(i_sleep)
-
             # STOP PROJECT
             if funcconf.l_stop_project:
                 break
 
+            # SLEEPER
+            time.sleep(i_sleep)
 
 class RunLarge(Thread):
 
@@ -207,6 +210,7 @@ class RunLarge(Thread):
         import A001_oracle_to_sqlite
         import B001_people_lists
         import B003_vss_lists
+        import B007_vss_period_list
 
         # DECLARE VARIABLES
         l_clock: bool = False  # Display the local clock
@@ -220,17 +224,17 @@ class RunLarge(Thread):
         while True:
 
             if funcconf.l_run_system:
-    
+
                 # DISPLAY THE LOCAL TIME
                 if l_clock:
                     print("LARGE thread" + time.strftime("%T", time.localtime()))
-        
+
                 # RUN THE LARGE SCRIPT ON SCHEDULE
                 if datetime.datetime.now() >= funcconf.d_run_large:
-        
+
                     # LOG
                     funcfile.writelog("%t THREAD: LARGE TRHREAD STARTED")
-        
+
                     # SET DATE AND TIME FOR NEXT RUN
                     if time.strftime("%R", time.localtime()) <= "17:55":
                         funcconf.d_run_large = datetime.datetime.strptime(funcdate.today() +
@@ -241,12 +245,12 @@ class RunLarge(Thread):
                                                                           " 18:00:00",
                                                                           "%Y-%m-%d %H:%M:%S") \
                                                + datetime.timedelta(days=1)
-        
+
                     # MESSAGES
                     if funcconf.l_mess_project:
                         funcsms.send_telegram('', 'administrator',
                                               '<b>Large</b> schedule started.')
-        
+
                     # IMPORT PEOPLE
                     s_project: str = "A001_oracle_to_sqlite(people)"
                     if funcconf.l_run_people_test:
@@ -266,9 +270,10 @@ class RunLarge(Thread):
                                                    "NWUIACA: Fail: " + s_project)
                         else:
                             print("ORACLE to SQLITE " + s_project + " do not run on Saturdays and Sundays")
-                            funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
+                            if funcconf.l_mess_project:
+                                funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
                             funcfile.writelog("%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
-        
+
                     # PEOPLE LISTS
                     s_project: str = "B001_people_lists"
                     if funcconf.l_run_people_test:
@@ -288,9 +293,10 @@ class RunLarge(Thread):
                                                    "NWUIACA: Fail: " + s_project)
                         else:
                             print("ORACLE to SQLITE " + s_project + " do not run on Saturdays and Sundays")
-                            funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
+                            if funcconf.l_mess_project:
+                                funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
                             funcfile.writelog("%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
-        
+
                     # IMPORT VSS
                     s_project: str = "A001_oracle_to_sqlite(vss)"
                     if funcconf.l_run_vss_test:
@@ -310,7 +316,8 @@ class RunLarge(Thread):
                                                    "NWUIACA: Fail: " + s_project)
                         else:
                             print("ORACLE to SQLITE " + s_project + " do not run on Saturdays and Sundays")
-                            funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
+                            if funcconf.l_mess_project:
+                                funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
                             funcfile.writelog("%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
 
                     # VSS LISTS
@@ -332,7 +339,31 @@ class RunLarge(Thread):
                                                    "NWUIACA: Fail: " + s_project)
                         else:
                             print("ORACLE to SQLITE " + s_project + " do not run on Saturdays and Sundays")
-                            funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
+                            if funcconf.l_mess_project:
+                                funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
+                            funcfile.writelog("%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
+
+                    # VSS PERIOD LIST CURR
+                    s_project: str = "B007_vss_periof_list(curr)"
+                    if funcconf.l_run_vss_test:
+                        if funcdate.today_dayname() in "MonTueWedThuFri":
+                            try:
+                                B007_vss_period_list.vss_period_list("curr")
+                                if funcconf.l_mail_project:
+                                    funcmail.Mail('std_success_gmail',
+                                                  'NWUIACA:Success:' + s_project,
+                                                  'NWUIACA: Success: ' + s_project)
+                            except Exception as err:
+                                # DISABLE VSS TESTS
+                                funcconf.l_run_vss_test = False
+                                # ERROR MESSAGE
+                                funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                                   "NWUIACA:Fail:" + s_project,
+                                                   "NWUIACA: Fail: " + s_project)
+                        else:
+                            print("ORACLE to SQLITE " + s_project + " do not run on Saturdays and Sundays")
+                            if funcconf.l_mess_project:
+                                funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
                             funcfile.writelog("%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
 
                     # SEND MAIL TO INDICATE THE SUCCESSFUL COMPLETION OF LARGE SCHEDULE
@@ -340,17 +371,17 @@ class RunLarge(Thread):
                         funcmail.Mail('std_success_gmail', 'Python:Success:Finished:LargeSchedule',
                                       'NWUIAPython: Success: Finished : Large schedule')
                         funcmail.Mail("python_log")
-        
+
                     if funcconf.l_mess_project:
                         funcsms.send_telegram('', 'administrator',
                                               '<b>Large</b> schedule finished.')
-    
-            # SLEEPER
-            time.sleep(i_sleep)
 
             # STOP PROJECT
             if funcconf.l_stop_project:
                 break
+
+            # SLEEPER
+            time.sleep(i_sleep)
 
 class RunSmall(Thread):
 
@@ -364,6 +395,7 @@ class RunSmall(Thread):
         import A001_oracle_to_sqlite
         import B002_kfs_lists
         import B005_mysql_lists
+        import B006_kfs_period_list
 
         # DECLARE VARIABLES
         l_clock: bool = False  # Display the local clock
@@ -375,22 +407,25 @@ class RunSmall(Thread):
 
         # DO UNTIL GLOBAL l_run_system IS FALSE
         while True:
-        
+
             if funcconf.l_run_system:
-    
+
                 # DISPLAY THE LOCAL TIME
                 if l_clock:
                     print("SMALL thread" + time.strftime("%T", time.localtime()))
-    
+
                 # RUN THE SMALL SCHEDULE
                 if datetime.datetime.now() >= funcconf.d_run_small:
-    
+
                     # LOGGING
-                    funcfile.writelog("Now")
+
+                    s_file = "Python_log_" + datetime.datetime.now().strftime("%Y%m%d") + ".txt"
+
+                    funcfile.writelog("Now", s_path, s_file )
                     funcfile.writelog("SCRIPT: OPEN PROJECT NWU INTERNAL AUDIT CONTINUOUS AUDIT")
                     funcfile.writelog("--------------------------------------------------------")
                     funcfile.writelog("%t THREAD: SMALL TRHREAD STARTED")
-    
+
                     # SET DATE AND TIME FOR NEXT RUN
                     if time.strftime("%R", time.localtime()) <= "23:59":
                         funcconf.d_run_small = datetime.datetime.strptime(funcdate.today() + " 23:00:00",
@@ -400,18 +435,18 @@ class RunSmall(Thread):
                         funcconf.d_run_small = datetime.datetime.strptime(funcdate.today() + " 23:00:00",
                                                                           "%Y-%m-%d %H:%M:%S") + \
                                                datetime.timedelta(days=1, hours=3)
-    
+
                     # MESSAGES
                     if funcconf.l_mess_project:
                         funcsms.send_telegram('', 'administrator',
                                               '<b>Small</b> schedule started.')
-    
+
                     # IMPORT KFS
                     s_project: str = "A001_oracle_to_sqlite(kfs)"
                     if funcconf.l_run_kfs_test:
                         if funcdate.today_dayname() in "TueWedThuFriSat":
                             try:
-                                A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - temp.csv", "KFS")
+                                A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - kfs.csv", "KFS")
                                 if funcconf.l_mail_project:
                                     funcmail.Mail('std_success_gmail',
                                                   'NWUIACA:Success:' + s_project,
@@ -424,9 +459,10 @@ class RunSmall(Thread):
                                                    "NWUIACA: Fail: " + s_project)
                         else:
                             print("ORACLE to SQLITE " + s_project + " do not run on Sundays and Mondays")
-                            funcsms.send_telegram("", "administrator", s_project + " do not run sun mon.")
+                            if funcconf.l_mess_project:
+                                funcsms.send_telegram("", "administrator", s_project + " do not run sun mon.")
                             funcfile.writelog("%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SUNDAYS AND MONDAYS")
-    
+
                     # KFS LISTS
                     s_project: str = "B002_kfs_lists"
                     if funcconf.l_run_kfs_test:
@@ -446,7 +482,54 @@ class RunSmall(Thread):
                                                    "NWUIACA: Fail: " + s_project)
                         else:
                             print("ORACLE to SQLITE " + s_project + " do not run on Sundays Mondays")
-                            funcsms.send_telegram("", "administrator", s_project + " do not run sun mon.")
+                            if funcconf.l_mess_project:
+                                funcsms.send_telegram("", "administrator", s_project + " do not run sun mon.")
+                            funcfile.writelog("%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SUNDAYS MONDAYS")
+
+                    # KFS PERIOD LISTS CURR
+                    s_project: str = "B006_kfs_period_list(curr)"
+                    if funcconf.l_run_kfs_test:
+                        if funcdate.today_dayname() in "TueWedThuFriSat":
+                            try:
+                                B006_kfs_period_list.kfs_period_list("curr")
+                                if funcconf.l_mail_project:
+                                    funcmail.Mail('std_success_gmail',
+                                                  'NWUIACA:Success:' + s_project,
+                                                  'NWUIACA: Success: ' + s_project)
+                            except Exception as err:
+                                # DISABLE PEOPLE TESTS
+                                funcconf.l_run_kfs = False
+                                # ERROR MESSAGE
+                                funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                                   "NWUIACA:Fail:" + s_project,
+                                                   "NWUIACA: Fail: " + s_project)
+                        else:
+                            print("ORACLE to SQLITE " + s_project + " do not run on Sundays Mondays")
+                            if funcconf.l_mess_project:
+                                funcsms.send_telegram("", "administrator", s_project + " do not run sun mon.")
+                            funcfile.writelog("%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SUNDAYS MONDAYS")
+
+                    # KFS PERIOD LISTS PREV
+                    s_project: str = "B006_kfs_period_list(prev)"
+                    if funcconf.l_run_kfs_test:
+                        if funcdate.today_dayname() in "TueWedThuFriSat":
+                            try:
+                                B006_kfs_period_list.kfs_period_list("prev")
+                                if funcconf.l_mail_project:
+                                    funcmail.Mail('std_success_gmail',
+                                                  'NWUIACA:Success:' + s_project,
+                                                  'NWUIACA: Success: ' + s_project)
+                            except Exception as err:
+                                # DISABLE PEOPLE TESTS
+                                funcconf.l_run_kfs = False
+                                # ERROR MESSAGE
+                                funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                                   "NWUIACA:Fail:" + s_project,
+                                                   "NWUIACA: Fail: " + s_project)
+                        else:
+                            print("ORACLE to SQLITE " + s_project + " do not run on Sundays Mondays")
+                            if funcconf.l_mess_project:
+                                funcsms.send_telegram("", "administrator", s_project + " do not run sun mon.")
                             funcfile.writelog("%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SUNDAYS MONDAYS")
 
                     # MYSQL UPDATE WEB IA NWU
@@ -466,7 +549,8 @@ class RunSmall(Thread):
                                                    "NWUIACA: Fail: " + s_project)
                         else:
                             print("ORACLE to SQLITE " + s_project + " do not run on Sundays Mondays")
-                            funcsms.send_telegram("", "administrator", s_project + " do not run sun mon.")
+                            if funcconf.l_mess_project:
+                                funcsms.send_telegram("", "administrator", s_project + " do not run sun mon.")
                             funcfile.writelog("%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SUNDAYS MONDAYS")
 
                     # MYSQL UPDATE IA SERVER
@@ -486,28 +570,28 @@ class RunSmall(Thread):
                                                    "NWUIACA: Fail: " + s_project)
                         else:
                             print("ORACLE to SQLITE " + s_project + " do not run on Sundays Mondays")
-                            funcsms.send_telegram("", "administrator", s_project + " do not run sun mon.")
+                            if funcconf.l_mess_project:
+                                funcsms.send_telegram("", "administrator", s_project + " do not run sun mon.")
                             funcfile.writelog("%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SUNDAYS MONDAYS")
 
                     # SET THE TEST SCHEDULE TWO MINUTES AFTER COMPLETING
                     funcconf.d_run_test = datetime.datetime.now() + datetime.timedelta(minutes=2)
-    
+
                     # SEND MAIL TO INDICATE THE SUCCESSFUL COMPLETION OF SMALL SCHEDULE
                     if funcconf.l_mail_project:
                         funcmail.Mail('std_success_gmail', 'Python:Success:Finished:SmallSchedule',
                                       'NWUIAPython: Success: Finished : Small schedule')
-    
+
                     if funcconf.l_mess_project:
                         funcsms.send_telegram('', 'administrator',
                                               '<b>Small</b> schedule finished.')
-
-            # SLEEPER
-            time.sleep(i_sleep)
 
             # STOP PROJECT
             if funcconf.l_stop_project:
                 break
 
+            # SLEEPER
+            time.sleep(i_sleep)
 
 class RunTest(Thread):
 
@@ -532,17 +616,17 @@ class RunTest(Thread):
         while True:
 
             if funcconf.l_run_system:
-    
+
                 # DISPLAY THE LOCAL TIME
                 if l_clock:
                     print("TEST thread" + time.strftime("%T", time.localtime()))
-    
+
                 # RUN THE TEST SCHEDULE
                 if datetime.datetime.now() >= funcconf.d_run_test:
-    
+
                     # LOG
                     funcfile.writelog("%t THREAD: TEST TRHREAD STARTED")
-    
+
                     # SET DATE AND TIME FOR NEXT RUN
                     if time.strftime("%R", time.localtime()) <= "23:59":
                         funcconf.d_run_test = datetime.datetime.strptime(funcdate.today() + " 23:00:00",
@@ -552,12 +636,12 @@ class RunTest(Thread):
                         funcconf.d_run_test = datetime.datetime.strptime(funcdate.today() + " 23:00:00",
                                                                          "%Y-%m-%d %H:%M:%S") + \
                                               datetime.timedelta(days=1, hours=5)
-    
+
                     # MESSAGES
                     if funcconf.l_mess_project:
                         funcsms.send_telegram('', 'administrator',
                                               '<b>Test</b> schedule started.')
-    
+
                     # UPDATE LOG
                     s_project: str = "A002_log"
                     if funcdate.today_dayname() in "MonTueWedThuFriSatSun":
@@ -573,26 +657,26 @@ class RunTest(Thread):
                                                "NWUIACA: Fail: " + s_project)
                     else:
                         print("ORACLE to SQLITE " + s_project + " do not run on Sundays and Mondays")
-                        funcsms.send_telegram("", "administrator", s_project + " do not run sun mon.")
+                        if funcconf.l_mess_project:
+                            funcsms.send_telegram("", "administrator", s_project + " do not run sun mon.")
                         funcfile.writelog("%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SUNDAYS AND MONDAYS")
-    
+
                     # SEND MAIL TO INDICATE THE SUCCESSFUL COMPLETION OF TEST SCHEDULE
                     if funcconf.l_mail_project:
                         funcmail.Mail('std_success_gmail', 'Python:Success:Finished:TestSchedule',
                                       'NWUIAPython: Success: Finished : Test schedule')
                         funcmail.Mail("python_log")
-    
+
                     if funcconf.l_mess_project:
                         funcsms.send_telegram('', 'administrator',
                                               '<b>Test</b> schedule finished.')
-
-            # SLEEPER
-            time.sleep(i_sleep)
 
             # STOP PROJECT
             if funcconf.l_stop_project:
                 break
 
+            # SLEEPER
+            time.sleep(i_sleep)
 
 if __name__ == '__main__':
     try:
