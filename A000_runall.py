@@ -19,9 +19,9 @@ ENVIRONMENT
 
 * PEOPLE LISTS (import B001_people_lists) "TueWedThuFriSat"
 * KFS LISTS (import B002_kfs_lists) "TueWedThuFriSat"
-KFS GL AND PAYMENT LISTS (B006_kfs_period_list) "TueWedThuFriSat"
+* KFS GL AND PAYMENT LISTS (B006_kfs_period_list) "TueWedThuFriSat"
 * VSS LISTS (B003_vss_lists) "TueWedThuFriSat"
-VSS PERIOD LISTS (B007_vss_period_list) "TueWedThuFriSat"
+* VSS PERIOD LISTS (B007_vss_period_list) "TueWedThuFriSat"
 
 PEOPLE LIST MASTERFILE (C003_people_list_masterfile) "MonTueWedThuFri"
 PEOPLE MASTER FILE TESTS (C001_people_test_masterfile) "MonTueWedThuFri"
