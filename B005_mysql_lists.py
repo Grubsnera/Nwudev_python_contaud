@@ -39,14 +39,6 @@ def mysql_lists(s_database):
     ENVIRONMENT
     *****************************************************************************"""
 
-    # Script log file
-    funcfile.writelog("Now")
-    funcfile.writelog("SCRIPT: B005_MYSQL_LISTS")
-    funcfile.writelog("-------------------------")
-    print("-----------------")    
-    print("B005_MYSQL_LISTS")
-    print("-----------------")
-
     # Declare variables
     s_schema: str = ""
     if s_database == "Web_ia_nwu":
@@ -58,6 +50,17 @@ def mysql_lists(s_database):
     l_export = True
     l_mail = True
     l_vacuum = False
+
+    # Script log file
+    funcfile.writelog("Now")
+    funcfile.writelog("SCRIPT: B005_MYSQL_LISTS")
+    funcfile.writelog("-------------------------")
+    print("-----------------")
+    print("B005_MYSQL_LISTS")
+    print("-----------------")
+
+    # MESSAGE
+    funcsms.send_telegram("", "administrator", "Update <b>mysql server</b>.")
 
     """*****************************************************************************
     OPEN THE MYSQL DATABASES

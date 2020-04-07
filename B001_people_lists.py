@@ -54,6 +54,15 @@ def people_lists():
     ENVIRONMENT
     *****************************************************************************"""
 
+    # DECLARE VARIABLES
+    so_path = "W:/People/"  # Source database path
+    so_file = "People.sqlite"  # Source database
+    re_path = "R:/People/"  # Results path
+    l_export: bool = True
+    l_mail: bool = True
+    l_vacuum: bool = False
+    i_count: int = 0
+
     # SCRIPT LOG
     funcfile.writelog("Now")
     funcfile.writelog("SCRIPT: B001_PEOPLE_LISTS")
@@ -62,14 +71,8 @@ def people_lists():
     print("B001_PEOPLE_LISTS")
     print("-----------------")
 
-    # DECLARE VARIABLES 
-    so_path = "W:/People/"  # Source database path
-    so_file = "People.sqlite"  # Source database
-    re_path = "R:/People/"  # Results path
-    l_export: bool = True
-    l_mail: bool = True
-    l_vacuum: bool = False
-    i_count: int = 0
+    # MESSAGE
+    funcsms.send_telegram("", "administrator", "Building <b>people</b> lists.")
 
     """*****************************************************************************
     OPEN THE DATABASES

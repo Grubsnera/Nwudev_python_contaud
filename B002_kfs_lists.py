@@ -36,6 +36,11 @@ def kfs_lists():
     ENVIRONMENT
     *****************************************************************************"""
 
+    # DECLARE VARIABLES
+    so_file = "Kfs.sqlite"  # Source database
+    so_path = "W:/Kfs/"  # Source database path
+    l_vacuum = False  # Vacuum database
+
     # OPEN THE LOG WRITER
     funcfile.writelog("Now")
     funcfile.writelog("SCRIPT: B002_KFS_LISTS")
@@ -44,10 +49,8 @@ def kfs_lists():
     print("B002_KFS_LISTS")
     print("--------------")
 
-    # DECLARE VARIABLES
-    so_file = "Kfs.sqlite"  # Source database
-    so_path = "W:/Kfs/"  # Source database path
-    l_vacuum = False  # Vacuum database
+    # MESSAGE
+    funcsms.send_telegram("", "administrator", "Building <b>kfs</b> lists.")
 
     """*****************************************************************************
     OPEN THE DATABASES

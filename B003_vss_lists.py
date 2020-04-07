@@ -37,6 +37,14 @@ def vss_lists():
     print("ENVIRONMENT")
     funcfile.writelog("ENVIRONMENT")
 
+    # DECLARE VARIABLES
+    so_path: str = "W:/Vss/"  # Source database path
+    so_file: str = "Vss.sqlite"  # Source database
+    re_path: str = "R:/Vss/"  # Results
+    ed_path: str = "S:/_external_data/"  # External data location
+    s_sql: str = ""  # SQL statements
+    l_export: bool = False  # Export files
+
     # LOG
     print("--------------")
     print("B003_VSS_LISTS")
@@ -46,13 +54,8 @@ def vss_lists():
     funcfile.writelog("----------------------")
     ilog_severity = 1
 
-    # DECLARE VARIABLES
-    so_path: str = "W:/Vss/"  # Source database path
-    so_file: str = "Vss.sqlite"  # Source database
-    re_path: str = "R:/Vss/"  # Results
-    ed_path: str = "S:/_external_data/"  # External data location
-    s_sql: str = ""  # SQL statements
-    l_export: bool = False  # Export files
+    # MESSAGE
+    funcsms.send_telegram("", "administrator", "Building <b>vss</b> lists.")
 
     # OPEN DATABASE
     with sqlite3.connect(so_path+so_file) as so_conn:
