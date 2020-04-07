@@ -35,6 +35,7 @@ VACUUM TEST FINDING TABLES (A003_table_vacuum)(24/7)
 THREAD TO RUN LARGE SCRIPT (runlarge)
 IMPORT PEOPLE (A001_oracle_to_sqlite(people))(MonTueWedThuFri)
 PEOPLE LISTS (B001_people_lists)(MonTueWedThuFri)
+PEOPLE LIST MASTER FILE (C003_people_list_masterfile)(MonTueWedThuFri)
 IMPORT VSS (A001_oracle_to_sqlite(vss))(MonTueWedThuFri)
 VSS LISTS (B003_vss_lists)(MonTueWedThuFri)
 VSS PERIOD LIST (B007_vss_period_list)(MonTueWedThuFri)
@@ -49,6 +50,7 @@ MYSQL UPDATE IA SERVER (B005_mysql_lists)(TueWedThuFriSat)
 
 THREAD TO RUN TEST SCRIPT (runtest)
 UPDATE LOG (A002_log) "MonTueWedThuFriSatSun"
+PEOPLE TEST MASTER FILE (C001_people_test_masterfile)(MonTueWedThuFri)
 
 """
 
@@ -209,6 +211,7 @@ class RunLarge(Thread):
         # IMPORT SCRIPTS
         import A001_oracle_to_sqlite
         import B001_people_lists
+        import C003_people_list_masterfile
         import B003_vss_lists
         import B007_vss_period_list
 
@@ -287,6 +290,29 @@ class RunLarge(Thread):
                             except Exception as err:
                                 # DISABLE PEOPLE TESTS
                                 funcconf.l_run_people_test = False
+                                # ERROR MESSAGE
+                                funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                                   "NWUIACA:Fail:" + s_project,
+                                                   "NWUIACA: Fail: " + s_project)
+                        else:
+                            print("ORACLE to SQLITE " + s_project + " do not run on Saturdays and Sundays")
+                            if funcconf.l_mess_project:
+                                funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
+                            funcfile.writelog("%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
+
+                    # PEOPLE LIST MASTER FILE
+                    s_project: str = "C003_people_list_masterfile"
+                    if funcconf.l_run_people_test:
+                        if funcdate.today_dayname() in "MonTueWedThuFri":
+                            try:
+                                C003_people_list_masterfile.people_list_masterfile()
+                                if funcconf.l_mail_project:
+                                    funcmail.Mail('std_success_gmail',
+                                                  'NWUIACA:Success:' + s_project,
+                                                  'NWUIACA: Success: ' + s_project)
+                            except Exception as err:
+                                # DISABLE PEOPLE TESTS
+                                # funcconf.l_run_people_test = False
                                 # ERROR MESSAGE
                                 funcsys.ErrMessage(err, funcconf.l_mail_project,
                                                    "NWUIACA:Fail:" + s_project,
@@ -603,6 +629,7 @@ class RunTest(Thread):
 
         # IMPORT SCRIPTS
         import A002_log
+        import C001_people_test_masterfile
 
         # DECLARE VARIABLES
         l_clock: bool = False  # Display the local clock
@@ -660,6 +687,29 @@ class RunTest(Thread):
                         if funcconf.l_mess_project:
                             funcsms.send_telegram("", "administrator", s_project + " do not run sun mon.")
                         funcfile.writelog("%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SUNDAYS AND MONDAYS")
+
+                    # PEOPLE TEST MASTER FILE
+                    s_project: str = "C001_people_test_masterfile"
+                    if funcconf.l_run_people_test:
+                        if funcdate.today_dayname() in "MonTueWedThuFri":
+                            try:
+                                C001_people_test_masterfile.people_test_masterfile()
+                                if funcconf.l_mail_project:
+                                    funcmail.Mail('std_success_gmail',
+                                                  'NWUIACA:Success:' + s_project,
+                                                  'NWUIACA: Success: ' + s_project)
+                            except Exception as err:
+                                # DISABLE PEOPLE TESTS
+                                funcconf.l_run_people_test = False
+                                # ERROR MESSAGE
+                                funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                                   "NWUIACA:Fail:" + s_project,
+                                                   "NWUIACA: Fail: " + s_project)
+                        else:
+                            print("ORACLE to SQLITE " + s_project + " do not run on Saturdays and Sundays")
+                            if funcconf.l_mess_project:
+                                funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
+                            funcfile.writelog("%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
 
                     # SEND MAIL TO INDICATE THE SUCCESSFUL COMPLETION OF TEST SCHEDULE
                     if funcconf.l_mail_project:
