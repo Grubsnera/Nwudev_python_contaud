@@ -72,7 +72,8 @@ def people_lists():
     print("-----------------")
 
     # MESSAGE
-    funcsms.send_telegram("", "administrator", "Building <b>people</b> lists.")
+    if funcconf.l_mess_project:
+        funcsms.send_telegram("", "administrator", "Building <b>people</b> lists.")
 
     """*****************************************************************************
     OPEN THE DATABASES

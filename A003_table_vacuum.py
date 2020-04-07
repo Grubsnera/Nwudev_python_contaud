@@ -8,6 +8,7 @@ import csv
 import sqlite3
 
 # IMPORT OWN MODULES
+from _my_modules import funcconf
 from _my_modules import funcfile
 from _my_modules import funcsms
 from _my_modules import funcsys
@@ -43,7 +44,7 @@ def table_vacuum():
     print("-----------------")
 
     # SEND MESSAGE
-    if l_mess:
+    if funcconf.l_mess_project:
         funcsms.send_telegram("", "administrator", "<b>Vacuuming</b> the test finding database tables.")
 
     """*****************************************************************************
@@ -97,7 +98,7 @@ def table_vacuum():
     funcfile.writelog("END OF SCRIPT")
 
     # SEND MESSAGE
-    if l_mess:
+    if funcconf.l_mess_project:
         funcsms.send_telegram("", "administrator", "<b>" + str(i_counter) + "</b> Tables vacuumed.")
 
     # CLOSE THE LOG WRITER

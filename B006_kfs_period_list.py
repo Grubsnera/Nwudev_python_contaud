@@ -71,7 +71,8 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
     l_vacuum = False  # Vacuum database
 
     # MESSAGE
-    funcsms.send_telegram("", "administrator", "Building <b>kfs " + s_year + "</b> transactions.")
+    if funcconf.l_mess_project:
+        funcsms.send_telegram("", "administrator", "Building <b>kfs " + s_year + "</b> transactions.")
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -154,8 +155,9 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
     funcfile.writelog("%t BUILD TABLE: GL Transaction list")
 
     # MESSAGE
-    i = funcsys.tablerowcount(so_curs, sr_file)
-    funcsms.send_telegram("", "administrator", "<b>" + str(i) + " " + s_year + "</b> General ledger transactions.")
+    if funcconf.l_mess_project:
+        i = funcsys.tablerowcount(so_curs, sr_file)
+        funcsms.send_telegram("", "administrator", "<b>" + str(i) + " " + s_year + "</b> General ledger transactions.")
 
     """ ****************************************************************************
     PAYMENT SUMMARY LIST
@@ -195,8 +197,9 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # MESSAGE
-    i = funcsys.tablerowcount(so_curs, sr_file)
-    funcsms.send_telegram("", "administrator", "<b>" + str(i) + " " + s_year + "</b> Payment transactions.")
+    if funcconf.l_mess_project:
+        i = funcsys.tablerowcount(so_curs, sr_file)
+        funcsms.send_telegram("", "administrator", "<b>" + str(i) + " " + s_year + "</b> Payment transactions.")
 
     """ ****************************************************************************
     PAYMENT INITIATE LIST

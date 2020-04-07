@@ -4,9 +4,12 @@ Copyright: Albert J van Rensburg
 *****************************************************************************"""
 
 # IMPORT OWN MODULES
+from _my_modules import funcconf
 from _my_modules import funcdate
 from _my_modules import funccsv
 from _my_modules import funcfile
+from _my_modules import funcsms
+from _my_modules import funcsys
 
 """ INDEX **********************************************************************
 BUILD STUDENTS
@@ -133,6 +136,12 @@ def studentlist(so_conn, re_path, s_period='curr', s_year='2019', l_export=False
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # MESSAGE
+    if funcconf.l_mess_project:
+        i = funcsys.tablerowcount(so_curs, sr_file)
+        funcsms.send_telegram("", "administrator", "<b>" + str(i) + " " + s_year + "</b> Students.")
+
     # Export the data
     if l_export:
         print("Export students all...")
@@ -227,5 +236,10 @@ def studentlist(so_conn, re_path, s_period='curr', s_year='2019', l_export=False
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # MESSAGE
+    if funcconf.l_mess_project:
+        i = funcsys.tablerowcount(so_curs, sr_file)
+        funcsms.send_telegram("", "administrator", "<b>" + str(i) + " " + s_year + "</b> Student modules.")
 
     return

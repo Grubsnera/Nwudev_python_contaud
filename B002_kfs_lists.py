@@ -50,7 +50,8 @@ def kfs_lists():
     print("--------------")
 
     # MESSAGE
-    funcsms.send_telegram("", "administrator", "Building <b>kfs</b> lists.")
+    if funcconf.l_mess_project:
+        funcsms.send_telegram("", "administrator", "Building <b>kfs</b> lists.")
 
     """*****************************************************************************
     OPEN THE DATABASES

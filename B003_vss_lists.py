@@ -55,7 +55,8 @@ def vss_lists():
     ilog_severity = 1
 
     # MESSAGE
-    funcsms.send_telegram("", "administrator", "Building <b>vss</b> lists.")
+    if funcconf.l_mess_project:
+        funcsms.send_telegram("", "administrator", "Building <b>vss</b> lists.")
 
     # OPEN DATABASE
     with sqlite3.connect(so_path+so_file) as so_conn:

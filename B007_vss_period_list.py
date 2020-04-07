@@ -9,9 +9,12 @@ import csv
 import sqlite3
 
 # IMPORT OWN MODULES
+from _my_modules import funcconf
 from _my_modules import funcdate
 from _my_modules import funcfile
 from _my_modules import funcstudent
+from _my_modules import funcsms
+from _my_modules import funcsys
 
 """ INDEX **********************************************************************
 ENVIRONMENT
@@ -35,14 +38,6 @@ def vss_period_list(s_period="curr", s_yyyy=""):
     print("ENVIRONMENT")
     funcfile.writelog("ENVIRONMENT")
 
-    # LOG
-    print("--------------------")
-    print("B007_VSS_PERIOD_LIST")
-    print("--------------------")
-    funcfile.writelog("Now")
-    funcfile.writelog("SCRIPT: B007_VSS_PERIOD_LIST")
-    funcfile.writelog("----------------------------")
-
     # DECLARE VARIABLES
     s_year: str = s_yyyy
     so_path: str = "W:/Vss/"  # Source database path
@@ -58,6 +53,18 @@ def vss_period_list(s_period="curr", s_yyyy=""):
     ed_path: str = "S:/_external_data/"  # External data location
     s_sql: str = ""  # SQL statements
     l_export: bool = False  # Export files
+
+    # LOG
+    print("--------------------")
+    print("B007_VSS_PERIOD_LIST")
+    print("--------------------")
+    funcfile.writelog("Now")
+    funcfile.writelog("SCRIPT: B007_VSS_PERIOD_LIST")
+    funcfile.writelog("----------------------------")
+
+    # MESSAGE
+    if funcconf.l_mess_project:
+        funcsms.send_telegram("", "administrator", "Building <b>student " + s_year + "</b> period lists.")
 
     # OPEN DATABASE
     with sqlite3.connect(so_path+so_file) as so_conn:
@@ -275,6 +282,11 @@ def vss_period_list(s_period="curr", s_yyyy=""):
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
+    # MESSAGE
+    if funcconf.l_mess_project:
+        i = funcsys.tablerowcount(so_curs, sr_file)
+        funcsms.send_telegram("", "administrator", "<b>" + str(i) + " " + s_year + "</b> Student account transactions.")
+
     # Close the connection *********************************************************
     so_conn.close()
 
@@ -283,3 +295,10 @@ def vss_period_list(s_period="curr", s_yyyy=""):
     funcfile.writelog("COMPLETED: B007_VSS_PERIOD_LIST")
 
     return
+
+
+if __name__ == '__main__':
+    try:
+        vss_period_list()
+    except Exception as e:
+        funcsys.ErrMessage(e, funcconf.l_mess_project, "B006_kfs_period_list", "B006_kfs_period_list")
