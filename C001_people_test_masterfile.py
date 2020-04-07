@@ -5,15 +5,15 @@ Author: Albert J v Rensburg (NWU21162395)
 
 # IMPORT PYTHON MODULES
 import csv
-import datetime
 import sqlite3
-import sys
 
 # IMPORT OWN MODULES
+from _my_modules import funcconf
 from _my_modules import funccsv
 from _my_modules import funcdate
 from _my_modules import funcfile
 from _my_modules import funcmail
+from _my_modules import funcsms
 from _my_modules import funcsys
 from _my_modules import functest
 
@@ -67,7 +67,7 @@ END OF SCRIPT
 *****************************************************************************"""
 
 
-def People_test_masterfile():
+def people_test_masterfile():
     """
     Script to test multiple PEOPLE MASTER FILE items
     :return: Nothing
@@ -77,15 +77,6 @@ def People_test_masterfile():
     ENVIRONMENT
     *****************************************************************************"""
 
-    # OPEN THE SCRIPT LOG FILE
-    print("---------------------------")    
-    print("C001_PEOPLE_TEST_MASTERFILE")
-    print("---------------------------")
-    funcfile.writelog("Now")
-    funcfile.writelog("SCRIPT: C001_PEOPLE_TEST_MASTERFILE")
-    funcfile.writelog("-----------------------------------")
-    ilog_severity = 1
-
     # DECLARE VARIABLES
     so_path = "W:/People/" #Source database path
     re_path = "R:/People/" # Results path
@@ -94,8 +85,25 @@ def People_test_masterfile():
     s_sql = "" # SQL statements
     l_record = True
     l_export = False
+    # l_mail: bool = funcconf.l_mail_project
     l_mail = False
-    l_vacuum = False
+    l_mess: bool = funcconf.l_mess_project
+    # l_mess = False
+    i_finding_before: int = 0
+    i_finding_after: int = 0
+
+    # OPEN THE SCRIPT LOG FILE
+    print("---------------------------")
+    print("C001_PEOPLE_TEST_MASTERFILE")
+    print("---------------------------")
+    funcfile.writelog("Now")
+    funcfile.writelog("SCRIPT: C001_PEOPLE_TEST_MASTERFILE")
+    funcfile.writelog("-----------------------------------")
+    ilog_severity = 1
+
+    # MESSAGE
+    if l_mess:
+        funcsms.send_telegram("", "administrator", "<b>People master file</b> tests.")
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -179,10 +187,8 @@ def People_test_masterfile():
         funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
     """
     # Mail the birthdays
-    """
     if l_mail:
         funcmail.Mail("hr_people_birthday")
-    """
 
     """ ****************************************************************************
     ID NUMBER MASTER FILE
@@ -379,10 +385,13 @@ def People_test_masterfile():
             # Read the header data
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             # Write the data
-            if l_record == True:
+            if l_record:
                 funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head,"a",".txt")
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
+            if l_mess:
+                s_desc = "ID number blank."
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -706,10 +715,13 @@ def People_test_masterfile():
             # Read the header data
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             # Write the data
-            if l_record == True:
+            if l_record:
                 funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head,"a",".txt")
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
+            if l_mess:
+                s_desc = "ID number invalid."
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -994,10 +1006,14 @@ def People_test_masterfile():
             # Read the header data
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             # Write the data
-            if l_record == True:
+            if l_record:
                 funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                s_desc = "Date of birth invalid."
+                funcsms.send_telegram('', 'administrator',
+                                      '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -1286,10 +1302,13 @@ def People_test_masterfile():
             # Read the header data
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             # Write the data
-            if l_record == True:
+            if l_record:
                 funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head,"a",".txt")
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
+            if l_mess:
+                s_desc = "Gender invalid."
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -1606,10 +1625,13 @@ def People_test_masterfile():
             # Read the header data
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             # Write the data
-            if l_record == True:
+            if l_record:
                 funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head,"a",".txt")
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
+            if l_mess:
+                s_desc = "ID number duplicate."
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -1947,10 +1969,13 @@ def People_test_masterfile():
             # Read the header data
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             # Write the data
-            if l_record == True:
+            if l_record:
                 funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head,"a",".txt")
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
+            if l_mess:
+                s_desc = "Passport number blank."
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -2260,10 +2285,13 @@ def People_test_masterfile():
             # Read the header data
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             # Write the data
-            if l_record == True:
+            if l_record:
                 funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head,"a",".txt")
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
+            if l_mess:
+                s_desc = "Passport number duplicate."
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -2575,6 +2603,10 @@ def People_test_masterfile():
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                s_desc = "Work permit expired."
+                funcsms.send_telegram('', 'administrator',
+                                      '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -2881,10 +2913,13 @@ def People_test_masterfile():
             # Read the header data
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             # Write the data
-            if l_record == True:
+            if l_record:
                 funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head,"a",".txt")
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
+            if l_mess:
+                s_desc = "Bank acc number duplicate."
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")    
@@ -3196,6 +3231,10 @@ def People_test_masterfile():
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                s_desc = "Bank acc SARS verification."
+                funcsms.send_telegram('', 'administrator',
+                                      '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -3607,6 +3646,10 @@ def People_test_masterfile():
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                s_desc = "Bank acc change verification."
+                funcsms.send_telegram('', 'administrator',
+                                      '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -3950,10 +3993,13 @@ def People_test_masterfile():
             # Read the header data
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             # Write the data
-            if l_record == True:
+            if l_record:
                 funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head,"a",".txt")
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
+            if l_mess:
+                s_desc = "Tax number blank."
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -4280,10 +4326,13 @@ def People_test_masterfile():
             # Read the header data
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             # Write the data
-            if l_record == True:
+            if l_record:
                 funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head,"a",".txt")
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
+            if l_mess:
+                s_desc = "Tax number invalid."
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -4568,10 +4617,13 @@ def People_test_masterfile():
             # Read the header data
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             # Write the data
-            if l_record == True:
+            if l_record:
                 funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head,"a",".txt")
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
+            if l_mess:
+                s_desc = "Tax number duplicate."
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -4884,10 +4936,14 @@ def People_test_masterfile():
             # Read the header data
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             # Write the data
-            if l_record == True:
+            if l_record:
                 funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head,"a",".txt")
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
+            if l_mess:
+                s_desc = "Name duplicate."
+                funcsms.send_telegram('', 'administrator',
+                                      '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")    
@@ -5368,10 +5424,14 @@ def People_test_masterfile():
             # Read the header data
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             # Write the data
-            if l_record == True:
+            if l_record:
                 funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head,"a",".txt")
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
+            if l_mess:
+                s_desc = "Permanent/Temporary category invalid."
+                funcsms.send_telegram('', 'administrator',
+                                      '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -5646,10 +5706,14 @@ def People_test_masterfile():
             # Read the header data
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             # Write the data
-            if l_record == True:
+            if l_record:
                 funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head,"a",".txt")
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
+            if l_mess:
+                s_desc = "Academic/Support invalid."
+                funcsms.send_telegram('', 'administrator',
+                                      '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -5954,10 +6018,14 @@ def People_test_masterfile():
             # Read the header data
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             # Write the data
-            if l_record == True:
+            if l_record:
                 funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head,"a",".txt")
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
+            if l_mess:
+                s_desc = "Peromnes grade invalid."
+                funcsms.send_telegram('', 'administrator',
+                                      '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -6312,10 +6380,14 @@ def People_test_masterfile():
             # Read the header data
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             # Write the data
-            if l_record == True:
+            if l_record:
                 funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_coun) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                s_desc = "Leave code invalid."
+                funcsms.send_telegram('', 'administrator',
+                                      '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -6673,6 +6745,10 @@ def People_test_masterfile():
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                s_desc = "Phone (work) invalid."
+                funcsms.send_telegram('', 'administrator',
+                                      '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -6977,6 +7053,10 @@ def People_test_masterfile():
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                s_desc = "Address (post) not primary."
+                funcsms.send_telegram('', 'administrator',
+                                      '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -7119,6 +7199,10 @@ def People_test_masterfile():
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
+    # MESSAGE
+    if l_mess:
+        funcsms.send_telegram("", "administrator", "Finished <b>People master file</b> tests.")
+
     """ ****************************************************************************
     END OF SCRIPT
     *****************************************************************************"""
@@ -7126,11 +7210,6 @@ def People_test_masterfile():
     funcfile.writelog("END OF SCRIPT")
 
     # CLOSE THE DATABASE CONNECTION
-    if l_vacuum == True:
-        print("Vacuum the database...")
-        so_conn.commit()
-        so_conn.execute('VACUUM')
-        funcfile.writelog("%t VACUUM DATABASE: " + so_file)
     so_conn.commit()
     so_conn.close()
 
@@ -7139,3 +7218,10 @@ def People_test_masterfile():
     funcfile.writelog("COMPLETED: C001_PEOPLE_TEST_MASTERFILE")
 
     return
+
+
+if __name__ == '__main__':
+    try:
+        people_test_masterfile()
+    except Exception as e:
+        funcsys.ErrMessage(e, funcconf.l_mess_project, "C001_people_test_masterfile", "C001_people_test_masterfile")

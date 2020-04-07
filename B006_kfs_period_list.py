@@ -68,7 +68,6 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
         so_file = "Kfs_prev.sqlite"  # Source database
     else:
         so_file = "Kfs_" + s_year + ".sqlite"  # Source database
-    l_vacuum = False  # Vacuum database
 
     # MESSAGE
     if funcconf.l_mess_project:
@@ -855,12 +854,6 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
     print("END OF SCRIPT")
     funcfile.writelog("END OF SCRIPT")
 
-    # CLOSE THE DATABASE CONNECTION
-    if l_vacuum:
-        print("Vacuum the database...")
-        so_conn.commit()
-        so_conn.execute('VACUUM')
-        funcfile.writelog("%t VACUUM DATABASE: " + so_file)
     so_conn.commit()
     so_conn.close()
 

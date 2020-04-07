@@ -7,8 +7,12 @@ Author: Albert Janse van Rensburg (NWU21162395)
 import sqlite3
 
 # OPEN OWN MODULES
+from _my_modules import funcconf
 from _my_modules import funcdate
 from _my_modules import funcfile
+from _my_modules import funcsms
+from _my_modules import funcsys
+
 
 """ INDEX **********************************************************************
 ENVIRONMENT
@@ -30,6 +34,10 @@ def people_list_masterfile():
     ENVIRONMENT
     *****************************************************************************"""
 
+    # DECLARE VARIABLES
+    so_path = "W:/People/"  # Source database path
+    so_file = "People_list_masterfile.sqlite"  # Source database
+
     # OPEN THE LOG
     print("---------------------------")
     print("C003_PEOPLE_LIST_MASTERFILE")
@@ -38,9 +46,9 @@ def people_list_masterfile():
     funcfile.writelog("SCRIPT: C003_PEOPLE_LIST_MASTERFILE")
     funcfile.writelog("-----------------------------------")
 
-    # DECLARE VARIABLES
-    so_path = "W:/People/"  # Source database path
-    so_file = "People_list_masterfile.sqlite"  # Source database
+    # MESSAGE
+    if funcconf.l_mess_project:
+        funcsms.send_telegram("", "administrator", "Building <b>people master file</b> lists.")
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -234,3 +242,10 @@ def people_list_masterfile():
     funcfile.writelog("COMPLETED: C003_PEOPLE_LIST_MASTERFILE")
 
     return
+
+
+if __name__ == '__main__':
+    try:
+        people_list_masterfile()
+    except Exception as e:
+        funcsys.ErrMessage(e, funcconf.l_mess_project, "B001_people_lists", "B001_people_lists")
