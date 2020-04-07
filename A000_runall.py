@@ -23,8 +23,8 @@ ENVIRONMENT
 * VSS LISTS (B003_vss_lists) "TueWedThuFriSat"
 * VSS PERIOD LISTS (B007_vss_period_list) "TueWedThuFriSat"
 
-PEOPLE LIST MASTERFILE (C003_people_list_masterfile) "MonTueWedThuFri"
-PEOPLE MASTER FILE TESTS (C001_people_test_masterfile) "MonTueWedThuFri"
+* PEOPLE LIST MASTERFILE (C003_people_list_masterfile) "MonTueWedThuFri"
+* PEOPLE MASTER FILE TESTS (C001_people_test_masterfile) "MonTueWedThuFri"
 PEOPLE CONFLICT TESTS (C002_people_test_conflict) "MonTueWedThuFri"
 
 KFS CREDITOR PAYMENT TESTS (C201_creditor_test_payments) "MonTueWedThuFri" 
@@ -228,7 +228,7 @@ PEOPLE MASTER FILE TESTS
 if funcdate.today_dayname() in "MonTueWedThuFri":
     import C001_people_test_masterfile
     try:
-        C001_people_test_masterfile.People_test_masterfile()
+        C001_people_test_masterfile.people_test_masterfile()
         if l_mail:
             funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:C001_people_test_masterfile',
                           'NWUIAPython: Success: C001_people_test_masterfile')
