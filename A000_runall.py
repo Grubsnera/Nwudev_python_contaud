@@ -27,7 +27,7 @@ ENVIRONMENT
 * PEOPLE MASTER FILE TESTS (C001_people_test_masterfile) "MonTueWedThuFri"
 * PEOPLE CONFLICT TESTS (C002_people_test_conflict) "MonTueWedThuFri"
 
-KFS CREDITOR PAYMENT TESTS (C201_creditor_test_payments) "MonTueWedThuFri" 
+* KFS CREDITOR PAYMENT TESTS (C201_creditor_test_payments) "MonTueWedThuFri" 
 KFS GL TEST TRANSACTIONS TESTS (C202_gl_test_transactions) "MonTueWedThuFri"
 * KFS VSS STUDENT DEBTOR RECONCILIATION AND TESTS (C200_report_studdeb_recon) "MonTueWedThuFri"
 
@@ -264,7 +264,7 @@ KFS CREDITOR PAYMENT TESTS
 if funcdate.today_dayname() in "MonTueWedThuFri":
     import C201_creditor_test_payments
     try:
-        C201_creditor_test_payments.Creditor_test_payments()
+        C201_creditor_test_payments.creditor_test_payments()
         if l_mail:
             funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:C201_creditor_test_payments',
                           'NWUIAPython: Success: C201_creditor_test_payments')
