@@ -54,7 +54,7 @@ UPDATE LOG (A002_log) "MonTueWedThuFriSatSun"
 PEOPLE TEST MASTER FILE (C001_people_test_masterfile)(MonTueWedThuFri)
 PEOPLE TEST CONFLICT (C002_people_test_conflict)(MonTueWedThuFri)
 STUDENT DEBTOR RECON (C200_report_studdeb_recon)(MonTueWedThuFri)
-
+KFS CREDITOR PAYMENT TESTS (C201_creditor_test_payments)(MonTueWedThuFri)
 """
 
 # ENABLE LOGGING
@@ -659,6 +659,7 @@ class RunTest(Thread):
         import C001_people_test_masterfile
         import C002_people_test_conflict
         import C200_report_studdeb_recon
+        import C201_creditor_test_payments
 
         # DECLARE VARIABLES
         l_clock: bool = False  # Display the local clock
@@ -780,6 +781,29 @@ class RunTest(Thread):
                             except Exception as err:
                                 # DISABLE PEOPLE TESTS
                                 # funcconf.l_run_people_test = False
+                                # ERROR MESSAGE
+                                funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                                   "NWUIACA:Fail:" + s_project,
+                                                   "NWUIACA: Fail: " + s_project)
+                        else:
+                            print("ORACLE to SQLITE " + s_project + " do not run on Saturdays and Sundays")
+                            if funcconf.l_mess_project:
+                                funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
+                            funcfile.writelog("%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
+
+                    # STUDENT DEBTOR RECON
+                    s_project: str = "C201_creditor_test_payments"
+                    if funcconf.l_run_kfs_test:
+                        if funcdate.today_dayname() in "MonTueWedThuFri":
+                            try:
+                                C201_creditor_test_payments.creditor_test_payments()
+                                if funcconf.l_mail_project:
+                                    funcmail.Mail('std_success_gmail',
+                                                  'NWUIACA:Success:' + s_project,
+                                                  'NWUIACA: Success: ' + s_project)
+                            except Exception as err:
+                                # DISABLE PEOPLE TESTS
+                                # funcconf.l_run_kfs_test = False
                                 # ERROR MESSAGE
                                 funcsys.ErrMessage(err, funcconf.l_mail_project,
                                                    "NWUIACA:Fail:" + s_project,
