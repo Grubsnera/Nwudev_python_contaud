@@ -23,7 +23,7 @@ from _my_modules import funcsms
 from _my_modules import funcsys
 
 # SET TO TRUE FOR ACTIVE NWU USE OR COMMENT OUT
-funcconf.l_tel_use_nwu = True
+funcconf.l_tel_use_nwu = False
 s_path = "S:/Logs/"
 
 """ INDEX
@@ -36,6 +36,7 @@ THREAD TO RUN LARGE SCRIPT (runlarge)
 IMPORT PEOPLE (A001_oracle_to_sqlite(people))(MonTueWedThuFri)
 PEOPLE LISTS (B001_people_lists)(MonTueWedThuFri)
 PEOPLE LIST MASTER FILE (C003_people_list_masterfile)(MonTueWedThuFri)
+PEOPLE PAYROLL LISTS (B004_payroll_lists)(MonTueWedThuFri)
 IMPORT VSS (A001_oracle_to_sqlite(vss))(MonTueWedThuFri)
 VSS LISTS (B003_vss_lists)(MonTueWedThuFri)
 VSS PERIOD LIST (B007_vss_period_list)(MonTueWedThuFri)
@@ -213,6 +214,7 @@ class RunLarge(Thread):
         import A001_oracle_to_sqlite
         import B001_people_lists
         import C003_people_list_masterfile
+        import B004_payroll_lists
         import B003_vss_lists
         import B007_vss_period_list
 
@@ -307,6 +309,29 @@ class RunLarge(Thread):
                         if funcdate.today_dayname() in "MonTueWedThuFri":
                             try:
                                 C003_people_list_masterfile.people_list_masterfile()
+                                if funcconf.l_mail_project:
+                                    funcmail.Mail('std_success_gmail',
+                                                  'NWUIACA:Success:' + s_project,
+                                                  'NWUIACA: Success: ' + s_project)
+                            except Exception as err:
+                                # DISABLE PEOPLE TESTS
+                                # funcconf.l_run_people_test = False
+                                # ERROR MESSAGE
+                                funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                                   "NWUIACA:Fail:" + s_project,
+                                                   "NWUIACA: Fail: " + s_project)
+                        else:
+                            print("ORACLE to SQLITE " + s_project + " do not run on Saturdays and Sundays")
+                            if funcconf.l_mess_project:
+                                funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
+                            funcfile.writelog("%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
+
+                    # PEOPLE PAYROLL LISTS
+                    s_project: str = "B004_payroll_lists"
+                    if funcconf.l_run_people_test:
+                        if funcdate.today_dayname() in "MonTueWedThuFri":
+                            try:
+                                B004_payroll_lists.payroll_lists()
                                 if funcconf.l_mail_project:
                                     funcmail.Mail('std_success_gmail',
                                                   'NWUIACA:Success:' + s_project,
