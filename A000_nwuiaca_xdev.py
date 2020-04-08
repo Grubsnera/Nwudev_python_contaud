@@ -51,6 +51,7 @@ MYSQL UPDATE IA SERVER (B005_mysql_lists)(TueWedThuFriSat)
 THREAD TO RUN TEST SCRIPT (runtest)
 UPDATE LOG (A002_log) "MonTueWedThuFriSatSun"
 PEOPLE TEST MASTER FILE (C001_people_test_masterfile)(MonTueWedThuFri)
+PEOPLE TEST CONFLICT (C002_people_test_conflict)(MonTueWedThuFri)
 
 """
 
@@ -630,6 +631,7 @@ class RunTest(Thread):
         # IMPORT SCRIPTS
         import A002_log
         import C001_people_test_masterfile
+        import C002_people_test_conflict
 
         # DECLARE VARIABLES
         l_clock: bool = False  # Display the local clock
@@ -658,11 +660,11 @@ class RunTest(Thread):
                     if time.strftime("%R", time.localtime()) <= "23:59":
                         funcconf.d_run_test = datetime.datetime.strptime(funcdate.today() + " 23:00:00",
                                                                          "%Y-%m-%d %H:%M:%S") + \
-                                              datetime.timedelta(hours=5)
+                                              datetime.timedelta(hours=6)
                     else:
                         funcconf.d_run_test = datetime.datetime.strptime(funcdate.today() + " 23:00:00",
                                                                          "%Y-%m-%d %H:%M:%S") + \
-                                              datetime.timedelta(days=1, hours=5)
+                                              datetime.timedelta(days=1, hours=6)
 
                     # MESSAGES
                     if funcconf.l_mess_project:
@@ -694,6 +696,29 @@ class RunTest(Thread):
                         if funcdate.today_dayname() in "MonTueWedThuFri":
                             try:
                                 C001_people_test_masterfile.people_test_masterfile()
+                                if funcconf.l_mail_project:
+                                    funcmail.Mail('std_success_gmail',
+                                                  'NWUIACA:Success:' + s_project,
+                                                  'NWUIACA: Success: ' + s_project)
+                            except Exception as err:
+                                # DISABLE PEOPLE TESTS
+                                funcconf.l_run_people_test = False
+                                # ERROR MESSAGE
+                                funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                                   "NWUIACA:Fail:" + s_project,
+                                                   "NWUIACA: Fail: " + s_project)
+                        else:
+                            print("ORACLE to SQLITE " + s_project + " do not run on Saturdays and Sundays")
+                            if funcconf.l_mess_project:
+                                funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
+                            funcfile.writelog("%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
+
+                    # PEOPLE TEST CONFLICT
+                    s_project: str = "C002_people_test_conflict"
+                    if funcconf.l_run_people_test:
+                        if funcdate.today_dayname() in "MonTueWedThuFri":
+                            try:
+                                C002_people_test_conflict.people_test_conflict()
                                 if funcconf.l_mail_project:
                                     funcmail.Mail('std_success_gmail',
                                                   'NWUIACA:Success:' + s_project,
