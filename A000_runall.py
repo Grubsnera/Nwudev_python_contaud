@@ -25,7 +25,7 @@ ENVIRONMENT
 
 * PEOPLE LIST MASTERFILE (C003_people_list_masterfile) "MonTueWedThuFri"
 * PEOPLE MASTER FILE TESTS (C001_people_test_masterfile) "MonTueWedThuFri"
-PEOPLE CONFLICT TESTS (C002_people_test_conflict) "MonTueWedThuFri"
+* PEOPLE CONFLICT TESTS (C002_people_test_conflict) "MonTueWedThuFri"
 
 KFS CREDITOR PAYMENT TESTS (C201_creditor_test_payments) "MonTueWedThuFri" 
 KFS GL TEST TRANSACTIONS TESTS (C202_gl_test_transactions) "MonTueWedThuFri"
