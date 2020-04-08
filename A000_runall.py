@@ -29,7 +29,7 @@ ENVIRONMENT
 
 KFS CREDITOR PAYMENT TESTS (C201_creditor_test_payments) "MonTueWedThuFri" 
 KFS GL TEST TRANSACTIONS TESTS (C202_gl_test_transactions) "MonTueWedThuFri"
-KFS VSS STUDENT DEBTOR RECONCILIATION AND TESTS (C200_report_studdeb_recon) "MonTueWedThuFri"
+* KFS VSS STUDENT DEBTOR RECONCILIATION AND TESTS (C200_report_studdeb_recon) "MonTueWedThuFri"
 
 VSS STUDENT MASTER FILE TESTS (C300_test_student_general) 
 VSS STUDENT FEE TESTS AND REPORTS (C302_test_student_fee) "MonTueWedThuFri"
@@ -298,9 +298,9 @@ KFS VSS STUDENT DEBTOR RECONCILIATION AND TESTS
 if funcdate.today_dayname() in "MonTueWedThuFri":
     import C200_report_studdeb_recon
     try:
-        C200_report_studdeb_recon.Report_studdeb_recon('48501952.09', '-12454680.98', '49976048.39', "curr")
+        C200_report_studdeb_recon.report_studdeb_recon('48501952.09', '-12454680.98', '49976048.39', "curr")
         # 2019 balances
-        # C200_report_studdeb_recon.Report_studdeb_recon('66561452.48','-18340951.06','39482933.18')
+        # C200_report_studdeb_recon.report_studdeb_recon('66561452.48','-18340951.06','39482933.18')
         if l_mail:
             funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:C200_report_studdeb_recon',
                           'NWUIAPython: Success: C200_report_studdeb_recon')
