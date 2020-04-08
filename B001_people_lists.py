@@ -60,8 +60,6 @@ def people_lists():
     re_path = "R:/People/"  # Results path
     l_export: bool = True
     l_mail: bool = True
-    l_vacuum: bool = False
-    i_count: int = 0
 
     # SCRIPT LOG
     funcfile.writelog("Now")
@@ -1492,7 +1490,12 @@ def people_lists():
                         "Build previous year assignments 2...")
 
     # Build PEOPLE CURRENT ******************************************************
-    i_count = funcpeople.people01(so_conn, "X002_PEOPLE_CURR", "X001_ASSIGNMENT_CURR", "CURR", "Build current people...", "Y")
+    i_count = funcpeople.people01(so_conn,
+                                  "X002_PEOPLE_CURR",
+                                  "X001_ASSIGNMENT_CURR",
+                                  "CURR",
+                                  "Build current people...",
+                                  "Y")
     if l_export:
         # Data export
         sr_file = "X002_PEOPLE_CURR"
@@ -1944,7 +1947,7 @@ def people_lists():
         # ACTIVE EMPLOYEES
         funcsms.send_telegram("", "administrator", "<b>" + str(i_count) + "</b> Active employees.")
 
-    """ ****************************************************************************
+    """*****************************************************************************
     End OF SCRIPT
     *****************************************************************************"""
     print("END OF SCRIPT")
