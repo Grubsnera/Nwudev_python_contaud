@@ -8,12 +8,15 @@ Copyright: Albert J v Rensburg
 import sqlite3
 
 # Import own modules
+from _my_modules import funcconf
 from _my_modules import funcdate
 from _my_modules import funccsv
 from _my_modules import funcfile
+from _my_modules import funcsms
+from _my_modules import funcsys
 
 
-def Payroll_lists():
+def payroll_lists():
     """
     Script to build payroll lists
     :return: Nothing
@@ -27,20 +30,23 @@ def Payroll_lists():
 
     # Open the script log file ******************************************************
 
-    funcfile.writelog("Now")
-    funcfile.writelog("SCRIPT: B004_PAYROLL_LISTS")
-    funcfile.writelog("--------------------------")
-    print("------------------")
-    print("B004_PAYROLL_LISTS")
-    print("------------------")
-    ilog_severity = 1
-
     # Declare variables
     so_path: str = "W:/People_payroll/"  # Source database path
     so_file: str = "People_payroll.sqlite"  # Source database
     re_path = "R:/People/" #Results
     ed_path = "S:/_external_data/"
     s_sql = "" #SQL statements
+
+    funcfile.writelog("Now")
+    funcfile.writelog("SCRIPT: B004_PAYROLL_LISTS")
+    funcfile.writelog("--------------------------")
+    print("------------------")
+    print("B004_PAYROLL_LISTS")
+    print("------------------")
+
+    # MESSAGE
+    if funcconf.l_mess_project:
+        funcsms.send_telegram("", "administrator", "Building <b>payroll</b> lists.")
 
     # Open the SOURCE file
     with sqlite3.connect(so_path+so_file) as so_conn:
@@ -473,17 +479,31 @@ def Payroll_lists():
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
-    
 
-    """*************************************************************************
-    END
-    *************************************************************************"""
+    # MESSAGE
+    if funcconf.l_mess_project:
+        funcsms.send_telegram("", "administrator", "Finished building <b>payroll</b> lists.")
 
-    # Close the connection *********************************************************
+    """*****************************************************************************
+    End OF SCRIPT
+    *****************************************************************************"""
+    print("END OF SCRIPT")
+    funcfile.writelog("END OF SCRIPT")
+
+    # COMMIT DATA
+    so_conn.commit()
+
+    # CLOSE THE DATABASE CONNECTION
     so_conn.close()
 
-    # Close the log writer *********************************************************
-    funcfile.writelog("-------------------------")
-    funcfile.writelog("COMPLETED: B003_VSS_LISTS")
+    # CLOSE THE LOG WRITER
+    funcfile.writelog("-----------------------------")
+    funcfile.writelog("COMPLETED: B004_PAYROLL_LISTS")
 
     return
+
+if __name__ == '__main__':
+    try:
+        payroll_lists()
+    except Exception as e:
+        funcsys.ErrMessage(e, funcconf.l_mess_project, "B004_payroll_lists", "B004_payroll_lists")
