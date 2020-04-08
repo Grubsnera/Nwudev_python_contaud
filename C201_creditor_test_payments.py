@@ -3,6 +3,10 @@ Created on: 16 Apr 2019
 Author: Albert J v Rensburg (NWU21162395)
 *****************************************************************************"""
 
+# IMPORT OWN MODULES
+from _my_modules import funcconf
+from _my_modules import funcsys
+
 """ INDEX **********************************************************************
 ENVIRONMENT
 OPEN THE DATABASES
@@ -16,7 +20,7 @@ END OF SCRIPT
 *****************************************************************************"""
 
 
-def Creditor_test_payments():
+def creditor_test_payments():
 
     """*****************************************************************************
     ENVIRONMENT
@@ -34,28 +38,30 @@ def Creditor_test_payments():
     from _my_modules import funcfile
     from _my_modules import funccsv
     from _my_modules import funcdate
-    from _my_modules import funcsys
+    from _my_modules import funcsms
     from _my_modules import functest
-
-    # OPEN THE SCRIPT LOG FILE
-    print("---------------------------")    
-    print("C201_CREDITOR_TEST_PAYMENTS")
-    print("---------------------------")
-    funcfile.writelog("Now")
-    funcfile.writelog("SCRIPT: C201_CREDITOR_TEST_PAYMENTS")
-    funcfile.writelog("-----------------------------------")
-    ilog_severity = 1
 
     # DECLARE VARIABLES
     so_path = "W:/Kfs/" #Source database path
     re_path = "R:/Kfs/" # Results path
     ed_path = "S:/_external_data/" #external data path
     so_file = "Kfs_test_creditor.sqlite" # Source database
-    s_sql = "" # SQL statements
     l_export = True
-    l_mail = False
     l_record = True
-    l_vacuum = True
+    l_mess: bool = funcconf.l_mess_project
+    # l_mess: bool = True
+
+    # OPEN THE SCRIPT LOG FILE
+    print("---------------------------")
+    print("C201_CREDITOR_TEST_PAYMENTS")
+    print("---------------------------")
+    funcfile.writelog("Now")
+    funcfile.writelog("SCRIPT: C201_CREDITOR_TEST_PAYMENTS")
+    funcfile.writelog("-----------------------------------")
+
+    # MESSAGE
+    if funcconf.l_mess_project:
+        funcsms.send_telegram("", "administrator", "Creditor <b>payment</b> tests.")
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -644,6 +650,9 @@ def Creditor_test_payments():
                 funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head,"a",".txt")
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
+            if l_mess:
+                s_desc = "Duplicate payment."
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -975,6 +984,9 @@ def Creditor_test_payments():
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                s_desc = "Initiator fiscal same."
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -1347,6 +1359,9 @@ def Creditor_test_payments():
                 funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head,"a",".txt")
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
+            if l_mess:
+                s_desc = "Vendor bank acc verification."
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -1666,6 +1681,9 @@ def Creditor_test_payments():
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_coun) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                s_desc = "Employee approve own payment."
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -1976,6 +1994,9 @@ def Creditor_test_payments():
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_coun) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                s_desc = "Employee initiate own payment."
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -2118,6 +2139,10 @@ def Creditor_test_payments():
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
+    # MESSAGE
+    if funcconf.l_mess_project:
+        funcsms.send_telegram("", "administrator", "Finished creditor <b>payment</b> tests.")
+
     """ ****************************************************************************
     END OF SCRIPT
     *****************************************************************************"""
@@ -2125,11 +2150,6 @@ def Creditor_test_payments():
     funcfile.writelog("END OF SCRIPT")
 
     # CLOSE THE DATABASE CONNECTION
-    if l_vacuum == True:
-        print("Vacuum the database...")
-        so_conn.commit()
-        so_conn.execute('VACUUM')
-        funcfile.writelog("%t VACUUM DATABASE: " + so_file)
     so_conn.commit()
     so_conn.close()
 
@@ -2138,3 +2158,10 @@ def Creditor_test_payments():
     funcfile.writelog("COMPLETED: C201_CREDITOR_TEST_PAYMENTS")
 
     return
+
+
+if __name__ == '__main__':
+    try:
+        creditor_test_payments()
+    except Exception as e:
+        funcsys.ErrMessage(e, funcconf.l_mess_project, "B001_people_lists", "B001_people_lists")
