@@ -47,7 +47,16 @@ END OF SCRIPT
 *****************************************************************************"""
 
 
-def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_yyyy="0"):
+def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr", s_yyyy="0"):
+    """
+    STUDENT DEBTOR RECONCILIATIONS
+    :param dOpenMaf: int: Mafiking Campus opening balance
+    :param dOpenPot: int: Potchefstroom opening balance
+    :param dOpenVaa: int: Vaal Campus opening balance
+    :param s_period: str: Period indication curr, prev or year
+    :param s_yyyy: str: YYYY
+    :return: Null
+    """
 
     """ PARAMETERS *************************************************************
     dOpenMaf = GL Opening balances for Mafikeng campus
@@ -220,8 +229,8 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
       X002aa_vss_tranlist.TRANSCODE,
       X002aa_vss_tranlist.TEMP_DESC_A AS DESC_AFR,
       X002aa_vss_tranlist.TEMP_DESC_E AS DESC_ENG,
-      Sum(X002aa_vss_tranlist.AMOUNT) AS SUM,
-      Count(X002aa_vss_tranlist.CAMPUS) AS COUNT
+      Cast(total(X002aa_vss_tranlist.AMOUNT) As REAL) AS SUM,
+      Cast(Count(X002aa_vss_tranlist.CAMPUS) As INT) AS COUNT
     FROM
       X002aa_vss_tranlist
     WHERE
@@ -380,7 +389,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
       X001aa_gl_tranlist_lang.CALC_COST_STRING AS COST_STRING,
       X001aa_gl_tranlist_lang.TRANSACTION_DT AS DATE_TRAN,
       X001aa_gl_tranlist_lang.FDOC_NBR AS EDOC,
-      Round(X001aa_gl_tranlist_lang.CALC_AMOUNT,2) AS AMOUNT,
+      Cast(Round(X001aa_gl_tranlist_lang.CALC_AMOUNT,2) AS REAL) AS AMOUNT,
       X001aa_gl_tranlist_lang.TRN_LDGR_ENTR_DESC AS DESC_FULL,
       X001aa_gl_tranlist_lang.DESC_GL AS DESC_VSS,
       X001aa_gl_tranlist_lang.BURSARY_CODE AS BURSARY,
@@ -433,7 +442,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     SELECT
       X001ab_gl_transort.CAMPUS,
-      Total(X001ab_gl_transort.AMOUNT) AS BALANCE
+      Cast(Total(X001ab_gl_transort.AMOUNT) AS REAL) AS BALANCE
     FROM
       X001ab_gl_transort
     GROUP BY
@@ -451,7 +460,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
     SELECT
       X001ab_gl_transort.CAMPUS,
       X001ab_gl_transort.MONTH,
-      Total(X001ab_gl_transort.AMOUNT) AS BALANCE
+      Cast(Total(X001ab_gl_transort.AMOUNT) AS REAL) AS BALANCE
     FROM
       X001ab_gl_transort
     GROUP BY
@@ -465,13 +474,16 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
 
     # Add previous year gl opening balances (TEMPORARY)
     if dOpenMaf != 0:
-        s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`,`MONTH`,`BALANCE`) VALUES ('Mafikeng','00','"+dOpenMaf+"');"
+        s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`, `MONTH`, `BALANCE`) VALUES ('Mafikeng', '00', %VALUE%);"
+        s_sql = s_sql.replace("%VALUE%", str(dOpenMaf))
         so_curs.execute(s_sql)
     if dOpenPot != 0:
-        s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`,`MONTH`,`BALANCE`) VALUES ('Potchefstroom','00','"+dOpenPot+"');"
+        s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`, `MONTH`, `BALANCE`) VALUES ('Potchefstroom', '00', %VALUE%);"
+        s_sql = s_sql.replace("%VALUE%", str(dOpenPot))
         so_curs.execute(s_sql)
     if dOpenVaa != 0:
-        s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`,`MONTH`,`BALANCE`) VALUES ('Vaal Triangle','00','"+dOpenVaa+"');"
+        s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`, `MONTH`, `BALANCE`) VALUES ('Vaal Triangle', '00', %VALUE%);"
+        s_sql = s_sql.replace("%VALUE%", str(dOpenVaa))
         so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t ADD ROW: GL Opening balances (temporary)")
@@ -484,7 +496,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
       a.CAMPUS,
       a.MONTH,
       a.BALANCE,
-      TOTAL(b.BALANCE) RUNBAL
+      Cast(TOTAL(b.BALANCE) AS REAL) RUNBAL
     FROM
       X001cb_gl_balmonth a,
       X001cb_gl_balmonth b
@@ -511,7 +523,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
       X001ab_gl_transort.CAMPUS,
       X001ab_gl_transort.MONTH,
       X001ab_gl_transort.DESC_VSS,
-      Total(X001ab_gl_transort.AMOUNT) AS AMOUNT
+      Cast(Total(X001ab_gl_transort.AMOUNT) AS REAL) AS AMOUNT
     FROM
       X001ab_gl_transort
     GROUP BY
@@ -616,7 +628,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
       X002aa_vss_tranlist.TRANSCODE AS TRANSCODE_VSS,
       X002aa_vss_tranlist.MONTH AS MONTH_VSS,
       X002aa_vss_tranlist.TRANSDATE AS TRANSDATE_VSS,
-      Round(X002aa_vss_tranlist.AMOUNT,2) AS AMOUNT_VSS,
+      Cast(Round(X002aa_vss_tranlist.AMOUNT,2) AS REAL) AS AMOUNT_VSS,
       X002aa_vss_tranlist.DESCRIPTION_E,
       X002aa_vss_tranlist.DESCRIPTION_A,
       X002aa_vss_tranlist.FINAIDCODE AS BURSCODE_VSS,
@@ -688,9 +700,9 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     SELECT
       X002ab_vss_transort.CAMPUS_VSS,
-      Total(X002ab_vss_transort.AMOUNT_DT) AS AMOUNT_DT,
-      Total(X002ab_vss_transort.AMOUNT_CR) AS AMOUNT_CT,
-      Total(X002ab_vss_transort.AMOUNT_VSS) AS AMOUNT
+      Cast(Total(X002ab_vss_transort.AMOUNT_DT) AS REAL) AS AMOUNT_DT,
+      Cast(Total(X002ab_vss_transort.AMOUNT_CR) AS REAL) AS AMOUNT_CT,
+      Cast(Total(X002ab_vss_transort.AMOUNT_VSS) AS REAL) AS AMOUNT
     FROM
       X002ab_vss_transort
     GROUP BY
@@ -708,9 +720,9 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
     SELECT
       X002ab_vss_transort.CAMPUS_VSS,
       X002ab_vss_transort.MONTH_VSS,
-      Total(X002ab_vss_transort.AMOUNT_DT) AS AMOUNT_DT,
-      Total(X002ab_vss_transort.AMOUNT_CR) AS AMOUNT_CT,
-      Total(X002ab_vss_transort.AMOUNT_VSS) AS AMOUNT
+      Cast(Total(X002ab_vss_transort.AMOUNT_DT) AS REAL) AS AMOUNT_DT,
+      Cast(Total(X002ab_vss_transort.AMOUNT_CR) AS REAL) AS AMOUNT_CT,
+      Cast(Total(X002ab_vss_transort.AMOUNT_VSS) AS REAL) AS AMOUNT
     FROM
       X002ab_vss_transort
     GROUP BY
@@ -732,7 +744,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
       a.AMOUNT_DT,
       a.AMOUNT_CT,
       a.AMOUNT,
-      TOTAL(b.AMOUNT) RUNBAL
+      Cast(TOTAL(b.AMOUNT) AS REAL) RUNBAL
     FROM
       X002cb_vss_balmonth a,
       X002cb_vss_balmonth b
@@ -760,9 +772,9 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
       X002ab_vss_transort.MONTH_VSS,
       X002ab_vss_transort.TRANSCODE_VSS,  
       X002ab_vss_transort.TEMP_DESC_E,
-      Total(X002ab_vss_transort.AMOUNT_DT) AS AMOUNT_DT,
-      Total(X002ab_vss_transort.AMOUNT_CR) AS AMOUNT_CT,
-      Total(X002ab_vss_transort.AMOUNT_VSS) AS AMOUNT_VSS
+      Cast(Total(X002ab_vss_transort.AMOUNT_DT) AS REAL) AS AMOUNT_DT,
+      Cast(Total(X002ab_vss_transort.AMOUNT_CR) AS REAL) AS AMOUNT_CT,
+      Cast(Total(X002ab_vss_transort.AMOUNT_VSS) AS REAL) AS AMOUNT_VSS
     FROM
       X002ab_vss_transort
     GROUP BY
@@ -794,7 +806,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
       X002ab_vss_transort.STUDENT_VSS AS STUDENT,  
       0.00 AS BAL_DT,
       0.00 AS BAL_CT,
-      Total(X002ab_vss_transort.AMOUNT_VSS) AS BALANCE
+      Cast(Total(X002ab_vss_transort.AMOUNT_VSS) AS REAL) AS BALANCE
     FROM
       X002ab_vss_transort
     GROUP BY
@@ -842,9 +854,9 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     SELECT
       X002da_vss_student_balance.CAMPUS,
-      Total(X002da_vss_student_balance.BAL_DT) AS BAL_DT,
-      Total(X002da_vss_student_balance.BAL_CT) AS BAL_CT,
-      Total(X002da_vss_student_balance.BALANCE) AS BALANCE
+      Cast(Total(X002da_vss_student_balance.BAL_DT) AS REAL) AS BAL_DT,
+      Cast(Total(X002da_vss_student_balance.BAL_CT) AS REAL) AS BAL_CT,
+      Cast(Total(X002da_vss_student_balance.BALANCE) AS REAL) AS BALANCE
     FROM
       X002da_vss_student_balance
     GROUP BY
@@ -862,7 +874,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
     SELECT
       X002ab_vss_transort.CAMPUS_VSS AS CAMPUS,
       X002ab_vss_transort.STUDENT_VSS AS STUDENT,  
-      Round(Total(X002ab_vss_transort.AMOUNT_VSS),2) AS BALANCE
+      Cast(Round(Total(X002ab_vss_transort.AMOUNT_VSS),2) AS REAL) AS BALANCE
     FROM
       X002ab_vss_transort
     WHERE
@@ -897,7 +909,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
                 ELSE 'Potchefstroom'    
             End AS CAMPUS,
             TRAN.FBUSENTID AS STUDENT,  
-            Round(Total(TRAN.AMOUNT),2) AS BALANCE
+            Cast(Round(Total(TRAN.AMOUNT),2) AS REAL) AS BALANCE
         From
             VSSPREV.X010_Studytrans TRAN
         WHERE
@@ -918,7 +930,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
         SELECT
           X002ab_vss_transort.CAMPUS_VSS AS CAMPUS,
           X002ab_vss_transort.STUDENT_VSS AS STUDENT,  
-          Round(Total(X002ab_vss_transort.AMOUNT_VSS),2) AS BALANCE
+          Cast(Round(Total(X002ab_vss_transort.AMOUNT_VSS),2) AS REAL) AS BALANCE
         FROM
           X002ab_vss_transort
         WHERE
@@ -965,7 +977,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
     # Add column vss debit amount
     print("Add column vss dt amount...")
     so_curs.execute("UPDATE X002dc_vss_prevbal_curopen " + """
-                    SET DIFF_BAL = round(BAL_OPEN - BAL_CLOS,2)
+                    SET DIFF_BAL = Cast(round(BAL_OPEN - BAL_CLOS,2) As REAL)
                     ;""")
     so_conn.commit()
 
@@ -990,14 +1002,14 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
     # DETERMINE BALANCE CHANGE TYPE
-    print("Determine blanace change type...")
+    print("Determine balance change type...")
     sr_file = "X002de_vss_differ_type"
     s_sql = "Create Table " + sr_file + " As " + """
     Select
         TYPE.STUDENT,
-        Count(TYPE.BAL_CLOS) As COUNT,
-        Total(TYPE.BAL_OPEN) As TOTAL_BAL_OPEN,
-        Total(TYPE.DIFF_BAL) As TOTAL_DIFF_BAL
+        Cast(Count(TYPE.BAL_CLOS) AS INT) As COUNT,
+        Cast(Total(TYPE.BAL_OPEN) As REAL) As TOTAL_BAL_OPEN,
+        Cast(Total(TYPE.DIFF_BAL) As REAL) As TOTAL_DIFF_BAL
     From
         X002dd_vss_closing_open_differ TYPE
     Group By
@@ -1114,7 +1126,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
       X002fa_vss_tran_predate.CAMPUS_VSS,
       X002fa_vss_tran_predate.TRANSCODE_VSS,
       X002fa_vss_tran_predate.DESCRIPTION_E,
-      Total(X002fa_vss_tran_predate.AMOUNT_VSS) AS Total_AMOUNT_VSS
+      Cast(Total(X002fa_vss_tran_predate.AMOUNT_VSS) AS REAL) AS Total_AMOUNT_VSS
     FROM
       X002fa_vss_tran_predate
     GROUP BY
@@ -1161,7 +1173,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
       X002ga_vss_tran_postdate.CAMPUS_VSS,
       X002ga_vss_tran_postdate.TRANSCODE_VSS,
       X002ga_vss_tran_postdate.DESCRIPTION_E,
-      Total(X002ga_vss_tran_postdate.AMOUNT_VSS) AS Total_AMOUNT_VSS
+      Cast(Total(X002ga_vss_tran_postdate.AMOUNT_VSS) AS REAL) AS Total_AMOUNT_VSS
     FROM
       X002ga_vss_tran_postdate
     GROUP BY
@@ -1366,10 +1378,10 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
       X002cc_vss_summtype.MONTH_VSS,
       X002cc_vss_summtype.TRANSCODE_VSS,    
       X002cc_vss_summtype.TEMP_DESC_E,
-      Round(X002cc_vss_summtype.AMOUNT_VSS,2) AS AMOUNT_VSS,
+      Cast(Round(X002cc_vss_summtype.AMOUNT_VSS,2) AS REAL) AS AMOUNT_VSS,
       X001cc_gl_summtype.DESC_VSS,
-      Round(X001cc_gl_summtype.AMOUNT,2) AS AMOUNT,
-      Round(X002cc_vss_summtype.AMOUNT_VSS,2) - Round(X001cc_gl_summtype.AMOUNT,2) AS DIFF,
+      Cast(Round(X001cc_gl_summtype.AMOUNT,2) AS REAL) AS AMOUNT,
+      Cast(Round(X002cc_vss_summtype.AMOUNT_VSS,2) AS REAL) - Cast(Round(X001cc_gl_summtype.AMOUNT,2) As REAL) AS DIFF,
       '' AS MATCHED,
       '%CYEAR%-'||X002cc_vss_summtype.MONTH_VSS AS PERIOD,
       X001cc_gl_summtype.CAMPUS,
@@ -1397,8 +1409,8 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
     so_curs.execute("UPDATE X003aa_vss_gl_join " + """
                     SET DIFF = 
                     CASE
-                       WHEN AMOUNT IS NULL THEN Round(AMOUNT_VSS,2)
-                       ELSE Round(AMOUNT_VSS,2) - Round(AMOUNT,2)
+                       WHEN AMOUNT IS NULL THEN Cast(Round(AMOUNT_VSS,2) As REAL)
+                       ELSE Cast(Round(AMOUNT_VSS,2) As REAL) - Cast(Round(AMOUNT,2) AS REAL)
                     END
                     ;""")
     so_conn.commit()
@@ -1428,7 +1440,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
       X002cc_vss_summtype.AMOUNT_VSS,
       X001cc_gl_summtype.DESC_VSS,
       X001cc_gl_summtype.AMOUNT,
-      Round(X001cc_gl_summtype.AMOUNT*-1,2) AS DIFF,
+      Cast(Round(X001cc_gl_summtype.AMOUNT*-1,2) AS REAL) AS DIFF,
       'X' AS MATCHED,
       '%CYEAR%-'||X001cc_gl_summtype.MONTH AS PERIOD,  
       X001cc_gl_summtype.CAMPUS,
@@ -1553,8 +1565,8 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
     SELECT
         TRAN.CAMPUS,
         TRAN.MONTH,
-        Round(Total(TRAN.VSS_AMOUNT),2) AS VSS_AMOUNT,
-        Round(Total(TRAN.GL_AMOUNT),2) AS GL_AMOUNT
+        Cast(Round(Total(TRAN.VSS_AMOUNT),2) AS REAL) AS VSS_AMOUNT,
+        CAST(Round(Total(TRAN.GL_AMOUNT),2) AS REAL) AS GL_AMOUNT
     FROM
         X003ax_vss_gl_join TRAN
     WHERE
@@ -1594,7 +1606,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
         TRAN.VSS_DESCRIPTION AS TRAN_DESCRIPTION,
         TRAN.VSS_AMOUNT AS AMOUNT_VSS,
         TRAN.GL_AMOUNT AS AMOUNT_GL,
-        Round(TRAN.DIFF,2) As DIFF
+        Cast(Round(TRAN.DIFF,2) As REAL) As DIFF
     FROM
         X003ax_vss_gl_join TRAN
     WHERE
@@ -1922,7 +1934,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
         TRAN.MONTH,
         TRAN.TRANCODE AS TRAN_TYPE,
         TRAN.VSS_DESCRIPTION AS TRAN_DESCRIPTION,
-        Round(TRAN.VSS_AMOUNT,2) AS AMOUNT_VSS
+        Cast(Round(TRAN.VSS_AMOUNT,2) AS REAL) AS AMOUNT_VSS
     FROM
         X003ax_vss_gl_join TRAN
     WHERE
@@ -2244,7 +2256,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
         Upper(TRAN.CAMPUS) As CAMPUS,
         TRAN.MONTH,
         TRAN.GL_DESCRIPTION,
-        Round(TRAN.GL_AMOUNT,2) As GL_AMOUNT
+        Cast(Round(TRAN.GL_AMOUNT,2) AS REAL) As GL_AMOUNT
     FROM
         X003ax_vss_gl_join TRAN
     WHERE
@@ -2568,7 +2580,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
         TRAN.VSS_DESCRIPTION AS TRAN_DESCRIPTION,
         TRAN.VSS_AMOUNT AS AMOUNT_VSS,
         TRAN.GL_AMOUNT AS AMOUNT_GL,
-        Round(TRAN.DIFF,2) As DIFF
+        Cast(Round(TRAN.DIFF,2) AS REAL) As DIFF
     FROM
         X003ax_vss_gl_join TRAN
     WHERE
@@ -2933,7 +2945,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
     SELECT
       X010aa_vss_burs.CAMPUS_VSS,
       X010aa_vss_burs.MONTH_VSS,
-      Total(X010aa_vss_burs.AMOUNT_VSS) AS AMOUNT_VSS
+      Cast(Total(X010aa_vss_burs.AMOUNT_VSS) AS REAL) AS AMOUNT_VSS
     FROM
       X010aa_vss_burs
     GROUP BY
@@ -2954,7 +2966,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
       X010aa_vss_burs.MONTH_VSS,
       X010aa_vss_burs.TRANSCODE_VSS,
       X010aa_vss_burs.TRANSDESC_VSS,
-      Total(X010aa_vss_burs.AMOUNT_VSS) AS Sum_AMOUNT_VSS
+      Cast(Total(X010aa_vss_burs.AMOUNT_VSS) AS REAL) AS Sum_AMOUNT_VSS
     FROM
       X010aa_vss_burs
     GROUP BY
@@ -3013,7 +3025,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
     SELECT
       X010ba_gl_burs.CAMPUS_GL,
       X010ba_gl_burs.MONTH_GL,
-      Total(X010ba_gl_burs.AMOUNT_GL) AS AMOUNT_GL
+      Cast(Total(X010ba_gl_burs.AMOUNT_GL) AS REAL) AS AMOUNT_GL
     FROM
       X010ba_gl_burs
     GROUP BY
@@ -3033,7 +3045,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
       X010ba_gl_burs.CAMPUS_GL,
       X010ba_gl_burs.MONTH_GL,
       X010ba_gl_burs.TRANSDESC_GL,
-      Total(X010ba_gl_burs.AMOUNT_GL) AS Sum_AMOUNT_GL
+      Cast(Total(X010ba_gl_burs.AMOUNT_GL) AS REAL) AS Sum_AMOUNT_GL
     FROM
       X010ba_gl_burs
     GROUP BY
@@ -3243,7 +3255,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
     SELECT
       X010cb_join_vss_gl_matched.CAMPUS_VSS,
       X010cb_join_vss_gl_matched.MONTH_VSS,
-      Total(X010cb_join_vss_gl_matched.AMOUNT_VSS) AS Total_AMOUNT_VSS
+      Cast(Total(X010cb_join_vss_gl_matched.AMOUNT_VSS) AS REAL) AS Total_AMOUNT_VSS
     FROM
       X010cb_join_vss_gl_matched
     GROUP BY
@@ -3329,7 +3341,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
         TRAN.TRANSDATE_VSS,
         TRAN.TRANSCODE_VSS,
         TRAN.TRANSDESC_VSS,
-        Round(TRAN.AMOUNT_VSS,2) As AMOUNT_VSS,
+        Cast(Round(TRAN.AMOUNT_VSS,2) AS REAL) As AMOUNT_VSS,
         Cast(Case
             When Cast(TRAN.BURSCODE_VSS As INT) > 0 Then TRAN.BURSCODE_VSS
             Else 0
@@ -4004,7 +4016,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
         TRAN.STUDENT_VSS,
         TRAN.CAMPUS_VSS
     Having
-        Round(Total(TRAN.AMOUNT_VSS),2) <> 0.00    
+        Cast(Round(Total(TRAN.AMOUNT_VSS),2) AS REAL) <> 0.00    
     ;"""
     so_curs.execute(s_sql)
     so_conn.commit()
@@ -4376,6 +4388,10 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
 
 if __name__ == '__main__':
     try:
-        report_studdeb_recon()
+        # report_studdeb_recon()
+        # 2020 balances
+        report_studdeb_recon(48501952.09, -12454680.98, 49976048.39, "curr", "2020")
+        # 2019 balances
+        # report_studdeb_recon(66561452.48,-18340951.06,39482933.18, "prev", "2019")
     except Exception as e:
         funcsys.ErrMessage(e, funcconf.l_mess_project, "B003_vss_lists", "B003_vss_lists")
