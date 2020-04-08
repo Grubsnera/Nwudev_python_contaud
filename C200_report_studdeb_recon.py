@@ -13,6 +13,7 @@ import csv
 import sqlite3
 
 # Import own modules
+from _my_modules import funcconf
 from _my_modules import funcdate
 from _my_modules import funccsv
 from _my_modules import funcfile
@@ -46,7 +47,7 @@ END OF SCRIPT
 *****************************************************************************"""
 
 
-def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_yyyy="0"):
+def report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_yyyy="0"):
 
     """ PARAMETERS *************************************************************
     dOpenMaf = GL Opening balances for Mafikeng campus
@@ -83,8 +84,8 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
     re_path = "R:/Debtorstud/" #Results
     ed_path = "S:/_external_data/" #External data
     s_sql = "" #SQL statements
-    l_mess = True
-    l_mail = True
+    l_mess: bool = funcconf.l_mess_project
+    # l_mess: bool = True
     l_export = True
     l_record = True
     l_vacuum = False
@@ -101,8 +102,9 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
     funcfile.writelog("---------------------------------")
     funcfile.writelog("ENVIRONMENT")
 
+    # MESSAGE
     if l_mess:
-        funcsms.send_telegram('', 'administrator', 'Testing <b>student debtor</b> reconciliations.')
+        funcsms.send_telegram('', 'administrator', 'Building <b>student debtor</b> reconciliations.')
 
     """*************************************************************************
     OPEN DATABASES
@@ -1739,7 +1741,7 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
             if l_mess:
-                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -2066,7 +2068,7 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
             if l_mess:
-                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -2385,7 +2387,7 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
             if l_mess:
-                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -2711,7 +2713,7 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
             if l_mess:
-                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -3477,7 +3479,7 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
             if l_mess:
-                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -3812,7 +3814,7 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
             if l_mess:
-                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -4215,7 +4217,7 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
             if l_mess:
-                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_after) + '/' + str(i_finding_before) + '</b> ' + s_desc)
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -4349,21 +4351,31 @@ def Report_studdeb_recon(dOpenMaf=0, dOpenPot=0, dOpenVaa=0, s_period="curr", s_
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-    """*************************************************************************
-    END OF SCRIPT
-    *************************************************************************"""
+    # MESSAGE
+    if l_mess:
+        funcsms.send_telegram('', 'administrator', 'Finished building <b>student debtor</b> reconciliations.')
 
-    # Close the table connection ***************************************************
-    if l_vacuum == True:
-        print("Vacuum the database...")
-        so_conn.commit()
-        so_conn.execute('VACUUM')
-        funcfile.writelog("%t VACUUM DATABASE: " + so_file)
+    """*****************************************************************************
+    END OF SCRIPT
+    *****************************************************************************"""
+    print("END OF SCRIPT")
+    funcfile.writelog("END OF SCRIPT")
+
+    # COMMIT DATA
     so_conn.commit()
+
+    # CLOSE THE DATABASE CONNECTION
     so_conn.close()
 
-    # Close the log writer *********************************************************
+    # CLOSE THE LOG WRITER
     funcfile.writelog("------------------------------------")
     funcfile.writelog("COMPLETED: C200_REPORT_STUDDEB_RECON")
 
     return
+
+
+if __name__ == '__main__':
+    try:
+        report_studdeb_recon()
+    except Exception as e:
+        funcsys.ErrMessage(e, funcconf.l_mess_project, "B003_vss_lists", "B003_vss_lists")
