@@ -23,7 +23,7 @@ from _my_modules import funcsms
 from _my_modules import funcsys
 
 # SET TO TRUE FOR ACTIVE NWU USE OR COMMENT OUT
-funcconf.l_tel_use_nwu = False
+funcconf.l_tel_use_nwu = True
 s_path = "S:/Logs/"
 
 """ INDEX
@@ -53,6 +53,7 @@ THREAD TO RUN TEST SCRIPT (runtest)
 UPDATE LOG (A002_log) "MonTueWedThuFriSatSun"
 PEOPLE TEST MASTER FILE (C001_people_test_masterfile)(MonTueWedThuFri)
 PEOPLE TEST CONFLICT (C002_people_test_conflict)(MonTueWedThuFri)
+STUDENT DEBTOR RECON (C200_report_studdeb_recon)(MonTueWedThuFri)
 
 """
 
@@ -657,6 +658,7 @@ class RunTest(Thread):
         import A002_log
         import C001_people_test_masterfile
         import C002_people_test_conflict
+        import C200_report_studdeb_recon
 
         # DECLARE VARIABLES
         l_clock: bool = False  # Display the local clock
@@ -727,7 +729,7 @@ class RunTest(Thread):
                                                   'NWUIACA: Success: ' + s_project)
                             except Exception as err:
                                 # DISABLE PEOPLE TESTS
-                                funcconf.l_run_people_test = False
+                                # funcconf.l_run_people_test = False
                                 # ERROR MESSAGE
                                 funcsys.ErrMessage(err, funcconf.l_mail_project,
                                                    "NWUIACA:Fail:" + s_project,
@@ -750,7 +752,34 @@ class RunTest(Thread):
                                                   'NWUIACA: Success: ' + s_project)
                             except Exception as err:
                                 # DISABLE PEOPLE TESTS
-                                funcconf.l_run_people_test = False
+                                # funcconf.l_run_people_test = False
+                                # ERROR MESSAGE
+                                funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                                   "NWUIACA:Fail:" + s_project,
+                                                   "NWUIACA: Fail: " + s_project)
+                        else:
+                            print("ORACLE to SQLITE " + s_project + " do not run on Saturdays and Sundays")
+                            if funcconf.l_mess_project:
+                                funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
+                            funcfile.writelog("%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
+
+                    # STUDENT DEBTOR RECON
+                    s_project: str = "C200_report_studdeb_recon"
+                    if funcconf.l_run_people_test and funcconf.l_run_kfs_test and funcconf.l_run_vss_test:
+                        if funcdate.today_dayname() in "MonTueWedThuFri":
+                            try:
+                                C200_report_studdeb_recon.report_studdeb_recon()
+                                # 2020 balances
+                                # C200_report_studdeb_recon.report_studdeb_recon('48501952.09', '-12454680.98', '49976048.39', "curr")
+                                # 2019 balances
+                                # C200_report_studdeb_recon.report_studdeb_recon('66561452.48','-18340951.06','39482933.18', "prev")
+                                if funcconf.l_mail_project:
+                                    funcmail.Mail('std_success_gmail',
+                                                  'NWUIACA:Success:' + s_project,
+                                                  'NWUIACA: Success: ' + s_project)
+                            except Exception as err:
+                                # DISABLE PEOPLE TESTS
+                                # funcconf.l_run_people_test = False
                                 # ERROR MESSAGE
                                 funcsys.ErrMessage(err, funcconf.l_mail_project,
                                                    "NWUIACA:Fail:" + s_project,
