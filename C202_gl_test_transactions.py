@@ -1,7 +1,7 @@
 """
-Script to test GL TRANSACTIONS
+SCRIPT TO TEST GL TRANSACTIONS
 Created: 2 Jul 2019
-Author: Albert J v Rensburg (NWU21162395)
+Author: Albert J v Rensburg (NWU:21162395)
 """
 
 # IMPORT PYTHON MODULES
@@ -9,9 +9,11 @@ import csv
 import sqlite3
 
 # IMPORT OWN MODULES
+from _my_modules import funcconf
 from _my_modules import funcfile
 from _my_modules import funccsv
 from _my_modules import funcdate
+from _my_modules import funcsms
 from _my_modules import funcsys
 
 """ INDEX **********************************************************************
@@ -36,6 +38,16 @@ def gl_test_transactions():
     ENVIRONMENT
     *****************************************************************************"""
 
+    # DECLARE VARIABLES
+    so_path = "W:/Kfs/"  # Source database path
+    so_file = "Kfs_test_gl_transaction.sqlite"  # Source database
+    ed_path = "S:/_external_data/"  # External data path
+    re_path = "R:/Kfs/"  # Results path
+    l_export = True
+    l_mess: bool = funcconf.l_mess_project
+    # l_mess: bool = True
+    l_record = True
+
     # OPEN THE SCRIPT LOG FILE
     print("-------------------------")
     print("C202_GL_TEST_TRANSACTIONS")
@@ -44,14 +56,9 @@ def gl_test_transactions():
     funcfile.writelog("SCRIPT: C202_GL_TEST_TRANSACTIONS")
     funcfile.writelog("---------------------------------")
 
-    # DECLARE VARIABLES
-    so_path = "W:/Kfs/"  # Source database path
-    so_file = "Kfs_test_gl_transaction.sqlite"  # Source database
-    ed_path = "S:/_external_data/"  # External data path
-    re_path = "R:/Kfs/"  # Results path
-    l_export = True
-    l_record = True
-    l_vacuum = False
+    # MESSAGE
+    if funcconf.l_mess_project:
+        funcsms.send_telegram("", "administrator", "<b>KFS GL</b> transaction tests.")
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -299,6 +306,10 @@ def gl_test_transactions():
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                s_desc = "Professional fee student."
+                funcsms.send_telegram('', 'administrator',
+                                      '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
@@ -493,6 +504,10 @@ def gl_test_transactions():
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
+    # MESSAGE
+    if funcconf.l_mess_project:
+        funcsms.send_telegram("", "administrator", "<b>KFS GL</b> transaction tests end.")
+
     """ ****************************************************************************
     END OF SCRIPT
     *****************************************************************************"""
@@ -500,11 +515,6 @@ def gl_test_transactions():
     funcfile.writelog("END OF SCRIPT")
 
     # CLOSE THE DATABASE CONNECTION
-    if l_vacuum:
-        print("Vacuum the database...")
-        so_conn.commit()
-        so_conn.execute('VACUUM')
-        funcfile.writelog("%t VACUUM DATABASE: " + so_file)
     so_conn.commit()
     so_conn.close()
 
@@ -513,3 +523,10 @@ def gl_test_transactions():
     funcfile.writelog("COMPLETED: C202_GL_TEST_TRANSACTIONS")
 
     return
+
+
+if __name__ == '__main__':
+    try:
+        gl_test_transactions()
+    except Exception as e:
+        funcsys.ErrMessage(e, funcconf.l_mess_project, "C202_gl_test_transactions", "C202_gl_test_transactions")

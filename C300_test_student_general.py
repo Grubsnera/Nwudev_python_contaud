@@ -4,28 +4,45 @@
 *** 25 Jun 2018
 *****************************************************************************"""
 
+# Import python module
+import csv
+import sqlite3
+
+# Import own modules
+from _my_modules import funcconf
+from _my_modules import funccsv
+from _my_modules import funcdate
+from _my_modules import funcfile
+from _my_modules import funcmail
+from _my_modules import funcsms
+from _my_modules import funcsys
+
+"""*************************************************************************
+***
+*** CREATE STUDENT ID NUMBER LISTS
+***
+*** Import vss transactions from VSS.SQLITE
+*** Import vss party data from from VSS.SQLITE
+*** Import previously reported ID numbers
+*** Join the vss tran and party data
+*** Join the previously reported id number list
+***   Add prev reported columns
+*** Export the ytd ID list to report
+*** Export the current ID list to report
+*** Add new ID number list to prev reported
+***
+*************************************************************************"""
+
 
 def test_student_general():
+    """
+    SCRIPT TO TEST STUDENT MASTER FILE
+    :return: Nothing
+    """
 
-    # Import python module
-    import csv
-    import sqlite3
-
-    # Import own modules
-    from _my_modules import funccsv
-    from _my_modules import funcdate
-    from _my_modules import funcfile
-    from _my_modules import funcmail
-    from _my_modules import funcsys
-
-    # Open the script log file ******************************************************
-
-    funcfile.writelog("Now")
-    funcfile.writelog("SCRIPT: C300_TEST_STUDENT_GENERAL")
-    funcfile.writelog("---------------------------------")
-    print("-------------------------")
-    print("C300_TEST_STUDENT_GENERAL")
-    print("-------------------------")
+    """*****************************************************************************
+    ENVIRONMENT
+    *****************************************************************************"""
 
     # Declare variables
     so_path = "W:/Vss_general/"  # Source database path
@@ -36,10 +53,27 @@ def test_student_general():
     l_mail = True
     l_export = True
 
+    # OPEN THE LOG
+    funcfile.writelog("Now")
+    funcfile.writelog("SCRIPT: C300_TEST_STUDENT_GENERAL")
+    funcfile.writelog("---------------------------------")
+    print("-------------------------")
+    print("C300_TEST_STUDENT_GENERAL")
+    print("-------------------------")
+
+    # MESSAGE
+    if funcconf.l_mess_project:
+        funcsms.send_telegram("", "administrator", "<b>VSS STUDENT</b> master file tests.")
+
+    """*****************************************************************************
+    OPEN THE DATABASES
+    *****************************************************************************"""
+    print("OPEN THE DATABASES")
+    funcfile.writelog("OPEN THE DATABASES")
+
     # Open the SOURCE file
     with sqlite3.connect(so_path+so_file) as so_conn:
         so_curs = so_conn.cursor()
-
     funcfile.writelog("OPEN DATABASE: " + so_file)
 
     # ATTACH VSS DATABASE
@@ -51,23 +85,11 @@ def test_student_general():
     so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss_prev.sqlite' AS 'VSSPREV'")
     funcfile.writelog("%t ATTACH DATABASE: Vss_prev.sqlite")
 
-    """*************************************************************************
-    ***
-    *** CREATE STUDENT ID NUMBER LISTS
-    ***
-    *** Import vss transactions from VSS.SQLITE
-    *** Import vss party data from from VSS.SQLITE
-    *** Import previously reported ID numbers
-    *** Join the vss tran and party data
-    *** Join the previously reported id number list
-    ***   Add prev reported columns
-    *** Export the ytd ID list to report
-    *** Export the current ID list to report
-    *** Add new ID number list to prev reported
-    ***
-    *************************************************************************"""
-
-    print("---------- STUDENT ID NUMBER LIST ----------")
+    """ ****************************************************************************
+    BEGIN OF SCRIPT
+    *****************************************************************************"""
+    print("BEGIN OF SCRIPT")
+    funcfile.writelog("BEGIN OF SCRIPT")
     funcfile.writelog("%t ---------- STUDENT ID NUMBER LIST ----------")
 
     # Import vss transactions from VSS.SQLITE *********************************
@@ -221,6 +243,10 @@ def test_student_general():
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    # MESSAGE
+    if funcconf.l_mess_project:
+        i = funcsys.tablerowcount(so_curs, sr_file)
+        funcsms.send_telegram("", "administrator", "<b> " + str(i) + "</b> " + " Student ID numbers.")
     # Export the data
     if l_export == True and funcsys.tablerowcount(so_curs,sr_file) > 0:
         print("IDNo list export ytd ID list...")
@@ -321,13 +347,31 @@ def test_student_general():
     if l_mail == True:
         funcmail.Mail("vss_list_idno_curr")
 
-    funcfile.writelog("%t **************************************************") 
+    # MESSAGE
+    if funcconf.l_mess_project:
+        funcsms.send_telegram("", "administrator", "<b>VSS STUDENT</b> master file tests end.")
 
-    # Close the table connection ***************************************************
+    """*****************************************************************************
+    End OF SCRIPT
+    *****************************************************************************"""
+    print("END OF SCRIPT")
+    funcfile.writelog("END OF SCRIPT")
+
+    # COMMIT DATA
+    so_conn.commit()
+
+    # CLOSE THE DATABASE CONNECTION
     so_conn.close()
 
-    # Close the log writer *********************************************************
+    # CLOSE THE LOG WRITER
     funcfile.writelog("------------------------------------")
     funcfile.writelog("COMPLETED: C300_TEST_STUDENT_GENERAL")
 
     return
+
+
+if __name__ == '__main__':
+    try:
+        test_student_general()
+    except Exception as e:
+        funcsys.ErrMessage(e, funcconf.l_mess_project, "C300_test_student_general", "C300_test_student_general")
