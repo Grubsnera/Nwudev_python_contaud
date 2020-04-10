@@ -65,7 +65,7 @@ def studdeb_deferments(s_period='curr', s_year='0'):
 
     # MESSAGE
     if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "<b>VSS STUDENT DEFERMENT</b> lists.")
+        funcsms.send_telegram("", "administrator", "<b>Student deferment</b> lists.")
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -779,10 +779,6 @@ def studdeb_deferments(s_period='curr', s_year='0'):
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-    # MESSAGE
-    if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "<b>VSS STUDENT DEFERMENT</b> lists end.")
-
     """ ****************************************************************************
     END OF SCRIPT
     *****************************************************************************"""
@@ -792,6 +788,10 @@ def studdeb_deferments(s_period='curr', s_year='0'):
     # CLOSE THE DATABASE CONNECTION
     so_conn.commit()
     so_conn.close()
+
+    # MESSAGE
+    if funcconf.l_mess_project:
+        funcsms.send_telegram("", "administrator", "<b>Student deferment</b> lists end.")
 
     # CLOSE THE LOG WRITER *********************************************************
     funcfile.writelog("--------------------------------")

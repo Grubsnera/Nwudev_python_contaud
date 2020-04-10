@@ -56,7 +56,7 @@ def vss_lists():
 
     # MESSAGE
     if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "Building <b>vss</b> lists.")
+        funcsms.send_telegram("", "administrator", "<b>Vss</b> lists.")
 
     # OPEN DATABASE
     with sqlite3.connect(so_path+so_file) as so_conn:
@@ -1504,6 +1504,10 @@ def vss_lists():
 
     # CLOSE THE DATABASE CONNECTION
     so_conn.close()
+
+    # MESSAGE
+    if funcconf.l_mess_project:
+        funcsms.send_telegram("", "administrator", "<b>Vss</b> lists end.")
 
     # CLOSE THE LOG WRITER
     funcfile.writelog("-------------------------")

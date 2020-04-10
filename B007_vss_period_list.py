@@ -64,7 +64,7 @@ def vss_period_list(s_period="curr", s_yyyy=""):
 
     # MESSAGE
     if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "Building <b>student " + s_year + "</b> period lists.")
+        funcsms.send_telegram("", "administrator", "<b>Student " + s_year + "</b> period lists.")
 
     # OPEN DATABASE
     with sqlite3.connect(so_path+so_file) as so_conn:
@@ -285,10 +285,14 @@ def vss_period_list(s_period="curr", s_yyyy=""):
     # MESSAGE
     if funcconf.l_mess_project:
         i = funcsys.tablerowcount(so_curs, sr_file)
-        funcsms.send_telegram("", "administrator", "<b>" + str(i) + " " + s_year + "</b> Student account transactions.")
+        funcsms.send_telegram("", "administrator", "<b>" + str(i) + " " + s_year + "</b> transactions.")
 
     # Close the connection *********************************************************
     so_conn.close()
+
+    # MESSAGE
+    if funcconf.l_mess_project:
+        funcsms.send_telegram("", "administrator", "<b>Student " + s_year + "</b> period lists end.")
 
     # Close the log writer *********************************************************
     funcfile.writelog("-------------------------")

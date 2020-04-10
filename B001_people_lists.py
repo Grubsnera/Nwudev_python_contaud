@@ -71,7 +71,7 @@ def people_lists():
 
     # MESSAGE
     if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "<b>PEOPLE</b> master file lists.")
+        funcsms.send_telegram("", "administrator", "<b>People master file</b> file.")
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -1962,7 +1962,7 @@ def people_lists():
 
     # MESSAGE
     if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "<b>PEOPLE</b> master file end.")
+        funcsms.send_telegram("", "administrator", "<b>People master file</b> file end.")
 
     # CLOSE THE LOG WRITER
     funcfile.writelog("----------------------------")
