@@ -71,7 +71,7 @@ def people_lists():
 
     # MESSAGE
     if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "Building <b>people</b> lists.")
+        funcsms.send_telegram("", "administrator", "<b>PEOPLE</b> master file lists.")
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -1496,6 +1496,12 @@ def people_lists():
                                   "CURR",
                                   "Build current people...",
                                   "Y")
+
+    # MESSAGE TO ADMIN
+    if funcconf.l_mess_project:
+        # ACTIVE EMPLOYEES
+        funcsms.send_telegram("", "administrator", "<b>" + str(i_count) + "</b> Active employees.")
+
     if l_export:
         # Data export
         sr_file = "X002_PEOPLE_CURR"
@@ -1942,11 +1948,6 @@ def people_lists():
 
     funcfile.writelog("%t BUILD TABLE:  X102_PER_ABSENCE_ATTENDANCE_TYPES")
 
-    # MESSAGE
-    if funcconf.l_mess_project:
-        # ACTIVE EMPLOYEES
-        funcsms.send_telegram("", "administrator", "<b>" + str(i_count) + "</b> Active employees.")
-
     """*****************************************************************************
     End OF SCRIPT
     *****************************************************************************"""
@@ -1958,6 +1959,10 @@ def people_lists():
 
     # CLOSE THE DATABASE CONNECTION
     so_conn.close()
+
+    # MESSAGE
+    if funcconf.l_mess_project:
+        funcsms.send_telegram("", "administrator", "<b>PEOPLE</b> master file end.")
 
     # CLOSE THE LOG WRITER
     funcfile.writelog("----------------------------")

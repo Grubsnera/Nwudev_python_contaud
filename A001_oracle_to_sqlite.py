@@ -63,10 +63,9 @@ def oracle_to_sqlite(s_table="000b_Table - temp.csv", s_tables="TEMP"):
     funcfile.writelog("-----------------------------")
     funcfile.writelog("TABLESET: " + s_table.upper())
 
-    # MESSAGE
+    # MESSAGE TO ADMIN
     if funcconf.l_mess_project:
-        funcsms.send_telegram('', 'administrator',
-                              'Downloading <b>' + s_tables + '</b> tables from oracle.')
+        funcsms.send_telegram('', 'administrator', '<b>' + s_tables + '</b> from oracle.')
 
     # DATABASE from text ***********************************************************
 
@@ -170,7 +169,7 @@ def oracle_to_sqlite(s_table="000b_Table - temp.csv", s_tables="TEMP"):
                     if l_mess and i_mess == 0:
                         i_mess += 1
                         if funcconf.l_mess_project:
-                            funcsms.send_telegram('', 'administrator', 'Building <b>' + de_fil.lower() + '</b>.')
+                            funcsms.send_telegram('', 'administrator', '<b>' + de_fil.lower() + '</b>.')
 
                 else:
                     continue
@@ -423,8 +422,9 @@ def oracle_to_sqlite(s_table="000b_Table - temp.csv", s_tables="TEMP"):
     funcfile.writelog("--------------------------------")
     funcfile.writelog("COMPLETED: A001_ORACLE_TO_SQLITE")
 
+    # MESSAGE TO ADMIN
     if funcconf.l_mess_project:
-        funcsms.send_telegram('', 'administrator', 'Completed building <b>' + s_tables + '</b> sqlite tables.')
+        funcsms.send_telegram('', 'administrator', '<b>' + s_tables + '</b> from oracle end.')
 
     return
 

@@ -43,9 +43,9 @@ def table_vacuum():
     print("A003_TABLE_VACUUM")
     print("-----------------")
 
-    # SEND MESSAGE
+    # SEND MESSAGE TO ADMIN
     if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "<b>Vacuuming</b> the test finding database tables.")
+        funcsms.send_telegram("", "administrator", "<b>Vacuuming</b> tables.")
 
     """*****************************************************************************
     BEGIN OF SCRIPT
@@ -97,7 +97,7 @@ def table_vacuum():
     print("END OF SCRIPT")
     funcfile.writelog("END OF SCRIPT")
 
-    # SEND MESSAGE
+    # SEND MESSAGE TO ADMIN
     if funcconf.l_mess_project:
         funcsms.send_telegram("", "administrator", "<b>" + str(i_counter) + "</b> Tables vacuumed.")
 
