@@ -40,6 +40,7 @@ PEOPLE PAYROLL LISTS (B004_payroll_lists)(MonTueWedThuFri)
 IMPORT VSS (A001_oracle_to_sqlite(vss))(MonTueWedThuFri)
 VSS LISTS (B003_vss_lists)(MonTueWedThuFri)
 VSS PERIOD LIST (B007_vss_period_list)(MonTueWedThuFri)
+VSS STUDENT DEFERMENT MASTER FILE (C301_report_student_deferment)(MonTueWedThuFri)
 
 THREAD TO RUN SMALL SCRIPT (RunSmall)
 IMPORT KFS (A001_oracle_to_sqlite(kfs))(TueWedThuFriSat)
@@ -55,6 +56,7 @@ PEOPLE TEST MASTER FILE (C001_people_test_masterfile)(MonTueWedThuFri)
 PEOPLE TEST CONFLICT (C002_people_test_conflict)(MonTueWedThuFri)
 VSS STUDENT DEBTOR RECON (C200_report_studdeb_recon)(MonTueWedThuFri)
 VSS STUDENT MASTER FILE TESTS (C300_test_student_general)(Days:01,13)
+VSS STUDENT FEE TESTS AND REPORTS (C302_test_student_fee)(MonTueWedThuFri)
 KFS CREDITOR PAYMENT TESTS (C201_creditor_test_payments)(MonTueWedThuFri)
 KFS GL TRANSACTION TESTS (C202_gl_test_transactions)(MonTueWedThuFri)
 """
@@ -239,6 +241,7 @@ class RunLarge(Thread):
         import B004_payroll_lists
         import B003_vss_lists
         import B007_vss_period_list
+        import C301_report_student_deferment
 
         # DECLARE VARIABLES
         l_clock: bool = False  # Display the local clock
@@ -437,6 +440,34 @@ class RunLarge(Thread):
                             except Exception as err:
                                 # DISABLE VSS TESTS
                                 funcconf.l_run_vss_test = False
+                                # ERROR MESSAGE
+                                funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                                   "NWUIACA:Fail:" + s_project,
+                                                   "NWUIACA: Fail: " + s_project)
+                        else:
+                            print("ORACLE to SQLITE " + s_project + " do not run on Saturdays and Sundays")
+                            if funcconf.l_mess_project:
+                                funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
+                            funcfile.writelog(
+                                "%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
+
+                    # MESSAGE TO ADMIN
+                    if funcconf.l_mess_project:
+                        funcsms.send_telegram('', 'administrator', '<b>LARGE</b> schedule end.')
+
+                    # VSS STUDENT DEFERMENT MASTER FILE ****************************
+                    s_project: str = "C301_report_student_deferment"
+                    if funcconf.l_run_vss_test:
+                        if funcdate.today_dayname() in "MonTueWedThuFri":
+                            try:
+                                C301_report_student_deferment.studdeb_deferments()
+                                if funcconf.l_mail_project:
+                                    funcmail.Mail('std_success_gmail',
+                                                  'NWUIACA:Success:' + s_project,
+                                                  'NWUIACA: Success: ' + s_project)
+                            except Exception as err:
+                                # DISABLE VSS TESTS
+                                # funcconf.l_run_vss_test = False
                                 # ERROR MESSAGE
                                 funcsys.ErrMessage(err, funcconf.l_mail_project,
                                                    "NWUIACA:Fail:" + s_project,
@@ -702,6 +733,7 @@ class RunTest(Thread):
         import C002_people_test_conflict
         import C200_report_studdeb_recon
         import C300_test_student_general
+        import C302_test_student_fee
         import C201_creditor_test_payments
         import C202_gl_test_transactions
 
@@ -846,6 +878,30 @@ class RunTest(Thread):
                         if funcdate.today_day() in "01z13":
                             try:
                                 C300_test_student_general.test_student_general()
+                                if funcconf.l_mail_project:
+                                    funcmail.Mail('std_success_gmail',
+                                                  'NWUIACA:Success:' + s_project,
+                                                  'NWUIACA: Success: ' + s_project)
+                            except Exception as err:
+                                # DISABLE PEOPLE TESTS
+                                # funcconf.l_run_people_test = False
+                                # ERROR MESSAGE
+                                funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                                   "NWUIACA:Fail:" + s_project,
+                                                   "NWUIACA: Fail: " + s_project)
+                        else:
+                            print("ORACLE to SQLITE " + s_project + " only run on 1st and 13th of month")
+                            if funcconf.l_mess_project:
+                                funcsms.send_telegram("", "administrator", s_project + " run 1st and 13th days.")
+                            funcfile.writelog(
+                                "%t SCRIPT: " + s_project.upper() + ": RUN ON 1ST and 13TH DAYS OF MONTH")
+
+                    # VSS STUDENT FEE TESTS AND REPORTS ****************************
+                    s_project: str = "C302_test_student_fee"
+                    if funcconf.l_run_vss_test:
+                        if funcdate.today_dayname() in "MonTueWedThuFri":
+                            try:
+                                C302_test_student_fee.student_fee()
                                 if funcconf.l_mail_project:
                                     funcmail.Mail('std_success_gmail',
                                                   'NWUIACA:Success:' + s_project,
