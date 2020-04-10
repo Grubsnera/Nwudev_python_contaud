@@ -28,10 +28,10 @@ ENVIRONMENT
 * PEOPLE CONFLICT TESTS (C002_people_test_conflict) "MonTueWedThuFri"
 
 * KFS CREDITOR PAYMENT TESTS (C201_creditor_test_payments) "MonTueWedThuFri" 
-KFS GL TEST TRANSACTIONS TESTS (C202_gl_test_transactions) "MonTueWedThuFri"
+* KFS GL TEST TRANSACTIONS TESTS (C202_gl_test_transactions) "MonTueWedThuFri"
 * KFS VSS STUDENT DEBTOR RECONCILIATION AND TESTS (C200_report_studdeb_recon) "MonTueWedThuFri"
 
-VSS STUDENT MASTER FILE TESTS (C300_test_student_general) 
+* VSS STUDENT MASTER FILE TESTS (C300_test_student_general) 
 VSS STUDENT FEE TESTS AND REPORTS (C302_test_student_fee) "MonTueWedThuFri"
 VSS STUDENT DEFERMENT MASTERFILE (C301_report_student_deferment) "MonTueWedThuFri"
 
