@@ -32,8 +32,8 @@ ENVIRONMENT
 * KFS VSS STUDENT DEBTOR RECONCILIATION AND TESTS (C200_report_studdeb_recon) "MonTueWedThuFri"
 
 * VSS STUDENT MASTER FILE TESTS (C300_test_student_general) 
-VSS STUDENT FEE TESTS AND REPORTS (C302_test_student_fee) "MonTueWedThuFri"
-VSS STUDENT DEFERMENT MASTERFILE (C301_report_student_deferment) "MonTueWedThuFri"
+* VSS STUDENT FEE TESTS AND REPORTS (C302_test_student_fee) "MonTueWedThuFri"
+* VSS STUDENT DEFERMENT MASTER FILE (C301_report_student_deferment) "MonTueWedThuFri"
 
 * MYSQL LISTS WEB SERVER (B005_mysql_lists) "TueWedThuFriSat"
 * MYSQL LISTS ACL SERVER (B005_mysql_lists) "TueWedThuFriSat"
@@ -349,13 +349,13 @@ else:
     funcfile.writelog("SCRIPT: C302_TEST_STUDENT_FEE: DO NOT RUN ON SATURDAYS AND SUNDAYS")
 
 """****************************************************************************
-VSS STUDENT DEFERMENT MASTERFILE
+VSS STUDENT DEFERMENT MASTER FILE
 ****************************************************************************"""
 
 if funcdate.today_dayname() in "MonTueWedThuFri":
     import C301_report_student_deferment
     try:
-        C301_report_student_deferment.Studdeb_deferments('curr', funcdate.cur_year())
+        C301_report_student_deferment.studdeb_deferments('curr', funcdate.cur_year())
         if l_mail:
             funcmail.Mail('std_success_gmail', 'NWUIAPython:Success:C301_report_student_deferment',
                           'NWUIAPython: Success: C301_report_student_deferment')
