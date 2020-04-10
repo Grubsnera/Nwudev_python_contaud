@@ -1,7 +1,21 @@
-""" Script to extract STUDENT DEFERMENTS FOR THE CURRENT AND PREVIOUS YEAR *****
-Created on: 19 MAR 2018
+"""
+SCRIPT TO BUILD STUDENT DEFERMENT MASTER FILES
 Author: Albert J v Rensburg (NWU21162395)
-*****************************************************************************"""
+Created: 19 MAR 2018
+Edited: 10 Apr 2020
+"""
+
+# IMPORT PYTHON MODULES
+import csv
+import sqlite3
+
+# IMPORT OWN MODULES
+from _my_modules import funcconf
+from _my_modules import funcdate
+from _my_modules import funccsv
+from _my_modules import funcfile
+from _my_modules import funcsms
+from _my_modules import funcsys
 
 """ INDEX **********************************************************************
 ENVIRONMENT
@@ -16,35 +30,18 @@ CALCULATE DEFERMENT STATUS
 END OF SCRIPT
 *****************************************************************************"""
 
-def Studdeb_deferments(s_period='curr',s_year='0'):
+
+def studdeb_deferments(s_period='curr', s_year='0'):
+    """
+    SCRIPT TO BUILD STUDENT DEFERMENT MASTER FILES
+    :param s_period: str = Financial period in words
+    :param s_year: str = Financial year
+    :return:
+    """
 
     """*****************************************************************************
     ENVIRONMENT
     *****************************************************************************"""
-
-    # IMPORT PYTHON MODULES
-    import sys
-
-    # ADD OWN MODULE PATH
-    sys.path.append('S:/_my_modules')
-
-    # IMPORT PYTHON OBJECTS
-    import csv
-    import datetime
-    import sqlite3
-
-    # IMPORT OWN MODULES
-    import funcdate
-    import funccsv
-    import funcfile
-
-    # SCRIPT LOG FILE
-    funcfile.writelog("Now")
-    funcfile.writelog("SCRIPT: REPORT_VSS_DEFERMENTS")
-    funcfile.writelog("-----------------------------")
-    print("---------------------")    
-    print("REPORT_VSS_DEFERMENTS")
-    print("---------------------")
 
     # DECLARE VARIABLES
     if s_year == '0':
@@ -52,14 +49,23 @@ def Studdeb_deferments(s_period='curr',s_year='0'):
             s_year = funcdate.prev_year()
         else:
             s_year = funcdate.cur_year()
-    so_path = "W:/Vss_deferment/" #Source database path
-    so_file = "Vss_deferment.sqlite" #Source database
-    ed_path = "S:/_external_data/" # External data path
-    re_path = "R:/Vss/"
+    so_path = "W:/Vss_deferment/"  # Source database path
+    so_file = "Vss_deferment.sqlite"  # Source database
+    ed_path = "S:/_external_data/"  # External data path
     l_export: bool = True
     l_mail = False
-    l_record = False
-    l_vacuum = False
+
+    # SCRIPT LOG FILE
+    funcfile.writelog("Now")
+    funcfile.writelog("SCRIPT: REPORT_VSS_DEFERMENTS")
+    funcfile.writelog("-----------------------------")
+    print("---------------------")
+    print("REPORT_VSS_DEFERMENTS")
+    print("---------------------")
+
+    # MESSAGE
+    if funcconf.l_mess_project:
+        funcsms.send_telegram("", "administrator", "<b>VSS STUDENT DEFERMENT</b> lists.")
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -179,19 +185,23 @@ def Studdeb_deferments(s_period='curr',s_year='0'):
       DEFER.ENDDATE <= Date('%YEARE%')
     """
     if s_period == "curr":
-        s_sql = s_sql.replace("%YEARB%",funcdate.cur_yearbegin())
-        s_sql = s_sql.replace("%YEARE%",funcdate.cur_yearend())
+        s_sql = s_sql.replace("%YEARB%", funcdate.cur_yearbegin())
+        s_sql = s_sql.replace("%YEARE%", funcdate.cur_yearend())
     elif s_period == "prev":
-        s_sql = s_sql.replace("%YEARB%",funcdate.prev_yearbegin())
-        s_sql = s_sql.replace("%YEARE%",funcdate.prev_yearend())
+        s_sql = s_sql.replace("%YEARB%", funcdate.prev_yearbegin())
+        s_sql = s_sql.replace("%YEARE%", funcdate.prev_yearend())
     else:
-        s_sql = s_sql.replace("%YEARB%",s_year + "-01-01")
-        s_sql = s_sql.replace("%YEARE%",s_year + "-12-31")
+        s_sql = s_sql.replace("%YEARB%", s_year + "-01-01")
+        s_sql = s_sql.replace("%YEARE%", s_year + "-12-31")
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    # MESSAGE
+    if funcconf.l_mess_project:
+        i = funcsys.tablerowcount(so_curs, sr_file)
+        funcsms.send_telegram("", "administrator", "<b>" + str(i) + " " + s_year + "</b> Deferments.")
     # Export the declaration data
-    if l_export == True:
+    if l_export:
         if s_period == "curr":
             sx_path = "R:/Debtorstud/" + funcdate.cur_year() + "/"
         elif s_period == "prev":
@@ -213,7 +223,7 @@ def Studdeb_deferments(s_period='curr',s_year='0'):
     # OBTAIN THE LIST STUDENTS
     print("Obtain the registered students...")
     sr_file = "X000_Students"
-    s_sql = "CREATE TABLE " + sr_file+ " AS" + """
+    s_sql = "CREATE TABLE " + sr_file + " AS" + """
     SELECT
       STUD.*,
       CASE
@@ -244,7 +254,7 @@ def Studdeb_deferments(s_period='curr',s_year='0'):
     # OBTAIN STUDENT ACCOUNT TRANSACTIONS
     print("Import student transactions...")
     sr_file = "X000_Transaction"
-    s_sql = "CREATE TABLE " + sr_file+ " AS" + """
+    s_sql = "CREATE TABLE " + sr_file + " AS" + """
     Select
       TRAN.FBUSENTID As STUDENT,
       CASE
@@ -286,7 +296,7 @@ def Studdeb_deferments(s_period='curr',s_year='0'):
     # CALCULATE THE STUDENT ACCOUNT OPENING BALANCE
     print("Calculate the account opening balance...")
     sr_file = "X001aa_Trans_balopen"
-    s_sql = "CREATE VIEW " + sr_file+ " AS" + """
+    s_sql = "CREATE VIEW " + sr_file + " AS" + """
     SELECT
       TRAN.STUDENT,
       CAST(ROUND(TOTAL(TRAN.AMOUNT),2) AS REAL) AS BAL_OPEN
@@ -304,7 +314,7 @@ def Studdeb_deferments(s_period='curr',s_year='0'):
     # CALCULATE THE REGISTRATION FEES LEVIED
     print("Calculate the registration fee transactions...")
     sr_file = "X001ab_Trans_feereg"
-    s_sql = "CREATE VIEW " + sr_file+ " AS" + """
+    s_sql = "CREATE VIEW " + sr_file + " AS" + """
     SELECT
       TRAN.STUDENT,
       CAST(ROUND(TOTAL(TRAN.AMOUNT),2) AS REAL) AS FEE_REG
@@ -323,7 +333,7 @@ def Studdeb_deferments(s_period='curr',s_year='0'):
     # ADD THE REGISTRATION DATE TO THE LIST OF TRANSACTIONS
     print("Add the registration date to the list of transactions...")
     sr_file = "X001ac_Trans_addreg"
-    s_sql = "CREATE VIEW " + sr_file+ " AS" + """
+    s_sql = "CREATE VIEW " + sr_file + " AS" + """
     SELECT
       TRAN.*,
       STUD.DATEENROL_CALC
@@ -338,7 +348,7 @@ def Studdeb_deferments(s_period='curr',s_year='0'):
     # CALCULATE THE STUDENT ACCOUNT BALANCE ON REGISTRATION DATE
     print("Calculate the account balance on registration date...")
     sr_file = "X001ad_Trans_balreg"
-    s_sql = "CREATE VIEW " + sr_file+ " AS" + """
+    s_sql = "CREATE VIEW " + sr_file + " AS" + """
     SELECT
       TRAN.STUDENT,
       CAST(ROUND(TOTAL(TRAN.AMOUNT),2) AS REAL) AS BAL_REG
@@ -356,7 +366,7 @@ def Studdeb_deferments(s_period='curr',s_year='0'):
     # CALCULATE THE STUDENT ACCOUNT CREDIT TRANSACTIONS BEFORE REGISTRATION
     print("Calculate the credits after registration date...")
     sr_file = "X001ae_Trans_crebefreg"
-    s_sql = "CREATE VIEW " + sr_file+ " AS" + """
+    s_sql = "CREATE VIEW " + sr_file + " AS" + """
     SELECT
       TRAN.STUDENT,
       CAST(ROUND(TOTAL(TRAN.AMOUNT_CR),2) AS REAL) AS CRE_REG_BEFORE
@@ -376,7 +386,7 @@ def Studdeb_deferments(s_period='curr',s_year='0'):
     # CALCULATE THE STUDENT ACCOUNT CREDIT TRANSACTIONS AFTER REGISTRATION
     print("Calculate the credits after registration date...")
     sr_file = "X001af_Trans_creaftreg"
-    s_sql = "CREATE VIEW " + sr_file+ " AS" + """
+    s_sql = "CREATE VIEW " + sr_file + " AS" + """
     SELECT
       TRAN.STUDENT,
       CAST(ROUND(TOTAL(TRAN.AMOUNT_CR),2) AS REAL) AS CRE_REG_AFTER
@@ -396,7 +406,7 @@ def Studdeb_deferments(s_period='curr',s_year='0'):
     # CALCULATE THE STUDENT ACCOUNT BALANCE
     print("Calculate the account balance...")
     sr_file = "X001ag_Trans_balance"
-    s_sql = "CREATE VIEW " + sr_file+ " AS" + """
+    s_sql = "CREATE VIEW " + sr_file + " AS" + """
     SELECT
       TRAN.STUDENT,
       CAST(ROUND(TOTAL(TRAN.AMOUNT),2) AS REAL) AS BAL_CUR
@@ -412,7 +422,7 @@ def Studdeb_deferments(s_period='curr',s_year='0'):
     # CALCULATE THE DEFERMENT DATE
     print("Calculate the deferment date per student...")
     sr_file = "X002aa_Defer_date"
-    s_sql = "CREATE VIEW " + sr_file+ " AS" + """
+    s_sql = "CREATE VIEW " + sr_file + " AS" + """
     Select
         DEFER.STUDENT,
         DEFER.DATEEND
@@ -430,7 +440,7 @@ def Studdeb_deferments(s_period='curr',s_year='0'):
     # CALCULATE THE STUDENT ACCOUNT CREDIT TRANSACTIONS BEFORE DEFERMENT DATE
     print("Calculate the credits up to deferment date...")
     sr_file = "X002ab_Trans_crebefdef"
-    s_sql = "CREATE VIEW " + sr_file+ " AS" + """
+    s_sql = "CREATE VIEW " + sr_file + " AS" + """
     Select
         TRAN.STUDENT,
         Cast(Round(Total(TRAN.AMOUNT_CR),2) As REAL) As CRE_DEF_BEFORE
@@ -457,7 +467,7 @@ def Studdeb_deferments(s_period='curr',s_year='0'):
     # ADD THE BALANCES TO THE LIST OF REGISTERED STUDENTS
     print("Add the calculated balances to the students list...")
     sr_file = "X001aa_Students"
-    s_sql = "CREATE TABLE " + sr_file+ " AS" + """
+    s_sql = "CREATE TABLE " + sr_file + " AS" + """
     Select
       STUD.*,
       BOPEN.BAL_OPEN,
@@ -524,7 +534,7 @@ def Studdeb_deferments(s_period='curr',s_year='0'):
     # CALCULATE THE STUDENT ACCOUNT CREDIT TRANSACTIONS BEFORE REGISTRATION
     print("Join students and deferments...")
     sr_file = "X001ab_Students_deferment"
-    s_sql = "CREATE TABLE " + sr_file+ " AS" + """
+    s_sql = "CREATE TABLE " + sr_file + " AS" + """
     Select
         X001aa_Students.*,
         X000_Deferments_select.*
@@ -559,12 +569,12 @@ def Studdeb_deferments(s_period='curr',s_year='0'):
         ELSE 8
     END;"""
     if s_period == "curr":
-        s_sql = s_sql.replace("%YEARE%",funcdate.cur_yearend())
+        s_sql = s_sql.replace("%YEARE%", funcdate.cur_yearend())
     elif s_period == "prev":
-        s_sql = s_sql.replace("%YEARE%",funcdate.prev_yearend())
+        s_sql = s_sql.replace("%YEARE%", funcdate.prev_yearend())
     else:
-        s_sql = s_sql.replace("%YEARE%",s_year + "-12-31")
-    s_sql = s_sql.replace("%TODAY%",funcdate.today())    
+        s_sql = s_sql.replace("%YEARE%", s_year + "-12-31")
+    s_sql = s_sql.replace("%TODAY%", funcdate.today())
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t ADD COLUMN: DEFER_TYPE")
@@ -597,7 +607,7 @@ def Studdeb_deferments(s_period='curr',s_year='0'):
     # FINAL DEFERMENTS TABLE
     print("Build the final deferments table...")
     sr_file = "X001ax_Deferments_final_"+s_period
-    s_sql = "CREATE TABLE " + sr_file+ " AS" + """
+    s_sql = "CREATE TABLE " + sr_file + " AS" + """
     Select
         Case
             When DEFER.FSITEORGUNITNUMBER = -9 Then 'MAFIKENG'
@@ -664,7 +674,7 @@ def Studdeb_deferments(s_period='curr',s_year='0'):
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     # Export the declaration data
-    if l_export == True:      
+    if l_export:
         if s_period == "curr":
             sx_path = "R:/Debtorstud/" + funcdate.cur_year() + "/"
         elif s_period == "prev":
@@ -680,7 +690,7 @@ def Studdeb_deferments(s_period='curr',s_year='0'):
     # SUMMARIZE
     print("Summarize registrations with accounts...")
     sr_file = "X001ac_Students_deferment_summ_"+s_period
-    s_sql = "CREATE TABLE " + sr_file+ " AS" + """
+    s_sql = "CREATE TABLE " + sr_file + " AS" + """
     Select
         '%YEAR%' As YEAR,
         DEFER.CAMPUS,
@@ -701,12 +711,12 @@ def Studdeb_deferments(s_period='curr',s_year='0'):
         DEFER.DEFER_TYPE
     """
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = s_sql.replace("%PERIOD%",s_period)
-    s_sql = s_sql.replace("%YEAR%",s_year)
+    s_sql = s_sql.replace("%PERIOD%", s_period)
+    s_sql = s_sql.replace("%YEAR%", s_year)
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     # Export the summary
-    if l_export == True:      
+    if l_export:
         if s_period == "curr":
             sx_path = "R:/Debtorstud/" + funcdate.cur_year() + "/"
         elif s_period == "prev":
@@ -736,7 +746,6 @@ def Studdeb_deferments(s_period='curr',s_year='0'):
     # GET PREVIOUS YEAR SUMMARIES
     sr_file = "X001ad_Deferment_summ"
     print("Import previous deferment summaries...")
-    s_cols = ""
     co = open(ed_path + "301_Deferment_summ.csv", "r")
     co_reader = csv.reader(co)
     # Read the COLUMN database data
@@ -770,6 +779,10 @@ def Studdeb_deferments(s_period='curr',s_year='0'):
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
+    # MESSAGE
+    if funcconf.l_mess_project:
+        funcsms.send_telegram("", "administrator", "<b>VSS STUDENT DEFERMENT</b> lists end.")
+
     """ ****************************************************************************
     END OF SCRIPT
     *****************************************************************************"""
@@ -777,11 +790,6 @@ def Studdeb_deferments(s_period='curr',s_year='0'):
     funcfile.writelog("END OF SCRIPT")
 
     # CLOSE THE DATABASE CONNECTION
-    if l_vacuum == True:
-        print("Vacuum the database...")
-        so_conn.commit()
-        so_conn.execute('VACUUM')
-        funcfile.writelog("%t VACUUM DATABASE: " + so_file)
     so_conn.commit()
     so_conn.close()
 
@@ -790,3 +798,10 @@ def Studdeb_deferments(s_period='curr',s_year='0'):
     funcfile.writelog("COMPLETED: REPORT_VSS_DEFERMENTS")
 
     return
+
+
+if __name__ == '__main__':
+    try:
+        studdeb_deferments()
+    except Exception as e:
+        funcsys.ErrMessage(e, funcconf.l_mess_project, "C301_report_student_deferment", "C301_report_student_deferment")
