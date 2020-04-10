@@ -28,8 +28,6 @@ def payroll_lists():
     SECONDARY ASSIGNMENTS
     *************************************************************************"""
 
-    # Open the script log file ******************************************************
-
     # Declare variables
     so_path: str = "W:/People_payroll/"  # Source database path
     so_file: str = "People_payroll.sqlite"  # Source database
@@ -501,6 +499,7 @@ def payroll_lists():
     funcfile.writelog("COMPLETED: B004_PAYROLL_LISTS")
 
     return
+
 
 if __name__ == '__main__':
     try:
