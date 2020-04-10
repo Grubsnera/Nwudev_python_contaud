@@ -53,8 +53,10 @@ THREAD TO RUN TEST SCRIPT (RunTest)
 UPDATE LOG (A002_log) "MonTueWedThuFriSatSun"
 PEOPLE TEST MASTER FILE (C001_people_test_masterfile)(MonTueWedThuFri)
 PEOPLE TEST CONFLICT (C002_people_test_conflict)(MonTueWedThuFri)
-STUDENT DEBTOR RECON (C200_report_studdeb_recon)(MonTueWedThuFri)
+VSS STUDENT DEBTOR RECON (C200_report_studdeb_recon)(MonTueWedThuFri)
+VSS STUDENT MASTER FILE TESTS (C300_test_student_general)(Days:01,13)
 KFS CREDITOR PAYMENT TESTS (C201_creditor_test_payments)(MonTueWedThuFri)
+KFS GL TRANSACTION TESTS (C202_gl_test_transactions)(MonTueWedThuFri)
 """
 
 # ENABLE LOGGING
@@ -699,7 +701,9 @@ class RunTest(Thread):
         import C001_people_test_masterfile
         import C002_people_test_conflict
         import C200_report_studdeb_recon
+        import C300_test_student_general
         import C201_creditor_test_payments
+        import C202_gl_test_transactions
 
         # DECLARE VARIABLES
         l_clock: bool = False  # Display the local clock
@@ -807,7 +811,7 @@ class RunTest(Thread):
                             funcfile.writelog(
                                 "%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
 
-                    # STUDENT DEBTOR RECON *****************************************
+                    # VSS STUDENT DEBTOR RECON *************************************
                     s_project: str = "C200_report_studdeb_recon"
                     if funcconf.l_run_people_test and funcconf.l_run_kfs_test and funcconf.l_run_vss_test:
                         if funcdate.today_dayname() in "MonTueWedThuFri":
@@ -836,6 +840,30 @@ class RunTest(Thread):
                             funcfile.writelog(
                                 "%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
 
+                    # VSS STUDENT MASTER FILE TESTS ********************************
+                    s_project: str = "C300_test_student_general"
+                    if funcconf.l_run_vss_test:
+                        if funcdate.today_day() in "01z13":
+                            try:
+                                C300_test_student_general.test_student_general()
+                                if funcconf.l_mail_project:
+                                    funcmail.Mail('std_success_gmail',
+                                                  'NWUIACA:Success:' + s_project,
+                                                  'NWUIACA: Success: ' + s_project)
+                            except Exception as err:
+                                # DISABLE PEOPLE TESTS
+                                # funcconf.l_run_people_test = False
+                                # ERROR MESSAGE
+                                funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                                   "NWUIACA:Fail:" + s_project,
+                                                   "NWUIACA: Fail: " + s_project)
+                        else:
+                            print("ORACLE to SQLITE " + s_project + " only run on 1st and 13th of month")
+                            if funcconf.l_mess_project:
+                                funcsms.send_telegram("", "administrator", s_project + " run 1st and 13th days.")
+                            funcfile.writelog(
+                                "%t SCRIPT: " + s_project.upper() + ": RUN ON 1ST and 13TH DAYS OF MONTH")
+
                     # KFS CREDITOR PAYMENT TESTS ***********************************
                     s_project: str = "C201_creditor_test_payments"
                     if funcconf.l_run_kfs_test:
@@ -860,7 +888,31 @@ class RunTest(Thread):
                             funcfile.writelog(
                                 "%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
 
-                    # MESSAGE TO ADMIN
+                    # KFS GL TRANSACTION TESTS *************************************
+                    s_project: str = "C202_gl_test_transactions"
+                    if funcconf.l_run_kfs_test:
+                        if funcdate.today_dayname() in "MonTueWedThuFri":
+                            try:
+                                C202_gl_test_transactions.gl_test_transactions()
+                                if funcconf.l_mail_project:
+                                    funcmail.Mail('std_success_gmail',
+                                                  'NWUIACA:Success:' + s_project,
+                                                  'NWUIACA: Success: ' + s_project)
+                            except Exception as err:
+                                # DISABLE PEOPLE TESTS
+                                # funcconf.l_run_kfs_test = False
+                                # ERROR MESSAGE
+                                funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                                   "NWUIACA:Fail:" + s_project,
+                                                   "NWUIACA: Fail: " + s_project)
+                        else:
+                            print("ORACLE to SQLITE " + s_project + " do not run on Saturdays and Sundays")
+                            if funcconf.l_mess_project:
+                                funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
+                            funcfile.writelog(
+                                "%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
+
+                    # MESSAGE TO ADMIN *********************************************
                     if funcconf.l_mess_project:
                         funcsms.send_telegram('', 'administrator', '<b>TEST</b> schedule end.')
 
