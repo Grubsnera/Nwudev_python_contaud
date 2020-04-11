@@ -65,7 +65,7 @@ def oracle_to_sqlite(s_table="000b_Table - temp.csv", s_tables="TEMP"):
 
     # MESSAGE TO ADMIN
     if funcconf.l_mess_project:
-        funcsms.send_telegram('', 'administrator', '<b>' + s_tables + '</b> from oracle.')
+        funcsms.send_telegram('', 'administrator', '<b>' + s_tables + '</b> data from oracle.')
 
     # DATABASE from text ***********************************************************
 
@@ -169,7 +169,7 @@ def oracle_to_sqlite(s_table="000b_Table - temp.csv", s_tables="TEMP"):
                     if l_mess and i_mess == 0:
                         i_mess += 1
                         if funcconf.l_mess_project:
-                            funcsms.send_telegram('', 'administrator', '<b>' + de_fil.lower() + '</b>.')
+                            funcsms.send_telegram('', 'administrator', de_fil.lower())
 
                 else:
                     continue
@@ -423,8 +423,8 @@ def oracle_to_sqlite(s_table="000b_Table - temp.csv", s_tables="TEMP"):
     funcfile.writelog("COMPLETED: A001_ORACLE_TO_SQLITE")
 
     # MESSAGE TO ADMIN
-    if funcconf.l_mess_project:
-        funcsms.send_telegram('', 'administrator', '<b>' + s_tables + '</b> from oracle end.')
+    # if funcconf.l_mess_project:
+    #     funcsms.send_telegram('', 'administrator', '<b>' + s_tables + '</b> from oracle end.')
 
     return
 
