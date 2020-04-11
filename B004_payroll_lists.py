@@ -44,7 +44,7 @@ def payroll_lists():
 
     # MESSAGE
     if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "<b>Payroll lists.</b>")
+        funcsms.send_telegram("", "administrator", "<b>Payroll list.</b>")
 
     # Open the SOURCE file
     with sqlite3.connect(so_path+so_file) as so_conn:

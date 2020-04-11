@@ -48,7 +48,7 @@ def people_list_masterfile():
 
     # MESSAGE
     if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "<b>People master file lists.</b>")
+        funcsms.send_telegram("", "administrator", "<b>People master list.</b>")
 
     """*****************************************************************************
     OPEN THE DATABASES

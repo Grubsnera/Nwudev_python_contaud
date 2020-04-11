@@ -56,7 +56,7 @@ def vss_lists():
 
     # MESSAGE
     if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "<b>Vss</b> lists.")
+        funcsms.send_telegram("", "administrator", "<b>Vss master list.</b>.")
 
     # OPEN DATABASE
     with sqlite3.connect(so_path+so_file) as so_conn:
@@ -1488,10 +1488,10 @@ def vss_lists():
     if funcconf.l_mess_project:
         sr_file = "X000_Qualifications"
         i = funcsys.tablerowcount(so_curs, sr_file)
-        funcsms.send_telegram("", "administrator", "<b>" + str(i) + "</b> Qualifications.")
+        funcsms.send_telegram("", "administrator", str(i) + " Qualifications.")
         sr_file = "X000_Modules"
         i = funcsys.tablerowcount(so_curs, sr_file)
-        funcsms.send_telegram("", "administrator", "<b>" + str(i) + "</b> Modules.")
+        funcsms.send_telegram("", "administrator", str(i) + "Modules.")
 
     """*****************************************************************************
     END OF SCRIPT
@@ -1506,8 +1506,8 @@ def vss_lists():
     so_conn.close()
 
     # MESSAGE
-    if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "<b>Vss</b> lists end.")
+    # if funcconf.l_mess_project:
+    #     funcsms.send_telegram("", "administrator", "<b>Vss</b> lists end.")
 
     # CLOSE THE LOG WRITER
     funcfile.writelog("-------------------------")
