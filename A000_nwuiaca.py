@@ -133,7 +133,7 @@ class RunVacuum(Thread):
 
         # SEND MESSAGE TO INDICATE START OF VACUUM THREAD
         if funcconf.l_mess_project:
-            funcsms.send_telegram("", "administrator", "<b>VACUUM</b> thread started!")
+            funcsms.send_telegram("", "administrator", "Vacuum thread started!")
 
         # DO UNTIL GLOBAL l_run_system IS FALSE
         while True:
@@ -142,7 +142,7 @@ class RunVacuum(Thread):
 
                 # DISPLAY THE LOCAL TIME
                 if l_clock:
-                    print("VACUUM thread" + time.strftime("%T", time.localtime()))
+                    print("Vacuum thread" + time.strftime("%T", time.localtime()))
 
                 # SEND MESSAGE TO INDICATE START OF WORKING DAY
                 if funcconf.l_mess_project:
@@ -175,7 +175,7 @@ class RunVacuum(Thread):
 
                     # MESSAGE TO ADMIN
                     if funcconf.l_mess_project:
-                        funcsms.send_telegram('', 'administrator', '<b>VACUUM</b> schedule start.')
+                        funcsms.send_telegram('', 'administrator', 'Vacuum schedule start.')
 
                     # SET DATE AND TIME FOR NEXT RUN
                     if time.strftime("%R", time.localtime()) <= "15:55":
@@ -211,7 +211,7 @@ class RunVacuum(Thread):
 
                     # MESSAGE TO ADMIN
                     if funcconf.l_mess_project:
-                        funcsms.send_telegram('', 'administrator', '<b>VACUUM</b> schedule end.')
+                        funcsms.send_telegram('', 'administrator', 'Vacuum schedule end.')
 
                     """*************************************************************
                     VACUUM SCHEDULE END
@@ -249,7 +249,7 @@ class RunLarge(Thread):
 
         # SEND MESSAGE TO INDICATE START OF LARGE THREAD
         if funcconf.l_mess_project:
-            funcsms.send_telegram("", "administrator", "<b>LARGE</b> thread started!")
+            funcsms.send_telegram("", "administrator", "Large thread started!")
 
         # DO UNTIL GLOBAL l_run_system IS FALSE
         while True:
@@ -270,7 +270,7 @@ class RunLarge(Thread):
 
                     # MESSAGE TO ADMIN
                     if funcconf.l_mess_project:
-                        funcsms.send_telegram('', 'administrator', '<b>LARGE</b> schedule start.')
+                        funcsms.send_telegram('', 'administrator', 'Large schedule start.')
 
                     # SET DATE AND TIME FOR NEXT RUN
                     if time.strftime("%R", time.localtime()) <= "17:55":
@@ -453,7 +453,7 @@ class RunLarge(Thread):
 
                     # MESSAGE TO ADMIN
                     if funcconf.l_mess_project:
-                        funcsms.send_telegram('', 'administrator', '<b>LARGE</b> schedule end.')
+                        funcsms.send_telegram('', 'administrator', 'Large schedule end.')
 
                     # VSS STUDENT DEFERMENT MASTER FILE ****************************
                     s_project: str = "C301_report_student_deferment"
@@ -522,7 +522,7 @@ class RunSmall(Thread):
 
         # SEND MESSAGE TO INDICATE START OF SMALL THREAD
         if funcconf.l_mess_project:
-            funcsms.send_telegram("", "administrator", "<b>SMALL</b> thread started!")
+            funcsms.send_telegram("", "administrator", "Small thread started!")
 
         # DO UNTIL GLOBAL l_run_system IS FALSE
         while True:
@@ -549,7 +549,7 @@ class RunSmall(Thread):
 
                     # MESSAGE TO ADMIN
                     if funcconf.l_mess_project:
-                        funcsms.send_telegram('', 'administrator', '<b>SMALL</b> schedule start.')
+                        funcsms.send_telegram('', 'administrator', 'Small schedule start.')
 
                     # SET DATE AND TIME FOR NEXT RUN
                     if time.strftime("%R", time.localtime()) <= "23:59":
@@ -699,7 +699,7 @@ class RunSmall(Thread):
 
                     # MESSAGE TO ADMIN
                     if funcconf.l_mess_project:
-                        funcsms.send_telegram('', 'administrator', '<b>SMALL</b> schedule end.')
+                        funcsms.send_telegram('', 'administrator', 'Small schedule end.')
 
                     """*************************************************************
                     SMALL SCHEDULE END
@@ -743,7 +743,7 @@ class RunTest(Thread):
 
         # SEND MESSAGE TO INDICATE START OF TEST THREAD
         if funcconf.l_mess_project:
-            funcsms.send_telegram("", "administrator", "<b>TEST</b> thread started!")
+            funcsms.send_telegram("", "administrator", "Test thread started!")
 
         # DO UNTIL GLOBAL l_run_system IS FALSE
         while True:
@@ -764,7 +764,7 @@ class RunTest(Thread):
 
                     # MESSAGE TO ADMIN
                     if funcconf.l_mess_project:
-                        funcsms.send_telegram('', 'administrator', '<b>TEST/b> schedule start.')
+                        funcsms.send_telegram('', 'administrator', 'Test schedule start.')
 
                     # SET DATE AND TIME FOR NEXT RUN
                     if time.strftime("%R", time.localtime()) <= "23:59":
@@ -970,7 +970,7 @@ class RunTest(Thread):
 
                     # MESSAGE TO ADMIN *********************************************
                     if funcconf.l_mess_project:
-                        funcsms.send_telegram('', 'administrator', '<b>TEST</b> schedule end.')
+                        funcsms.send_telegram('', 'administrator', '<b>Test schedule end.')
 
                     """*************************************************************
                     TEST SCHEDULE END

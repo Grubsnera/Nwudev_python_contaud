@@ -743,7 +743,7 @@ class RunTest(Thread):
 
         # SEND MESSAGE TO INDICATE START OF TEST THREAD
         if funcconf.l_mess_project:
-            funcsms.send_telegram("", "administrator", "<b>Test  thread started!")
+            funcsms.send_telegram("", "administrator", "Test thread started!")
 
         # DO UNTIL GLOBAL l_run_system IS FALSE
         while True:
