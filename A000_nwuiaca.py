@@ -451,10 +451,6 @@ class RunLarge(Thread):
                             funcfile.writelog(
                                 "%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
 
-                    # MESSAGE TO ADMIN
-                    if funcconf.l_mess_project:
-                        funcsms.send_telegram('', 'administrator', 'Large schedule end.')
-
                     # VSS STUDENT DEFERMENT MASTER FILE ****************************
                     s_project: str = "C301_report_student_deferment"
                     if funcconf.l_run_vss_test:
@@ -481,7 +477,7 @@ class RunLarge(Thread):
 
                     # MESSAGE TO ADMIN
                     if funcconf.l_mess_project:
-                        funcsms.send_telegram('', 'administrator', '<b>LARGE</b> schedule end.')
+                        funcsms.send_telegram('', 'administrator', 'Large schedule end.')
 
                     """*************************************************************
                     END OF LARGE SCHEDULE
