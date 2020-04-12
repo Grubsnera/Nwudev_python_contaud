@@ -7,8 +7,12 @@ import csv
 # IMPORT OWN MODULES
 from _my_modules import funcsms
 
-# FETCH UPDATES
-print(funcsms.get_telegram_all())
+# FETCH UPDATES / ALL MESSAGES FROM TELEGRAM
+# print(funcsms.get_telegram_all())
 
-# SEND FIRST MESSAGE
-# print(funcsms.send_telegram("Dear", "administrator", 'Test message from <b>Telegram @nwuia_bot</b> robot.'))
+# TEST GET USER DETAILS
+s_receive = funcsms.get_mobile_user(1111961873, "role", True)
+print(s_receive)
+
+
+
