@@ -58,7 +58,7 @@ def gl_test_transactions():
 
     # MESSAGE
     if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "<b>KFS GL</b> transaction tests.")
+        funcsms.send_telegram("", "administrator", "<b>Kfs gl transaction test.</b>")
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -503,10 +503,6 @@ def gl_test_transactions():
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
-    # MESSAGE
-    if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "<b>KFS GL</b> transaction tests end.")
 
     """ ****************************************************************************
     END OF SCRIPT
