@@ -61,7 +61,7 @@ def mysql_lists(s_database):
 
     # MESSAGE
     if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "Update <b>mysql server</b>.")
+        funcsms.send_telegram("", "administrator", "<b>Mysql server (" + s_schema + ")</b>")
 
     """*****************************************************************************
     OPEN THE MYSQL DATABASES
@@ -243,7 +243,7 @@ def mysql_lists(s_database):
     print("Inserted " + str(i_tota) + " mysql current people...")
     funcfile.writelog("%t POPULATE MYSQL: " + str(i_tota) + " PEOPLE CURRENT rows (ia_people)")
     if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "Inserted <b>" + str(i_tota) + "</b> mysql current people.")
+        funcsms.send_telegram("", "administrator", "<b>" + str(i_tota) + "</b> People upload (" + s_schema + ")")
 
     # Update MYSQL PEOPLE TO WEB FINDING mail trigger ******************************
     if s_database == "Web_ia_nwu":
@@ -493,7 +493,7 @@ def mysql_lists(s_database):
     print("Inserted " + str(i_tota) + " rows...")
     funcfile.writelog("%t POPULATE MYSQL: " + str(i_tota) + " STUD DEBT MONTHLY BAL rows (ia_finding_5)")
     if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "Inserted <b>" + str(i_tota) + "</b> mysql student debtor monthly balances.")
+        funcsms.send_telegram("", "administrator", "<b>" + str(i_tota) + "</b> Student debtor balance upload (" + s_schema + ")")
 
     """*****************************************************************************
     EXPORT STUD DEBTOR COMPARISON CAMPUS MONTH SUMMARY

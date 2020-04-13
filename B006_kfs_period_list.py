@@ -71,7 +71,7 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
 
     # MESSAGE
     if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "Building <b>kfs " + s_year + "</b> transactions.")
+        funcsms.send_telegram("", "administrator", "<b>Kfs " + s_year + " period lists</b>")
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -156,7 +156,7 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
     # MESSAGE
     if funcconf.l_mess_project:
         i = funcsys.tablerowcount(so_curs, sr_file)
-        funcsms.send_telegram("", "administrator", "<b>" + str(i) + " " + s_year + "</b> General ledger transactions.")
+        funcsms.send_telegram("", "administrator", "<b>" + str(i) + " " + s_year + "</b> GL transactions")
 
     """ ****************************************************************************
     PAYMENT SUMMARY LIST
@@ -198,7 +198,7 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
     # MESSAGE
     if funcconf.l_mess_project:
         i = funcsys.tablerowcount(so_curs, sr_file)
-        funcsms.send_telegram("", "administrator", "<b>" + str(i) + " " + s_year + "</b> Payment transactions.")
+        funcsms.send_telegram("", "administrator", "<b>" + str(i) + " " + s_year + "</b> Payments")
 
     """ ****************************************************************************
     PAYMENT INITIATE LIST

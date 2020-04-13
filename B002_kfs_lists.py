@@ -51,7 +51,7 @@ def kfs_lists():
 
     # MESSAGE
     if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "Building <b>kfs</b> lists.")
+        funcsms.send_telegram("", "administrator", "<b>Kfs lists</b>")
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -680,10 +680,10 @@ def kfs_lists():
     if funcconf.l_mess_project:
         sr_file = "X000_Account"
         i = funcsys.tablerowcount(so_curs, sr_file)
-        funcsms.send_telegram("", "administrator", "<b> " + str(i) + "</b> " + " Accounts.")
+        funcsms.send_telegram("", "administrator", "<b> " + str(i) + "</b> " + " Accounts")
         sr_file = "X000_Vendor"
         i = funcsys.tablerowcount(so_curs, sr_file)
-        funcsms.send_telegram("", "administrator", "<b> " + str(i) + "</b> " + " Vendors.")
+        funcsms.send_telegram("", "administrator", "<b> " + str(i) + "</b> " + " Vendors")
 
     """ ****************************************************************************
     END OF SCRIPT

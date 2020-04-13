@@ -545,7 +545,7 @@ class RunSmall(Thread):
 
                     # MESSAGE TO ADMIN
                     if funcconf.l_mess_project:
-                        funcsms.send_telegram('', 'administrator', 'Small schedule start.')
+                        funcsms.send_telegram('', 'administrator', '<b>Small schedule started</b>')
 
                     # SET DATE AND TIME FOR NEXT RUN
                     if time.strftime("%R", time.localtime()) <= "23:59":
@@ -695,7 +695,7 @@ class RunSmall(Thread):
 
                     # MESSAGE TO ADMIN
                     if funcconf.l_mess_project:
-                        funcsms.send_telegram('', 'administrator', 'Small schedule end.')
+                        funcsms.send_telegram('', 'administrator', '<b>Small schedule ended</b>')
 
                     """*************************************************************
                     SMALL SCHEDULE END
