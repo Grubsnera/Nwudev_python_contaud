@@ -88,7 +88,7 @@ def main():
 
     # ON DIFFERENT COMMANDS - ANSWER IN TELEGRAM
     dp.add_handler(CommandHandler("hi", funcbott.hi))
-    dp.add_handler(CommandHandler("help", funcbott.help))
+    dp.add_handler(CommandHandler("helping", funcbott.helping))
     dp.add_handler(CommandHandler("set", funcbott.set_schedule, pass_args=True))
     dp.add_handler(CommandHandler("switch", funcbott.switch, pass_args=True))
 
@@ -871,7 +871,7 @@ class RunTest(Thread):
                     # VSS STUDENT MASTER FILE TESTS ********************************
                     s_project: str = "C300_test_student_general"
                     if funcconf.l_run_vss_test:
-                        if funcdate.today_day() in "01z13":
+                        if funcdate.today() in "01z13":
                             try:
                                 C300_test_student_general.test_student_general()
                                 if funcconf.l_mail_project:
@@ -966,7 +966,7 @@ class RunTest(Thread):
 
                     # MESSAGE TO ADMIN *********************************************
                     if funcconf.l_mess_project:
-                        funcsms.send_telegram('', 'administrator', '<b>Test schedule end.')
+                        funcsms.send_telegram('', 'administrator', '<b>Test schedule end.</b>')
 
                     """*************************************************************
                     TEST SCHEDULE END
