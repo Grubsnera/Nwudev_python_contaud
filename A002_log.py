@@ -220,7 +220,7 @@ def log_capture(s_date=funcdate.yesterday(), l_history=False):
     # MESSAGE TO ADMIN
     if funcconf.l_mess_project:
         i = funcsys.tablerowcount(so_curs, sr_file)
-        funcsms.send_telegram("", "administrator", "<b>" + str(i) + "</b> " + s_date_file + " Log records.")
+        funcsms.send_telegram("", "administrator", "<b>" + str(i) + "</b> " + s_date_file + " Records.")
 
     # CLOSE THE LOG TEXT FILE
     co.close()
