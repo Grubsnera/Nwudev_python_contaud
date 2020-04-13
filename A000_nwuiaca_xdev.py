@@ -760,7 +760,7 @@ class RunTest(Thread):
 
                     # MESSAGE TO ADMIN
                     if funcconf.l_mess_project:
-                        funcsms.send_telegram('', 'administrator', 'Test schedule start.')
+                        funcsms.send_telegram('', 'administrator', '<b>Test schedule started</b>')
 
                     # SET DATE AND TIME FOR NEXT RUN
                     if time.strftime("%R", time.localtime()) <= "23:59":
@@ -966,7 +966,7 @@ class RunTest(Thread):
 
                     # MESSAGE TO ADMIN *********************************************
                     if funcconf.l_mess_project:
-                        funcsms.send_telegram('', 'administrator', '<b>Test schedule end.</b>')
+                        funcsms.send_telegram('', 'administrator', '<b>Test schedule ended</b>')
 
                     """*************************************************************
                     TEST SCHEDULE END

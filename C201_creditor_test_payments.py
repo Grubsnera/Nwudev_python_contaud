@@ -61,7 +61,7 @@ def creditor_test_payments():
 
     # MESSAGE
     if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "Creditor <b>payment</b> tests.")
+        funcsms.send_telegram("", "administrator", "<b>Vendor payment tests</b>")
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -651,7 +651,7 @@ def creditor_test_payments():
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
             if l_mess:
-                s_desc = "Duplicate payment."
+                s_desc = "Duplicate payment"
                 funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
@@ -985,7 +985,7 @@ def creditor_test_payments():
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
             if l_mess:
-                s_desc = "Initiator fiscal same."
+                s_desc = "Initiator fiscal same"
                 funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
@@ -1360,7 +1360,7 @@ def creditor_test_payments():
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
             if l_mess:
-                s_desc = "Vendor bank acc verification."
+                s_desc = "Vendor bank acc verification"
                 funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
@@ -1682,7 +1682,7 @@ def creditor_test_payments():
                 funcfile.writelog("%t FINDING: " + str(i_coun) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
             if l_mess:
-                s_desc = "Employee approve own payment."
+                s_desc = "Employee approve own payment"
                 funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
@@ -1995,7 +1995,7 @@ def creditor_test_payments():
                 funcfile.writelog("%t FINDING: " + str(i_coun) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
             if l_mess:
-                s_desc = "Employee initiate own payment."
+                s_desc = "Employee initiate own payment"
                 funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
@@ -2140,8 +2140,8 @@ def creditor_test_payments():
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # MESSAGE
-    if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "Finished creditor <b>payment</b> tests.")
+    # if funcconf.l_mess_project:
+    #     funcsms.send_telegram("", "administrator", "Finished creditor <b>payment</b> tests.")
 
     """ ****************************************************************************
     END OF SCRIPT

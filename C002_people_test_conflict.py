@@ -58,7 +58,7 @@ def people_test_conflict():
     funcfile.writelog("-------------------------------------")
 
     if l_mess:
-        funcsms.send_telegram('', 'administrator', 'Testing employee <b>conflict of interest</b>.')
+        funcsms.send_telegram('', 'administrator', '<b>People conflict interest tests</b>')
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -583,8 +583,8 @@ def people_test_conflict():
     funcfile.writelog("TEST EMPLOYEE VENDOR COMMON BANK")
 
     # DECLARE TEST VARIABLES
-    i_coun = 0  # Number of new findings to report
-    s_desc: str = "Employee and vendor <b>share a bank account</b>."
+    i_coun: int = 0  # Number of new findings to report
+    s_desc: str = "Employee vendor share bank acc</b>"
 
     # BUILD TABLE WITH VENDOR BANK ACCOUNT NUMBERS
     print("Merge employees and vendors on bank account...")
@@ -859,7 +859,7 @@ def people_test_conflict():
 
     # DECLARE TEST VARIABLES
     i_finding_after: int = 0
-    s_description = "Employee and vendor <b>share an email address.</b>"
+    s_description = "Employee vendor share email add"
     s_file_name: str = "employee_vendor_share_email"
     s_file_prefix: str = "X100b"
     s_finding: str = "VENDOR EMAIL INVALID"

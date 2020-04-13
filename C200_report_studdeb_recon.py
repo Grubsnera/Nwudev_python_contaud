@@ -113,7 +113,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr", s_y
 
     # MESSAGE
     if l_mess:
-        funcsms.send_telegram('', 'administrator', 'Building <b>student debtor</b> reconciliations.')
+        funcsms.send_telegram('', 'administrator', '<b>Student debtor reconciliations</b>')
 
     """*************************************************************************
     OPEN DATABASES
@@ -1592,7 +1592,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr", s_y
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
-    s_desc: str = "Vss and GL transactions do not agree."
+    s_desc: str = "Vss GL transactions do not agree"
 
     # OBTAIN TEST DATA
     print("Identify vss gl differences...")
@@ -1922,7 +1922,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr", s_y
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
-    s_desc: str = "Transaction recorded in vss but not in the gl."
+    s_desc: str = "Transaction in vss not in gl"
 
     # OBTAIN TEST DATA
     print("Identify vss gl differences...")
@@ -2245,7 +2245,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr", s_y
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
-    s_desc: str = "Transaction recorded in the gl but not in vss."
+    s_desc: str = "Transaction in gl not in vss"
 
     # OBTAIN TEST DATA
     print("Identify transactions in the gl but not in vss...")
@@ -2566,7 +2566,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr", s_y
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
-    s_desc: str = "Bursary transaction summary amounts differ between vss and the gl."
+    s_desc: str = "Bursary tran summary amounts differ vss gl"
 
     # OBTAIN TEST DATA
     print("Identify vss gl bursary differences...")
@@ -3664,7 +3664,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr", s_y
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
-    s_desc: str = "Vss bursary posted to another campus in the gl."
+    s_desc: str = "Vss bursary posted to different campus gl."
 
     # IDENTIFY TRANSACTIONS
     print("Test bursary transactions posted to different campus in gl...")
@@ -4069,7 +4069,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr", s_y
     s_fprefix: str = "X021a"
     s_fname: str = "balance_multiple_campus"
     s_finding: str = "STUDENT BALANCE MULTIPLE CAMPUS"
-    s_desc: str = "Student accounts have a balance on more than one campus."
+    s_desc: str = "Student account balance more than one campus"
     s_xfile: str = "200_reported.txt"
     i_finding_before: int = 0
     i_finding_after: int = 0
@@ -4364,8 +4364,8 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr", s_y
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # MESSAGE
-    if l_mess:
-        funcsms.send_telegram('', 'administrator', 'Finished building <b>student debtor</b> reconciliations.')
+    # if l_mess:
+    #     funcsms.send_telegram('', 'administrator', 'Finished building <b>student debtor</b> reconciliations.')
 
     """*****************************************************************************
     END OF SCRIPT

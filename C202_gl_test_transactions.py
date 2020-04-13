@@ -58,7 +58,7 @@ def gl_test_transactions():
 
     # MESSAGE
     if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "<b>Kfs gl transaction test.</b>")
+        funcsms.send_telegram("", "administrator", "<b>Kfs gl transaction tests</b>")
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -307,7 +307,7 @@ def gl_test_transactions():
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
             if l_mess:
-                s_desc = "Professional fee student."
+                s_desc = "Professional fee student"
                 funcsms.send_telegram('', 'administrator',
                                       '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:

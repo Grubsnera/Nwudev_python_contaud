@@ -63,7 +63,7 @@ def test_student_general():
 
     # MESSAGE
     if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "<b>VSS STUDENT</b> master file tests.")
+        funcsms.send_telegram("", "administrator", "<b>Student master file tests</b>")
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -246,7 +246,7 @@ def test_student_general():
     # MESSAGE
     if funcconf.l_mess_project:
         i = funcsys.tablerowcount(so_curs, sr_file)
-        funcsms.send_telegram("", "administrator", "<b> " + str(i) + "</b> " + " Student ID numbers.")
+        funcsms.send_telegram("", "administrator", "<b> " + str(i) + "</b> " + " Student id numbers")
     # Export the data
     if l_export == True and funcsys.tablerowcount(so_curs,sr_file) > 0:
         print("IDNo list export ytd ID list...")
@@ -348,8 +348,8 @@ def test_student_general():
         funcmail.Mail("vss_list_idno_curr")
 
     # MESSAGE
-    if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "<b>VSS STUDENT</b> master file tests end.")
+    # if funcconf.l_mess_project:
+    #    funcsms.send_telegram("", "administrator", "<b>VSS STUDENT</b> master file tests end.")
 
     """*****************************************************************************
     End OF SCRIPT

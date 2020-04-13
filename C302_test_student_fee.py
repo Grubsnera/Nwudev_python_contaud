@@ -129,7 +129,7 @@ def student_fee(s_period='curr', s_year='0'):
 
     # MESSAGE
     if l_mess:
-        funcsms.send_telegram('', 'administrator', '<b>STUDENT FEE</b> income tests.')
+        funcsms.send_telegram('', 'administrator', '<b>Student fee income tests</b>')
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -457,7 +457,7 @@ def student_fee(s_period='curr', s_year='0'):
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
-    s_desc = "Registration fee null or not levied."
+    s_desc = "Registration fee null or not levied"
 
     # IDENTIFY REGISTRATION FEES CONTACT NOT LEVIED
     # EXCLUDE DISTANCE STUDENTS
@@ -756,7 +756,7 @@ def student_fee(s_period='curr', s_year='0'):
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
-    s_desc = "Registration fee is a credit or negative amount."
+    s_desc = "Registration fee is a credit or negative amount"
 
     # IDENTIFY REGISTRATION FEES CONTACT NEGATIVES
     print("Identify negative registration fees...")
@@ -1152,7 +1152,7 @@ def student_fee(s_period='curr', s_year='0'):
     s_xfile: str = "302_reported.txt"
     i_finding_before: int = 0
     i_finding_after: int = 0
-    s_desc = "Registration fee transactions has no value."
+    s_desc = "Registration fee transactions has no value"
 
     # OBTAIN TEST DATA
     print("Obtain test data...")
@@ -1457,7 +1457,7 @@ def student_fee(s_period='curr', s_year='0'):
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
-    s_desc = "Registration fee abnormal."
+    s_desc = "Registration fee abnormal"
 
     # IDENTIFY REGISTRATION FEE AMOUNTS NOT MODE
     print("Identify abnormal registration fees...")
@@ -2263,7 +2263,7 @@ def student_fee(s_period='curr', s_year='0'):
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
-    s_desc = "No qualification fee loaded."
+    s_desc = "No qualification fee loaded"
 
     # ISOLATE QUALIFICATIONS WITH NO LINKED LEVIES
     print("identify qualifications with no linked levies...")
@@ -2760,7 +2760,7 @@ def student_fee(s_period='curr', s_year='0'):
     s_xfile: str = "302_reported.txt"
     i_finding_before: int = 0
     i_finding_after: int = 0
-    s_desc = "Qualification fee incorrectly loaded and differ between campuses."
+    s_desc = "Qualification fee incorrectly loaded and differ between campuses"
 
     # OBTAIN TEST DATA
     print("Obtain test data...")
@@ -3591,7 +3591,7 @@ def student_fee(s_period='curr', s_year='0'):
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
-    s_desc = "No qualification fee levied for contact students."
+    s_desc = "No qualification fee levied for contact students"
 
     # ISOLATE QUALIFICATIONS WITH NO TRANSACTIONS - CONTACT STUDENTS ONLY
     print("Isolate qualifications with no transactions...")
@@ -3879,7 +3879,7 @@ def student_fee(s_period='curr', s_year='0'):
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
-    s_desc = "Qualification fee a credit or negative amount for contact student."
+    s_desc = "Qualification fee a credit or negative amount for contact student"
 
     # ISOLATE QUALIFICATIONS WITH NO TRANSACTIONS - CONTACT STUDENTS ONLY
     print("Isolate qualifications with negative value transactions...")
@@ -4278,7 +4278,7 @@ def student_fee(s_period='curr', s_year='0'):
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
-    s_desc = "Qualification fee transactions amount to no value for caontact students."
+    s_desc = "Qualification fee transactions amount to no value for caontact students"
 
     # ISOLATE QUALIFICATIONS WITH ZERO TRANSACTIONS
     print("Isolate qualifications with zero value transactions...")
@@ -4677,7 +4677,7 @@ def student_fee(s_period='curr', s_year='0'):
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
-    s_desc = "Qualification fee half levied for contact student."
+    s_desc = "Qualification fee half levied for contact student"
 
     # ISOLATE QUALIFICATIONS WITH HALF TRANSACTIONS - CONTACT STUDENTS ONLY
     print("Isolate qualifications with half value transactions...")
@@ -5068,7 +5068,7 @@ def student_fee(s_period='curr', s_year='0'):
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
-    s_desc = "Qualification fee abnormal amount for contact student."
+    s_desc = "Qualification fee abnormal amount for contact student"
 
     # ISOLATE QUALIFICATIONS WITH ABNORMAL TRANSACTIONS - CONTACT STUDENTS ONLY
     print("Isolate qualifications with abnormal value transactions...")
@@ -5468,7 +5468,7 @@ def student_fee(s_period='curr', s_year='0'):
     s_xfile: str = "302_reported.txt"
     i_finding_before: int = 0
     i_finding_after: int = 0
-    s_desc = "Student account overcharged with qualification fee."
+    s_desc = "Student account overcharged with qualification fee"
 
     # OBTAIN TEST DATA
     print("Obtain test data...")
@@ -5789,7 +5789,7 @@ def student_fee(s_period='curr', s_year='0'):
     s_xfile: str = "302_reported.txt"
     i_finding_before: int = 0
     i_finding_after: int = 0
-    s_desc = "Contact student account overcharged for a secondary qualification."
+    s_desc = "Contact student account overcharged for a secondary qualification"
 
     # OBTAIN TEST DATA
     print("Obtain test data...")
@@ -6389,7 +6389,7 @@ def student_fee(s_period='curr', s_year='0'):
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
-    s_desc = "Module fee not loaded."
+    s_desc = "Module fee not loaded"
 
     # JOIN MODULES PRESENTED AND LEVY LIST
     print("Join modules presented and levy list...")
@@ -6663,8 +6663,8 @@ def student_fee(s_period='curr', s_year='0'):
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # MESSAGE
-    if l_mess:
-        funcsms.send_telegram('', 'administrator', '<b>STUDENT FEE</b> income tests end.')
+    # if l_mess:
+    #     funcsms.send_telegram('', 'administrator', '<b>STUDENT FEE</b> income tests end.')
 
     """ ****************************************************************************
     END OF SCRIPT

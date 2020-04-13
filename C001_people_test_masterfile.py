@@ -103,7 +103,7 @@ def people_test_masterfile():
 
     # MESSAGE
     if l_mess:
-        funcsms.send_telegram("", "administrator", "<b>People master file</b> tests.")
+        funcsms.send_telegram("", "administrator", "<b>People master file tests</b>")
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -390,7 +390,7 @@ def people_test_masterfile():
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
             if l_mess:
-                s_desc = "ID number blank."
+                s_desc = "ID number blank"
                 funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
@@ -720,7 +720,7 @@ def people_test_masterfile():
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
             if l_mess:
-                s_desc = "ID number invalid."
+                s_desc = "ID number invalid"
                 funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
@@ -1011,7 +1011,7 @@ def people_test_masterfile():
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
             if l_mess:
-                s_desc = "Date of birth invalid."
+                s_desc = "Date of birth invalid"
                 funcsms.send_telegram('', 'administrator',
                                       '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
@@ -1307,7 +1307,7 @@ def people_test_masterfile():
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
             if l_mess:
-                s_desc = "Gender invalid."
+                s_desc = "Gender invalid"
                 funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
@@ -1630,7 +1630,7 @@ def people_test_masterfile():
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
             if l_mess:
-                s_desc = "ID number duplicate."
+                s_desc = "ID number duplicate"
                 funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
@@ -1974,7 +1974,7 @@ def people_test_masterfile():
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
             if l_mess:
-                s_desc = "Passport number blank."
+                s_desc = "Passport number blank"
                 funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
@@ -2290,7 +2290,7 @@ def people_test_masterfile():
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
             if l_mess:
-                s_desc = "Passport number duplicate."
+                s_desc = "Passport number duplicate"
                 funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
@@ -2604,7 +2604,7 @@ def people_test_masterfile():
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
             if l_mess:
-                s_desc = "Work permit expired."
+                s_desc = "Work permit expired"
                 funcsms.send_telegram('', 'administrator',
                                       '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
@@ -2918,7 +2918,7 @@ def people_test_masterfile():
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
             if l_mess:
-                s_desc = "Bank acc number duplicate."
+                s_desc = "Bank acc number duplicate"
                 funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
@@ -3232,7 +3232,7 @@ def people_test_masterfile():
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
             if l_mess:
-                s_desc = "Bank acc SARS verification."
+                s_desc = "Bank acc SARS verification"
                 funcsms.send_telegram('', 'administrator',
                                       '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
@@ -3647,7 +3647,7 @@ def people_test_masterfile():
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
             if l_mess:
-                s_desc = "Bank acc change verification."
+                s_desc = "Bank acc change verification"
                 funcsms.send_telegram('', 'administrator',
                                       '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
@@ -3998,7 +3998,7 @@ def people_test_masterfile():
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
             if l_mess:
-                s_desc = "Tax number blank."
+                s_desc = "Tax number blank"
                 funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
@@ -4331,7 +4331,7 @@ def people_test_masterfile():
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
             if l_mess:
-                s_desc = "Tax number invalid."
+                s_desc = "Tax number invalid"
                 funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
@@ -4622,7 +4622,7 @@ def people_test_masterfile():
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
             if l_mess:
-                s_desc = "Tax number duplicate."
+                s_desc = "Tax number duplicate"
                 funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
             print("*** No new findings to report ***")
@@ -4941,7 +4941,7 @@ def people_test_masterfile():
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
             if l_mess:
-                s_desc = "Name duplicate."
+                s_desc = "Name duplicate"
                 funcsms.send_telegram('', 'administrator',
                                       '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
@@ -5429,7 +5429,7 @@ def people_test_masterfile():
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
             if l_mess:
-                s_desc = "Permanent/Temporary category invalid."
+                s_desc = "Permanent/Temporary category invalid"
                 funcsms.send_telegram('', 'administrator',
                                       '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
@@ -5711,7 +5711,7 @@ def people_test_masterfile():
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
             if l_mess:
-                s_desc = "Academic/Support invalid."
+                s_desc = "Academic/Support invalid"
                 funcsms.send_telegram('', 'administrator',
                                       '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
@@ -6023,7 +6023,7 @@ def people_test_masterfile():
                 funcfile.writelog("%t FINDING: "+str(i_coun)+" new finding(s) to export")        
                 funcfile.writelog("%t EXPORT DATA: "+sr_file)
             if l_mess:
-                s_desc = "Peromnes grade invalid."
+                s_desc = "Peromnes grade invalid"
                 funcsms.send_telegram('', 'administrator',
                                       '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
@@ -6385,7 +6385,7 @@ def people_test_masterfile():
                 funcfile.writelog("%t FINDING: " + str(i_coun) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
             if l_mess:
-                s_desc = "Leave code invalid."
+                s_desc = "Leave code invalid"
                 funcsms.send_telegram('', 'administrator',
                                       '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
@@ -6746,7 +6746,7 @@ def people_test_masterfile():
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
             if l_mess:
-                s_desc = "Phone (work) invalid."
+                s_desc = "Phone (work) invalid"
                 funcsms.send_telegram('', 'administrator',
                                       '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
@@ -7054,7 +7054,7 @@ def people_test_masterfile():
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
             if l_mess:
-                s_desc = "Address (post) not primary."
+                s_desc = "Address (post) not primary"
                 funcsms.send_telegram('', 'administrator',
                                       '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
@@ -7200,8 +7200,8 @@ def people_test_masterfile():
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # MESSAGE
-    if l_mess:
-        funcsms.send_telegram("", "administrator", "Finished <b>People master file</b> tests.")
+    # if l_mess:
+    #     funcsms.send_telegram("", "administrator", "Finished <b>People master file</b> tests.")
 
     """ ****************************************************************************
     END OF SCRIPT
