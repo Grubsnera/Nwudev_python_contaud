@@ -23,12 +23,12 @@ def writelog(s_entry="\n", s_path="S:/Logs/",
     """
 
     # DECLARE VARIABLES
-    l_Success: bool = False
+    l_success: bool = False
     s_project: str = "FUNCFILE:" + s_file
 
     try:
 
-        with open(s_path + s_file, 'a') as fl:
+        with open(s_path + s_file, 'a', encoding="utf-8") as fl:
             # file opened for writing. write to it here
             # Write the log
             if s_entry == "Now":
@@ -42,13 +42,13 @@ def writelog(s_entry="\n", s_path="S:/Logs/",
             fl.write(s_entry)
             fl.close()
             pass
-            l_Success = True
+            l_success = True
 
     except Exception as err:
 
-        l_Success = False
+        l_success = False
         funcsys.ErrMessage(err, funcconf.l_mail_project,
                            "NWUIACA:Fail:" + s_project,
                            "NWUIACA: Fail: " + s_project)
 
-    return l_Success
+    return l_success
