@@ -36,20 +36,13 @@ def log_capture(s_date=funcdate.yesterday(), l_history=False):
     ENVIRONMENT
     *****************************************************************************"""
 
-    # SCRIPT LOG FILE
-    funcfile.writelog("Now")
-    funcfile.writelog("SCRIPT: A002_LOG")
-    funcfile.writelog("----------------")
-    print("--------")
-    print("A002_LOG")
-    print("--------")
-
     # DECLARE VARIABLES
     so_path = "W:/Admin/"  # Source database path
     so_file = "Admin.sqlite"  # Source database
     ld_path = "S:/Logs/"
 
     # DECLARE SCRIPT VARIABLES
+    l_debug: bool = False
     l_record: bool = True
     s_date_file: str = s_date.replace("-", "")
     s_time: str = ""
@@ -59,14 +52,29 @@ def log_capture(s_date=funcdate.yesterday(), l_history=False):
     s_object: str = ""
     l_vacuum: bool = False
 
+    # SCRIPT LOG FILE
+    funcfile.writelog("Now")
+    funcfile.writelog("SCRIPT: A002_LOG")
+    funcfile.writelog("----------------")
+    if l_debug:
+        print("--------")
+        print("A002_LOG")
+        print("--------")
+
+    # MESSAGE
+    if funcconf.l_mess_project:
+        funcsms.send_telegram("", "administrator", "<b>Log history.</b>")
+
     """*****************************************************************************
     OPEN THE DATABASES
     *****************************************************************************"""
-    print("OPEN THE DATABASES")
     funcfile.writelog("OPEN THE DATABASES")
+    if l_debug:
+        print("OPEN THE DATABASES")
 
     # OPEN SQLITE SOURCE table
-    print("Open sqlite database...")
+    if l_debug:
+        print("Open sqlite database...")
     with sqlite3.connect(so_path + so_file) as so_conn:
         so_curs = so_conn.cursor()
     funcfile.writelog("OPEN DATABASE: " + so_file)
@@ -74,19 +82,22 @@ def log_capture(s_date=funcdate.yesterday(), l_history=False):
     """*****************************************************************************
     TEMPORARY AREA
     *****************************************************************************"""
-    print("TEMPORARY AREA")
     funcfile.writelog("TEMPORARY AREA")
+    if l_debug:
+        print("TEMPORARY AREA")
 
     """*****************************************************************************
     BEGIN OF SCRIPT
     *****************************************************************************"""
-    print("BEGIN OF SCRIPT")
     funcfile.writelog("BEGIN OF SCRIPT")
+    if l_debug:
+        print("BEGIN OF SCRIPT")
 
     # IMPORT THE LOG FILE
+    if l_debug:
+        print("Import log file...")
     sr_file = "X001aa_import_log"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    print("Import log file...")
     so_curs.execute(
         "CREATE TABLE " + sr_file + """
         (LOG TEXT,
@@ -97,13 +108,17 @@ def log_capture(s_date=funcdate.yesterday(), l_history=False):
         ACTION TEXT,
         OBJECT TEXT)
         """)
+
+    # OPEN THE LOG TEXT FILE
+    if l_debug:
+        print(ld_path + "Python_log_" + s_date_file + ".txt")
     co = open(ld_path + "Python_log_" + s_date_file + ".txt", "r")
-    print(ld_path + "Python_log_" + s_date_file + ".txt")
     co_reader = csv.reader(co)
 
     # READ THE LOG
     for row in co_reader:
-        # ROW[0] = Log record
+
+        # row[0] = Log record
         # 1 = Log date s_date
         # 2 = Log time s_time
         # 3 = Script s_script
@@ -111,11 +126,23 @@ def log_capture(s_date=funcdate.yesterday(), l_history=False):
         # 5 = Action s_action
         # 6 = Object s_object
 
+        # TEST IF INDEX VALID
+        if l_debug:
+            print(row)
+        try:
+            s = row[0]
+        except IndexError:
+            continue
+        if l_debug:
+            print(row)
+
         # UNRAVEL THE LOF RECORD LINE
         s_data = row[0].replace("'", "")
         s_data = s_data.replace('"', "")
         s_data = s_data.replace(",", "")
-        if s_data.find("ERROR:") >= 0:
+        if s_data == "":
+            l_record = False
+        elif s_data.find("ERROR:") >= 0:
             s_time = s_data[0:8]
             s_action = "ERROR"
             s_object = s_data[16:100].upper()
@@ -152,14 +179,16 @@ def log_capture(s_date=funcdate.yesterday(), l_history=False):
         if l_record:
             s_cols = "INSERT INTO " + sr_file + " VALUES(" \
                                                 "'" + s_data + "'," \
-                                                               "'" + s_date + "'," \
-                                                                              "'" + s_time + "'," \
-                                                                                             "'" + s_script + "'," \
-                                                                                                              "'" + s_base + "'," \
-                                                                                                                             "'" + s_action + "'," \
-                                                                                                                                              "'" + s_object + "'" \
-                                                                                                                                                               ")"
-            # print(s_cols)
+                                                "'" + s_date + "'," \
+                                                "'" + s_time + "'," \
+                                                "'" + s_script + "'," \
+                                                "'" + s_base + "'," \
+                                                "'" + s_action + "'," \
+                                                "'" + s_object + "'" \
+                                                ")"
+            # SHOW SQL SCRIPT BEFORE EXECUTION
+            if l_debug:
+                print(s_cols)
             so_curs.execute(s_cols)
 
         # RESET VARIABLES
@@ -168,7 +197,8 @@ def log_capture(s_date=funcdate.yesterday(), l_history=False):
         s_object = ""
 
     # BUILD THE LOG TABLE
-    print("Build the log table...")
+    if l_debug:
+        print("Build the log table...")
     sr_file = "X001ab_sort_log"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
@@ -187,14 +217,18 @@ def log_capture(s_date=funcdate.yesterday(), l_history=False):
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    # MESSAGE TO ADMIN
+    if funcconf.l_mess_project:
+        i = funcsys.tablerowcount(so_curs, sr_file)
+        funcsms.send_telegram("", "administrator", "<b>" + str(i) + "</b> " + s_date_file + " Log records.")
 
-    so_conn.commit()
-    # Close the imported data file
+    # CLOSE THE LOG TEXT FILE
     co.close()
     funcfile.writelog("%t IMPORT TABLE: " + ld_path + s_date_file + " (" + sr_file + ")")
 
     # CALCULATE TIMES
-    print("Calculate times...")
+    if l_debug:
+        print("Calculate times...")
     sr_file = "X001ac_calc_time"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     SELECT
@@ -217,7 +251,8 @@ def log_capture(s_date=funcdate.yesterday(), l_history=False):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # ISOLATE AUTO TIMES
-    print("Isolate auto times...")
+    if l_debug:
+        print("Isolate auto times...")
     sr_file = "X001ad_auto_time"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     SELECT
@@ -248,7 +283,8 @@ def log_capture(s_date=funcdate.yesterday(), l_history=False):
             OBJECT TEXT)
             """)
 
-        print("Add current log to history...")
+        if l_debug:
+            print("Add current log to history...")
         s_sql = "INSERT INTO " + sr_file + " SELECT * FROM X001ac_calc_time;"
         so_curs.execute(s_sql)
         so_conn.commit()
@@ -257,21 +293,13 @@ def log_capture(s_date=funcdate.yesterday(), l_history=False):
     """*****************************************************************************
     END OF SCRIPT
     *****************************************************************************"""
-    print("END OF SCRIPT")
     funcfile.writelog("END OF SCRIPT")
+    if l_debug:
+        print("END OF SCRIPT")
 
-    # CLOSE THE DATABASE CONNECTION
-    if l_vacuum:
-        print("Vacuum the database...")
-        so_conn.commit()
-        so_conn.execute('VACUUM')
-        funcfile.writelog("%t VACUUM DATABASE: " + so_file)
+    # COMMIT AND CLOSE DATABASE
     so_conn.commit()
     so_conn.close()
-
-    # MESSAGE
-    if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "Updated <b>log</b> history!")
 
     # CLOSE THE LOG WRITER *********************************************************
     funcfile.writelog("-------------------")
@@ -283,5 +311,6 @@ def log_capture(s_date=funcdate.yesterday(), l_history=False):
 if __name__ == '__main__':
     try:
         log_capture(funcdate.today(), False)
+        # log_capture(funcdate.yesterday(), True)
     except Exception as e:
         funcsys.ErrMessage(e)
