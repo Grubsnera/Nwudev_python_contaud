@@ -24,9 +24,11 @@ from _my_modules import funcsys
 
 # SET TO TRUE FOR ACTIVE NWU USE OR COMMENT OUT
 funcconf.l_tel_use_nwu = False
-s_path = "S:/Logs/"
+s_path: str = "S:/Logs/"
 
-""" INDEX
+"""
+INDEX
+
 START BOT AND CREATE UPDATER (main)
 
 THREAD TO RUN VACUUM SCRIPT (RunVacuum)

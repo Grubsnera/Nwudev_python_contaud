@@ -21,6 +21,7 @@ IMPORT TEMP (A001_oracle_to_sqlite(temp))
 
 PEOPLE
 IMPORT TEMP (A001_oracle_to_sqlite(people))
+PEOPLE PAYROLL LISTS (B004_payroll_lists)
 
 VSS
 IMPORT TEMP (A001_oracle_to_sqlite(vss))
@@ -140,6 +141,24 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
             funcsys.ErrMessage(err, funcconf.l_mail_project,
                                "NWUIACA:Fail:" + s_project,
                                "NWUIACA: Fail: " + s_project)
+
+    # PEOPLE PAYROLL LISTS
+    if s_script in "b004|all|people":
+        import B004_payroll_lists
+        s_project: str = "B004_payroll_lists"
+        try:
+            B004_payroll_lists.payroll_lists()
+            # SUCCESSFUL EXECUTION
+            if funcconf.l_mail_project:
+                funcmail.Mail('std_success_gmail',
+                              'NWUIACA:Success:' + s_project,
+                              'NWUIACA: Success: ' + s_project)
+        except Exception as err:
+            # UNSUCCESSFUL EXECUTION
+            l_return = False
+            funcsys.ErrMessage(err, funcconf.l_mail_project,
+                               'NWUIACA:Fail:' + s_project,
+                               'NWUIACA: Fail: ' + s_project)
 
     # VSS GROUP ********************************************************************
 

@@ -24,9 +24,11 @@ from _my_modules import funcsys
 
 # SET TO TRUE FOR ACTIVE NWU USE OR COMMENT OUT
 funcconf.l_tel_use_nwu = True
-s_path = "S:/Logs/"
 
-""" INDEX
+s_path: str = "S:/Logs/"
+
+"""
+INDEX
 START BOT AND CREATE UPDATER (main)
 
 THREAD TO RUN VACUUM SCRIPT (RunVacuum)
@@ -89,6 +91,7 @@ def main():
     # ON DIFFERENT COMMANDS - ANSWER IN TELEGRAM
     dp.add_handler(CommandHandler("hi", funcbott.hi))
     dp.add_handler(CommandHandler("helping", funcbott.helping))
+    dp.add_handler(CommandHandler("run", funcbott.run, pass_args=True))
     dp.add_handler(CommandHandler("set", funcbott.set_schedule, pass_args=True))
     dp.add_handler(CommandHandler("switch", funcbott.switch, pass_args=True))
 
@@ -545,7 +548,7 @@ class RunSmall(Thread):
 
                     # MESSAGE TO ADMIN
                     if funcconf.l_mess_project:
-                        funcsms.send_telegram('', 'administrator', 'Small schedule start.')
+                        funcsms.send_telegram('', 'administrator', '<b>Small schedule started</b>')
 
                     # SET DATE AND TIME FOR NEXT RUN
                     if time.strftime("%R", time.localtime()) <= "23:59":
@@ -695,7 +698,7 @@ class RunSmall(Thread):
 
                     # MESSAGE TO ADMIN
                     if funcconf.l_mess_project:
-                        funcsms.send_telegram('', 'administrator', 'Small schedule end.')
+                        funcsms.send_telegram('', 'administrator', '<b>Small schedule ended</b>')
 
                     """*************************************************************
                     SMALL SCHEDULE END
@@ -760,7 +763,7 @@ class RunTest(Thread):
 
                     # MESSAGE TO ADMIN
                     if funcconf.l_mess_project:
-                        funcsms.send_telegram('', 'administrator', 'Test schedule start.')
+                        funcsms.send_telegram('', 'administrator', '<b>Test schedule started</b>')
 
                     # SET DATE AND TIME FOR NEXT RUN
                     if time.strftime("%R", time.localtime()) <= "23:59":
@@ -966,7 +969,7 @@ class RunTest(Thread):
 
                     # MESSAGE TO ADMIN *********************************************
                     if funcconf.l_mess_project:
-                        funcsms.send_telegram('', 'administrator', '<b>Test schedule end.</b>')
+                        funcsms.send_telegram('', 'administrator', '<b>Test schedule ended</b>')
 
                     """*************************************************************
                     TEST SCHEDULE END
