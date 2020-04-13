@@ -16,6 +16,7 @@ from _my_modules import funcstr
 from _my_modules import funcsys
 from _my_modules import funcsms
 
+
 def oracle_to_sqlite(s_table="000b_Table - temp.csv", s_tables="TEMP"):
     """
     Script to import data from oracle.
@@ -65,7 +66,7 @@ def oracle_to_sqlite(s_table="000b_Table - temp.csv", s_tables="TEMP"):
 
     # MESSAGE TO ADMIN
     if funcconf.l_mess_project:
-        funcsms.send_telegram('', 'administrator', '<b>' + s_tables + '</b> data from oracle.')
+        funcsms.send_telegram('', 'administrator', '<b>A001 ' + s_tables + ' Oracle import</b>')
 
     # DATABASE from text ***********************************************************
 
@@ -422,11 +423,8 @@ def oracle_to_sqlite(s_table="000b_Table - temp.csv", s_tables="TEMP"):
     funcfile.writelog("--------------------------------")
     funcfile.writelog("COMPLETED: A001_ORACLE_TO_SQLITE")
 
-    # MESSAGE TO ADMIN
-    # if funcconf.l_mess_project:
-    #     funcsms.send_telegram('', 'administrator', '<b>' + s_tables + '</b> from oracle end.')
-
     return
+
 
 if __name__ == '__main__':
     try:

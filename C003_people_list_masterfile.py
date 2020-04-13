@@ -48,7 +48,7 @@ def people_list_masterfile():
 
     # MESSAGE
     if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "<b>People master list.</b>")
+        funcsms.send_telegram("", "administrator", "<b>C003 People lists</b>")
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -167,6 +167,9 @@ def people_list_masterfile():
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: X001_People_start_end_master")
+    if funcconf.l_mess_project:
+        i = funcsys.tablerowcount(so_curs, sr_file)
+        funcsms.send_telegram("", "administrator", "<b>" + str(i) + "</b> Exits")
 
     """ ****************************************************************************
     LIST AGE MASTER
@@ -227,6 +230,9 @@ def people_list_masterfile():
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: X002_People_age_master")
+    if funcconf.l_mess_project:
+        i = funcsys.tablerowcount(so_curs, sr_file)
+        funcsms.send_telegram("", "administrator", "<b>" + str(i) + "</b> Age groups")
 
     """ ****************************************************************************
     END OF SCRIPT

@@ -140,7 +140,7 @@ def studentlist(so_conn, re_path, s_period='curr', s_year='2019', l_export=False
     # MESSAGE
     if funcconf.l_mess_project:
         i = funcsys.tablerowcount(so_curs, sr_file)
-        funcsms.send_telegram("", "administrator", "<b>" + str(i) + " " + s_year + "</b> Students.")
+        funcsms.send_telegram("", "administrator", "<b>" + str(i) + "</b> Students")
 
     # Export the data
     if l_export:
@@ -240,6 +240,6 @@ def studentlist(so_conn, re_path, s_period='curr', s_year='2019', l_export=False
     # MESSAGE
     if funcconf.l_mess_project:
         i = funcsys.tablerowcount(so_curs, sr_file)
-        funcsms.send_telegram("", "administrator", "<b>" + str(i) + " " + s_year + "</b> Student modules.")
+        funcsms.send_telegram("", "administrator", "<b>" + str(i) + "</b> Modules")
 
     return

@@ -65,7 +65,7 @@ def studdeb_deferments(s_period='curr', s_year='0'):
 
     # MESSAGE
     if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "<b>Student " + s_year + " deferment list.</b>")
+        funcsms.send_telegram("", "administrator", "<b>C301 Student " + s_year + " deferments</b>")
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -199,7 +199,7 @@ def studdeb_deferments(s_period='curr', s_year='0'):
     # MESSAGE
     if funcconf.l_mess_project:
         i = funcsys.tablerowcount(so_curs, sr_file)
-        funcsms.send_telegram("", "administrator", str(i) + " Deferments.")
+        funcsms.send_telegram("", "administrator", "<b>" + str(i) + "</b> Deferments")
     # Export the declaration data
     if l_export:
         if s_period == "curr":
@@ -788,10 +788,6 @@ def studdeb_deferments(s_period='curr', s_year='0'):
     # CLOSE THE DATABASE CONNECTION
     so_conn.commit()
     so_conn.close()
-
-    # MESSAGE
-    # if funcconf.l_mess_project:
-    #     funcsms.send_telegram("", "administrator", "<b>Student deferment</b> lists end.")
 
     # CLOSE THE LOG WRITER *********************************************************
     funcfile.writelog("--------------------------------")

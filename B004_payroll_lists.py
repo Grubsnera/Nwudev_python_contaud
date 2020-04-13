@@ -44,7 +44,7 @@ def payroll_lists():
 
     # MESSAGE
     if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "<b>Payroll list.</b>")
+        funcsms.send_telegram("", "administrator", "<b>B004 Payroll lists</b>")
 
     # Open the SOURCE file
     with sqlite3.connect(so_path+so_file) as so_conn:
@@ -94,10 +94,13 @@ def payroll_lists():
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS X000aa_element_list")
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    #s_sql = s_sql.replace("%PMONTH%",funcdate.prev_month())
+    # s_sql = s_sql.replace("%PMONTH%",funcdate.prev_month())
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    if funcconf.l_mess_project:
+        i = funcsys.tablerowcount(so_curs, sr_file)
+        funcsms.send_telegram("", "administrator", "<b>" + str(i) + "</b> Elements")
 
     # Extract the NWU TOTAL PACKAGE element for export *********************
     print("Extract the nwu total package element...")
@@ -241,10 +244,10 @@ def payroll_lists():
     sr_filet = sr_file
     sx_path = re_path + funcdate.prev_year() + "/"
     sx_file = "Payroll_001ax_package_"
-    #sx_filet = sx_file + funcdate.prev_monthendfile()
+    # sx_filet = sx_file + funcdate.prev_monthendfile()
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
     funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-    #funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
+    # funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
     funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 
     """*************************************************************************
@@ -276,6 +279,9 @@ def payroll_lists():
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    if funcconf.l_mess_project:
+        i = funcsys.tablerowcount(so_curs, sr_file)
+        funcsms.send_telegram("", "administrator", "<b>" + str(i) + "</b> Balances")
 
     # Extract the NWU INCOME PER MONTH balance for export **************************
     print("Extract the nwu total income balance...")
@@ -385,7 +391,7 @@ def payroll_lists():
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = s_sql.replace("%PYEARE%",funcdate.prev_yearend())
-    #print(s_sql)
+    # print(s_sql)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -412,10 +418,10 @@ def payroll_lists():
     sr_filet = sr_file
     sx_path = re_path + funcdate.prev_year() + "/"
     sx_file = "Payroll_002ax_income_total_"
-    #sx_filet = sx_file + funcdate.prev_monthendfile()
+    # sx_filet = sx_file + funcdate.prev_monthendfile()
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
     funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-    #funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
+    # funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
     funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 
     """*************************************************************************

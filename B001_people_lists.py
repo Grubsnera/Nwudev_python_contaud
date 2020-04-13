@@ -71,7 +71,7 @@ def people_lists():
 
     # MESSAGE
     if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "<b>People master file</b>.")
+        funcsms.send_telegram("", "administrator", "<b>B001 People master files</b>")
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -1500,7 +1500,7 @@ def people_lists():
     # MESSAGE TO ADMIN
     if funcconf.l_mess_project:
         # ACTIVE EMPLOYEES
-        funcsms.send_telegram("", "administrator", str(i_count) + " Active employees.")
+        funcsms.send_telegram("", "administrator", "<b>" + str(i_count) + "</b> Active employees")
 
     if l_export:
         # Data export
