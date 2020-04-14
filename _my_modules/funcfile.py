@@ -6,6 +6,7 @@ Create: 24 Jan 2018
 
 # IMPORT SYSTEM OBJECTS
 import datetime
+import time
 
 # IMPORT OWN MODULES
 from _my_modules import funcconf
@@ -24,6 +25,7 @@ def writelog(s_entry="\n", s_path="S:/Logs/",
 
     # DECLARE VARIABLES
     l_success: bool = False
+    s_file = "Python_log_" + datetime.datetime.now().strftime("%Y%m%d") + ".txt"
     s_project: str = "FUNCFILE:" + s_file
 
     try:
