@@ -112,7 +112,7 @@ def log_capture(s_date=funcdate.yesterday(), l_history=False):
     # OPEN THE LOG TEXT FILE
     if l_debug:
         print(ld_path + "Python_log_" + s_date_file + ".txt")
-    co = open(ld_path + "Python_log_" + s_date_file + ".txt", "r")
+    co = open(ld_path + "Python_log_" + s_date_file + ".txt", "r", encoding='utf8')
     co_reader = csv.reader(co)
 
     # READ THE LOG
@@ -195,6 +195,7 @@ def log_capture(s_date=funcdate.yesterday(), l_history=False):
         l_record = True
         s_action = ""
         s_object = ""
+        so_conn.commit()
 
     # BUILD THE LOG TABLE
     if l_debug:
