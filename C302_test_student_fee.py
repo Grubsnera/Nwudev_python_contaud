@@ -129,7 +129,7 @@ def student_fee(s_period='curr', s_year='0'):
 
     # MESSAGE
     if l_mess:
-        funcsms.send_telegram('', 'administrator', '<b>Student fee income tests</b>')
+        funcsms.send_telegram('', 'administrator', '<b>C302 Student fee income tests</b>')
 
     """*****************************************************************************
     OPEN THE DATABASES

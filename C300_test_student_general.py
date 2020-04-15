@@ -63,7 +63,7 @@ def test_student_general():
 
     # MESSAGE
     if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "<b>Student master file tests</b>")
+        funcsms.send_telegram("", "administrator", "<b>C300 Student master file tests</b>")
 
     """*****************************************************************************
     OPEN THE DATABASES

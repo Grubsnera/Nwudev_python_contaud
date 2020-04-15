@@ -103,7 +103,7 @@ def people_test_masterfile():
 
     # MESSAGE
     if l_mess:
-        funcsms.send_telegram("", "administrator", "<b>People master file tests</b>")
+        funcsms.send_telegram("", "administrator", "<b>C001 People master file tests</b>")
 
     """*****************************************************************************
     OPEN THE DATABASES

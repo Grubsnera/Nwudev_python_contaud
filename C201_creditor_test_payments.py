@@ -61,7 +61,7 @@ def creditor_test_payments():
 
     # MESSAGE
     if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "<b>Vendor payment tests</b>")
+        funcsms.send_telegram("", "administrator", "<b>C201 Vendor payment tests</b>")
 
     """*****************************************************************************
     OPEN THE DATABASES

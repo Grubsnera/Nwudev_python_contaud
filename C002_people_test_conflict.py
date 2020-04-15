@@ -58,7 +58,7 @@ def people_test_conflict():
     funcfile.writelog("-------------------------------------")
 
     if l_mess:
-        funcsms.send_telegram('', 'administrator', '<b>People conflict interest tests</b>')
+        funcsms.send_telegram('', 'administrator', '<b>C002 People conflict interest tests</b>')
 
     """*****************************************************************************
     OPEN THE DATABASES

@@ -113,7 +113,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr", s_y
 
     # MESSAGE
     if l_mess:
-        funcsms.send_telegram('', 'administrator', '<b>Student debtor reconciliations</b>')
+        funcsms.send_telegram('', 'administrator', '<b>C200 Student debtor reconciliations</b>')
 
     """*************************************************************************
     OPEN DATABASES

@@ -58,7 +58,7 @@ def gl_test_transactions():
 
     # MESSAGE
     if funcconf.l_mess_project:
-        funcsms.send_telegram("", "administrator", "<b>Kfs gl transaction tests</b>")
+        funcsms.send_telegram("", "administrator", "<b>C202 Kfs gl transaction tests</b>")
 
     """*****************************************************************************
     OPEN THE DATABASES
