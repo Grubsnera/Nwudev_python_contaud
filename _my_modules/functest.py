@@ -11,6 +11,9 @@ import csv
 from _my_modules import funcfile
 from _my_modules import funcsys
 
+# VARIABLES
+l_debug: bool = False
+
 
 def get_previous_finding(o_cursor, s_path, s_source, s_key, s_format="ITTTT"):
     """
@@ -23,13 +26,15 @@ def get_previous_finding(o_cursor, s_path, s_source, s_key, s_format="ITTTT"):
     :return: Number of records (findings)
     """
 
-    print("Import previously reported findings...")
+    if l_debug:
+        print("Import previously reported findings...")
 
     # DECLARE / BUILD VARIABLES
     s_key = s_key.lower()
     s_formatt: str = "(PROCESS TEXT, "
     for i in range(5):
-        # print(s_format[i:i + 1])
+        if l_debug:
+            print(s_format[i:i + 1])
         if s_format[i:i + 1] == "I":
             s_formatt += "FIELD" + str(i + 1) + " INT, "
         elif s_format[i:i + 1] == "R":
@@ -37,7 +42,8 @@ def get_previous_finding(o_cursor, s_path, s_source, s_key, s_format="ITTTT"):
         else:
             s_formatt += "FIELD" + str(i + 1) + " TEXT, "
     s_formatt += "DATE_REPORTED TEXT, DATE_RETEST TEXT, REMARK TEXT)"
-    # print(s_formatt)
+    if l_debug:
+        print(s_formatt)
 
     sr_file = "Z001aa_getprev"
     o_cursor.execute("DROP TABLE IF EXISTS  " + sr_file)
@@ -62,7 +68,8 @@ def get_previous_finding(o_cursor, s_path, s_source, s_key, s_format="ITTTT"):
                      + row[6] + "','" \
                      + row[7] + "','" \
                      + row[8] + "')"
-        # print(s_cols)
+        if l_debug:
+            print(s_cols)
         o_cursor.execute(s_cols)
     # ClOSE THE SOURCE FILE
     co.close()
@@ -81,7 +88,8 @@ def set_previous_finding(o_cursor):
     # SET PREVIOUS FINDINGS
     sr_file = "Z001ab_setprev"
     o_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
-    print("Obtain the latest previous finding...")
+    if l_debug:
+        print("Obtain the latest previous finding...")
     s_sql = "Create Table " + sr_file + " As" + """
     Select
         GET.PROCESS,
@@ -122,7 +130,8 @@ def get_officer(o_cursor, s_source="HR", s_key=""):
     # SET PREVIOUS FINDINGS
     sr_file = "Z001af_officer"
     o_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
-    print("Import reporting officers for mail purposes...")
+    if l_debug:
+        print("Import reporting officers for mail purposes...")
     s_sql = "Create Table " + sr_file + " As" + """
         Select
             LOOKUP.LOOKUP,
@@ -161,7 +170,8 @@ def get_supervisor(o_cursor, s_source="HR", s_key=""):
     # SET PREVIOUS FINDINGS
     sr_file = "Z001ag_supervisor"
     o_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
-    print("Import reporting supervisors for mail purposes...")
+    if l_debug:
+        print("Import reporting supervisors for mail purposes...")
     s_sql = "Create Table " + sr_file + " As" + """
         Select
             LOOKUP.LOOKUP,
