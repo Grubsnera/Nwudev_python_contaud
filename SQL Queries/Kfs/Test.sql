@@ -1,24 +1,15 @@
 ﻿Select
-    PAYM.ORG_NM,
-    PAYM.EDOC,
-    PAYM.VENDOR_ID,
-    PAYM.VENDOR_TYPE,
-    PAYM.PMT_DT,
-    Total(PAYM.ACC_AMOUNT) As Total_ACC_AMOUNT
+    X001aa_Report_payments.PAYEE_TYPE,
+    X001aa_Report_payments.PAYEE_TYPE2,
+    X001aa_Report_payments.VENDOR_TYPE,
+    X001aa_Report_payments.DOC_TYPE,
+    X001aa_Report_payments.DOC_LABEL,
+    Count(X001aa_Report_payments.EDOC) As Count_EDOC
 From
-    X001ad_Report_payments_accroute PAYM
-Where
-    PAYM.VENDOR_TYPE = 'V'
+    X001aa_Report_payments
 Group By
-    PAYM.ORG_NM,
-    PAYM.EDOC,
-    PAYM.VENDOR_ID,
-    PAYM.VENDOR_TYPE,
-    PAYM.PMT_DT
-Having
-    Total(PAYM.ACC_AMOUNT) > 2500 And
-    Total(PAYM.ACC_AMOUNT) < 5000
-Order By
-    PAYM.ORG_NM,
-    PAYM.VENDOR_ID,
-    PAYM.PMT_DT
+    X001aa_Report_payments.PAYEE_TYPE,
+    X001aa_Report_payments.PAYEE_TYPE2,
+    X001aa_Report_payments.VENDOR_TYPE,
+    X001aa_Report_payments.DOC_TYPE,
+    X001aa_Report_payments.DOC_LABEL
