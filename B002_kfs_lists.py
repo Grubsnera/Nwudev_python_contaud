@@ -6,6 +6,7 @@ Updated 5 APR 2020
 """
 
 # IMPORT PYTHON MODULES
+import csv
 import sqlite3
 
 # IMPORT OWN MODULES
@@ -18,6 +19,7 @@ from _my_modules import funcsys
 ENVIRONMENT
 OPEN THE DATABASES
 BEGIN OF SCRIPT
+IMPORT OWN LOOKUPS
 ORGANIZATION MASTER LIST
 ACCOUNT MASTER LIST
 VENDOR MASTER LIST
@@ -37,6 +39,8 @@ def kfs_lists():
     *****************************************************************************"""
 
     # DECLARE VARIABLES
+    l_debug: bool = False
+    ed_path = "S:/_external_data/"  # external data path
     so_file = "Kfs.sqlite"  # Source database
     so_path = "W:/Kfs/"  # Source database path
     l_vacuum = False  # Vacuum database
@@ -73,6 +77,28 @@ def kfs_lists():
     *****************************************************************************"""
     print("BEGIN OF SCRIPT")
     funcfile.writelog("BEGIN OF SCRIPT")
+
+    """*****************************************************************************
+    IMPORT OWN LOOKUPS
+    *****************************************************************************"""
+    funcfile.writelog("Import own lookups...")
+    if l_debug:
+        print("Import own lookups...")
+    tb_name = "X000_OWN_KFS_LOOKUPS"
+    so_curs.execute("DROP TABLE IF EXISTS " + tb_name)
+    so_curs.execute("CREATE TABLE " + tb_name + "(LOOKUP TEXT,LOOKUP_CODE TEXT,LOOKUP_DESCRIPTION TEXT)")
+    co = open(ed_path + "001_own_kfs_lookups.csv", newline=None)
+    co_reader = csv.reader(co)
+    for row in co_reader:
+        if row[0] == "LOOKUP":
+            continue
+        else:
+            s_cols = "INSERT INTO " + tb_name + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "')"
+            so_curs.execute(s_cols)
+    so_conn.commit()
+    # CLOSE THE TEXT FILE
+    co.close()
+    funcfile.writelog("%t IMPORT TABLE: " + tb_name)
 
     """ ****************************************************************************
     ORGANIZATION MASTER LIST
