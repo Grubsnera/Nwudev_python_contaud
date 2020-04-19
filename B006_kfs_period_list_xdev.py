@@ -21,15 +21,8 @@ END OF SCRIPT
 ENVIRONMENT
 *****************************************************************************"""
 
-# OPEN THE SCRIPT LOG FILE
-print("------------------------")
-print("B006_KFS_PERIOD_LIST_DEV")
-print("------------------------")
-funcfile.writelog("Now")
-funcfile.writelog("SCRIPT: B006_KFS_PERIOD_LIST_DEV")
-funcfile.writelog("--------------------------------")
-
 # DECLARE VARIABLES
+l_debug: bool = True
 so_file: str = ""
 s_period: str = "curr"
 s_year: str = s_period
@@ -45,11 +38,21 @@ else:
 re_path = "R:/Kfs/"  # Results path
 ed_path = "S:/_external_data/"  # external data path
 
+# OPEN THE SCRIPT LOG FILE
+funcfile.writelog("Now")
+funcfile.writelog("SCRIPT: B006_KFS_PERIOD_LIST_DEV")
+funcfile.writelog("--------------------------------")
+if l_debug:
+    print("------------------------")
+    print("B006_KFS_PERIOD_LIST_DEV")
+    print("------------------------")
+
 """*****************************************************************************
 OPEN THE DATABASES
 *****************************************************************************"""
-print("OPEN THE DATABASES")
 funcfile.writelog("OPEN THE DATABASES")
+if l_debug:
+    print("OPEN THE DATABASES")
 
 # OPEN THE WORKING DATABASE
 with sqlite3.connect(so_path + so_file) as so_conn:
@@ -68,14 +71,16 @@ funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
 """ ****************************************************************************
 BEGIN OF SCRIPT
 *****************************************************************************"""
-print("BEGIN OF SCRIPT")
 funcfile.writelog("BEGIN OF SCRIPT")
+if l_debug:
+    print("BEGIN OF SCRIPT")
 
 """ ****************************************************************************
 END OF SCRIPT
 *****************************************************************************"""
-print("END OF SCRIPT")
 funcfile.writelog("END OF SCRIPT")
+if l_debug:
+    print("END OF SCRIPT")
 
 # CLOSE THE DATABASE CONNECTION
 so_conn.commit()
