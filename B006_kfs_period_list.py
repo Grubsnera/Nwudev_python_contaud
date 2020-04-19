@@ -24,15 +24,27 @@ from _my_modules import funcsys
 ENVIRONMENT
 OPEN THE DATABASES
 BEGIN OF SCRIPT
+
 GL TRANSACTION LIST
+
 PAYMENT SUMMARY LIST
 PAYMENT INITIATE LIST
 PAYMENT APPROVE LIST
 PAYMENT ACCOUNTING LINE
 PAYMENT NOTES
 PAYMENT ATTACHMENTS
+
 PAYMENTS DETAIL
-PAYMENTS SUMMARY
+PAYMENT LIST WITH DETAIL
+PAYMENT LIST WITH ALL INITIATORS
+PAYMENT LIST WITH ALL APPROVERS
+PAYMENT LIST WITH ALL ACCOUNT LINES
+
+PAYMENT REPORTS
+VENDOR PAYMENT ANNUAL TOTALS
+PAYEE TYPE PER MONTH
+PAYMENT TYPE ANNUAL SUMMARY TOTALS
+
 END OF SCRIPT
 *****************************************************************************"""
 
@@ -49,15 +61,8 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
     ENVIRONMENT
     *****************************************************************************"""
 
-    # OPEN THE LOG WRITER
-    funcfile.writelog("Now")
-    funcfile.writelog("SCRIPT: B006_KFS_PERIOD_LIST")
-    funcfile.writelog("----------------------------")
-    print("--------------------")
-    print("B006_KFS_PERIOD_LIST")
-    print("--------------------")
-
     # DECLARE VARIABLES
+    l_debug: bool = True
     s_year: str = s_yyyy
     so_path = "W:/Kfs/"  # Source database path
     if s_period == "curr":
@@ -68,6 +73,14 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
         so_file = "Kfs_prev.sqlite"  # Source database
     else:
         so_file = "Kfs_" + s_year + ".sqlite"  # Source database
+
+    # OPEN THE LOG WRITER
+    funcfile.writelog("Now")
+    funcfile.writelog("SCRIPT: B006_KFS_PERIOD_LIST")
+    funcfile.writelog("----------------------------")
+    print("--------------------")
+    print("B006_KFS_PERIOD_LIST")
+    print("--------------------")
 
     # MESSAGE
     if funcconf.l_mess_project:
@@ -169,26 +182,39 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
     sr_file = "X000_Payments"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
-        DETAIL.CUST_PMT_DOC_NBR As EDOC,
-        PAYMENT.PMT_DT,
-        DETAIL.REQS_NBR,
-        DETAIL.PO_NBR,
-        DETAIL.INV_NBR,
-        DETAIL.INV_DT,
-        DETAIL.ORIG_INV_AMT,
-        PAYMENT.PAYEE_ID AS VENDOR_ID,
-        PAYMENT.PAYEE_ID_TYP_CD AS VENDOR_TYPE,
-        DETAIL.NET_PMT_AMT,
-        PAYMENT.PMT_GRP_ID,
-        PAYMENT.DISB_NBR,
-        PAYMENT.DISB_TS,
-        PAYMENT.PMT_STAT_CD,
+        DET.CUST_PMT_DOC_NBR As EDOC,
+        PAY.PMT_DT,
+        DET.REQS_NBR,
+        DET.PO_NBR,
+        DET.INV_NBR,
+        DET.INV_DT,
+        DET.ORIG_INV_AMT,
+        PAY.PAYEE_ID AS PAYEE_ID,
+        PAY.PAYEE_ID_TYP_CD AS PAYEE_TYPE,
+        PAY.PMT_PAYEE_NM As PAYEE_NAME,
+        CASE
+            WHEN PAY.PAYEE_ID_TYP_CD = 'E' THEN 'EM'
+            WHEN PAY.PAYEE_ID_TYP_CD = 'S' THEN 'ST'
+            WHEN PAY.PAYEE_ID_TYP_CD = 'V' AND PAY.PAYEE_OWNR_CD = '' THEN 'OT'
+            ELSE PAY.PAYEE_OWNR_CD                 
+        END As PAYEE_OWNR_CD_CALC,
+        DET.NET_PMT_AMT,
+        PAY.PMT_GRP_ID,
+        PAY.DISB_NBR,
+        PAY.DISB_TS,
+        PAY.PMT_STAT_CD,
         DOC.DOC_TYP_NM As DOC_TYPE,
-        Upper(DOC.LBL) As DOC_LABEL
+        Upper(DOC.LBL) As DOC_LABEL,
+        PAY.PMT_TXBL_IND,
+        PAY.ADV_EMAIL_ADDR,
+        PAY.PMT_FIL_ID,
+        PAY.PROC_ID    
     From
-        PDP_PMT_GRP_T PAYMENT Left Join
-        KFS.PDP_PMT_DTL_T DETAIL On DETAIL.PMT_GRP_ID = PAYMENT.PMT_GRP_ID Left Join
-        KFS.X000_Document DOC On DOC.DOC_HDR_ID = DETAIL.CUST_PMT_DOC_NBR
+        PDP_PMT_GRP_T PAY Left Join
+        KFS.PDP_PMT_DTL_T DET On DET.PMT_GRP_ID = PAY.PMT_GRP_ID Left Join
+        KFS.X000_Document DOC On DOC.DOC_HDR_ID = DET.CUST_PMT_DOC_NBR
+    Where
+        DET.CUST_PMT_DOC_NBR Is Not NULL
     """
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -225,7 +251,8 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
             WHEN ROUTE.ACTN_CD = 'C' THEN 'COMPLETED'
             ELSE 'OTHER'
         END AS ACTN,
-        ROUTE.ANNOTN
+        ROUTE.ANNOTN,
+        PERSON.ORG_NAME
     From
         KREW_ACTN_TKN_T_COM ROUTE Left Join
         PEOPLE.X002_PEOPLE_CURR_YEAR PERSON On PERSON.EMPLOYEE_NUMBER = ROUTE.PRNCPL_ID
@@ -245,7 +272,7 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
     Select Distinct
         ROUTE.ACTN_TKN_ID,
         ROUTE.DOC_HDR_ID,
-        ROUTE.ACTN_DT,
+        Min(ROUTE.ACTN_DT) As ACTN_DT,
         ROUTE.PRNCPL_ID,
         CASE
             WHEN ROUTE.PRNCPL_ID = '26807815' THEN 'KFS WORKFLOW SYSTEM USER'
@@ -258,7 +285,8 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
             ELSE 'OTHER'
         END AS ACTN,
         ROUTE.ANNOTN,
-        Count(ROUTE.DOC_VER_NBR) As COM_COUNT
+        Count(ROUTE.DOC_VER_NBR) As COM_COUNT,
+        PERSON.ORG_NAME
     From
         KREW_ACTN_TKN_T_COM ROUTE Left Join
         PEOPLE.X002_PEOPLE_CURR_YEAR PERSON On PERSON.EMPLOYEE_NUMBER = ROUTE.PRNCPL_ID
@@ -303,7 +331,8 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
             WHEN ROUTE.ACTN_CD = 'v' THEN 'SUPER USER APPROVED'
            ELSE 'OTHER'
         END AS ACTN,
-        ROUTE.ANNOTN
+        ROUTE.ANNOTN,
+        PERSON.ORG_NAME        
     From
         KREW_ACTN_TKN_T_APP ROUTE Left Join
         PEOPLE.X002_PEOPLE_CURR_YEAR PERSON On PERSON.EMPLOYEE_NUMBER = ROUTE.PRNCPL_ID
@@ -323,7 +352,7 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
     Select Distinct
         ROUTE.ACTN_TKN_ID,
         ROUTE.DOC_HDR_ID,
-        ROUTE.ACTN_DT,
+        Min(ROUTE.ACTN_DT) As ACTN_DT,
         ROUTE.PRNCPL_ID,
         CASE
             WHEN ROUTE.PRNCPL_ID = '26807815' THEN 'KFS WORKFLOW SYSTEM USER'
@@ -341,15 +370,23 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
            ELSE 'OTHER'
         END AS ACTN,
         ROUTE.ANNOTN,
-        Count(ROUTE.DOC_VER_NBR) As APP_COUNT
+        Count(ROUTE.DOC_VER_NBR) As APP_COUNT,
+        PERSON.ORG_NAME    
     From
         KREW_ACTN_TKN_T_APP ROUTE Left Join
         PEOPLE.X002_PEOPLE_CURR_YEAR PERSON On PERSON.EMPLOYEE_NUMBER = ROUTE.PRNCPL_ID
     Group By
         ROUTE.DOC_HDR_ID
+    Having
+        ORG_NAME Is Not NULL And
+            ORG_NAME Not In ('NWU PURCHASE AND PAYMENTS')    
     Order By
         ROUTE.ACTN_DT,
         ROUTE.ACTN_TKN_ID
+    """
+    """
+    Having
+        ORG_NAME Is Not NULL
     """
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -407,7 +444,7 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
         FIND.FDOC_NBR,
         FIND.FDOC_POST_YR,
         FIND.COST_STRING,
-        FIND.AMOUNT,
+        Max(FIND.AMOUNT) As AMOUNT,
         FIND.FDOC_LINE_DESC,
         Count(FIND.VATABLE) As COUNT_LINES
     From
@@ -518,47 +555,56 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
     print("PAYMENTS DETAIL")
     funcfile.writelog("PAYMENTS DETAIL")
 
-    # BUILD PAYMENTS WITH LAST INITIATOR AND APPROVER
-    print("Build payments...")
+    # PAYMENT LIST WITH DETAIL
+    print("Build payment report...")
     sr_file = "X001aa_Report_payments"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
-        DETAIL.CUST_PMT_DOC_NBR As EDOC,
-        DETAIL.CUST_PMT_DOC_NBR,        
-        PAYMENT.PMT_GRP_ID,
-        PAYMENT.PAYEE_ID AS VENDOR_ID,
-        PAYMENT.PMT_PAYEE_NM AS PAYEE_NAME,
-        VENDOR.VNDR_NM AS VENDOR_NAME,
-        VENDOR.VNDR_URL_ADDR AS VENDOR_REG_NR,
-        VENDOR.VNDR_TAX_NBR AS VENDOR_TAX_NR,
-        PAYEE.BNK_ACCT_NBR AS VENDOR_BANK_NR,
-        PAYMENT.PAYEE_ID_TYP_CD AS VENDOR_TYPE,
-        TYPE.PAYEE_TYP_DESC,
-        PAYMENT.DISB_NBR,
-        PAYMENT.DISB_TS,
-        PAYMENT.PMT_DT,
-        PAYMENT.PMT_STAT_CD,
-        STATUS.PMT_STAT_CD_DESC AS PAYMENT_STATUS,
-        DETAIL.INV_NBR,
-        DETAIL.REQS_NBR,
-        DETAIL.PO_NBR,
-        DETAIL.INV_DT,
-        DETAIL.ORIG_INV_AMT,
-        DETAIL.NET_PMT_AMT,
-        DOC.DOC_TYP_NM As DOC_TYPE,
-        Upper(DOC.LBL) As DOC_LABEL,        
-        INITIATE.PRNCPL_ID AS COMPLETE_EMP_NO,
-        INITIATE.NAME_ADDR AS COMPLETE_EMP_NAME,
-        INITIATE.ACTN_DT AS COMPLETE_DATE,
-        INITIATE.ACTN AS COMPLETE_STATUS,
-        Cast(INITIATE.COM_COUNT As INT) As I_COUNT,
-        INITIATE.ANNOTN AS COMPLETE_NOTE,
-        APPROVE.PRNCPL_ID AS APPROVE_EMP_NO,
-        APPROVE.NAME_ADDR AS APPROVE_EMP_NAME,
-        APPROVE.ACTN_DT AS APPROVE_DATE,
-        APPROVE.ACTN AS APPROVE_STATUS,
-        Cast(APPROVE.APP_COUNT As INT) As A_COUNT,
-        APPROVE.ANNOTN AS APPROVE_NOTE,
+        PAY.EDOC,
+        PAY.EDOC As CUST_PMT_DOC_NBR,        
+        PAY.PMT_GRP_ID,
+        PAY.PAYEE_ID,
+        PAY.PAYEE_TYPE,
+        TYP.PAYEE_TYP_DESC,
+        PAY.PAYEE_OWNR_CD_CALC,
+        PTC.LOOKUP_DESCRIPTION As PAYEE_OWNR_DESC,
+        PAY.PAYEE_NAME,
+        PAY.PAYEE_ID As VENDOR_ID,
+        VEN.VNDR_TYP_CD As VENDOR_TYPE,
+        CASE
+            WHEN PAY.PAYEE_OWNR_CD_CALC = 'EM' THEN 'EM'
+            WHEN PAY.PAYEE_OWNR_CD_CALC = 'ST' THEN 'ST'
+            ELSE VEN.VNDR_TYP_CD       
+        END As VENDOR_TYPE_CALC,
+        VEN.VNDR_NM AS VENDOR_NAME,
+        VEN.VNDR_URL_ADDR AS VENDOR_REG_NR,
+        VEN.VNDR_TAX_NBR AS VENDOR_TAX_NR,
+        PEE.BNK_ACCT_NBR AS VENDOR_BANK_NR,
+        PAY.DOC_TYPE,
+        PAY.DOC_LABEL,
+        PAY.REQS_NBR,
+        PAY.PO_NBR,
+        PAY.INV_NBR,
+        PAY.INV_DT,
+        PAY.ORIG_INV_AMT,
+        PAY.NET_PMT_AMT,
+        PAY.PMT_DT,
+        PAY.PMT_STAT_CD,    
+        Upper(STA.PMT_STAT_CD_DESC) AS PAYMENT_STATUS,
+        PAY.DISB_NBR,
+        PAY.DISB_TS,
+        INI.PRNCPL_ID AS COMPLETE_EMP_NO,
+        INI.NAME_ADDR AS COMPLETE_EMP_NAME,
+        INI.ACTN_DT AS COMPLETE_DATE,
+        INI.ACTN AS COMPLETE_STATUS,
+        Cast(INI.COM_COUNT As INT) As I_COUNT,
+        INI.ANNOTN AS COMPLETE_NOTE,
+        APP.PRNCPL_ID AS APPROVE_EMP_NO,
+        APP.NAME_ADDR AS APPROVE_EMP_NAME,
+        APP.ACTN_DT AS APPROVE_DATE,
+        APP.ACTN AS APPROVE_STATUS,
+        Cast(APP.APP_COUNT As INT) As A_COUNT,
+        APP.ANNOTN AS APPROVE_NOTE,
         CASE
             WHEN ACC.COUNT_LINES = 1 THEN ACC.COST_STRING 
             ELSE Cast(ACC.COUNT_LINES As TEXT)
@@ -572,26 +618,26 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
         ATT.ATTACH_FILE,
         ATT.ATTACH_COUNT
     From
-        PDP_PMT_GRP_T PAYMENT Left Join
-        KFS.X000_Vendor VENDOR On VENDOR.VENDOR_ID = PAYMENT.PAYEE_ID Left Join
-        KFS.PDP_PAYEE_ACH_ACCT_T PAYEE On PAYEE.PAYEE_ID_NBR = PAYMENT.PAYEE_ID And
-            PAYEE.PAYEE_ID_TYP_CD = PAYMENT.PAYEE_ID_TYP_CD Left Join
-        KFS.PDP_PAYEE_TYP_T TYPE ON TYPE.PAYEE_TYP_CD = PAYMENT.PAYEE_ID_TYP_CD Left Join
-        KFS.PDP_PMT_STAT_CD_T STATUS On STATUS.PMT_STAT_CD = PAYMENT.PMT_STAT_CD Left Join
-        KFS.PDP_PMT_DTL_T DETAIL On DETAIL.PMT_GRP_ID = PAYMENT.PMT_GRP_ID Left Join
-        KFS.X000_Document DOC On DOC.DOC_HDR_ID = DETAIL.CUST_PMT_DOC_NBR Left Join
-        X000_Account_line_unique ACC On ACC.FDOC_NBR = DETAIL.CUST_PMT_DOC_NBR Left Join
-        X000_Initiate_unique INITIATE On INITIATE.DOC_HDR_ID = DETAIL.CUST_PMT_DOC_NBR Left Join    
-        X000_Approve_unique APPROVE On APPROVE.DOC_HDR_ID = DETAIL.CUST_PMT_DOC_NBR Left Join
-        X000_Note_unique NTE On NTE.EDOC = DETAIL.CUST_PMT_DOC_NBR Left Join
-        X000_Attachment_unique ATT On ATT.EDOC = DETAIL.CUST_PMT_DOC_NBR
-    """
+        X000_Payments PAY Left Join
+        KFS.X000_Vendor VEN On VEN.VENDOR_ID = PAY.PAYEE_ID Left Join
+        KFS.PDP_PAYEE_ACH_ACCT_T PEE On PEE.PAYEE_ID_NBR = PAY.PAYEE_ID And
+            PEE.PAYEE_ID_TYP_CD = PAY.PAYEE_TYPE Left Join    
+        KFS.PDP_PAYEE_TYP_T TYP ON TYP.PAYEE_TYP_CD = PAY.PAYEE_TYPE Left Join
+        KFS.X000_OWN_KFS_LOOKUPS PTC on PTC.LOOKUP_CODE = PAY.PAYEE_OWNR_CD_CALC And
+            PTC.LOOKUP = "PAYEE OWNER TYPE" Left Join
+        KFS.PDP_PMT_STAT_CD_T STA On STA.PMT_STAT_CD = PAY.PMT_STAT_CD Left Join
+        X000_Initiate_unique INI On INI.DOC_HDR_ID = PAY.EDOC Left Join
+        X000_Approve_unique APP On APP.DOC_HDR_ID = PAY.EDOC Left Join
+        X000_Account_line_unique ACC On ACC.FDOC_NBR = PAY.EDOC Left Join
+        X000_Note_unique NTE On NTE.EDOC = PAY.EDOC Left Join
+        X000_Attachment_unique ATT On ATT.EDOC = PAY.EDOC
+    ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-    # BUILD PAYMENT LIST WITH ALL INITIATORS
+    # PAYMENT LIST WITH ALL INITIATORS
     print("Build payments initiate...")
     sr_file = "X001ab_Report_payments_initiate"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -648,7 +694,7 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-    # BUILD PAYMENT LIST WITH ALL APPROVED
+    # PAYMENT LIST WITH ALL APPROVERS
     print("Build payments approved...")
     sr_file = "X001ac_Report_payments_approve"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -705,7 +751,7 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-    # BUILD PAYMENT LIST WITH ALL ACCOUNT LINES
+    # PAYMENT LIST WITH ALL ACCOUNT LINES
     print("Build payments account line...")
     sr_file = "X001ad_Report_payments_accroute"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -774,32 +820,56 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """*****************************************************************************
-    PAYMENTS SUMMARY
+    PAYMENT REPORTS
     *****************************************************************************"""
-    print("PAYMENTS SUMMARY")
     funcfile.writelog("PAYMENTS SUMMARY")
+    if l_debug:
+        print("PAYMENTS SUMMARY")
 
-    # BUILD VENDOR PAYMENTS SUMMARY
-    print("Build vendor payments summary...")
+    # VENDOR PAYMENT ANNUAL TOTALS
+    # NB NOTE REFERENCED IN TESTS - DO NOT CHANGE FIELD NAMES
+    # PER VENDOR LAST PAYMENT DATE
+    # TOTAL AMOUNT PAID TO EACH VENDOR
+    # THE NUMBER OF PAYMENTS
+    if l_debug:
+        print("Build vendor payments summary...")
     sr_file = "X002aa_Report_payments_summary"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
+        '%PERIOD_TEXT%' As YEAR,
         PAY.VENDOR_ID,
-        Max(PAY.PMT_DT) As Max_PMT_DT,
-        Sum(PAY.NET_PMT_AMT) As Sum_NET_PMT_AMT,
-        Count(PAY.VENDOR_ID) As Count_TRAN
+        PAY.PAYEE_NAME,
+        PAY.VENDOR_NAME,
+        PAY.PAYEE_TYPE,
+        PAY.PAYEE_TYP_DESC As PAYEE_TYPE_DESC,
+        PAY.PAYEE_OWNR_CD_CALC As OWNER_TYPE,
+        PAY.PAYEE_OWNR_DESC As OWNER_TYPE_DESC,
+        PAY.VENDOR_TYPE_CALC As VENDOR_TYPE,
+        VTY.LOOKUP_DESCRIPTION As VENDOR_TYPE_DESC,
+        Max(PAY.PMT_DT) As LAST_PMT_DT,
+        Sum(PAY.NET_PMT_AMT) As NET_PMT_AMT,
+        Count(PAY.VENDOR_ID) As TRAN_COUNT
     From
-        X001aa_Report_payments PAY
+        X001aa_Report_payments PAY Left Join
+        KFS.X000_OWN_KFS_LOOKUPS VTY on VTY.LOOKUP_CODE = PAY.VENDOR_TYPE_CALC And
+            VTY.LOOKUP = "VENDOR TYPE CALC"
     Group By
         PAY.VENDOR_ID
     """
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if s_period == "curr":
+        s_sql = s_sql.replace("%PERIOD_TEXT%", 'CURRENT')
+    elif s_period == "prev":
+        s_sql = s_sql.replace("%PERIOD_TEXT%", 'PREVIOUS')
+    else:
+        s_sql = s_sql.replace("%PERIOD_TEXT%", s_year)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-    # BUILD PAYEE TYPE SUMMARY OF PAYMENTS
-    print("Build payee type payment summary per month...")
+    # PAYEE TYPE PER MONTH
+    if l_debug:
+        print("Build payee type payment summary per month...")
     sr_file = "X002ab_Report_payments_typemon"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
@@ -817,42 +887,62 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
     """
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if s_period == "curr":
-        s_sql = s_sql.replace("%PERIOD_TEXT%",'CURRENT')
+        s_sql = s_sql.replace("%PERIOD_TEXT%", 'CURRENT')
     elif s_period == "prev":
-        s_sql = s_sql.replace("%PERIOD_TEXT%",'PREVIOUS')
+        s_sql = s_sql.replace("%PERIOD_TEXT%", 'PREVIOUS')
     else:
-        s_sql = s_sql.replace("%PERIOD_TEXT%", 'PERIOD')
+        s_sql = s_sql.replace("%PERIOD_TEXT%", s_year)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-    # BUILD SUMMARY OF PAYMENTS
+    # TODO Delete after first run
+    sr_file = "X002ac_Report_typemon_summary"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    # PAYMENT TYPE ANNUAL SUMMARY TOTALS
+    if l_debug:
+        print("Payment type annual summary totals...")
+    sr_file = "X002ac_Report_payment_type_summary"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        '%PERIOD_TEXT%' As YEAR,
+        REP.PAYEE_TYPE,
+        REP.PAYEE_TYP_DESC As PAYEE_TYPE_DESC,
+        REP.VENDOR_TYPE_CALC As VENDOR_TYPE,
+        VTY.LOOKUP_DESCRIPTION As VENDOR_TYPE_DESC,
+        REP.PAYEE_OWNR_CD_CALC As OWNER_TYPE,
+        REP.PAYEE_OWNR_DESC As OWNER_TYPE_DESC,
+        REP.DOC_TYPE,
+        REP.DOC_LABEL As DOC_TYPE_DESC,
+        Count(REP.EDOC) As TRAN_COUNT,
+        Total(REP.NET_PMT_AMT) As TRAN_TOTAL
+    From
+        X001aa_Report_payments REP Left Join
+        KFS.X000_OWN_KFS_LOOKUPS VTY on VTY.LOOKUP_CODE = REP.VENDOR_TYPE_CALC And
+            VTY.LOOKUP = "VENDOR TYPE CALC"
+    Group By
+        REP.PAYEE_TYPE,
+        REP.VENDOR_TYPE_CALC,
+        REP.PAYEE_OWNR_CD_CALC,
+        REP.DOC_TYPE
+    """
     if s_period == "curr":
-        print("Combine payee type payments summary per month...")
-        sr_file = "X002ac_Report_typemon_summary"
-        s_sql = "CREATE TABLE " + sr_file + " AS " + """
-        Select
-            PREV.TYPE As TYPE,
-            PREV.DOC_LABEL As TYPE_DOC,
-            PREV.MONTH As MONTH,
-            PREV.Sum_NET_PMT_AMT As 'PREVIOUS',
-            CURR.Sum_NET_PMT_AMT As 'CURRENT'
-        From
-            KFSPREV.X002ab_Report_payments_typemon PREV Left Join
-            X002ab_Report_payments_typemon CURR On CURR.TYPE = PREV.TYPE And
-                CURR.DOC_LABEL = PREV.DOC_LABEL And
-                CURR.MONTH = PREV.MONTH
-        """
-        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        so_curs.execute(s_sql)
-        so_conn.commit()
-        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+        s_sql = s_sql.replace("%PERIOD_TEXT%", 'CURRENT')
+    elif s_period == "prev":
+        s_sql = s_sql.replace("%PERIOD_TEXT%", 'PREVIOUS')
+    else:
+        s_sql = s_sql.replace("%PERIOD_TEXT%", s_year)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """ ****************************************************************************
     END OF SCRIPT
     *****************************************************************************"""
-    print("END OF SCRIPT")
     funcfile.writelog("END OF SCRIPT")
+    if l_debug:
+        print("END OF SCRIPT")
 
     so_conn.commit()
     so_conn.close()
@@ -867,5 +957,7 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
 if __name__ == '__main__':
     try:
         kfs_period_list()
+        # kfs_period_list("prev")
+        # kfs_period_list("2018", "2018")
     except Exception as e:
         funcsys.ErrMessage(e, funcconf.l_mess_project, "B006_kfs_period_list", "B006_kfs_period_list")
