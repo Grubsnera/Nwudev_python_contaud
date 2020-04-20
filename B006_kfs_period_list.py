@@ -49,11 +49,10 @@ END OF SCRIPT
 *****************************************************************************"""
 
 
-def kfs_period_list(s_period="curr", s_yyyy=""):
+def kfs_period_list(s_period="curr"):
     """
     Script to build standard KFS lists
     :type s_period: str: The financial period (curr, prev or year)
-    :type s_yyyy: str: The financial year
     :return: Nothing
     """
 
@@ -63,7 +62,6 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
 
     # DECLARE VARIABLES
     l_debug: bool = True
-    s_year: str = s_yyyy
     so_path = "W:/Kfs/"  # Source database path
     if s_period == "curr":
         s_year = funcdate.cur_year()
@@ -72,6 +70,7 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
         s_year = funcdate.prev_year()
         so_file = "Kfs_prev.sqlite"  # Source database
     else:
+        s_year = s_period
         so_file = "Kfs_" + s_year + ".sqlite"  # Source database
 
     # OPEN THE LOG WRITER
@@ -956,8 +955,8 @@ def kfs_period_list(s_period="curr", s_yyyy=""):
 
 if __name__ == '__main__':
     try:
-        kfs_period_list()
+        kfs_period_list("curr")
         # kfs_period_list("prev")
-        # kfs_period_list("2018", "2018")
+        # kfs_period_list("2018")
     except Exception as e:
         funcsys.ErrMessage(e, funcconf.l_mess_project, "B006_kfs_period_list", "B006_kfs_period_list")
