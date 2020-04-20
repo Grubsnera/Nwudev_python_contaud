@@ -7,6 +7,7 @@ Created: 13 Apr 2020
 # IMPORT PYTHON PACKAGES
 
 # IMPORT OWN MODULES
+from _my_modules import funcdate
 from _my_modules import funcconf
 from _my_modules import funcmail
 from _my_modules import funcsys
@@ -52,12 +53,20 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
         print("PARAM1: " + s_parameter1)
         print("PARAM2: " + s_parameter2)
 
+    # SWITCH ON
+    funcconf.l_run_system = True
+    if s_script in "all|kfs":
+        funcconf.l_run_kfs_test = True
+    elif s_script in "all|people":
+        funcconf.l_run_people_test = True
+    elif s_script in "all|vss":
+        funcconf.l_run_vss_test = True
+
     # GENERAL GROUP ****************************************************************
 
     # UPDATE LOG
     if s_script in "a002|all|general":
         import A002_log
-        from _my_modules import funcdate
         s_project: str = "A002_log"
         try:
             if s_script == 'a002' and s_parameter1[0:1] == 'y':
@@ -207,6 +216,31 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
             funcsys.ErrMessage(err, funcconf.l_mail_project,
                                "NWUIACA:Fail:" + s_project,
                                "NWUIACA: Fail: " + s_project)
+
+    # KFS PERIOD LISTS
+    s_project: str = "B006_kfs_period_list"
+    if s_script in "b006|all|kfs":
+        if s_script != "b006":
+            s_parameter1 = "curr"
+        if (s_parameter1 in "curr|prev") or (2015 <= int(s_parameter1) <= int(funcdate.cur_year())-2):
+            if funcconf.l_run_kfs_test:
+                import B006_kfs_period_list
+                try:
+                    B006_kfs_period_list.kfs_period_list(s_parameter1)
+                    # SUCCESSFUL EXECUTION
+                    if funcconf.l_mail_project:
+                        funcmail.Mail('std_success_gmail',
+                                      'NWUIACA:Success:' + s_project,
+                                      'NWUIACA: Success: ' + s_project)
+                except Exception as err:
+                    # UNSUCCESSFUL EXECUTION
+                    l_return = False
+                    # DISABLE PEOPLE TESTS
+                    funcconf.l_run_kfs = False
+                    # ERROR MESSAGE
+                    funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                       "NWUIACA:Fail:" + s_project,
+                                       "NWUIACA: Fail: " + s_project)
 
     return l_return
 
