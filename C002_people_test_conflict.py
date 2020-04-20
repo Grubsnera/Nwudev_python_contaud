@@ -1003,7 +1003,7 @@ def people_test_conflict():
         Lower(VEND.VEND_MAIL) Like ('%nwu.ac.za%') And
         VEND.DOBJ_MAINT_CD_ACTV_IND = 'Y' And
         SUMM.VENDOR_ID Is Not Null And
-        Cast(SUMM.COUNT_TRAN As INT) > 1 And
+        Cast(SUMM.TRAN_COUNT As INT) > 1 And
         PEOP.EMPLOYEE_NUMBER Is Null And
         PREP.EMPLOYEE_NUMBER Is Null And
         STUD.KSTUDBUSENTID Is Null And
