@@ -887,8 +887,8 @@ def creditor_test_payments():
         KFSCURR.X001ad_Report_payments_accroute a Left Join
         KFS.X000_Vendor v on v.vendor_id = a.vendor_id
     Where
-        a.VENDOR_TYPE = 'V' And
-        a.DOC_TYPE = 'DV' And
+        a.PAYEE_TYPE = 'V' And
+        a.DOC_TYPE in ('DV', 'PDV') And
         a.FIN_OBJ_CD_NM Not In ('D~BOOKS', 'D~DEBTORS - MISCELLANEOUS', 'D~ELECTRICITY', 'D~GAS', 'D~INSURANCE',
             'D~MEMBERSHIP FEES', 'D~TRAVEL', 'D~WATER & SEWERAGE')
     Group By
