@@ -22,6 +22,7 @@ IMPORT TEMP (A001_oracle_to_sqlite(temp))
 
 PEOPLE
 IMPORT TEMP (A001_oracle_to_sqlite(people))
+PEOPLE LISTS (B001_people_lists)
 PEOPLE PAYROLL LISTS (B004_payroll_lists)
 
 VSS
@@ -44,7 +45,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
     """
 
     # VARIABLES
-    l_return = True
+    l_return = False
     l_debug = True
 
     # DEBUG
@@ -76,6 +77,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
             else:
                 A002_log.log_capture(funcdate.today(), False)
             # SUCCESSFUL EXECUTION
+            l_return = True
             if funcconf.l_mail_project:
                 funcmail.Mail('std_success_gmail',
                               'NWUIACA:Success:' + s_project,
@@ -93,6 +95,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
         s_project: str = "A003_table_vacuum"
         try:
             A003_table_vacuum.table_vacuum()
+            l_return = True
             # SUCCESSFUL EXECUTION
             if funcconf.l_mail_project:
                 funcmail.Mail('std_success_gmail',
@@ -112,6 +115,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
         try:
             if s_script == "a001" and s_parameter1[0:1] == "t":
                 A001_oracle_to_sqlite.oracle_to_sqlite()
+                l_return = True
                 # SUCCESSFUL EXECUTION
                 if funcconf.l_mail_project:
                     funcmail.Mail('std_success_gmail',
@@ -130,26 +134,42 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
     # PEOPLE GROUP *****************************************************************
 
     # IMPORT PEOPLE
+    s_project: str = "A001_oracle_to_sqlite(people)"
     if s_script in "a001|all|data|people":
-        import A001_oracle_to_sqlite
-        s_project: str = "A001_oracle_to_sqlite(people)"
-        try:
-            if (s_script == "a001" and s_parameter1[0:1] == "p") or (s_script in "all|data|people"):
+        if (s_script == "a001" and s_parameter1 == "people") or (s_script in "all|data|people"):
+            import A001_oracle_to_sqlite
+            try:
                 A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - people.csv", "PEOPLE")
-                # SUCCESSFUL EXECUTION
+                l_return = True
                 if funcconf.l_mail_project:
                     funcmail.Mail('std_success_gmail',
                                   'NWUIACA:Success:' + s_project,
                                   'NWUIACA: Success: ' + s_project)
-        except Exception as err:
-            # UNSUCCESSFUL EXECUTION
-            l_return = False
-            # DISABLE PEOPLE TESTS
-            funcconf.l_run_people_test = False
-            # ERROR MESSAGE
-            funcsys.ErrMessage(err, funcconf.l_mail_project,
-                               "NWUIACA:Fail:" + s_project,
-                               "NWUIACA: Fail: " + s_project)
+            except Exception as err:
+                l_return = False
+                funcconf.l_run_people_test = False
+                funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                   "NWUIACA:Fail:" + s_project,
+                                   "NWUIACA: Fail: " + s_project)
+
+    # PEOPLE LISTS
+    s_project: str = "B001_people_lists"
+    if funcconf.l_run_people_test:
+        if s_script in "b001|all|people":
+            import B001_people_lists
+            try:
+                B001_people_lists.people_lists()
+                l_return = True
+                if funcconf.l_mail_project:
+                    funcmail.Mail('std_success_gmail',
+                                  'NWUIACA:Success:' + s_project,
+                                  'NWUIACA: Success: ' + s_project)
+            except Exception as err:
+                l_return = False
+                funcconf.l_run_people = False
+                funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                   "NWUIACA:Fail:" + s_project,
+                                   "NWUIACA: Fail: " + s_project)
 
     # PEOPLE PAYROLL LISTS
     if s_script in "b004|all|people":
@@ -157,6 +177,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
         s_project: str = "B004_payroll_lists"
         try:
             B004_payroll_lists.payroll_lists()
+            l_return = True
             # SUCCESSFUL EXECUTION
             if funcconf.l_mail_project:
                 funcmail.Mail('std_success_gmail',
@@ -172,72 +193,62 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
     # VSS GROUP ********************************************************************
 
     # IMPORT VSS
+    s_project: str = "A001_oracle_to_sqlite(vss)"
     if s_script in "a001|all|data|people":
-        import A001_oracle_to_sqlite
-        s_project: str = "A001_oracle_to_sqlite(vss)"
-        try:
-            if (s_script == "a001" and s_parameter1[0:1] == "v") or (s_script in "all|data|vss"):
+        if (s_script == "a001" and s_parameter1 == "vss") or (s_script in "all|data|vss"):
+            import A001_oracle_to_sqlite
+            try:
                 A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - vss.csv", "VSS")
-                # SUCCESSFUL EXECUTION
+                l_return = True
                 if funcconf.l_mail_project:
                     funcmail.Mail('std_success_gmail',
                                   'NWUIACA:Success:' + s_project,
                                   'NWUIACA: Success: ' + s_project)
-        except Exception as err:
-            # UNSUCCESSFUL EXECUTION
-            l_return = False
-            # DISABLE VSS TESTS
-            funcconf.l_run_vss_test = False
-            # ERROR MESSAGE
-            funcsys.ErrMessage(err, funcconf.l_mail_project,
-                               "NWUIACA:Fail:" + s_project,
-                               "NWUIACA: Fail: " + s_project)
+            except Exception as err:
+                l_return = False
+                funcconf.l_run_vss_test = False
+                funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                   "NWUIACA:Fail:" + s_project,
+                                   "NWUIACA: Fail: " + s_project)
 
     # KFS GROUP ********************************************************************
 
     # IMPORT KFS
-    if s_script in "a001|all|data|kfs":
+    s_project: str = "A001_oracle_to_sqlite(kfs)"
+    if (s_script == "a001" and s_parameter1 == "kfs") or (s_script in "all|data|kfs"):
         import A001_oracle_to_sqlite
-        s_project: str = "A001_oracle_to_sqlite(kfs)"
         try:
-            if (s_script == "a001" and s_parameter1[0:1] == "k") or (s_script in "all|data|kfs"):
-                A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - kfs.csv", "KFS")
-                # SUCCESSFUL EXECUTION
-                if funcconf.l_mail_project:
-                    funcmail.Mail('std_success_gmail',
-                                  'NWUIACA:Success:' + s_project,
-                                  'NWUIACA: Success: ' + s_project)
+            A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - kfs.csv", "KFS")
+            l_return = True
+            if funcconf.l_mail_project:
+                funcmail.Mail('std_success_gmail',
+                              'NWUIACA:Success:' + s_project,
+                              'NWUIACA: Success: ' + s_project)
         except Exception as err:
-            # UNSUCCESSFUL EXECUTION
             l_return = False
-            # DISABLE KFS TESTS
             funcconf.l_run_kfs_test = False
-            # ERROR MESSAGE
             funcsys.ErrMessage(err, funcconf.l_mail_project,
                                "NWUIACA:Fail:" + s_project,
                                "NWUIACA: Fail: " + s_project)
 
     # KFS PERIOD LISTS
     s_project: str = "B006_kfs_period_list"
-    if s_script in "b006|all|kfs":
-        if s_script != "b006":
-            s_parameter1 = "curr"
-        if (s_parameter1 in "curr|prev") or (2015 <= int(s_parameter1) <= int(funcdate.cur_year())-2):
-            if funcconf.l_run_kfs_test:
+    if funcconf.l_run_kfs_test:
+        if s_script in "b006|all|kfs":
+            if s_script != "b006":
+                s_parameter1 = "curr"
+            if (s_parameter1 in "curr|prev") or (2015 <= int(s_parameter1) <= int(funcdate.cur_year())-2):
                 import B006_kfs_period_list
                 try:
                     B006_kfs_period_list.kfs_period_list(s_parameter1)
-                    # SUCCESSFUL EXECUTION
+                    l_return = True
                     if funcconf.l_mail_project:
                         funcmail.Mail('std_success_gmail',
                                       'NWUIACA:Success:' + s_project,
                                       'NWUIACA: Success: ' + s_project)
                 except Exception as err:
-                    # UNSUCCESSFUL EXECUTION
                     l_return = False
-                    # DISABLE PEOPLE TESTS
                     funcconf.l_run_kfs = False
-                    # ERROR MESSAGE
                     funcsys.ErrMessage(err, funcconf.l_mail_project,
                                        "NWUIACA:Fail:" + s_project,
                                        "NWUIACA: Fail: " + s_project)
