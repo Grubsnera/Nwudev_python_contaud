@@ -63,7 +63,7 @@ DO NOT DELETE
 *****************************************************************************"""
 # IMPORT THE X000_OWN_KFS_LOOKUPS TABLE
 print("Import own lookups...")
-tb_name = "X000_OWN_KFS_LOOKUPS"
+tb_name = "X000_Own_kfs_lookups"
 so_curs.execute("DROP TABLE IF EXISTS " + tb_name)
 so_curs.execute("CREATE TABLE " + tb_name + "(LOOKUP TEXT,LOOKUP_CODE TEXT,LOOKUP_DESCRIPTION TEXT)")
 s_cols = ""
