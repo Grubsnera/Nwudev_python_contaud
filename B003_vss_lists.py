@@ -1353,7 +1353,9 @@ def vss_lists():
     s_sql = s_sql.replace("%TODAY%",funcdate.today())
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD VIEW: "+sr_file)    
+    funcfile.writelog("%t BUILD VIEW: "+sr_file)
+
+    # TODO Convert fields to uppercase
 
     # BUILD STUDENT PARTY FILE
     print("Build student party file...")
@@ -1363,11 +1365,11 @@ def vss_lists():
       PARTY.KBUSINESSENTITYID,
       PARTY.PARTYTYPE,
       PARTY.NAME,
-      PARTY.SURNAME,
-      PARTY.INITIALS,
-      PARTY.FIRSTNAMES,
-      PARTY.NICKNAME,
-      PARTY.MAIDENNAME,
+      Upper(PARTY.SURNAME) As SURNAME,
+      Upper(PARTY.INITIALS) As INITIALS,
+      Upper(PARTY.FIRSTNAMES) As FIRSTNAMES,
+      Upper(PARTY.NICKNAME) As NICKNAME,
+      Upper(PARTY.MAIDENNAME) As MAIDENNAME,
       PARTY.DATEOFBIRTH,
       ID.EXTERNALREFERENCENUMBER AS IDNO,
       Upper(PASSPORT.EXTERNALREFERENCENUMBER) As PASSPORT,
