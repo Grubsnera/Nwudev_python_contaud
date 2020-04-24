@@ -901,9 +901,6 @@ def kfs_period_list(s_period="curr"):
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-    # TODO Delete after first run
-    sr_file = "X002ac_Report_typemon_summary"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     # PAYMENT TYPE ANNUAL SUMMARY TOTALS
     if l_debug:
         print("Payment type annual summary totals...")
