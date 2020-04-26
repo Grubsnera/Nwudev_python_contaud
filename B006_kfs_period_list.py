@@ -879,15 +879,26 @@ def kfs_period_list(s_period="curr"):
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         '%PERIOD_TEXT%' As YEAR,
-        PAYM.PAYEE_TYP_DESC As TYPE,
+        PAYM.PAYEE_TYPE,
+        PAYM.PAYEE_TYP_DESC As PAYEE_DESC,
+        PAYM.PAYEE_OWNR_CD_CALC As OWNER_TYPE,
+        PAYM.PAYEE_OWNR_DESC As OWNER_DESC,
+        PAYM.VENDOR_TYPE_CALC As VENDOR_TYPE,
+        LOOK.LOOKUP_DESCRIPTION As VENDOR_DESC,
+        PAYM.DOC_TYPE,
         PAYM.DOC_LABEL,
         SubStr(PAYM.PMT_DT, 6, 2) As MONTH,
-        Sum(PAYM.NET_PMT_AMT) As Sum_NET_PMT_AMT
+        Cast(Count(PAYM.NET_PMT_AMT) As INT) As TRAN_COUNT,
+        Cast(Total(PAYM.NET_PMT_AMT) As REAL) As AMOUNT_SUM
     From
-        X001aa_Report_payments PAYM
+        X001aa_Report_payments PAYM Left Join
+        KFS.X000_Own_kfs_lookups LOOK On LOOK.LOOKUP_CODE = PAYM.VENDOR_TYPE_CALC And
+            LOOK.LOOKUP = "VENDOR TYPE CALC"
     Group By
-        PAYM.PAYEE_TYP_DESC,
-        PAYM.DOC_LABEL,    
+        PAYM.PAYEE_TYPE,
+        PAYM.PAYEE_OWNR_CD_CALC,
+        PAYM.VENDOR_TYPE_CALC,
+        PAYM.DOC_TYPE,    
         SubStr(PAYM.PMT_DT, 6, 2)
     """
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
