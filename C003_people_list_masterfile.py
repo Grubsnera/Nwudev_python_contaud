@@ -254,4 +254,4 @@ if __name__ == '__main__':
     try:
         people_list_masterfile()
     except Exception as e:
-        funcsys.ErrMessage(e, funcconf.l_mess_project, "B001_people_lists", "B001_people_lists")
+        funcsys.ErrMessage(e, funcconf.l_mess_project, "C003_people_list_masterfile", "C003_people_list_masterfile")

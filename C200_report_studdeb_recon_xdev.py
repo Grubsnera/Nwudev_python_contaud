@@ -25,10 +25,8 @@ print("C200_REPORT_STUDDEB_RECON")
 print("-------------------------")
 
 # DECLARE VARIABLES
-gl_month = '03'
-s_period="curr"
-s_yyyy="2020"
-s_year: str = s_yyyy
+gl_month: str = '03'
+s_period: str = "curr"
 so_path = "W:/Kfs_vss_studdeb/"  # Source database path
 if s_period == "curr":
     s_year = funcdate.cur_year()
@@ -41,6 +39,7 @@ elif s_period == "prev":
     s_kfs = "KFSPREV"
     s_vss = "VSSPREV"
 else:
+    s_year = s_period
     so_file = "Kfs_vss_studdeb_" + s_year + ".sqlite"  # Source database
     s_kfs = ""
     s_vss = ""

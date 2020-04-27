@@ -56,11 +56,10 @@ END OF SCRIPT
 *****************************************************************************"""
 
 
-def student_fee(s_period='curr', s_year='0'):
+def student_fee(s_period="curr"):
     """
     Script to test STUDENT FEE INCOME
     :param s_period: str: The financial period
-    :param s_year: str: The financial year
     :return: Nothing
     """
 
@@ -69,11 +68,10 @@ def student_fee(s_period='curr', s_year='0'):
     *****************************************************************************"""
 
     # DECLARE VARIABLES
-    if s_year == '0':
-        if s_period == "prev":
-            s_year = funcdate.prev_year()
-        else:
-            s_year = funcdate.cur_year()
+    if s_period == "prev":
+        s_year = funcdate.prev_year()
+    else:
+        s_year = funcdate.cur_year()
 
     ed_path = "S:/_external_data/"  # External data path
     so_path = "W:/Vss_fee/"  # Source database path

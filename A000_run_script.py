@@ -22,11 +22,20 @@ IMPORT TEMP (A001_oracle_to_sqlite(temp))
 
 PEOPLE
 IMPORT TEMP (A001_oracle_to_sqlite(people))
-PEOPLE LISTS (B001_people_lists)
+PEOPLE MASTER LISTS (B001_people_lists)
+PEOPLE LISTS (C003_people_list_masterfile)
+PEOPLE TEST MASTER FILE (C001_people_test_masterfile)
+PEOPLE TEST CONFLICT (C002_people_test_conflict)
 PEOPLE PAYROLL LISTS (B004_payroll_lists)
 
 VSS
-IMPORT TEMP (A001_oracle_to_sqlite(vss))
+IMPORT VSS (A001_oracle_to_sqlite(vss))
+VSS LISTS (B003_vss_lists)
+VSS PERIOD LIST (B007_vss_period_list)
+VSS STUDENT DEFERMENT MASTER LISTS (C301_report_student_deferment)
+VSS STUDENT DEBTOR RECON (C200_report_studdeb_recon)
+VSS STUDENT MASTER FILE TESTS (C300_test_student_general)
+VSS STUDENT FEE TESTS AND REPORTS (C302_test_student_fee)
 
 KFS
 IMPORT TEMP (A001_oracle_to_sqlite(kfs))
@@ -56,80 +65,73 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
 
     # SWITCH ON
     funcconf.l_run_system = True
-    if s_script in "all|kfs":
+    if s_script in "all|data|kfs":
         funcconf.l_run_kfs_test = True
-    elif s_script in "all|people":
+    elif s_script in "all|data|people":
         funcconf.l_run_people_test = True
-    elif s_script in "all|vss":
+    elif s_script in "all|data|vss":
         funcconf.l_run_vss_test = True
 
     # GENERAL GROUP ****************************************************************
 
     # UPDATE LOG
+    s_project: str = "A002_log"
     if s_script in "a002|all|general":
         import A002_log
-        s_project: str = "A002_log"
         try:
             if s_script == 'a002' and s_parameter1[0:1] == 'y':
                 A002_log.log_capture(funcdate.yesterday(), True)
             elif s_script == 'all':
                 A002_log.log_capture(funcdate.yesterday(), True)
+            elif s_script == 'general':
+                A002_log.log_capture(funcdate.yesterday(), True)
             else:
                 A002_log.log_capture(funcdate.today(), False)
-            # SUCCESSFUL EXECUTION
             l_return = True
             if funcconf.l_mail_project:
                 funcmail.Mail('std_success_gmail',
                               'NWUIACA:Success:' + s_project,
                               'NWUIACA: Success: ' + s_project)
         except Exception as err:
-            # UNSUCCESSFUL EXECUTION
             l_return = False
             funcsys.ErrMessage(err, funcconf.l_mail_project,
                                'NWUIACA:Fail:' + s_project,
                                'NWUIACA: Fail: ' + s_project)
 
     # VACUUM TEST FINDING TABLES
+    s_project: str = "A003_table_vacuum"
     if s_script in "a003|all|general":
         import A003_table_vacuum
-        s_project: str = "A003_table_vacuum"
         try:
             A003_table_vacuum.table_vacuum()
             l_return = True
-            # SUCCESSFUL EXECUTION
             if funcconf.l_mail_project:
                 funcmail.Mail('std_success_gmail',
                               'NWUIACA:Success:' + s_project,
                               'NWUIACA: Success: ' + s_project)
         except Exception as err:
-            # UNSUCCESSFUL EXECUTION
             l_return = False
             funcsys.ErrMessage(err, funcconf.l_mail_project,
                                'NWUIACA:Fail:' + s_project,
                                'NWUIACA: Fail: ' + s_project)
 
     # IMPORT TEMP
+    s_project: str = "A001_oracle_to_sqlite(temp)"
     if s_script in "a001":
-        import A001_oracle_to_sqlite
-        s_project: str = "A001_oracle_to_sqlite(temp)"
-        try:
-            if s_script == "a001" and s_parameter1[0:1] == "t":
+        if s_script == "a001" and s_parameter1[0:1] == "t":
+            import A001_oracle_to_sqlite
+            try:
                 A001_oracle_to_sqlite.oracle_to_sqlite()
                 l_return = True
-                # SUCCESSFUL EXECUTION
                 if funcconf.l_mail_project:
                     funcmail.Mail('std_success_gmail',
                                   'NWUIACA:Success:' + s_project,
                                   'NWUIACA: Success: ' + s_project)
-        except Exception as err:
-            # UNSUCCESSFUL EXECUTION
-            l_return = False
-            # DISABLE PEOPLE TESTS
-            funcconf.l_run_people_test = False
-            # ERROR MESSAGE
-            funcsys.ErrMessage(err, funcconf.l_mail_project,
-                               "NWUIACA:Fail:" + s_project,
-                               "NWUIACA: Fail: " + s_project)
+            except Exception as err:
+                l_return = False
+                funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                   "NWUIACA:Fail:" + s_project,
+                                   "NWUIACA: Fail: " + s_project)
 
     # PEOPLE GROUP *****************************************************************
 
@@ -152,13 +154,70 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                                    "NWUIACA:Fail:" + s_project,
                                    "NWUIACA: Fail: " + s_project)
 
-    # PEOPLE LISTS
+    # PEOPLE MASTER LISTS
     s_project: str = "B001_people_lists"
     if funcconf.l_run_people_test:
         if s_script in "b001|all|people":
             import B001_people_lists
             try:
                 B001_people_lists.people_lists()
+                l_return = True
+                if funcconf.l_mail_project:
+                    funcmail.Mail('std_success_gmail',
+                                  'NWUIACA:Success:' + s_project,
+                                  'NWUIACA: Success: ' + s_project)
+            except Exception as err:
+                l_return = False
+                funcconf.l_run_people = False
+                funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                   "NWUIACA:Fail:" + s_project,
+                                   "NWUIACA: Fail: " + s_project)
+
+    # PEOPLE LISTS
+    s_project: str = "C003_people_list_masterfile"
+    if funcconf.l_run_people_test:
+        if s_script in "c003|all|people":
+            import C003_people_list_masterfile
+            try:
+                C003_people_list_masterfile.people_list_masterfile()
+                l_return = True
+                if funcconf.l_mail_project:
+                    funcmail.Mail('std_success_gmail',
+                                  'NWUIACA:Success:' + s_project,
+                                  'NWUIACA: Success: ' + s_project)
+            except Exception as err:
+                l_return = False
+                funcconf.l_run_people = False
+                funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                   "NWUIACA:Fail:" + s_project,
+                                   "NWUIACA: Fail: " + s_project)
+
+    # PEOPLE TEST MASTER FILE
+    s_project: str = "C001_people_test_masterfile"
+    if funcconf.l_run_people_test:
+        if s_script in "c001|all|people":
+            import C001_people_test_masterfile
+            try:
+                C001_people_test_masterfile.people_test_masterfile()
+                l_return = True
+                if funcconf.l_mail_project:
+                    funcmail.Mail('std_success_gmail',
+                                  'NWUIACA:Success:' + s_project,
+                                  'NWUIACA: Success: ' + s_project)
+            except Exception as err:
+                l_return = False
+                funcconf.l_run_people = False
+                funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                   "NWUIACA:Fail:" + s_project,
+                                   "NWUIACA: Fail: " + s_project)
+
+    # PEOPLE TEST CONFLICT
+    s_project: str = "C002_people_test_conflict"
+    if funcconf.l_run_people_test:
+        if s_script in "c002|all|people":
+            import C002_people_test_conflict
+            try:
+                C002_people_test_conflict.people_test_conflict()
                 l_return = True
                 if funcconf.l_mail_project:
                     funcmail.Mail('std_success_gmail',
@@ -178,13 +237,11 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
         try:
             B004_payroll_lists.payroll_lists()
             l_return = True
-            # SUCCESSFUL EXECUTION
             if funcconf.l_mail_project:
                 funcmail.Mail('std_success_gmail',
                               'NWUIACA:Success:' + s_project,
                               'NWUIACA: Success: ' + s_project)
         except Exception as err:
-            # UNSUCCESSFUL EXECUTION
             l_return = False
             funcsys.ErrMessage(err, funcconf.l_mail_project,
                                'NWUIACA:Fail:' + s_project,
@@ -194,7 +251,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
 
     # IMPORT VSS
     s_project: str = "A001_oracle_to_sqlite(vss)"
-    if s_script in "a001|all|data|people":
+    if s_script in "a001|all|data|vss":
         if (s_script == "a001" and s_parameter1 == "vss") or (s_script in "all|data|vss"):
             import A001_oracle_to_sqlite
             try:
@@ -210,6 +267,193 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                 funcsys.ErrMessage(err, funcconf.l_mail_project,
                                    "NWUIACA:Fail:" + s_project,
                                    "NWUIACA: Fail: " + s_project)
+
+    # VSS LISTS
+    s_project: str = "B003_vss_lists"
+    if funcconf.l_run_vss_test:
+        if s_script in "b003|all|vss":
+            import B003_vss_lists
+            try:
+                B003_vss_lists.vss_lists()
+                l_return = True
+                if funcconf.l_mail_project:
+                    funcmail.Mail('std_success_gmail',
+                                  'NWUIACA:Success:' + s_project,
+                                  'NWUIACA: Success: ' + s_project)
+            except Exception as err:
+                l_return = False
+                funcconf.l_run_vss = False
+                funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                   "NWUIACA:Fail:" + s_project,
+                                   "NWUIACA: Fail: " + s_project)
+
+    # VSS PERIOD LISTS
+    s_project: str = "B007_vss_period_list"
+    if funcconf.l_run_vss_test:
+        if s_script in "b007|all|vss":
+            if s_script != "b007":
+                s_parameter1 = "curr"
+            if (s_parameter1 in "curr|prev") or (2015 <= int(s_parameter1) <= int(funcdate.cur_year())-2):
+                import B007_vss_period_list
+                try:
+                    B007_vss_period_list.vss_period_list(s_parameter1)
+                    l_return = True
+                    if funcconf.l_mail_project:
+                        funcmail.Mail('std_success_gmail',
+                                      'NWUIACA:Success:' + s_project,
+                                      'NWUIACA: Success: ' + s_project)
+                except Exception as err:
+                    l_return = False
+                    funcconf.l_run_vss = False
+                    funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                       "NWUIACA:Fail:" + s_project,
+                                       "NWUIACA: Fail: " + s_project)
+
+    # VSS STUDENT DEFERMENT MASTER LISTS
+    s_project: str = "C301_report_student_deferment"
+    if funcconf.l_run_vss_test:
+        if s_script in "c301|all|vss":
+            if s_script != "c301":
+                s_parameter1 = "curr"
+            if (s_parameter1 in "curr|prev") or (2015 <= int(s_parameter1) <= int(funcdate.cur_year())-2):
+                import C301_report_student_deferment
+                try:
+                    C301_report_student_deferment.studdeb_deferments(s_parameter1)
+                    l_return = True
+                    if funcconf.l_mail_project:
+                        funcmail.Mail('std_success_gmail',
+                                      'NWUIACA:Success:' + s_project,
+                                      'NWUIACA: Success: ' + s_project)
+                except Exception as err:
+                    l_return = False
+                    funcconf.l_run_vss = False
+                    funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                       "NWUIACA:Fail:" + s_project,
+                                       "NWUIACA: Fail: " + s_project)
+
+    #
+    # VSS STUDENT DEFERMENT MASTER LISTS
+    s_project: str = "C301_report_student_deferment"
+    if funcconf.l_run_vss_test:
+        if s_script in "c301|all|vss":
+            if s_script != "c301":
+                s_parameter1 = "curr"
+            if (s_parameter1 in "curr|prev") or (2015 <= int(s_parameter1) <= int(funcdate.cur_year())-2):
+                import C301_report_student_deferment
+                try:
+                    C301_report_student_deferment.studdeb_deferments(s_parameter1)
+                    l_return = True
+                    if funcconf.l_mail_project:
+                        funcmail.Mail('std_success_gmail',
+                                      'NWUIACA:Success:' + s_project,
+                                      'NWUIACA: Success: ' + s_project)
+                except Exception as err:
+                    l_return = False
+                    funcconf.l_run_vss = False
+                    funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                       "NWUIACA:Fail:" + s_project,
+                                       "NWUIACA: Fail: " + s_project)
+
+    # VSS STUDENT DEFERMENT MASTER LISTS
+    s_project: str = "C301_report_student_deferment"
+    if funcconf.l_run_vss_test:
+        if s_script in "c301|all|vss":
+            if s_script != "c301":
+                s_parameter1 = "curr"
+            if (s_parameter1 in "curr|prev") or (2015 <= int(s_parameter1) <= int(funcdate.cur_year())-2):
+                import C301_report_student_deferment
+                try:
+                    C301_report_student_deferment.studdeb_deferments(s_parameter1)
+                    l_return = True
+                    if funcconf.l_mail_project:
+                        funcmail.Mail('std_success_gmail',
+                                      'NWUIACA:Success:' + s_project,
+                                      'NWUIACA: Success: ' + s_project)
+                except Exception as err:
+                    l_return = False
+                    funcconf.l_run_vss = False
+                    funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                       "NWUIACA:Fail:" + s_project,
+                                       "NWUIACA: Fail: " + s_project)
+
+    # VSS STUDENT DEBTOR RECON
+    s_project: str = "C200_report_studdeb_recon"
+    if funcconf.l_run_vss_test:
+        if s_script in "c200|all|vss":
+            if s_script != "c200":
+                s_parameter1 = "curr"
+                # No open balances
+                # r_maf = 0
+                # r_pot = 0
+                # r_vaa = 0
+                # 2020 balances
+                r_maf = 48501952.09
+                r_pot = -12454680.98
+                r_vaa = 49976048.39
+                # 2019 balances
+                # r_maf = 66561452.48
+                # r_pot = -18340951.06
+                # r_vaa = 39482933.18
+            else:
+                r_maf = 0
+                r_pot = 0
+                r_vaa = 0
+            if s_parameter1 in "curr|prev":
+                import C200_report_studdeb_recon
+                try:
+                    C200_report_studdeb_recon.report_studdeb_recon(r_maf, r_pot, r_vaa, s_parameter1)
+                    l_return = True
+                    if funcconf.l_mail_project:
+                        funcmail.Mail('std_success_gmail',
+                                      'NWUIACA:Success:' + s_project,
+                                      'NWUIACA: Success: ' + s_project)
+                except Exception as err:
+                    l_return = False
+                    funcconf.l_run_vss = False
+                    funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                       "NWUIACA:Fail:" + s_project,
+                                       "NWUIACA: Fail: " + s_project)
+
+    # VSS STUDENT MASTER FILE TESTS
+    s_project: str = "C300_test_student_general"
+    if funcconf.l_run_vss_test:
+        if s_script in "c300|all|vss":
+            import C300_test_student_general
+            try:
+                C300_test_student_general.test_student_general()
+                l_return = True
+                if funcconf.l_mail_project:
+                    funcmail.Mail('std_success_gmail',
+                                  'NWUIACA:Success:' + s_project,
+                                  'NWUIACA: Success: ' + s_project)
+            except Exception as err:
+                l_return = False
+                funcconf.l_run_vss = False
+                funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                   "NWUIACA:Fail:" + s_project,
+                                   "NWUIACA: Fail: " + s_project)
+
+    # VSS STUDENT FEE TESTS AND REPORTS
+    s_project: str = "C302_test_student_fee"
+    if funcconf.l_run_vss_test:
+        if s_script in "c302|all|vss":
+            if s_script != "c302":
+                s_parameter1 = "curr"
+            if s_parameter1 in "curr|prev":
+                import C302_test_student_fee
+                try:
+                    C302_test_student_fee.student_fee(s_parameter1)
+                    l_return = True
+                    if funcconf.l_mail_project:
+                        funcmail.Mail('std_success_gmail',
+                                      'NWUIACA:Success:' + s_project,
+                                      'NWUIACA: Success: ' + s_project)
+                except Exception as err:
+                    l_return = False
+                    funcconf.l_run_vss = False
+                    funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                       "NWUIACA:Fail:" + s_project,
+                                       "NWUIACA: Fail: " + s_project)
 
     # KFS GROUP ********************************************************************
 

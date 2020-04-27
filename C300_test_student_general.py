@@ -341,10 +341,10 @@ def test_student_general():
         print("IDNo list no new data to previously reported file...")
         funcfile.writelog("%t EXPORT DATA: No new data to export")
 
-    if l_mail == True:
+    if l_mail:
         funcmail.Mail("vss_list_idno_ytd")
 
-    if l_mail == True:
+    if l_mail:
         funcmail.Mail("vss_list_idno_curr")
 
     # MESSAGE

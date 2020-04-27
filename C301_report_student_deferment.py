@@ -31,26 +31,34 @@ END OF SCRIPT
 *****************************************************************************"""
 
 
-def studdeb_deferments(s_period='curr', s_year='0'):
+def studdeb_deferments(s_period="curr"):
     """
-    SCRIPT TO BUILD STUDENT DEFERMENT MASTER FILES
-    :param s_period: str = Financial period in words
-    :param s_year: str = Financial year
-    :return:
+    Script to build standard STUDENT DEBTOR DEFERMENT lists
+    :type s_period: str: The financial period (curr, prev or year)
+    :return: Nothing
     """
+
+    # TODO Convert student deferments to vss_deferments_yyyy.sqlite from vss_deferment.sqlite
 
     """*****************************************************************************
     ENVIRONMENT
     *****************************************************************************"""
 
     # DECLARE VARIABLES
-    if s_year == '0':
-        if s_period == "prev":
-            s_year = funcdate.prev_year()
-        else:
-            s_year = funcdate.cur_year()
+    l_debug: bool = True
     so_path = "W:/Vss_deferment/"  # Source database path
-    so_file = "Vss_deferment.sqlite"  # Source database
+    if s_period == "curr":
+        s_year = funcdate.cur_year()
+        #so_file = "Vss_deferment_curr.sqlite"  # Source database
+        so_file = "Vss_deferment.sqlite"  # Source database
+    elif s_period == "prev":
+        s_year = funcdate.prev_year()
+        #so_file = "Vss_deferment_prev.sqlite"  # Source database
+        so_file = "Vss_deferment.sqlite"  # Source database
+    else:
+        s_year = s_period
+        # so_file = "Vss_deferment_" + s_year + ".sqlite"  # Source database
+        so_file = "Vss_deferment.sqlite"  # Source database
     ed_path = "S:/_external_data/"  # External data path
     l_export: bool = True
     l_mail = False

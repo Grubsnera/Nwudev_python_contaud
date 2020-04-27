@@ -24,11 +24,10 @@ STUDENT ACCOUNT TRANSACTIONS
 *****************************************************************************"""
 
 
-def vss_period_list(s_period="curr", s_yyyy=""):
+def vss_period_list(s_period="curr"):
     """
     Script to build standard KFS lists
     :type s_period: str: The financial period (curr, prev or year)
-    :type s_yyyy: str: The financial year
     :return: Nothing
     """
 
@@ -39,7 +38,7 @@ def vss_period_list(s_period="curr", s_yyyy=""):
     funcfile.writelog("ENVIRONMENT")
 
     # DECLARE VARIABLES
-    s_year: str = s_yyyy
+    l_debug: bool = True
     so_path: str = "W:/Vss/"  # Source database path
     if s_period == "curr":
         s_year = funcdate.cur_year()
@@ -48,6 +47,7 @@ def vss_period_list(s_period="curr", s_yyyy=""):
         s_year = funcdate.prev_year()
         so_file = "Vss_prev.sqlite"  # Source database
     else:
+        s_year = s_period
         so_file = "Vss_" + s_year + ".sqlite"  # Source database
     re_path: str = "R:/Vss/"  # Results
     ed_path: str = "S:/_external_data/"  # External data location
@@ -202,7 +202,7 @@ def vss_period_list(s_period="curr", s_yyyy=""):
     print("BUILD STUDENTS")
     funcfile.writelog("BUILD STUDENTS")
 
-    funcstudent.studentlist(so_conn, re_path, s_period, s_yyyy, True)
+    funcstudent.studentlist(so_conn, re_path, s_period, True)
 
     """*************************************************************************
     STUDENT ACCOUNT TRANSACTIONS

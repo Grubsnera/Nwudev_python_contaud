@@ -47,14 +47,13 @@ END OF SCRIPT
 *****************************************************************************"""
 
 
-def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr", s_yyyy="0"):
+def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
     """
     STUDENT DEBTOR RECONCILIATIONS
     :param dOpenMaf: int: Mafiking Campus opening balance
     :param dOpenPot: int: Potchefstroom opening balance
     :param dOpenVaa: int: Vaal Campus opening balance
     :param s_period: str: Period indication curr, prev or year
-    :param s_yyyy: str: YYYY
     :return: Null
     """
 
@@ -74,7 +73,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr", s_y
     *************************************************************************"""
 
     # DECLARE VARIABLES
-    s_year: str = s_yyyy
+    l_debug: bool = True
     so_path = "W:/Kfs_vss_studdeb/" #Source database path
     if s_period == "curr":
         s_year = funcdate.cur_year()
@@ -87,6 +86,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr", s_y
         s_kfs = "KFSPREV"
         s_vss = "VSSPREV"
     else:
+        s_year = s_period
         so_file = "Kfs_vss_studdeb_" + s_year + ".sqlite"  # Source database
         s_kfs = ""
         s_vss = ""
@@ -4390,8 +4390,8 @@ if __name__ == '__main__':
     try:
         # report_studdeb_recon()
         # 2020 balances
-        report_studdeb_recon(48501952.09, -12454680.98, 49976048.39, "curr", "2020")
+        report_studdeb_recon(48501952.09, -12454680.98, 49976048.39, "curr")
         # 2019 balances
-        # report_studdeb_recon(66561452.48,-18340951.06,39482933.18, "prev", "2019")
+        # report_studdeb_recon(66561452.48,-18340951.06,39482933.18, "prev")
     except Exception as e:
         funcsys.ErrMessage(e, funcconf.l_mess_project, "B003_vss_lists", "B003_vss_lists")

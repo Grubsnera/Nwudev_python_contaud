@@ -16,7 +16,7 @@ BUILD STUDENTS
 *****************************************************************************"""
 
 
-def studentlist(so_conn, re_path, s_period='curr', s_year='2019', l_export=False):
+def studentlist(so_conn, re_path, s_period='curr', l_export=False):
     """
     Script to build STUDENT list
     :param so_conn: Database connection
@@ -30,7 +30,7 @@ def studentlist(so_conn, re_path, s_period='curr', s_year='2019', l_export=False
     # DECLARE VARIABLES
     if s_period == 'prev':
         s_year = funcdate.prev_year()
-    elif s_period == 'curr':
+    else:
         s_year = funcdate.cur_year()
     so_curs = so_conn.cursor()
 
