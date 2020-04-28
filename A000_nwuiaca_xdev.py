@@ -850,9 +850,9 @@ class RunTest(Thread):
                                 # C200_report_studdeb_recon.report_studdeb_recon()
                                 # 2020 balances
                                 C200_report_studdeb_recon.report_studdeb_recon(48501952.09, -12454680.98, 49976048.39,
-                                                                               "curr", "2020")
+                                                                               "curr")
                                 # 2019 balances C200_report_studdeb_recon.report_studdeb_recon(66561452.48,
-                                # -18340951.06, 39482933.18, "prev", "2019")
+                                # -18340951.06, 39482933.18, "prev")
                                 if funcconf.l_mail_project:
                                     funcmail.Mail('std_success_gmail',
                                                   'NWUIACA:Success:' + s_project,
