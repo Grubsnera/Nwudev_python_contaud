@@ -148,6 +148,8 @@ def get_officer(o_cursor, s_source="HR", s_key=""):
     s_sql = s_sql.replace("%KEY%", s_key)
     if s_source == "VSS":
         s_sql = s_sql.replace("%TABLE%", "VSS.X000_OWN_LOOKUPS")
+    elif s_source == "KFS":
+        s_sql = s_sql.replace("%TABLE%", "KFS.X000_OWN_KFS_LOOKUPS")
     else:
         s_sql = s_sql.replace("%TABLE%", "PEOPLE.X000_OWN_HR_LOOKUPS")
     o_cursor.execute(s_sql)
@@ -188,6 +190,8 @@ def get_supervisor(o_cursor, s_source="HR", s_key=""):
     s_sql = s_sql.replace("%KEY%", s_key)
     if s_source == "VSS":
         s_sql = s_sql.replace("%TABLE%", "VSS.X000_OWN_LOOKUPS")
+    elif s_source == "KFS":
+        s_sql = s_sql.replace("%TABLE%", "KFS.X000_OWN_KFS_LOOKUPS")
     else:
         s_sql = s_sql.replace("%TABLE%", "PEOPLE.X000_OWN_HR_LOOKUPS")
     o_cursor.execute(s_sql)
