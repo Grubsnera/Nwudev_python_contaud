@@ -588,5 +588,6 @@ def mysql_lists(s_database):
 if __name__ == '__main__':
     try:
         mysql_lists("Web_ia_nwu")
+        # mysql_lists(("Mysql_ia_server"))
     except Exception as e:
         funcsys.ErrMessage(e, funcconf.l_mess_project, "B005_mysql_lists", "B005_mysql_lists")
