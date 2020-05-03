@@ -89,6 +89,7 @@ def main():
     dp = updater.dispatcher
 
     # ON DIFFERENT COMMANDS - ANSWER IN TELEGRAM
+    dp.add_handler(CommandHandler("name", funcbott.name, pass_args=True))
     dp.add_handler(CommandHandler("hi", funcbott.hi))
     dp.add_handler(CommandHandler("helping", funcbott.helping))
     dp.add_handler(CommandHandler("run", funcbott.run, pass_args=True))

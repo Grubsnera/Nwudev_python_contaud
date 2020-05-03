@@ -24,11 +24,11 @@ from _my_modules import funcsys
 
 # SET TO TRUE FOR ACTIVE NWU USE OR COMMENT OUT
 funcconf.l_tel_use_nwu = True
-
 s_path: str = "S:/Logs/"
 
 """
 INDEX
+
 START BOT AND CREATE UPDATER (main)
 
 THREAD TO RUN VACUUM SCRIPT (RunVacuum)
@@ -89,6 +89,7 @@ def main():
     dp = updater.dispatcher
 
     # ON DIFFERENT COMMANDS - ANSWER IN TELEGRAM
+    dp.add_handler(CommandHandler("name", funcbott.name, pass_args=True))
     dp.add_handler(CommandHandler("hi", funcbott.hi))
     dp.add_handler(CommandHandler("helping", funcbott.helping))
     dp.add_handler(CommandHandler("run", funcbott.run, pass_args=True))
