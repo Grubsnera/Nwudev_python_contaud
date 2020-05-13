@@ -1358,17 +1358,25 @@ def vss_lists():
     # TODO Convert fields to uppercase
 
     # BUILD STUDENT PARTY FILE
-    print("Build student party file...")
+    print("Build party file...")
     sr_file = "X000_Party"
-    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
     SELECT
       PARTY.KBUSINESSENTITYID,
       PARTY.PARTYTYPE,
       PARTY.NAME,
-      Upper(PARTY.SURNAME) As SURNAME,
+      CASE
+        WHEN PARTY.PARTYTYPE = 2 THEN UPPER(PARTY.NAME)
+        ELSE UPPER(PARTY.SURNAME)
+      END AS SURNAME,
       Upper(PARTY.INITIALS) As INITIALS,
       Upper(PARTY.FIRSTNAMES) As FIRSTNAMES,
-      Upper(PARTY.NICKNAME) As NICKNAME,
+      CASE
+        WHEN PARTY.PARTYTYPE = 2 AND PARTY.CONTACTPERSONNAME LIKE('KRED%') THEN ""
+        WHEN PARTY.PARTYTYPE = 2 AND PARTY.CONTACTPERSONNAME LIKE(' %') THEN ""        
+        WHEN PARTY.PARTYTYPE = 2 THEN UPPER(PARTY.CONTACTPERSONNAME)
+        ELSE UPPER(PARTY.NICKNAME)
+      END AS NICKNAME,
       Upper(PARTY.MAIDENNAME) As MAIDENNAME,
       PARTY.DATEOFBIRTH,
       ID.EXTERNALREFERENCENUMBER AS IDNO,
@@ -1399,8 +1407,14 @@ def vss_lists():
       PARTY.AUDITDATETIME,
       PARTY.FAUDITSYSTEMFUNCTIONID,
       PARTY.FAUDITUSERCODE,
-      Upper(Trim(SURNAME))||' '||Replace(Upper(Trim(INITIALS)),' ','') As SURN_INIT,
-      Upper(Trim(SURNAME))||' ('||Replace(Upper(Trim(INITIALS)),' ','')||') '||Upper(Trim(FIRSTNAMES)) As FULL_NAME
+      CASE
+        WHEN PARTY.PARTYTYPE = 2 THEN UPPER(PARTY.NAME)
+        ELSE Upper(Trim(SURNAME))||' '||Replace(Upper(Trim(INITIALS)),' ','')
+      END AS SURN_INIT,
+      CASE
+        WHEN PARTY.PARTYTYPE = 2 THEN UPPER(PARTY.NAME)
+        ELSE Upper(Trim(SURNAME))||' ('||Replace(Upper(Trim(INITIALS)),' ','')||') '||Upper(Trim(FIRSTNAMES))
+      END AS FULL_NAME
     FROM
       PARTY
       LEFT JOIN X000_Codedescription X000_Codedesc_title ON X000_Codedesc_title.KCODEDESCID = PARTY.FTITLECODEID
@@ -1413,15 +1427,13 @@ def vss_lists():
       LEFT JOIN X005ab_Party_idno_curr ID ON ID.KBUSINESSENTITYID = PARTY.KBUSINESSENTITYID
       LEFT JOIN X005ac_Party_pass_curr PASSPORT ON PASSPORT.KBUSINESSENTITYID = PARTY.KBUSINESSENTITYID
       LEFT JOIN X005ad_Party_perm_curr SPERMIT ON SPERMIT.KBUSINESSENTITYID = PARTY.KBUSINESSENTITYID
-    WHERE
-      PARTY.PARTYTYPE = '1'
     ORDER BY
       PARTY.KBUSINESSENTITYID
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """*************************************************************************
     STUDENT ACCOUNT TRANSACTIONS
