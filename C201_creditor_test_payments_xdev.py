@@ -14,6 +14,7 @@ from _my_modules import funcfile
 from _my_modules import funccsv
 from _my_modules import funcdate
 from _my_modules import funcsms
+from _my_modules import funcstat
 from _my_modules import funcsys
 from _my_modules import functest
 
@@ -22,7 +23,7 @@ ENVIRONMENT
 *****************************************************************************"""
 
 # DECLARE VARIABLES
-l_debug: bool = False
+l_debug: bool = True
 so_path: str = "W:/Kfs/"  # Source database path
 so_file: str = "Kfs_test_creditor.sqlite"  # Source database
 re_path: str = "R:/Kfs/"  # Results path
@@ -31,7 +32,7 @@ l_export: bool = True
 # l_mail: bool = funcconf.l_mail_project
 l_mail: bool = False
 # l_mess: bool = funcconf.l_mess_project
-l_mess: bool = False
+l_mess: bool = True
 l_record: bool = False
 
 # OPEN THE SCRIPT LOG FILE
