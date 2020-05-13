@@ -14,6 +14,7 @@ BEGIN OF SCRIPT
 TEST CREDITOR DUPLICATE PAYMENT METHOD 1 (X001ax)(VENDOR,INVNBR,INVDT,AMOUNT)
 TEST VENDOR SMALL SPLIT PAYMENTS         (X001bx)(V2.0.3)
 TEST PAYMENT INITIATOR FISCAL SAME       (X001cx)(V1.0.9)
+TEST DV VENDOR POSSIBLE PO VENDOR        (X001dx)(V2.0.3)
 TEST VENDOR QUOTE SPLIT PAYMENTS         (X001ex)(V2.0.3)
 TEST CREDITOR BANK VERIFICATION          (X002ax)
 TEST EMPLOYEE APPROVE OWN PAYMENT        (X003ax)
@@ -1606,6 +1607,409 @@ def creditor_test_payments():
             print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Student_fee_test_021dx_qual_fee_negative_transaction_"
+            sx_file_dated = sx_file + funcdate.today_file()
+            s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+            funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
+            funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
+            funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
+    else:
+        s_sql = "CREATE TABLE " + sr_file + " (" + """
+        BLANK TEXT
+        );"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    """*****************************************************************************
+    TEST DV VENDOR POSSIBLE PO VENDOR
+    *****************************************************************************"""
+    funcfile.writelog("TEST DV VENDOR POSSIBLE PO VENDOR")
+    if l_debug:
+        print("TEST DV VENDOR POSSIBLE PO VENDOR")
+
+    # DECLARE TEST VARIABLES
+    i_finding_after: int = 0
+    s_description = "DV Vendor possible PO Vendor"
+    s_file_prefix: str = "X001d"
+    s_file_name: str = "dv_vendor_possible_po_vendor"
+    s_finding: str = "DV VENDOR POSSIBLE PO VENDOR"
+    s_report_file: str = "201_reported.txt"
+
+    # OBTAIN LIST OF OBJECTS TO EXCLUDE
+    t_list = funcstat.stat_tuple(so_curs, "KFS.X000_Own_kfs_lookups", "LOOKUP_CODE",
+                                 "LOOKUP='EXCLUDE OBJECT VENDOR POSSIBLE PO'")
+    if l_debug:
+        print(t_list)
+
+    # IDENTIFY DV VENDORS
+    if l_debug:
+        print("Identify DV vendors...")
+    sr_file: str = s_file_prefix + "a_a_" + s_file_name
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "Create Table " + sr_file + " As " + """
+    Select
+        PAY.VENDOR_ID,
+        PAY.PAYEE_NAME,
+        PAY.PAYEE_TYPE,
+        PAY.VENDOR_TYPE_CALC As VENDOR_TYPE,
+        Count(PAY.ORIG_INV_AMT) As TRAN_COUNT,
+        Total(PAY.NET_PMT_AMT) As AMOUNT_TOTAL,
+        Total(PAY.NET_PMT_AMT) / Count(PAY.ORIG_INV_AMT) As TRAN_VALUE
+    From
+        KFSCURR.X001ad_Report_payments_accroute PAY
+    Where
+        PAY.VENDOR_TYPE_CALC = 'DV' And
+        PAY.DOC_TYPE Not In ('CDV', 'SPDV') And
+        Cast(Substr(PAY.ACC_COST_STRING, -4) As Int) Between 2051 and 4213 And
+        Cast(Substr(PAY.ACC_COST_STRING, -4) As Int) Not In %EXCLUDE_LIST%    
+    Group By
+        PAY.VENDOR_ID
+    ;"""
+    s_sql = s_sql.replace("%EXCLUDE_LIST%", str(t_list))
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    if l_debug:
+        so_conn.commit()
+
+    # CALCULATE STANDARD DEVIATIONS
+    r_count = funcstat.stat_pstdev(so_curs, sr_file, 'TRAN_COUNT')
+    r_amount = funcstat.stat_pstdev(so_curs, sr_file, 'AMOUNT_TOTAL')
+    r_value = funcstat.stat_pstdev(so_curs, sr_file, 'TRAN_VALUE')
+    if l_debug:
+        print(r_count)
+        print(r_amount)
+        print(r_value)
+
+    # SELECT DV VENDORS AND ADD OBJECTS
+    # NOTE: This table not used further in the test. Just used to show objects with each selected vendor.
+    if l_debug:
+        print("Identify DV vendors and objects...")
+    sr_file: str = s_file_prefix + "a_b_" + s_file_name
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "Create Table " + sr_file + " As " + """
+    Select
+        DVV.*,
+        PAY.ACC_COST_STRING,
+        PAY.FIN_OBJ_CD_NM
+    From
+        %FILEP%a_a_%FILEN% DVV Left Join
+        KFSCURR.X001ad_Report_payments_accroute PAY On PAY.VENDOR_ID = DVV.VENDOR_ID
+    Where
+        (DVV.TRAN_COUNT >= %DEVCOUNT% And
+        Cast(Substr(PAY.ACC_COST_STRING, -4) As Int) Between 2051 and 4213 And
+        Cast(Substr(PAY.ACC_COST_STRING, -4) As Int) Not In %EXCLUDE_LIST%) Or       
+        (DVV.TRAN_VALUE >= %DEVVALUE% And
+        Cast(Substr(PAY.ACC_COST_STRING, -4) As Int) Between 2051 and 4213 And
+        Cast(Substr(PAY.ACC_COST_STRING, -4) As Int) Not In %EXCLUDE_LIST%)       
+    Group By
+        DVV.VENDOR_ID,
+        PAY.FIN_OBJ_CD_NM
+    ;"""
+    s_sql = s_sql.replace("%FILEP%", s_file_prefix)
+    s_sql = s_sql.replace("%FILEN%", s_file_name)
+    s_sql = s_sql.replace("%DEVCOUNT%", str(int(r_count)))
+    s_sql = s_sql.replace("%DEVVALUE%", str(round(r_value, 2)))
+    s_sql = s_sql.replace("%EXCLUDE_LIST%", str(t_list))
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    if l_debug:
+        so_conn.commit()
+
+    # SELECT VENDORS
+    if l_debug:
+        print("Identify DV vendors and objects...")
+    sr_file: str = s_file_prefix + "a_" + s_file_name
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "Create Table " + sr_file + " As " + """
+    Select
+        DVV.VENDOR_ID,
+        DVV.PAYEE_NAME,
+        DVV.PAYEE_TYPE,
+        VEN.PAYEE_TYPE_DESC,
+        VEN.OWNER_TYPE,
+        VEN.OWNER_TYPE_DESC,
+        DVV.VENDOR_TYPE,
+        VEN.VENDOR_TYPE_DESC,
+        Cast(DVV.TRAN_COUNT As Int) As TRAN_COUNT,
+        Round(Cast(DVV.AMOUNT_TOTAL As Real),2) As AMOUNT_TOTAL,
+        Round(Cast(DVV.TRAN_VALUE As Real),2) As TRAN_VALUE
+    From
+        %FILEP%a_a_%FILEN% DVV Left Join
+        KFSCURR.X002aa_Report_payments_summary VEN on VEN.VENDOR_ID = DVV.VENDOR_ID
+    Where
+        DVV.TRAN_COUNT >= %DEVCOUNT% Or
+        DVV.AMOUNT_TOTAL >= %DEVAMOUNT% Or
+        DVV.TRAN_VALUE >= %DEVVALUE%
+    ;"""
+    s_sql = s_sql.replace("%FILEP%", s_file_prefix)
+    s_sql = s_sql.replace("%FILEN%", s_file_name)
+    s_sql = s_sql.replace("%DEVCOUNT%", str(int(r_count)))
+    s_sql = s_sql.replace("%DEVAMOUNT%", str(round(r_amount, 2)))
+    s_sql = s_sql.replace("%DEVVALUE%", str(round(r_value, 2)))
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    if l_debug:
+        so_conn.commit()
+
+    # IDENTIFY FINDINGS
+    if l_debug:
+        print("Identify findings...")
+    sr_file = s_file_prefix + "b_finding"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        'NWU' As ORG,
+        FIND.VENDOR_ID,
+        FIND.PAYEE_NAME,
+        FIND.TRAN_COUNT,
+        FIND.AMOUNT_TOTAL,
+        FIND.TRAN_VALUE
+    From
+        %FILEP%%FILEN% FIND
+    ;"""
+    s_sql = s_sql.replace("%FILEP%", s_file_prefix)
+    s_sql = s_sql.replace("%FILEN%", "a_" + s_file_name)
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    if l_debug:
+        so_conn.commit()
+
+    # COUNT THE NUMBER OF FINDINGS
+    if l_debug:
+        print("Count the number of findings...")
+    i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
+    funcfile.writelog("%t FINDING: " + str(i_finding_before) + " " + s_finding + " finding(s)")
+    if l_debug:
+        print("*** Found " + str(i_finding_before) + " exceptions ***")
+
+    # GET PREVIOUS FINDINGS
+    if i_finding_before > 0:
+        functest.get_previous_finding(so_curs, ed_path, s_report_file, s_finding, "TTTTT")
+        if l_debug:
+            so_conn.commit()
+
+    # SET PREVIOUS FINDINGS
+    if i_finding_before > 0:
+        functest.set_previous_finding(so_curs)
+        if l_debug:
+            so_conn.commit()
+
+    # ADD PREVIOUS FINDINGS
+    sr_file = s_file_prefix + "d_addprev"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        if l_debug:
+            print("Join previously reported to current findings...")
+        s_sql = "CREATE TABLE " + sr_file + " AS" + """
+        Select
+            FIND.*,
+            Lower('%FINDING%') AS PROCESS,
+            '%TODAY%' AS DATE_REPORTED,
+            '%DATETEST%' AS DATE_RETEST,
+            PREV.PROCESS AS PREV_PROCESS,
+            PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
+            PREV.DATE_RETEST AS PREV_DATE_RETEST,
+            PREV.REMARK
+        From
+            %FILEP%b_finding FIND Left Join
+            Z001ab_setprev PREV ON PREV.FIELD1 = FIND.VENDOR_ID
+        ;"""
+        s_sql = s_sql.replace("%FINDING%", s_finding)
+        s_sql = s_sql.replace("%FILEP%", s_file_prefix)
+        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%DATETEST%", funcdate.cur_monthendnext())
+        so_curs.execute(s_sql)
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+        if l_debug:
+            so_conn.commit()
+
+    # BUILD LIST TO UPDATE FINDINGS
+    sr_file = s_file_prefix + "e_newprev"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0:
+        if l_debug:
+            print("Build list to update findings...")
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            PREV.PROCESS,
+            PREV.VENDOR_ID AS FIELD1,
+            PREV.PAYEE_NAME AS FIELD2,
+            '' AS FIELD3,
+            '' AS FIELD4,
+            '' AS FIELD5,
+            PREV.DATE_REPORTED,
+            PREV.DATE_RETEST,
+            PREV.REMARK
+        From
+            %FILEP%d_addprev PREV
+        Where
+            PREV.PREV_PROCESS Is Null Or
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""        
+        ;"""
+        s_sql = s_sql.replace("%FILEP%", s_file_prefix)
+        so_curs.execute(s_sql)
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+        if l_debug:
+            so_conn.commit()
+        # Export findings to previous reported file
+        i_finding_after = funcsys.tablerowcount(so_curs, sr_file)
+        if i_finding_after > 0:
+            if l_debug:
+                print("*** " + str(i_finding_after) + " Finding(s) to report ***")
+            sx_path = ed_path
+            sx_file = s_report_file[:-4]
+            # Read the header data
+            s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+            # Write the data
+            if l_record:
+                funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
+                funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
+                funcfile.writelog("%t EXPORT DATA: " + sr_file)
+            if l_mess:
+                funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_before) + '/' + str(
+                    i_finding_after) + '</b> ' + s_description)
+        else:
+            funcfile.writelog("%t FINDING: No new findings to export")
+            if l_debug:
+                print("*** No new findings to report ***")
+
+    # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
+    if i_finding_before > 0 and i_finding_after > 0:
+        functest.get_officer(so_curs, "KFS", "TEST " + s_finding + " OFFICER")
+        so_conn.commit()
+
+    # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
+    if i_finding_before > 0 and i_finding_after > 0:
+        functest.get_supervisor(so_curs, "KFS", "TEST " + s_finding + " SUPERVISOR")
+        so_conn.commit()
+
+    # ADD CONTACT DETAILS TO FINDINGS
+    sr_file = s_file_prefix + "h_detail"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0 and i_finding_after > 0:
+        if l_debug:
+            print("Add contact details to findings...")
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            PREV.ORG,
+            PREV.VENDOR_ID,
+            PREV.PAYEE_NAME,
+            FIND.PAYEE_TYPE,
+            FIND.PAYEE_TYPE_DESC,
+            FIND.OWNER_TYPE,
+            FIND.OWNER_TYPE_DESC,
+            FIND.VENDOR_TYPE,
+            FIND.VENDOR_TYPE_DESC,
+            PREV.TRAN_COUNT,
+            PREV.AMOUNT_TOTAL,
+            PREV.TRAN_VALUE,
+            CAMP_OFF.EMPLOYEE_NUMBER AS CAMP_OFF_NUMB,
+            CAMP_OFF.NAME_ADDR AS CAMP_OFF_NAME,
+            CASE
+                WHEN  CAMP_OFF.EMPLOYEE_NUMBER != '' THEN CAMP_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                ELSE CAMP_OFF.EMAIL_ADDRESS
+            END AS CAMP_OFF_MAIL,
+            CAMP_OFF.EMAIL_ADDRESS AS CAMP_OFF_MAIL2,        
+            CAMP_SUP.EMPLOYEE_NUMBER AS CAMP_SUP_NUMB,
+            CAMP_SUP.NAME_ADDR AS CAMP_SUP_NAME,
+            CASE
+                WHEN CAMP_SUP.EMPLOYEE_NUMBER != '' THEN CAMP_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                ELSE CAMP_SUP.EMAIL_ADDRESS
+            END AS CAMP_SUP_MAIL,
+            CAMP_SUP.EMAIL_ADDRESS AS CAMP_SUP_MAIL2,
+            ORG_OFF.EMPLOYEE_NUMBER AS ORG_OFF_NUMB,
+            ORG_OFF.NAME_ADDR AS ORG_OFF_NAME,
+            CASE
+                WHEN ORG_OFF.EMPLOYEE_NUMBER != '' THEN ORG_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                ELSE ORG_OFF.EMAIL_ADDRESS
+            END AS ORG_OFF_MAIL,
+            ORG_OFF.EMAIL_ADDRESS AS ORG_OFF_MAIL2,
+            ORG_SUP.EMPLOYEE_NUMBER AS ORG_SUP_NUMB,
+            ORG_SUP.NAME_ADDR AS ORG_SUP_NAME,
+            CASE
+                WHEN ORG_SUP.EMPLOYEE_NUMBER != '' THEN ORG_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                ELSE ORG_SUP.EMAIL_ADDRESS
+            END AS ORG_SUP_MAIL,
+            ORG_SUP.EMAIL_ADDRESS AS ORG_SUP_MAIL2,
+            AUD_OFF.EMPLOYEE_NUMBER As AUD_OFF_NUMB,
+            AUD_OFF.NAME_ADDR As AUD_OFF_NAME,
+            AUD_OFF.EMAIL_ADDRESS As AUD_OFF_MAIL,
+            AUD_SUP.EMPLOYEE_NUMBER As AUD_SUP_NUMB,
+            AUD_SUP.NAME_ADDR As AUD_SUP_NAME,
+            AUD_SUP.EMAIL_ADDRESS As AUD_SUP_MAIL
+        From
+            %FILEP%d_addprev PREV Left Join
+            %FILEP%a_%FILEN% FIND on FIND.VENDOR_ID = PREV.VENDOR_ID Left Join
+            Z001af_officer CAMP_OFF On CAMP_OFF.CAMPUS = 'OTHER' Left Join
+            Z001af_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG Left Join
+            Z001af_officer AUD_OFF On AUD_OFF.CAMPUS = 'AUD' Left Join
+            Z001ag_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = 'OTHER' Left Join
+            Z001ag_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG Left Join
+            Z001ag_supervisor AUD_SUP On AUD_SUP.CAMPUS = 'AUD'
+        Where
+            PREV.PREV_PROCESS Is Null Or
+            PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
+        ;"""
+        s_sql = s_sql.replace("%FILEP%", s_file_prefix)
+        s_sql = s_sql.replace("%FILEN%", s_file_name)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
+    sr_file = s_file_prefix + "x_" + s_file_name
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if i_finding_before > 0 and i_finding_after > 0:
+        if l_debug:
+            print("Build the final report")
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            '%FIND%' As Audit_finding,
+            FIND.VENDOR_ID As Vendor_id,
+            FIND.PAYEE_NAME Payee_name,
+            FIND.PAYEE_TYPE Payee_type,
+            FIND.PAYEE_TYPE_DESC Payee_type_desc,
+            FIND.OWNER_TYPE Owner_type,
+            FIND.OWNER_TYPE_DESC Owner_type_desc,
+            FIND.VENDOR_TYPE Vendor_type,
+            FIND.VENDOR_TYPE_DESC Vendor_type_desc,
+            FIND.TRAN_COUNT Tran_count,
+            FIND.AMOUNT_TOTAL Tran_total,
+            FIND.TRAN_VALUE Tran_value,
+            FIND.ORG As Organisation,
+            FIND.CAMP_OFF_NAME AS Responsible_Officer,
+            FIND.CAMP_OFF_NUMB AS Responsible_Officer_Numb,
+            FIND.CAMP_OFF_MAIL AS Responsible_Officer_Mail,
+            FIND.CAMP_SUP_NAME AS Supervisor,
+            FIND.CAMP_SUP_NUMB AS Supervisor_Numb,
+            FIND.CAMP_SUP_MAIL AS Supervisor_Mail,
+            FIND.ORG_OFF_NAME AS Org_Officer,
+            FIND.ORG_OFF_NUMB AS Org_Officer_Numb,
+            FIND.ORG_OFF_MAIL AS Org_Officer_Mail,
+            FIND.ORG_SUP_NAME AS Org_Supervisor,
+            FIND.ORG_SUP_NUMB AS Org_Supervisor_Numb,
+            FIND.ORG_SUP_MAIL AS Org_Supervisor_Mail,
+            FIND.AUD_OFF_NAME AS Audit_Officer,
+            FIND.AUD_OFF_NUMB AS Audit_Officer_Numb,
+            FIND.AUD_OFF_MAIL AS Audit_Officer_Mail,
+            FIND.AUD_SUP_NAME AS Audit_Supervisor,
+            FIND.AUD_SUP_NUMB AS Audit_Supervisor_Numb,
+            FIND.AUD_SUP_MAIL AS Audit_Supervisor_Mail
+        From
+            %FILEP%h_detail FIND
+        ;"""
+        s_sql = s_sql.replace("%FIND%", s_finding)
+        s_sql = s_sql.replace("%FILEP%", s_file_prefix)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+        # Export findings
+        if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
+            if l_debug:
+                print("Export findings...")
+            sx_path = re_path
+            sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
             sx_file_dated = sx_file + funcdate.today_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
