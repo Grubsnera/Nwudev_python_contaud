@@ -32,8 +32,9 @@ def robot_name(s_list: str = "a", s_main: str = "", s_secondary: str = ""):
     """
 
     # VARIABLES
+    s_main = s_main.replace(".", " ")
     s_return_message: str = ""
-    l_debug: bool = False
+    l_debug: bool = True
 
     """*************************************************************************
     ENVIRONMENT
@@ -110,13 +111,17 @@ def robot_name(s_list: str = "a", s_main: str = "", s_secondary: str = ""):
     else:
         s_secondary1 = "and PAR.NICKNAME Like('%" + s_secondary.upper() + "%')"
 
+    # TODO Sort out payee only searches. Take very long with no end result
+
     # LIST PARAMETER
     if s_list[0:1] == "e":  # Employee
         s_list1 = "and PEO.EMPLOYEE_NUMBER Is Not Null"
+    # elif s_list[0:1] == "p":  # Payee
+    #     s_list1 = "and KFS.VENDOR_ID Is Not Null"
     elif s_list[0:1] == "s":  # Student
         s_list1 = "and STU.KSTUDBUSENTID Is Not Null"
     elif s_list[0:1] == "v":  # Vendor
-        s_list1 = ""
+        s_list1 = "and PAR.PARTYTYPE = 2"
     else:
         s_list1 = ""
 
@@ -153,11 +158,19 @@ def robot_name(s_list: str = "a", s_main: str = "", s_secondary: str = ""):
             CASE
                 WHEN STU.KSTUDBUSENTID Is Not Null THEN True
                 ELSE False
-            END AS STUDENT
+            END AS STUDENT,
+            CASE
+                WHEN KFS.VENDOR_ID Is Not Null THEN True
+                ELSE False
+            END AS VENDOR,
+            PAR.PARTYTYPE,
+            KFS.YEAR,
+            KFS.VENDOR_ID
         From
             X000_Party PAR Left Join
             PEOPLE.X002_PEOPLE_CURR PEO On PEO.EMPLOYEE_NUMBER = CAST(PAR.KBUSINESSENTITYID AS TEXT) Left Join
-            VSSCURR.X001_Student STU On STU.KSTUDBUSENTID = PAR.KBUSINESSENTITYID  
+            VSSCURR.X001_Student STU On STU.KSTUDBUSENTID = PAR.KBUSINESSENTITYID Left Join
+            KFSCURR.X002aa_Report_payments_summary KFS ON SUBSTR(KFS.VENDOR_ID,1,8) = CAST(PAR.KBUSINESSENTITYID AS TEXT)   
         Where
             %WHERE%
         Order By
@@ -195,20 +208,32 @@ def robot_name(s_list: str = "a", s_main: str = "", s_secondary: str = ""):
         row[8] = NATIONALITY
         row[9] = EMPLOYEE
         row[10] = STUDENT
+        row[11] = VENDOR
+        row[12] = PARTYTYPE
         """
 
         s_return_message = ""
         for row in so_curs.execute("SELECT * from " + sr_file).fetchall():
-            s_return_message += "<b>" + row[1][0:row[1].find(")")+1] + "</b>\n"
-            s_return_message += " " + row[1][row[1].find(")")+2:]
-            if row[9] == 1 or row[10] == 1:
+            s_return_message += "\n"
+            if row[12] == 2:  # Do not split vendor name
+                s_return_message += "<b>" + row[1] + "</b>"
+                if row[3]:
+                    s_return_message += "\n " + row[3]
+            else:  # Split name
+                s_return_message += "<b>" + row[1][0:row[1].find(")")+1] + "</b>\n"
+                if " " + row[1][row[1].find(")")+2:]:
+                    s_return_message += " " + row[1][row[1].find(")")+2:]
+            if row[9] == 1 or row[10] == 1 or row[11] == 1:
                 s_return_message += "\n"
                 if row[9] == 1:
                     s_return_message += " -employee"
                 if row[10] == 1:
                     s_return_message += " -student"
+                if row[11] == 1:
+                    s_return_message += " -payee"
             s_return_message += "\n  /nwu " + str(row[0])
-            s_return_message += "\n  /id " + str(row[5]) + "\n"
+            if row[5]:  # Show only if not null
+                s_return_message += "\n  /id " + str(row[5])
             if len(s_return_message) > 3900:
                 break
         if len(s_return_message) > 3900:
