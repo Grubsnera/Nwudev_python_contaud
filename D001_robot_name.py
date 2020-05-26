@@ -88,25 +88,25 @@ def robot_name(s_list: str = "a", s_main: str = "", s_secondary: str = ""):
     s_where = "(%MAIN1% %SECONDARY% %LIST%) or (%MAIN2% %SECONDARY% %LIST%) or (%MAIN3% %SECONDARY% %LIST%)"
 
     # MAIN PARAMETER FULL_NAME
-    if s_main[0:1] == "?":
+    if s_main[0:1] == "*":
         s_main1 = "PAR.FULL_NAME != ''"
     else:
         s_main1 = "PAR.FULL_NAME Like('%" + s_main.upper() + "%')"
 
     # MAIN PARAMETER NWU NUMBER
-    if s_main[0:1] == "?":
+    if s_main[0:1] == "*":
         s_main2 = "PAR.KBUSINESSENTITYID > 0"
     else:
         s_main2 = "CAST(PAR.KBUSINESSENTITYID AS TEXT) Like('%" + s_main.upper() + "%')"
 
     # MAIN PARAMETER ID NUMBER
-    if s_main[0:1] == "?":
+    if s_main[0:1] == "*":
         s_main3 = "PAR.IDNO != ''"
     else:
         s_main3 = "PAR.IDNO Like('%" + s_main.upper() + "%')"
 
     # SECONDARY PARAMETER NICKNAME
-    if s_secondary[0:1] == "?":
+    if s_secondary[0:1] == "*":
         s_secondary1 = ""
     else:
         s_secondary1 = "and PAR.NICKNAME Like('%" + s_secondary.upper() + "%')"
