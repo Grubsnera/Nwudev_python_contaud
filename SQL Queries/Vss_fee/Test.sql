@@ -1,9 +1,7 @@
 ﻿Select
-    X021gx_qual_fee_overcharge.Campus,
-    X021gx_qual_fee_overcharge.Tran_owner,
-    Count(X021gx_qual_fee_overcharge.Student) As Count_Student
+    X020bx_Student_master_sort.PRESENT_CAT,
+    Count(X020bx_Student_master_sort.KSTUDBUSENTID) As Count_KSTUDBUSENTID
 From
-    X021gx_qual_fee_overcharge
+    X020bx_Student_master_sort
 Group By
-    X021gx_qual_fee_overcharge.Campus,
-    X021gx_qual_fee_overcharge.Tran_owner
+    X020bx_Student_master_sort.PRESENT_CAT

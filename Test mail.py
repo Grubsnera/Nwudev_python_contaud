@@ -11,3 +11,4 @@ from _my_modules import funcmail
 s_trigger = input("Mail trigger: ")
 
 funcmail.Mail(s_trigger)
+
