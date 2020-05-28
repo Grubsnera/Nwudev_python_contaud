@@ -44,6 +44,7 @@ def creditor_test_payments():
     from _my_modules import funcfile
     from _my_modules import funccsv
     from _my_modules import funcdate
+    from _my_modules import funcstat
     from _my_modules import funcsms
     from _my_modules import functest
 
