@@ -277,13 +277,13 @@ class RunLarge(Thread):
                         funcsms.send_telegram('', 'administrator', 'Large schedule start.')
 
                     # SET DATE AND TIME FOR NEXT RUN
-                    if time.strftime("%R", time.localtime()) <= "17:55":
+                    if time.strftime("%R", time.localtime()) <= "19:55":
                         funcconf.d_run_large = datetime.datetime.strptime(funcdate.today() +
-                                                                          ' 18:00:00',
+                                                                          ' 20:00:00',
                                                                           "%Y-%m-%d %H:%M:%S")
                     else:
                         funcconf.d_run_large = datetime.datetime.strptime(funcdate.today() +
-                                                                          " 18:00:00",
+                                                                          " 20:00:00",
                                                                           "%Y-%m-%d %H:%M:%S") \
                                                + datetime.timedelta(days=1)
 
@@ -848,12 +848,10 @@ class RunTest(Thread):
                     if funcconf.l_run_people_test and funcconf.l_run_kfs_test and funcconf.l_run_vss_test:
                         if funcdate.today_dayname() in "MonTueWedThuFri":
                             try:
-                                # C200_report_studdeb_recon.report_studdeb_recon()
+                                C200_report_studdeb_recon.report_studdeb_recon()
                                 # 2020 balances
-                                C200_report_studdeb_recon.report_studdeb_recon(48501952.09, -12454680.98, 49976048.39,
-                                                                               "curr")
-                                # 2019 balances C200_report_studdeb_recon.report_studdeb_recon(66561452.48,
-                                # -18340951.06, 39482933.18, "prev")
+                                # C200_report_studdeb_recon.report_studdeb_recon(48501952.09, -12454680.98, 49976048.39, "curr")
+                                # 2019 balances C200_report_studdeb_recon.report_studdeb_recon(66561452.48, -18340951.06, 39482933.18, "prev")
                                 if funcconf.l_mail_project:
                                     funcmail.Mail('std_success_gmail',
                                                   'NWUIACA:Success:' + s_project,

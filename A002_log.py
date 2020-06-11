@@ -261,7 +261,7 @@ def log_capture(s_date=funcdate.yesterday(), l_history=False):
     FROM
         X001ac_calc_time LOG
     WHERE
-        (LOG.LOG_SECOND <= 3600 And LOG.LOG_TIME >= '18:00:00' And LOG.LOG_TIME <= '23:59:59') Or     
+        (LOG.LOG_SECOND <= 3600 And LOG.LOG_TIME >= '20:00:00' And LOG.LOG_TIME <= '23:59:59') Or     
         (LOG.LOG_SECOND <= 3600 And LOG.LOG_TIME >= '02:00:00' And LOG.LOG_TIME <= '06:59:59')     
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
