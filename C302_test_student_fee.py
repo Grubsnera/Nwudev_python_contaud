@@ -96,7 +96,7 @@ def student_fee(s_period="curr"):
         l_export: bool = True
     else:
         f_reg_fee = 1930.00
-        d_sem1_con = "2020-03-09"
+        d_sem1_con = "2020-02-21"
         d_sem1_dis = "2020-03-09"
         d_sem2_con = "2020-07-31"
         d_sem2_dis = "2020-08-15"
@@ -4276,7 +4276,7 @@ def student_fee(s_period="curr"):
 
     # DECLARE VARIABLES
     i_finding_after: int = 0
-    s_desc = "Qualification fee transactions amount to no value for caontact students"
+    s_desc = "Qualification fee transactions amount to no value for contact students"
 
     # ISOLATE QUALIFICATIONS WITH ZERO TRANSACTIONS
     print("Isolate qualifications with zero value transactions...")
