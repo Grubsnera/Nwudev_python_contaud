@@ -83,6 +83,7 @@ def student_fee(s_period="curr"):
         d_sem1_dis = "2019-03-05"
         d_sem2_con = "2019-08-09"
         d_sem2_dis = "2019-08-09"
+        d_test_overcharge = "2019-07-15"  # Only month and day used
         so_file = "Vss_test_fee_prev.sqlite"  # Source database
         s_reg_trancode: str = "095"
         s_qual_trancode: str = "004"
@@ -100,6 +101,7 @@ def student_fee(s_period="curr"):
         d_sem1_dis = "2020-03-09"
         d_sem2_con = "2020-07-31"
         d_sem2_dis = "2020-08-15"
+        d_test_overcharge = "2020-07-15"  # Only month and day used
         so_file = "Vss_test_fee.sqlite"  # Source database
         s_reg_trancode: str = "095"
         s_qual_trancode: str = "004"
@@ -3155,7 +3157,8 @@ def student_fee(s_period="curr"):
         FEES.FUSERBUSINESSENTITYID,
         FEES.NAME_ADDR,
         FEES.FAUDITUSERCODE,
-        FEES.SYSTEM_DESC
+        FEES.SYSTEM_DESC,
+        Cast(1 As INT) As PERIOD_A_IND
     From
         X000_Student STUD Left Join
         X021aa_Qual_nofee_loaded_stud FIND On FIND.KSTUDBUSENTID = STUD.KSTUDBUSENTID And
@@ -3185,6 +3188,20 @@ def student_fee(s_period="curr"):
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
+    """
+    # UPDATE FEE TEST 53 AND 54 PERIOD COLUMN
+    # DO TEST ONLY IF TODAY DATE WITHIN PERIOD
+    print("Update test 53_54_period_a_ind column...")
+    d1 = (int(d_test_overcharge[5:7]), int(d_test_overcharge[-2:]))  # Begin date
+    d2 = (int(funcdate.cur_month()), int(funcdate.cur_day()))  # Now
+    d3 = (12, 31)  # End date
+    if d1 <= d2 <= d3:
+        s_sql = "UPDATE " + sr_file + " SET PERIOD_A_IND = 1;"
+        so_curs.execute(s_sql)
+        so_conn.commit()
+    funcfile.writelog("%t UPDATE COLUMN: Update test 53_54_period_a_ind column")
+    """
+
     # UPDATE FEE SHOULD BE COLUMN
     print("Update qualification fee should be column...")
     s_sql = "UPDATE " + sr_file + """
@@ -3206,8 +3223,8 @@ def student_fee(s_period="curr"):
         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And FEE_LEVIED_TYPE Like('3%') And ENTRY_LEVEL Like('NON-ENTER%') And STATUS_FINAL Like('FINAL%') And DAYS_PASS <= 180 Then '50 CP PASS MARKONLY NO PAYMENT RQD' 
         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM0 = 1 And SEM1 > 0 And SEM2 = 0 And SEM7 = 0 Then '51 CP PASS 1ST SEM HALF PAYMENT RQD' 
         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM0 = 1 And SEM1 = 0 And SEM2 > 0 And SEM7 = 0 Then '52 CP PASS 2ND SEM HALF PAYMENT RQD' 
-        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And CEREMONY = 'JULY' And FEE_BURS Is Null Then '53 CP PASS WGRAD NOBURS HALF PAYMENT RQD'
-        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And CEREMONY = 'JULY' And FEE_BURS < 0 Then '54 CP PASS WGRAD BURS FULL PAYMENT RQD'
+        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And CEREMONY = 'JULY' And FEE_BURS Is Null And PERIOD_A_IND = 1 Then '53 CP PASS WGRAD NOBURS HALF PAYMENT RQD'
+        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And CEREMONY = 'JULY' And FEE_BURS < 0 And PERIOD_A_IND = 1 Then '54 CP PASS WGRAD BURS FULL PAYMENT RQD'
         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' Then '55 CP PASS FULL PAYMENT RQD' 
 
         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC <= '%DSEM1%' Then '10 CP NO PAYMENT RQD' 
@@ -3228,8 +3245,8 @@ def student_fee(s_period="curr"):
         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And FEE_LEVIED_TYPE Like('3%') And ENTRY_LEVEL Like('NON-ENTER%') And STATUS_FINAL Like('FINAL%') And DAYS_PASS <= 180 Then '50 CU PASS MARKONLY NO PAYMENT RQD' 
         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM0 = 1 And SEM1 > 0 And SEM2 = 0 And SEM7 = 0 Then '51 CU PASS 1ST SEM HALF PAYMENT RQD' 
         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM0 = 1 And SEM1 = 0 And SEM2 > 0 And SEM7 = 0 Then '52 CU PASS 2ND SEM HALF PAYMENT RQD' 
-        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And CEREMONY = 'JULY' And FEE_BURS Is Null Then '53 CU PASS WGRAD NOBURS HALF PAYMENT RQD'
-        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And CEREMONY = 'JULY' And FEE_BURS < 0 Then '54 CU PASS WGRAD BURS FULL PAYMENT RQD'
+        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And CEREMONY = 'JULY' And FEE_BURS Is Null And PERIOD_A_IND = 1 Then '53 CU PASS WGRAD NOBURS HALF PAYMENT RQD'
+        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And CEREMONY = 'JULY' And FEE_BURS < 0 And PERIOD_A_IND = 1 Then '54 CU PASS WGRAD BURS FULL PAYMENT RQD'
         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' Then '55 CU PASS FULL PAYMENT RQD' 
 
         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC <= '%DSEM1%' Then '10 CU NO PAYMENT RQD' 
