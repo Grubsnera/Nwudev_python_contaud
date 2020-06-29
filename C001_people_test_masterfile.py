@@ -4788,6 +4788,8 @@ def people_test_masterfile():
         PEOPLE.X002_PEOPLE_CURR.IDNO
     From
         PEOPLE.X002_PEOPLE_CURR
+    Where
+        PEOPLE.X002_PEOPLE_CURR.FIRST_NAME != ''        
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     so_curs.execute(s_sql)
