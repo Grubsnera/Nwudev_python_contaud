@@ -770,11 +770,11 @@ class RunTest(Thread):
                     if time.strftime("%R", time.localtime()) <= "23:59":
                         funcconf.d_run_test = datetime.datetime.strptime(funcdate.today() + " 23:00:00",
                                                                          "%Y-%m-%d %H:%M:%S") + \
-                                              datetime.timedelta(hours=6)
+                                              datetime.timedelta(hours=7)
                     else:
                         funcconf.d_run_test = datetime.datetime.strptime(funcdate.today() + " 23:00:00",
                                                                          "%Y-%m-%d %H:%M:%S") + \
-                                              datetime.timedelta(days=1, hours=6)
+                                              datetime.timedelta(days=1, hours=7)
 
                     # UPDATE LOG ***************************************************
                     s_project: str = "A002_log"
