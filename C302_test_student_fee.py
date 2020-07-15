@@ -3224,7 +3224,7 @@ def student_fee(s_period="curr"):
         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM0 = 1 And SEM1 > 0 And SEM2 = 0 And SEM7 = 0 Then '51 CP PASS 1ST SEM HALF PAYMENT RQD' 
         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM0 = 1 And SEM1 = 0 And SEM2 > 0 And SEM7 = 0 Then '52 CP PASS 2ND SEM HALF PAYMENT RQD' 
         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And CEREMONY = 'JULY' And FEE_BURS Is Null And PERIOD_A_IND = 1 Then '53 CP PASS WGRAD NOBURS HALF PAYMENT RQD'
-        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And CEREMONY = 'JULY' And FEE_BURS < 0 And PERIOD_A_IND = 1 Then '54 CP PASS WGRAD BURS FULL PAYMENT RQD'
+        When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And CEREMONY = 'JULY' And FEE_BURS < 0 And PERIOD_A_IND = 1 Then '54 CP PASS WGRAD BURS HALF PAYMENT RQD'
         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' Then '55 CP PASS FULL PAYMENT RQD' 
 
         When QUAL_TYPE_FEE Like 'P%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC <= '%DSEM1%' Then '10 CP NO PAYMENT RQD' 
@@ -3246,7 +3246,7 @@ def student_fee(s_period="curr"):
         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM0 = 1 And SEM1 > 0 And SEM2 = 0 And SEM7 = 0 Then '51 CU PASS 1ST SEM HALF PAYMENT RQD' 
         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And SEM0 = 1 And SEM1 = 0 And SEM2 > 0 And SEM7 = 0 Then '52 CU PASS 2ND SEM HALF PAYMENT RQD' 
         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And CEREMONY = 'JULY' And FEE_BURS Is Null And PERIOD_A_IND = 1 Then '53 CU PASS WGRAD NOBURS HALF PAYMENT RQD'
-        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And CEREMONY = 'JULY' And FEE_BURS < 0 And PERIOD_A_IND = 1 Then '54 CU PASS WGRAD BURS FULL PAYMENT RQD'
+        When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' And CEREMONY = 'JULY' And FEE_BURS < 0 And PERIOD_A_IND = 1 Then '54 CU PASS WGRAD BURS HALF PAYMENT RQD'
         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC = '' Then '55 CU PASS FULL PAYMENT RQD' 
 
         When QUAL_TYPE_FEE Like 'U%' And PRESENT_CAT Like 'C%' And DISCDATE_CALC <= '%DSEM1%' Then '10 CU NO PAYMENT RQD' 
@@ -3299,7 +3299,8 @@ def student_fee(s_period="curr"):
                         When FEE_SHOULD_BE Like '52%' And FEE_LEVIED_TYPE Like '5%' Then 2
                         When FEE_SHOULD_BE Like '53%' And FEE_LEVIED_TYPE Like '4%' Then 1
                         When FEE_SHOULD_BE Like '53%' And FEE_LEVIED_TYPE Like '5%' Then 2
-                        When FEE_SHOULD_BE Like '54%' And FEE_LEVIED_TYPE Like '5%' Then 1
+                        When FEE_SHOULD_BE Like '54%' And FEE_LEVIED_TYPE Like '4%' Then 1
+                        When FEE_SHOULD_BE Like '54%' And FEE_LEVIED_TYPE Like '5%' Then 2
                         When FEE_SHOULD_BE Like '55%' And FEE_LEVIED_TYPE Like '5%' Then 1
 
                         When FEE_SHOULD_BE Like '8%' And FEE_LEVIED_TYPE Like '5%' Then 1
