@@ -8,6 +8,7 @@ Copyright: Albert J v Rensburg (NWU:21162395)
 import sqlite3
 
 # IMPORT OWN MODULES
+from _my_modules import funccsv
 from _my_modules import funcconf
 from _my_modules import funcdate
 from _my_modules import funcfile
@@ -44,6 +45,7 @@ PAYMENT REPORTS
 VENDOR PAYMENT ANNUAL TOTALS
 PAYEE TYPE PER MONTH
 PAYMENT TYPE ANNUAL SUMMARY TOTALS
+PREVIOUS MONTH PAYMENT DOCUMENT TYPE SUMMARY
 
 END OF SCRIPT
 *****************************************************************************"""
@@ -62,7 +64,10 @@ def kfs_period_list(s_period="curr"):
 
     # DECLARE VARIABLES
     l_debug: bool = True
+    l_export: bool = True
     so_path = "W:/Kfs/"  # Source database path
+    re_path = "R:/Kfs/"  # Results path
+    ed_path = "S:/_external_data/"  # external data path
     if s_period == "curr":
         s_year = funcdate.cur_year()
         so_file = "Kfs_curr.sqlite"  # Source database
@@ -949,6 +954,50 @@ def kfs_period_list(s_period="curr"):
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # PREVIOUS MONTH PAYMENT DOCUMENT TYPE SUMMARY
+    if l_debug:
+        print("Monthly payment document type summary...")
+    sr_file = "X002ad_Report_payment_doctype_summary"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        SubStr(X001aa_Report_payments.VENDOR_ID, 1, 8) As VENDOR_ID,
+        X001aa_Report_payments.PAYEE_NAME As VENDOR_NAME,
+        X001aa_Report_payments.VENDOR_TYPE_CALC As VENDOR_TYPE,
+        X001aa_Report_payments.DOC_TYPE,
+        X001aa_Report_payments.DOC_LABEL,
+        Max(X001aa_Report_payments.DISB_TS) As LAST_DISB_DT,
+        Count(X001aa_Report_payments.EDOC) As TRAN_COUNT,
+        Total(X001aa_Report_payments.NET_PMT_AMT) As TRAN_TOTAL
+    From
+        X001aa_Report_payments
+    Where
+        SubStr(X001aa_Report_payments.DISB_TS,6,2) = "%PMONTH%"
+    Group By
+        SubStr(X001aa_Report_payments.VENDOR_ID, 1, 8),
+        X001aa_Report_payments.DOC_TYPE
+    Order By
+        TRAN_TOTAL Desc
+    """
+    s_sql = s_sql.replace("%PMONTH%", funcdate.prev_month())
+    funcdate.prev_month()
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    if l_export:
+        # Data export
+        sx_path = re_path + s_year + "/"
+        sx_file = "Creditor_report_002ad_doc_type_summ_"
+        sx_file_dated = sx_file + funcdate.prev_month()
+        if l_debug:
+            print("Export current year assignments..." + sx_path + sx_file_dated)
+        # Read the header data
+        s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+        # Write the data
+        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
+        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
+        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file_dated)
 
     """ ****************************************************************************
     END OF SCRIPT
