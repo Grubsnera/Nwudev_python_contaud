@@ -103,7 +103,13 @@ Order By
     peevf_start    
 ;"""
 """
-    Upper(petf.element_name) = 'NWU LONG SERVICE AWARD' And
+    per.employee_number = '31228550'
+"""
+"""
+    Upper(pivf.name) Like('%HOUR%')
+"""
+"""
+    Upper(petf.element_name) Like 'NWU LONG SERVICE AWARD' And
     Date('%TODAY%') Between peef.effective_start_date And peef.effective_end_date And
     Date('%TODAY%') Between per.effective_start_date And per.effective_end_date And
     Date('%TODAY%') Between paaf.effective_start_date And paaf.effective_end_date And
