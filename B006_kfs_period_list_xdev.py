@@ -7,6 +7,7 @@ Author: Albert J v Rensburg (NWU21162395)
 import sqlite3
 
 # IMPORT OWN MODULES
+from _my_modules import funccsv
 from _my_modules import funcfile
 from _my_modules import funcdate
 
@@ -23,6 +24,7 @@ ENVIRONMENT
 
 # DECLARE VARIABLES
 l_debug: bool = True
+l_export: bool = True
 so_file: str = ""
 s_period: str = "curr"
 s_year: str = s_period
@@ -74,6 +76,61 @@ BEGIN OF SCRIPT
 funcfile.writelog("BEGIN OF SCRIPT")
 if l_debug:
     print("BEGIN OF SCRIPT")
+
+    """ ****************************************************************************
+    PURCHASE ORDER MASTER LIST
+    *****************************************************************************"""
+    funcfile.writelog("PURCHASE ORDER MASTER LIST")
+    if l_debug:
+        print("PURCHASE ORDER MASTER LIST")
+
+    # BUILD GL TRANSACTION LIST
+    print("Build po master list...")
+    sr_file = "X000_PO_master"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        POR.FDOC_NBR,
+        POR.PO_ID,
+        POR.VNDR_HDR_GNRTD_ID,
+        POR.VNDR_DTL_ASND_ID,
+        POR.VNDR_NM,
+        POR.VNDR_PMT_TERM_CD,
+        POR.PO_VNDR_CHC_CD,
+        upper(PO_VNDR_CHC_DESC) As PO_VNDR_CHC_DESC,
+        POR.VNDR_CONTR_GNRTD_ID,
+        POR.REQS_ID,
+        POR.REQS_SRC_CD,
+        POR.FND_SRC_CD,
+        POR.PO_CST_SRC_CD,
+        POR.PO_TRNS_MTHD_CD,
+        POR.FIN_COA_CD,
+        POR.ORG_CD,
+        POR.CONTR_MGR_CD,
+        POR.PO_CRTE_DT,
+        POR.PO_QT_DUE_DT,
+        POR.PO_INIT_OPEN_DT,
+        POR.PO_1ST_TRNS_DT,
+        POR.PO_LST_TRNS_DT,
+        POR.AP_PUR_DOC_LNK_ID,
+        POR.PO_QT_INITLZTN_DT,   
+        POR.PO_CUR_IND,
+        POR.PEND_ACTN_IND,
+        POR.RCVNG_DOC_REQ_IND,
+        POR.PMT_RQST_PSTV_APRVL_IND,
+        POR.RQSTR_PRSN_EMAIL_ADDR,
+        POR.DLVY_TO_EMAIL_ADDR,
+        upper(POR.VNDR_NTE_TXT) As VNDR_NTE_TXT,
+        upper(POR.DLVY_INSTRC_TXT) As DLVY_INSTRC_TXT
+    From
+        PUR_PO_T POR Left Join
+        KFS.PUR_PO_VNDR_CHC_T CHC On CHC.PO_VNDR_CHC_CD = POR.PO_VNDR_CHC_CD
+    Order By
+        POR.FDOC_NBR
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: PO Master list")
 
 """ ****************************************************************************
 END OF SCRIPT

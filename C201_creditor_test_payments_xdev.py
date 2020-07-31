@@ -74,6 +74,65 @@ if l_debug:
     print("BEGIN OF SCRIPT")
 
 """*****************************************************************************
+PAYEE FISCAL OFFICER SAME
+*****************************************************************************"""
+funcfile.writelog("PAYEE FISCAL OFFICER SAME")
+if l_debug:
+    print("PAYEE FISCAL OFFICER SAME")
+
+# DECLARE TEST VARIABLES
+i_finding_after: int = 0
+s_description = "Payee fiscal officer same person"
+s_file_prefix: str = "X001f"
+s_file_name: str = "payee_fiscal_officer_same"
+s_finding: str = "PAYEE FISCAL OFFICER SAME"
+s_report_file: str = "201_reported.txt"
+
+# IDENTIFY PAYMENTS WHERE THE PAYEE IS ALSO THE FISCAL OFFICER
+if l_debug:
+    print("Identify payment transactions...")
+sr_file: str = s_file_prefix + "a_" + s_file_name
+so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+s_sql = "Create Table " + sr_file + " As " + """
+Select
+    LIST.*
+From
+    KFSCURR.X001ad_Report_payments_accroute LIST
+Where
+    LIST.VENDOR_ID = LIST.ACCT_FSC_OFC_UID
+Order By
+    VENDOR_ID,
+    PMT_DT    
+;"""
+so_curs.execute(s_sql)
+funcfile.writelog("%t BUILD TABLE: " + sr_file)
+if l_debug:
+    so_conn.commit()
+
+# IDENTIFY FINDINGS
+if l_debug:
+    print("Identify findings...")
+sr_file = s_file_prefix + "b_finding"
+so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+s_sql = "CREATE TABLE " + sr_file + " AS " + """
+Select
+    'NWU' As ORG,
+    FIND.VENDOR_ID,
+    FIND.PAYEE_NAME,
+    FIND.TRAN_COUNT,
+    FIND.AMOUNT_TOTAL,
+    FIND.TRAN_VALUE
+From
+    %FILEP%%FILEN% FIND
+;"""
+s_sql = s_sql.replace("%FILEP%", s_file_prefix)
+s_sql = s_sql.replace("%FILEN%", "a_" + s_file_name)
+so_curs.execute(s_sql)
+funcfile.writelog("%t BUILD TABLE: " + sr_file)
+if l_debug:
+    so_conn.commit()
+
+"""*****************************************************************************
 END OF SCRIPT
 *****************************************************************************"""
 funcfile.writelog("END OF SCRIPT")
