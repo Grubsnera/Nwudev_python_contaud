@@ -1554,7 +1554,7 @@ def people_test_masterfile():
             GET.DATE_RETEST,
             GET.REMARK
         From
-            X003ec_get_previous GET
+            X002ec_id_getprev GET
         Group By
             GET.FIELD1        
         ;"""
@@ -5156,6 +5156,7 @@ def people_test_masterfile():
         SEC.SEC_RATE,
         SEC.SEC_UNIT,
         SEC.SEC_FULLPART_FLAG,
+        SEC.ASSIGNMENT_EXTRA_INFO_ID,
         CASE
             WHEN SEC.SEC_UNIT = 'MS' And SEC.SEC_TYPE = 'SALARY' And SEC.SEC_FULLPART_FLAG = 'F' THEN PEOP.PERSON_TYPE||'(F)'
             WHEN SEC.SEC_UNIT = 'MS' And SEC.SEC_TYPE = 'SALARY' And SEC.SEC_FULLPART_FLAG <> 'F' THEN 'C'
@@ -5181,7 +5182,7 @@ def people_test_masterfile():
         SEC_DATE_TO >= Date('%TODAY%'))
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = s_sql.replace("%TODAY%", funcdate.today())
+    s_sql = s_sql.replace("%TODAY%", funcdate.yesterday())
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -5193,6 +5194,7 @@ def people_test_masterfile():
     Select
         SEC.EMPLOYEE_NUMBER,
         SEC.PERSON_TYPE_CALC,
+        Max(SEC.ASSIGNMENT_EXTRA_INFO_ID) AS ASSIGNMENT_EXTRA_INFO_ID, 
         Count(SEC.ASS_ID) As COUNT
     From
         X007_leave01_secass_all SEC
