@@ -97,7 +97,7 @@ Where
     pivf.input_value_id = peevf.input_value_id And
     paaf.primary_flag = 'Y' And
     peevf.screen_entry_value > 0 And
-    Upper(pivf.name) Like('%HOUR%')
+    per.employee_number = '31228550'
 Order By
     per.employee_number,
     peevf_start    
