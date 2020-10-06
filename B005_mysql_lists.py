@@ -246,46 +246,46 @@ def mysql_lists(s_database):
         funcsms.send_telegram("", "administrator", "<b> " + str(i_tota) + "</b> People upload")
 
     # Update MYSQL PEOPLE TO WEB FINDING mail trigger ******************************
-    if s_database == "Web_ia_nwu":
-        print("Update mysql current people mail trigger...")
-        s_sql = """
-        UPDATE `ia_finding` SET
-        `ia_find_updated` = '1',
-        `ia_find_r1_send` = '0',
-        `ia_find_updatedate` = now()
-        WHERE `ia_finding`.`ia_find_auto` = 1
-        """ + ";"
-        ms_curs.execute(s_sql)
-        ms_cnxn.commit()
-        funcfile.writelog("%t UPDATE MYSQL TRIGGER: FINDING 1 (people current)")
+    # if s_database == "Web_ia_nwu":
+        # print("Update mysql current people mail trigger...")
+        # s_sql = """
+        # UPDATE `ia_finding` SET
+        # `ia_find_updated` = '1',
+        # `ia_find_r1_send` = '0',
+        # `ia_find_updatedate` = now()
+        # WHERE `ia_finding`.`ia_find_auto` = 1
+        # """ + ";"
+        # ms_curs.execute(s_sql)
+        # ms_cnxn.commit()
+        # funcfile.writelog("%t UPDATE MYSQL TRIGGER: FINDING 1 (people current)")
 
     # Update MYSQL PEOPLE TO WEB FINDING mail trigger ******************************
-    if s_database == "Web_ia_nwu":
-        print("Update mysql current people summary mail trigger...")
-        s_sql = """
-        UPDATE `ia_finding` SET
-        `ia_find_updated` = '1',
-        `ia_find_r1_send` = '0',
-        `ia_find_updatedate` = now()
-        WHERE `ia_finding`.`ia_find_auto` = 2
-        """ + ";"
-        ms_curs.execute(s_sql)
-        ms_cnxn.commit()
-        funcfile.writelog("%t UPDATE MYSQL TRIGGER: FINDING 2 (people current summary)")
+    # if s_database == "Web_ia_nwu":
+        #     print("Update mysql current people summary mail trigger...")
+        # s_sql = """
+        # UPDATE `ia_finding` SET
+        # `ia_find_updated` = '1',
+        # `ia_find_r1_send` = '0',
+        # `ia_find_updatedate` = now()
+        # WHERE `ia_finding`.`ia_find_auto` = 2
+        # """ + ";"
+        # ms_curs.execute(s_sql)
+        # ms_cnxn.commit()
+        # funcfile.writelog("%t UPDATE MYSQL TRIGGER: FINDING 2 (people current summary)")
 
     # Update MYSQL PEOPLE TO WEB FINDING mail trigger ******************************
-    if s_database == "Web_ia_nwu":
-        print("Update mysql current people birthday mail trigger...")
-        s_sql = """
-        UPDATE `ia_finding` SET
-        `ia_find_updated` = '1',
-        `ia_find_r1_send` = '0',
-        `ia_find_updatedate` = now()
-        WHERE `ia_finding`.`ia_find_auto` = 3
-        """ + ";"
-        ms_curs.execute(s_sql)
-        ms_cnxn.commit()
-        funcfile.writelog("%t UPDATE MYSQL TRIGGER: FINDING 3 (people current birthdays)")
+    # if s_database == "Web_ia_nwu":
+        # print("Update mysql current people birthday mail trigger...")
+        # s_sql = """
+        # UPDATE `ia_finding` SET
+        # `ia_find_updated` = '1',
+        # `ia_find_r1_send` = '0',
+        # `ia_find_updatedate` = now()
+        # WHERE `ia_finding`.`ia_find_auto` = 3
+        # """ + ";"
+        # ms_curs.execute(s_sql)
+        # ms_cnxn.commit()
+        # funcfile.writelog("%t UPDATE MYSQL TRIGGER: FINDING 3 (people current birthdays)")
 
     """*****************************************************************************
     EXPORT CURRENT PEOPLE STRUCTURE
