@@ -630,27 +630,27 @@ class RunSmall(Thread):
                             funcfile.writelog("%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SUNDAYS MONDAYS")
 
                     # KFS PERIOD LISTS PREV ****************************************
-                    s_project: str = "B006_kfs_period_list(prev)"
-                    if funcconf.l_run_kfs_test:
-                        if funcdate.today_dayname() in "TueWedThuFriSat":
-                            try:
-                                B006_kfs_period_list.kfs_period_list("prev")
-                                if funcconf.l_mail_project:
-                                    funcmail.Mail('std_success_gmail',
-                                                  'NWUIACA:Success:' + s_project,
-                                                  'NWUIACA: Success: ' + s_project)
-                            except Exception as err:
-                                # DISABLE PEOPLE TESTS
-                                funcconf.l_run_kfs = False
-                                # ERROR MESSAGE
-                                funcsys.ErrMessage(err, funcconf.l_mail_project,
-                                                   "NWUIACA:Fail:" + s_project,
-                                                   "NWUIACA: Fail: " + s_project)
-                        else:
-                            print("ORACLE to SQLITE " + s_project + " do not run on Sundays Mondays")
-                            if funcconf.l_mess_project:
-                                funcsms.send_telegram("", "administrator", s_project + " do not run sun mon.")
-                            funcfile.writelog("%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SUNDAYS MONDAYS")
+                    # s_project: str = "B006_kfs_period_list(prev)"
+                    # if funcconf.l_run_kfs_test:
+                    #    if funcdate.today_dayname() in "TueWedThuFriSat":
+                    #        try:
+                    #            B006_kfs_period_list.kfs_period_list("prev")
+                    #            if funcconf.l_mail_project:
+                    #                funcmail.Mail('std_success_gmail',
+                    #                              'NWUIACA:Success:' + s_project,
+                    #                              'NWUIACA: Success: ' + s_project)
+                    #        except Exception as err:
+                    #            # DISABLE PEOPLE TESTS
+                    #            funcconf.l_run_kfs = False
+                    #            # ERROR MESSAGE
+                    #            funcsys.ErrMessage(err, funcconf.l_mail_project,
+                    #                               "NWUIACA:Fail:" + s_project,
+                    #                               "NWUIACA: Fail: " + s_project)
+                    #    else:
+                    #        print("ORACLE to SQLITE " + s_project + " do not run on Sundays Mondays")
+                    #        if funcconf.l_mess_project:
+                    #            funcsms.send_telegram("", "administrator", s_project + " do not run sun mon.")
+                    #        funcfile.writelog("%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SUNDAYS MONDAYS")
 
                     # MYSQL UPDATE WEB IA NWU **************************************
                     s_project: str = "B005_mysql_lists(web)"
