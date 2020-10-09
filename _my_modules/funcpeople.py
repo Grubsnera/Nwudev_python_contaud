@@ -104,13 +104,12 @@ def assign01(so_conn, s_table, s_from, s_to, s_on, s_mess):
             SET ASS_ACTIVE = 
             CASE
                 WHEN ORG_TYPE_DESC = 'Parent Organisation' THEN 'O'
-                WHEN EMP_START = EMP_END AND LEAVING_REASON = '' THEN 'Y'
-                WHEN EMP_END >= Date('%FR%') THEN 'Y'
-                WHEN INSTR(POSITION_NAME,'Pensioner') > 0 THEN 'P'                           
+                WHEN INSTR(POSITION_NAME,'Pensioner') > 0 THEN 'P'
+                WHEN ASS_START <= Date('%ON%') AND ASS_END >= Date('%ON%') THEN 'Y'                           
                 ELSE 'N'
             END
             ;"""
-        s_sql = s_sql.replace("%FR%", s_from)
+        s_sql = s_sql.replace("%ON%", s_on)
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t ADD COLUMN: ASS_ACTIVE")
@@ -250,7 +249,7 @@ def assign02(so_conn, s_table, s_source, s_mess):
     s_sql = s_sql.replace("%SOURCET%", s_source)
     so_curs.execute(s_sql)
     so_conn.commit()
-    so_curs.execute("DROP TABLE IF EXISTS " + s_source)
+    # so_curs.execute("DROP TABLE IF EXISTS " + s_source)
     funcfile.writelog("%t BUILD TABLE: " + s_table)
     return
 
