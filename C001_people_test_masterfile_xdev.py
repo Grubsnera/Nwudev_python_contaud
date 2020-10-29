@@ -8,11 +8,13 @@ import csv
 import sqlite3
 
 # OPEN OWN MODULES
+from _my_modules import funcconf
 from _my_modules import funccsv
 from _my_modules import funcdate
 from _my_modules import funcfile
+from _my_modules import funcsms
 from _my_modules import funcsys
-from _my_modules import functest
+# from _my_modules import functest
 
 """ INDEX **********************************************************************
 ENVIRONMENT
@@ -41,6 +43,8 @@ re_path = "R:/People/"  # Results path
 l_export: bool = False
 l_mail: bool = False
 l_record: bool = False
+# l_mess: bool = funcconf.l_mess_project
+l_mess = False
 
 """*****************************************************************************
 OPEN THE DATABASES
