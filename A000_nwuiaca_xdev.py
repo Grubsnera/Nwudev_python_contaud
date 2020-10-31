@@ -35,7 +35,7 @@ THREAD TO RUN VACUUM SCRIPT (RunVacuum)
 VACUUM TEST FINDING TABLES (A003_table_vacuum)(24/7)
 
 THREAD TO RUN LARGE SCRIPT (RunLarge)
-BACKUP MYSQL (B005_mysql_backup(web->server))(MonTueWedThuFri)
+BACKUP MYSQL (B008_mysql_backup(web->server))(MonTueWedThuFri)
 IMPORT PEOPLE (A001_oracle_to_sqlite(people))(MonTueWedThuFri)
 PEOPLE LISTS (B001_people_lists)(MonTueWedThuFri)
 PEOPLE LIST MASTER FILE (C003_people_list_masterfile)(MonTueWedThuFri)
@@ -239,7 +239,7 @@ class RunLarge(Thread):
         """
 
         # IMPORT SCRIPTS
-        import B005_mysql_backup
+        import B008_mysql_backup
         import A001_oracle_to_sqlite
         import B001_people_lists
         import C003_people_list_masterfile
@@ -289,10 +289,10 @@ class RunLarge(Thread):
                                                + datetime.timedelta(days=1)
 
                     # BACKUP MYSQL ********************************************
-                    s_project: str = "B005_mysql_backup(web->server)"
+                    s_project: str = "B008_mysql_backup(web->server)"
                     if funcdate.today_dayname() in "MonTueWedThuFri":
                         try:
-                            B005_mysql_backup.mysql_backup()
+                            B008_mysql_backup.mysql_backup()
                             if funcconf.l_mail_project:
                                 funcmail.Mail('std_success_gmail',
                                               'NWUIACA:Success:' + s_project,

@@ -382,18 +382,18 @@ def mysql_lists(s_database):
     funcfile.writelog("%t POPULATE MYSQL: " + str(i_tota) + " PEOPLE STRUCTURE rows (ia_people_struct)")
 
     # Update MYSQL PEOPLE TO WEB FINDING mail trigger ******************************
-    if s_database == "Web_ia_nwu":
-        print("Update mysql current people hierarchy mail trigger...")
-        s_sql = """
-        UPDATE `ia_finding` SET
-        `ia_find_updated` = '1',
-        `ia_find_r1_send` = '0',
-        `ia_find_updatedate` = now()
-        WHERE `ia_finding`.`ia_find_auto` = 4
-        """ + ";"
-        ms_curs.execute(s_sql)
-        ms_cnxn.commit()
-        funcfile.writelog("%t UPDATE MYSQL TRIGGER: FINDING 4 (people current hierarchy)")
+    # if s_database == "Web_ia_nwu":
+    #    print("Update mysql current people hierarchy mail trigger...")
+    #    s_sql = """
+    #    UPDATE `ia_finding` SET
+    #    `ia_find_updated` = '1',
+    #    `ia_find_r1_send` = '0',
+    #    `ia_find_updatedate` = now()
+    #    WHERE `ia_finding`.`ia_find_auto` = 4
+    #    """ + ";"
+    #    ms_curs.execute(s_sql)
+    #    ms_cnxn.commit()
+    #    funcfile.writelog("%t UPDATE MYSQL TRIGGER: FINDING 4 (people current hierarchy)")
 
     # CLOSE PEOPLE DATABASE
     so_conn.commit()
