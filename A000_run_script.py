@@ -18,6 +18,7 @@ INDEX
 GENERAL
 UPDATE LOG (A002_log)
 VACUUM TEST FINDING TABLES (A003_table_vacuum)
+BACKUP MYSQL (B008_mysql_backup)
 IMPORT TEMP (A001_oracle_to_sqlite(temp))
 
 PEOPLE
@@ -109,6 +110,28 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                 funcmail.Mail('std_success_gmail',
                               'NWUIACA:Success:' + s_project,
                               'NWUIACA: Success: ' + s_project)
+        except Exception as err:
+            l_return = False
+            funcsys.ErrMessage(err, funcconf.l_mail_project,
+                               'NWUIACA:Fail:' + s_project,
+                               'NWUIACA: Fail: ' + s_project)
+
+    # BACKUP MYSQL
+    s_project: str = "B008_mysql_backup"
+    if s_script in "b008|all|general":
+        import B008_mysql_backup
+        try:
+            l_return = B008_mysql_backup.mysql_backup()
+            if l_return:
+                if funcconf.l_mail_project:
+                    funcmail.Mail('std_success_gmail',
+                                  'NWUIACA:Success:' + s_project,
+                                  'NWUIACA: Success: ' + s_project)
+            else:
+                if funcconf.l_mail_project:
+                    funcmail.Mail('std_success_gmail',
+                                  'NWUIACA:Fail:' + s_project,
+                                  'NWUIACA: Fail: ' + s_project)
         except Exception as err:
             l_return = False
             funcsys.ErrMessage(err, funcconf.l_mail_project,

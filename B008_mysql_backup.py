@@ -62,16 +62,16 @@ def mysql_backup(s_source_database: str = "Web_ia_nwu", s_target_database: str =
 
         # SCRIPT LOG
         funcfile.writelog("Now")
-        funcfile.writelog("SCRIPT: B005_MYSQL_BACKUP")
+        funcfile.writelog("SCRIPT: B008_MYSQL_BACKUP")
         funcfile.writelog("-------------------------")
         if l_debug:
             print("-----------------")
-            print("B005_MYSQL_BACKUP")
+            print("B008_MYSQL_BACKUP")
             print("-----------------")
 
         # MESSAGE
         if l_mess:
-            funcsms.send_telegram("", "administrator", "<b>B005 Mysql backup</b>")
+            funcsms.send_telegram("", "administrator", "<b>B008 Mysql backup</b>")
 
         """****************************************************************************
         OPEN THE DATABASES
@@ -208,7 +208,7 @@ def mysql_backup(s_source_database: str = "Web_ia_nwu", s_target_database: str =
 
         # CLOSE THE LOG WRITER
         funcfile.writelog("----------------------------")
-        funcfile.writelog("COMPLETED: B005_MYSQL_BACKUP")
+        funcfile.writelog("COMPLETED: B008_MYSQL_BACKUP")
 
     return l_return
 
