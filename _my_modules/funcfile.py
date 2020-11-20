@@ -6,7 +6,6 @@ Create: 24 Jan 2018
 
 # IMPORT SYSTEM OBJECTS
 import datetime
-import time
 
 # IMPORT OWN MODULES
 from _my_modules import funcconf
@@ -24,8 +23,8 @@ def writelog(s_entry="\n", s_path="S:/Logs/",
     """
 
     # DECLARE VARIABLES
-    l_success: bool = False
-    s_file = "Python_log_" + datetime.datetime.now().strftime("%Y%m%d") + ".txt"
+    if s_file == "":
+        s_file = "Python_log_" + datetime.datetime.now().strftime("%Y%m%d") + ".txt"
     s_project: str = "FUNCFILE:" + s_file
 
     try:
@@ -54,3 +53,21 @@ def writelog(s_entry="\n", s_path="S:/Logs/",
                            "NWUIACA: Fail: " + s_project)
 
     return l_success
+
+
+def file_delete(s_path: str = "", s_file: str = ""):
+    """
+    :param s_path: Log file path
+    :param s_file: Log file name
+    :return: bool: True - deleted or False
+    """
+
+    import os
+
+    l_return: bool = False
+
+    if os.path.exists(s_path + s_file):
+        os.remove(s_path + s_file)
+        l_return = True
+
+    return l_return
