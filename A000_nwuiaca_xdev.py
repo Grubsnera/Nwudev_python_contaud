@@ -92,6 +92,7 @@ def main():
     dp.add_handler(CommandHandler("name", funcbott.name, pass_args=True))
     dp.add_handler(CommandHandler("hi", funcbott.hi))
     dp.add_handler(CommandHandler("helping", funcbott.helping))
+    dp.add_handler(CommandHandler("report", funcbott.report, pass_args=True))
     dp.add_handler(CommandHandler("run", funcbott.run, pass_args=True))
     dp.add_handler(CommandHandler("set", funcbott.set_schedule, pass_args=True))
     dp.add_handler(CommandHandler("switch", funcbott.switch, pass_args=True))
