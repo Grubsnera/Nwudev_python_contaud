@@ -584,7 +584,7 @@ def people_test_conflict():
 
     # DECLARE TEST VARIABLES
     i_coun: int = 0  # Number of new findings to report
-    s_desc: str = "Employee vendor share bank acc</b>"
+    s_desc: str = "Employee vendor share bank acc"
 
     # BUILD TABLE WITH VENDOR BANK ACCOUNT NUMBERS
     print("Merge employees and vendors on bank account...")
@@ -658,7 +658,7 @@ def people_test_conflict():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%", funcdate.cur_monthend())
+        s_sql = s_sql.replace("%TODAYPLUS%", funcdate.cur_monthendnext())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
