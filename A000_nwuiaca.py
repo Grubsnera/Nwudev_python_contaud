@@ -850,7 +850,9 @@ class RunTest(Thread):
                     if funcconf.l_run_people_test and funcconf.l_run_kfs_test and funcconf.l_run_vss_test:
                         if funcdate.today_dayname() in "MonTueWedThuFri":
                             try:
-                                C200_report_studdeb_recon.report_studdeb_recon()
+                                # C200_report_studdeb_recon.report_studdeb_recon()
+                                # 2021 balances
+                                C200_report_studdeb_recon.report_studdeb_recon(65676774.13, 61655697.80, 41648563.00, "curr")
                                 # 2020 balances
                                 # C200_report_studdeb_recon.report_studdeb_recon(48501952.09, -12454680.98, 49976048.39, "curr")
                                 # 2019 balances C200_report_studdeb_recon.report_studdeb_recon(66561452.48, -18340951.06, 39482933.18, "prev")

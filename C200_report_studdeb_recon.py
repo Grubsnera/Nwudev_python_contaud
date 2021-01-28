@@ -4389,9 +4389,11 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
 
 if __name__ == '__main__':
     try:
-        # report_studdeb_recon()
+        report_studdeb_recon()
+        # 2021 balances
+        #report_studdeb_recon(65676774.13, 61655697.80, 41648563.00, "curr")
         # 2020 balances
-        report_studdeb_recon(48501952.09, -12454680.98, 49976048.39, "curr")
+        #report_studdeb_recon(48501952.09, -12454680.98, 49976048.39, "curr")
         # 2019 balances
         # report_studdeb_recon(66561452.48,-18340951.06,39482933.18, "prev")
     except Exception as e:
