@@ -299,6 +299,6 @@ def vss_period_list(s_period="curr"):
 
 if __name__ == '__main__':
     try:
-        vss_period_list()
+        vss_period_list("prev")
     except Exception as e:
-        funcsys.ErrMessage(e, funcconf.l_mess_project, "B006_kfs_period_list", "B006_kfs_period_list")
+        funcsys.ErrMessage(e, funcconf.l_mess_project, "B007_vss_period_list", "B007_vss_period_list")
