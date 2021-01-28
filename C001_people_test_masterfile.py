@@ -2493,7 +2493,7 @@ def people_test_masterfile():
                 EXPIRE_DATE = ''
             Then '1 Select no date'        
         End;"""
-    s_sql = s_sql.replace("%TODAY%", funcdate.today_plusdays(30))
+    s_sql = s_sql.replace("%TODAY%", funcdate.cur_monthendnext())
     so_curs.execute(s_sql)
     so_conn.commit()
 
@@ -3188,7 +3188,7 @@ def people_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.today_plusdays(10))
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -3603,7 +3603,7 @@ def people_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%", funcdate.today_plusdays(20000))
+        s_sql = s_sql.replace("%TODAYPLUS%", funcdate.cur_monthendnext())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -4898,7 +4898,7 @@ def people_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdate.today())
-        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(20000))
+        s_sql = s_sql.replace("%TODAYPLUS%", funcdate.cur_monthendnext())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -6706,7 +6706,7 @@ def people_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.today_plusdays(10))
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -7014,7 +7014,7 @@ def people_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
-        s_sql = s_sql.replace("%DAYS%", funcdate.today_plusdays(10))
+        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
