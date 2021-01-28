@@ -1,7 +1,8 @@
-﻿SELECT
-  X001ac_impo_reported.FIELD1,
-  Count(X001ac_impo_reported.FIELD2) AS Count_FIELD2
-FROM
-  X001ac_impo_reported
-GROUP BY
-  X001ac_impo_reported.FIELD1
+﻿Select
+    X001da_report_idlist.STUDENT
+From
+    X001da_report_idlist
+Where
+    (X001da_report_idlist.STUDENT = 28437500) Or
+    (X001da_report_idlist.STUDENT = 27239470) Or
+    (X001da_report_idlist.STUDENT = 24449989)
