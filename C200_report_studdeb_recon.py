@@ -47,20 +47,20 @@ END OF SCRIPT
 *****************************************************************************"""
 
 
-def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
+def report_studdeb_recon(dopenmaf=0, dopenpot=0, dopenvaa=0, s_period="curr"):
     """
     STUDENT DEBTOR RECONCILIATIONS
-    :param dOpenMaf: int: Mafiking Campus opening balance
-    :param dOpenPot: int: Potchefstroom opening balance
-    :param dOpenVaa: int: Vaal Campus opening balance
+    :param dopenmaf: int: Mafiking Campus opening balance
+    :param dopenpot: int: Potchefstroom opening balance
+    :param dopenvaa: int: Vaal Campus opening balance
     :param s_period: str: Period indication curr, prev or year
     :return: Null
     """
 
     """ PARAMETERS *************************************************************
-    dOpenMaf = GL Opening balances for Mafikeng campus
-    dOpenPot = GL Opening balances for Potchefstroom campus
-    dOpenVaa = GL Opening balances for Vaal Triangle campus
+    dopenmaf = GL Opening balances for Mafikeng campus
+    dopenpot = GL Opening balances for Potchefstroom campus
+    dopenvaa = GL Opening balances for Vaal Triangle campus
     Notes:
     1. When new financial year start, GL does not contain opening balances.
        Opening balances are the inserted manually here, until the are inserted
@@ -73,13 +73,14 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
     *************************************************************************"""
 
     # DECLARE VARIABLES
+
     l_debug: bool = True
-    so_path = "W:/Kfs_vss_studdeb/" #Source database path
+    so_path: str = "W:/Kfs_vss_studdeb/"  # Source database path
     if s_period == "curr":
-        s_year = funcdate.cur_year()
-        so_file = "Kfs_vss_studdeb.sqlite"  # Source database
-        s_kfs = "KFSCURR"
-        s_vss = "VSSCURR"
+        s_year: str = funcdate.cur_year()
+        so_file: str = "Kfs_vss_studdeb.sqlite"  # Source database
+        s_kfs: str = "KFSCURR"
+        s_vss: str = "VSSCURR"
     elif s_period == "prev":
         s_year = funcdate.prev_year()
         so_file = "Kfs_vss_studdeb_prev.sqlite"  # Source database
@@ -90,16 +91,13 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
         so_file = "Kfs_vss_studdeb_" + s_year + ".sqlite"  # Source database
         s_kfs = ""
         s_vss = ""
-    re_path = "R:/Debtorstud/" #Results
-    ed_path = "S:/_external_data/" #External data
-    s_sql = "" #SQL statements
+    re_path = "R:/Debtorstud/"  # Results
+    ed_path = "S:/_external_data/"  # External data
     l_mess: bool = funcconf.l_mess_project
     # l_mess: bool = True
     l_export = True
     l_record = True
-    l_vacuum = False
-    s_burs_code = '042z052z381z500' # Current bursary transaction codes
-    s_desc: str = ""  # Variable used as message for telegram messaging
+    s_burs_code = '042z052z381z500'  # Current bursary transaction codes
 
     # Open the script log file ******************************************************
     print("-------------------------")
@@ -148,7 +146,8 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
     funcfile.writelog("LIST VSS TRANSACTION ROUND 1")
     
     # Extract vss transactions from VSS.SQLITE *********************************
-    print("Import vss transactions from VSS.SQLITE...")
+    if l_debug:
+        print("Import vss transactions from VSS.SQLITE...")
     sr_file = "X002aa_vss_tranlist"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     SELECT
@@ -431,10 +430,9 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
     sr_filet = sr_file
     sx_path = re_path + funcdate.cur_year() + "/"
     sx_file = "Debtor_001_gltran_"
-    sx_filet = sx_file + funcdate.prev_monthendfile()
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
     funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-    #funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
+    # funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
     funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 
     # Calculate gl balances ****************************************************
@@ -474,17 +472,17 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
     # Add previous year gl opening balances (TEMPORARY)
-    if dOpenMaf != 0:
+    if dopenmaf != 0:
         s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`, `MONTH`, `BALANCE`) VALUES ('Mafikeng', '00', %VALUE%);"
-        s_sql = s_sql.replace("%VALUE%", str(dOpenMaf))
+        s_sql = s_sql.replace("%VALUE%", str(dopenmaf))
         so_curs.execute(s_sql)
-    if dOpenPot != 0:
+    if dopenpot != 0:
         s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`, `MONTH`, `BALANCE`) VALUES ('Potchefstroom', '00', %VALUE%);"
-        s_sql = s_sql.replace("%VALUE%", str(dOpenPot))
+        s_sql = s_sql.replace("%VALUE%", str(dopenpot))
         so_curs.execute(s_sql)
-    if dOpenVaa != 0:
+    if dopenvaa != 0:
         s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`, `MONTH`, `BALANCE`) VALUES ('Vaal Triangle', '00', %VALUE%);"
-        s_sql = s_sql.replace("%VALUE%", str(dOpenVaa))
+        s_sql = s_sql.replace("%VALUE%", str(dopenvaa))
         so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t ADD ROW: GL Opening balances (temporary)")
@@ -543,13 +541,12 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
     sr_filet = sr_file
     sx_path = re_path + funcdate.cur_year() + "/"
     sx_file = "Debtor_001_glsummtype_"
-    sx_filet = sx_file + funcdate.prev_monthendfile()
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
     funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-    #funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
+    # funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
     funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 
-    #*** LIST GL TRANSACTIONS Identify new accounts not linked to a campus *********
+    # *** LIST GL TRANSACTIONS Identify new accounts not linked to a campus *********
     # See Add column gl business unit id where new account must be linked to campus
     print("Identify new accounts linked to a campus...")
     sr_file = "X001da_test_newaccount"
@@ -573,7 +570,6 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
 
     # DETERMINE GL POST MONTH
     print("Determine gl post month...")
-    gl_month = '00'
     sr_file = "X001cd_gl_postmonth"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     SELECT
@@ -587,12 +583,12 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
       X001cc_gl_summtype.DESC_VSS = 'RECEIPTTUITIONFEES')
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = s_sql.replace("%PMONTH%",funcdate.prev_month())
+    s_sql = s_sql.replace("%PMONTH%", funcdate.prev_month())
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     # Export the data
-    if funcsys.tablerowcount(so_curs,sr_file) == 3:
+    if funcsys.tablerowcount(so_curs, sr_file) == 3:
         gl_month = funcdate.prev_month()
         """
         # Export the data
@@ -611,7 +607,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
         if int(p_month) < 10:
             p_month = "0" + p_month
         gl_month = p_month
-        #print(gl_month)
+        # print(gl_month)
         
     """*************************************************************************
     LIST VSS TRANSACTIONS ROUND 2
@@ -681,7 +677,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
       X002ab_vss_transort
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    s_sql = s_sql.replace("%CYEAR%",s_year)
+    s_sql = s_sql.replace("%CYEAR%", s_year)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
@@ -690,7 +686,6 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
     sr_filet = sr_file
     sx_path = re_path + funcdate.cur_year() + "/"
     sx_file = "Debtor_001_vsstran_"
-    sx_filet = sx_file + funcdate.prev_monthendfile()
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
     funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
     funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)   
@@ -735,7 +730,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
-     # Calculate the running vss balance ********************************************
+    # Calculate the running vss balance ********************************************
     print("Calculate the running vss balance...")
     sr_file = "X002ce_vss_balmonth_calc_runbal"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
@@ -792,10 +787,9 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
     sr_filet = sr_file
     sx_path = re_path + funcdate.cur_year() + "/"
     sx_file = "Debtor_002_vsssummtype_"
-    sx_filet = sx_file + funcdate.prev_monthendfile()
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
     funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-    #funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
+    # funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
     funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)    
 
     # Sum vss student balances per campus ******************************************
@@ -844,7 +838,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
     sr_filet = sr_file
     sx_path = re_path + funcdate.cur_year() + "/"
     sx_file = "Debtor_002_studbal_"
-    #sx_filet = sx_file + funcdate.prev_monthendfile()
+    # sx_filet = sx_file + funcdate.prev_monthendfile()
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
     funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
     funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)    
@@ -893,7 +887,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
     sr_filet = sr_file
     sx_path = re_path + funcdate.cur_year() + "/"
     sx_file = "Debtor_002_studbal_open_"
-    #sx_filet = sx_file + funcdate.prev_monthendfile()
+    # sx_filet = sx_file + funcdate.prev_monthendfile()
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
     funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
     funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
@@ -1217,10 +1211,10 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
       LEFT JOIN X001ce_gl_balmonth_calc_runbal GLBAL ON GLBAL.CAMPUS = VSSBAL.CAMPUS_VSS AND
         GLBAL.MONTH = VSSBAL.MONTH_VSS
     ;"""
-    #WHERE
+    # WHERE
     #  X002ce_vss_balmonth_calc_runbal.MONTH_VSS <= '%PMONTH%'
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    s_sql = s_sql.replace("%CMONTH%",funcdate.cur_month()) 
+    s_sql = s_sql.replace("%CMONTH%", funcdate.cur_month())
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
@@ -1276,10 +1270,10 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
     sr_filet = sr_file
     sx_path = re_path + funcdate.cur_year() + "/"
     sx_file = "Debtor_000_vss_gl_summmonth_"
-    sx_filet = sx_file + funcdate.prev_monthendfile()
+    # sx_filet = sx_file + funcdate.prev_monthendfile()
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
     funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-    #funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
+    # funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
     funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 
     # Import the reporting officers ************************************************
@@ -1397,7 +1391,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
       X002cc_vss_summtype.MONTH_VSS,
       X002cc_vss_summtype.TRANSCODE_VSS
     ;"""
-    #WHERE
+    # WHERE
     #  X002cc_vss_summtype.MONTH_VSS <= '%PMONTH%'
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     s_sql = s_sql.replace("%CYEAR%", s_year)
@@ -1459,7 +1453,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
       X001cc_gl_summtype.MONTH,
       X001cc_gl_summtype.DESC_VSS
     ;"""
-    #WHERE
+    # WHERE
     #  Length(X002cc_vss_summtype.CAMPUS_VSS) IS NULL AND
     #  X001cc_gl_summtype.AMOUNT <> 0 AND
     #  X001cc_gl_summtype.MONTH <= '%PMONTH%'
@@ -1474,14 +1468,14 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
     # Open the SOURCE file to obtain column headings
     print("Transfer gl data to the vss table...")
     funcfile.writelog("%t GET COLUMN NAME: X003aa_vss_gl_join")
-    s_head = funcmysql.get_colnames_sqlite_text(so_curs,"X003aa_vss_gl_join","")
+    s_head = funcmysql.get_colnames_sqlite_text(so_curs, "X003aa_vss_gl_join", "")
     s_head = "(" + s_head.rstrip(", ") + ")"
-    #print(s_head)
+    # print(s_head)
     # Open the SOURCE file to obtain the data
     print("Insert gl data into vss table...")
-    #with sqlite3.connect(so_path+so_file) as rs_conn:
+    # with sqlite3.connect(so_path+so_file) as rs_conn:
     #    rs_conn.row_factory = sqlite3.Row
-    #rs_curs = rs_conn.cursor()
+    # rs_curs = rs_conn.cursor()
     so_curs.execute("SELECT * FROM X003aa_gl_vss_join")
     rows = so_curs.fetchall()
     i_tota = 0
@@ -1489,7 +1483,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
     for row in rows:
         s_data = "("
         for member in row:
-            #print(type(member))
+            # print(type(member))
             if type(member) == str:
                 s_data = s_data + "'" + member + "', "
             elif type(member) == int:
@@ -1499,7 +1493,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
             else:
                 s_data = s_data + "'', "
         s_data = s_data.rstrip(", ") + ")"
-        #print(s_data)
+        # print(s_data)
         s_sql = "INSERT INTO `X003aa_vss_gl_join` " + s_head + " VALUES " + s_data + ";"
         so_curs.execute(s_sql)
         i_tota = i_tota + 1
@@ -1538,7 +1532,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
       TRANCODE
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    s_sql = s_sql.replace("%CMONTH%",funcdate.cur_month())
+    s_sql = s_sql.replace("%CMONTH%", funcdate.cur_month())
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
@@ -1664,7 +1658,6 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
             DATE_RETEST TEXT,
             DATE_MAILED TEXT)
             """)
-        s_cols = ""
         co = open(ed_path + "200_reported.txt", "r")
         co_reader = csv.reader(co)
         # Read the COLUMN database data
@@ -1992,7 +1985,6 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
             DATE_RETEST TEXT,
             DATE_MAILED TEXT)
             """)
-        s_cols = ""
         co = open(ed_path + "200_reported.txt", "r")
         co_reader = csv.reader(co)
         # Read the COLUMN database data
@@ -2311,7 +2303,6 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
             DATE_RETEST TEXT,
             DATE_MAILED TEXT)
             """)
-        s_cols = ""
         co = open(ed_path + "200_reported.txt", "r")
         co_reader = csv.reader(co)
         # Read the COLUMN database data
@@ -2637,7 +2628,6 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
             DATE_RETEST TEXT,
             DATE_MAILED TEXT)
             """)
-        s_cols = ""
         co = open(ed_path + "200_reported.txt", "r")
         co_reader = csv.reader(co)
         # Read the COLUMN database data
@@ -3272,10 +3262,10 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
     sr_filet = sr_file
     sx_path = re_path + funcdate.cur_year() + "/"
     sx_file = "Debtor_010c_burs_matched_summmonth_"
-    sx_filet = sx_file + funcdate.prev_monthendfile()
+    # sx_filet = sx_file + funcdate.prev_monthendfile()
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
     funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-    #funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
+    # funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
     funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 
     """*************************************************************************
@@ -3402,7 +3392,6 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
             DATE_RETEST TEXT,
             DATE_MAILED TEXT)
             """)
-        s_cols = ""
         co = open(ed_path + "200_reported.txt", "r")
         co_reader = csv.reader(co)
         # Read the COLUMN database data
@@ -3737,7 +3726,6 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
             DATE_RETEST TEXT,
             DATE_MAILED TEXT)
             """)
-        s_cols = ""
         co = open(ed_path + "200_reported.txt", "r")
         co_reader = csv.reader(co)
         # Read the COLUMN database data
@@ -4072,7 +4060,6 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
     s_finding: str = "STUDENT BALANCE MULTIPLE CAMPUS"
     s_desc: str = "Student account balance more than one campus"
     s_xfile: str = "200_reported.txt"
-    i_finding_before: int = 0
     i_finding_after: int = 0
 
     # OBTAIN TEST DATA
@@ -4120,7 +4107,7 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
         print("Export findings...")
         sx_path = re_path + funcdate.cur_year() + "/"
         sx_file = "Student_balance_test_" + s_fprefix + "_" + s_finding.lower() + "_studentlist_"
-        sx_file_dated = sx_file + funcdate.today_file()
+        # sx_file_dated = sx_file + funcdate.today_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
         funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
         # funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -4156,12 +4143,12 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
 
     # GET PREVIOUS FINDINGS
     if i_finding_before > 0:
-        i = functest.get_previous_finding(so_curs, ed_path, s_xfile, s_finding, "IRRRR")
+        functest.get_previous_finding(so_curs, ed_path, s_xfile, s_finding, "IRRRR")
         so_conn.commit()
 
     # SET PREVIOUS FINDINGS
     if i_finding_before > 0:
-        i = functest.set_previous_finding(so_curs)
+        functest.set_previous_finding(so_curs)
         so_conn.commit()
 
     # ADD PREVIOUS FINDINGS
@@ -4237,17 +4224,17 @@ def report_studdeb_recon(dOpenMaf=0, dOpenPot=0,dOpenVaa=0, s_period="curr"):
 
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
     if i_finding_before > 0 and i_finding_after > 0:
-        i = functest.get_officer(so_curs, "VSS", "TEST " + s_finding + " OFFICER")
+        functest.get_officer(so_curs, "VSS", "TEST " + s_finding + " OFFICER")
         so_conn.commit()
 
     # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
     if i_finding_before > 0 and i_finding_after > 0:
-        i = functest.get_supervisor(so_curs, "VSS", "TEST " + s_finding + " SUPERVISOR")
+        functest.get_supervisor(so_curs, "VSS", "TEST " + s_finding + " SUPERVISOR")
         so_conn.commit()
 
         # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
         if i_finding_before > 0 and i_finding_after > 0:
-            i = functest.get_supervisor(so_curs, "VSS", "TEST " + s_finding + " SUPERVISOR")
+            functest.get_supervisor(so_curs, "VSS", "TEST " + s_finding + " SUPERVISOR")
             so_conn.commit()
 
     # ADD CONTACT DETAILS TO FINDINGS
@@ -4391,9 +4378,9 @@ if __name__ == '__main__':
     try:
         report_studdeb_recon()
         # 2021 balances
-        #report_studdeb_recon(65676774.13, 61655697.80, 41648563.00, "curr")
+        # report_studdeb_recon(65676774.13, 61655697.80, 41648563.00, "curr")
         # 2020 balances
-        #report_studdeb_recon(48501952.09, -12454680.98, 49976048.39, "curr")
+        # report_studdeb_recon(48501952.09, -12454680.98, 49976048.39, "curr")
         # 2019 balances
         # report_studdeb_recon(66561452.48,-18340951.06,39482933.18, "prev")
     except Exception as e:
