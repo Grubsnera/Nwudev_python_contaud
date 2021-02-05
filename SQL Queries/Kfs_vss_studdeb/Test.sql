@@ -1,7 +1,11 @@
 ﻿Select
-    X002da_vss_student_balance_clos.CAMPUS,
-    Total(X002da_vss_student_balance_clos.BALANCE) As Total_BALANCE
+    x002vt.TRANSCODE_VSS,
+    x002vt.TRANSDATE_VSS,
+    Total(x002vt.AMOUNT_VSS) As Total_AMOUNT_VSS
 From
-    X002da_vss_student_balance_clos
+    X002ab_vss_transort x002vt
+Where
+    x002vt.TRANSCODE_VSS = '061'
 Group By
-    X002da_vss_student_balance_clos.CAMPUS
+    x002vt.TRANSCODE_VSS,
+    x002vt.TRANSDATE_VSS
