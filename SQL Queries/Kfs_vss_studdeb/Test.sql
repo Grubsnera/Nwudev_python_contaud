@@ -1,11 +1,14 @@
 ﻿Select
-    x002vt.TRANSCODE_VSS,
-    x002vt.TRANSDATE_VSS,
-    Total(x002vt.AMOUNT_VSS) As Total_AMOUNT_VSS
+    Count(x002vpc.STUDENT) As Count_STUDENT,
+    x002vpc.CAMPUS_CLOS,
+    Total(x002vpc.BAL_CLOS) As Total_BAL_CLOS,
+    x002vpc.CAMPUS_OPEN,
+    Total(x002vpc.BAL_OPEN) As Total_BAL_OPEN,
+    Total(x002vpc.DIFF_BAL) As Total_DIFF_BAL
 From
-    X002ab_vss_transort x002vt
+    X002dc_vss_prevbal_curopen x002vpc
 Where
-    x002vt.TRANSCODE_VSS = '061'
+    x002vpc.TYPE = 3
 Group By
-    x002vt.TRANSCODE_VSS,
-    x002vt.TRANSDATE_VSS
+    x002vpc.CAMPUS_CLOS,
+    x002vpc.CAMPUS_OPEN
