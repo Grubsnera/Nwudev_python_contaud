@@ -47,7 +47,7 @@ END OF SCRIPT
 *****************************************************************************"""
 
 
-def report_studdeb_recon(dopenmaf=0, dopenpot=0, dopenvaa=0, s_period="curr"):
+def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: float = 0, s_period: str = "curr"):
     """
     STUDENT DEBTOR RECONCILIATIONS
     :param dopenmaf: int: Mafiking Campus opening balance
@@ -939,28 +939,42 @@ def report_studdeb_recon(dopenmaf=0, dopenpot=0, dopenvaa=0, s_period="curr"):
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-    # JOIN PREVIOUS BALANCE AND CURRENT OPENING BALANCE ****************************
+    # TODO DELETE SCRIPT AFTER FIRST RUN
+    so_curs.execute("DROP TABLE IF EXISTS X002dd_vss_closing_open_differ")
+    so_curs.execute("DROP TABLE IF EXISTS X002de_vss_differ_type")
+    so_curs.execute("DROP TABLE IF EXISTS X002df_vss_differ_join")
+    so_curs.execute("DROP TABLE IF EXISTS X002dg_vss_differ_close_open_differ")
+    so_curs.execute("DROP TABLE IF EXISTS X002dh_vss_differ_campus_differ_zerobal")
+    so_curs.execute("DROP TABLE IF EXISTS X002di_vss_differ_campus_differ_bal")
+
+    # JOIN PREVIOUS BALANCE AND CURRENT OPENING BALANCE
     print("Join previous balance and current opening balance...")
     sr_file = "X002dc_vss_prevbal_curopen"
-    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
-        X002da_vss_student_balance_clos.CAMPUS,
-        X002da_vss_student_balance_clos.STUDENT,
-        X002da_vss_student_balance_clos.BALANCE As BAL_CLOS,
-        X002da_vss_student_balance_open.BALANCE As BAL_OPEN,
-        0.00 AS DIFF_BAL
+        CLOS.STUDENT,
+        CLOS.CAMPUS As CAMPUS_CLOS,
+        CLOS.BALANCE As BAL_CLOS,
+        OPEN.CAMPUS As CAMPUS_OPEN,
+        OPEN.BALANCE As BAL_OPEN,
+        0.00 AS DIFF_BAL,
+        0 AS TYPE
     From
-        X002da_vss_student_balance_clos Left Join
-        X002da_vss_student_balance_open On X002da_vss_student_balance_open.STUDENT = X002da_vss_student_balance_clos.STUDENT
-            And X002da_vss_student_balance_open.CAMPUS = X002da_vss_student_balance_clos.CAMPUS
+        X002da_vss_student_balance_clos CLOS lEFT Join
+        X002da_vss_student_balance_open OPEN ON OPEN.CAMPUS = OPEN.CAMPUS AND
+        OPEN.STUDENT = CLOS.STUDENT
+    Where
+        CLOS.BALANCE <> 0        
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)    
+    """
+            And OPEN.CAMPUS = CLOS.CAMPUS
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-    # Add column vss debit amount
-    print("Correct the open balance column id null...")
+    # CHANGE BALANCE FROM NULL TO 0.00
     so_curs.execute("UPDATE X002dc_vss_prevbal_curopen " + """
                     SET BAL_OPEN =
                     CASE
@@ -969,118 +983,97 @@ def report_studdeb_recon(dopenmaf=0, dopenpot=0, dopenvaa=0, s_period="curr"):
                     END
                     ;""")
     so_conn.commit()
-    # Add column vss debit amount
-    print("Add column vss dt amount...")
+
+    # CALCULATE BALANCE DIFFERENCE
+    print("Calculate balance difference...")
     so_curs.execute("UPDATE X002dc_vss_prevbal_curopen " + """
                     SET DIFF_BAL = Cast(round(BAL_OPEN - BAL_CLOS,2) As REAL)
                     ;""")
     so_conn.commit()
 
-    # SELECT STUDENTS WHERE OPENING BALANCE DIFFER FROM CLOSING BALANCE ************
-    print("Select students where closing and opening balances differ...")
-    sr_file = "X002dd_vss_closing_open_differ"
-    s_sql = "CREATE TABLE "+sr_file+" AS " + """
-    SELECT
-      X002dc_vss_prevbal_curopen.STUDENT,
-      X002dc_vss_prevbal_curopen.CAMPUS,
-      X002dc_vss_prevbal_curopen.BAL_CLOS,
-      X002dc_vss_prevbal_curopen.BAL_OPEN,
-      X002dc_vss_prevbal_curopen.DIFF_BAL
-    FROM
-      X002dc_vss_prevbal_curopen
-    WHERE
-      X002dc_vss_prevbal_curopen.DIFF_BAL <> 0
-    ;"""
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)    
-    so_curs.execute(s_sql)
+    # DETERMINE THE DIFFERENCE TYPE
+    # 1 = No difference
+    # 2 = Campus the same, but balance differ
+    # 3 = Campus differ, but balance the same
+    # 4 = Campus differ, and balance differ
+    so_curs.execute("UPDATE X002dc_vss_prevbal_curopen " + """
+                    SET TYPE =
+                    CASE
+                      WHEN CAMPUS_OPEN = CAMPUS_CLOS AND DIFF_BAL = 0.00 THEN 1
+                      WHEN BAL_CLOS = 0.00 AND CAMPUS_OPEN IS NULL THEN 1
+                      WHEN CAMPUS_OPEN = CAMPUS_CLOS AND DIFF_BAL <> 0.00 THEN 4
+                      WHEN CAMPUS_OPEN IS NULL AND DIFF_BAL <> 0.00 THEN 2                      
+                      WHEN CAMPUS_OPEN <> CAMPUS_CLOS AND DIFF_BAL = 0.00 THEN 3
+                      WHEN CAMPUS_OPEN <> CAMPUS_CLOS AND DIFF_BAL <> 0.00 THEN 4
+                      ELSE TYPE
+                    END
+                    ;""")
     so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
-    # DETERMINE BALANCE CHANGE TYPE
-    print("Determine balance change type...")
-    sr_file = "X002de_vss_differ_type"
-    s_sql = "Create Table " + sr_file + " As " + """
+    # SUMMARIZE SAME CAMPUS BALANCE DIFFER
+    print("Summarize same campus where balance differ (Type=2)...")
+    sr_file = "X002dd_vss_campus_same_bal_differ"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
-        TYPE.STUDENT,
-        Cast(Count(TYPE.BAL_CLOS) AS INT) As COUNT,
-        Cast(Total(TYPE.BAL_OPEN) As REAL) As TOTAL_BAL_OPEN,
-        Cast(Total(TYPE.DIFF_BAL) As REAL) As TOTAL_DIFF_BAL
+        Count(x002vpc.STUDENT) As COUNT,
+        x002vpc.CAMPUS_CLOS,
+        Total(x002vpc.BAL_CLOS) As BAL_CLOS,
+        Total(x002vpc.BAL_OPEN) As BAL_OPEN,
+        Total(x002vpc.DIFF_BAL) As DIFF
     From
-        X002dd_vss_closing_open_differ TYPE
+        X002dc_vss_prevbal_curopen x002vpc
+    Where
+        x002vpc.TYPE = 2
     Group By
-        TYPE.STUDENT
+        x002vpc.CAMPUS_CLOS
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-    # JOIN DIFFERENCES AND TYPES
-    print("Join differences and types...")
-    sr_file = "X002df_vss_differ_join"
-    s_sql = "Create Table " + sr_file + " As " + """
+    # SUMMARIZE SAME DIFFERENT CAMPUS BALANCE SAME
+    print("Summarize campus different balance same (Type=3)...")
+    sr_file = "X002de_vss_campus_differ_bal_same"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
-        DIFF.STUDENT,
-        DIFF.CAMPUS,
-        DIFF.BAL_CLOS,
-        DIFF.BAL_OPEN,
-        DIFF.DIFF_BAL,
-        TYPE.COUNT,
-        TYPE.TOTAL_BAL_OPEN,
-        TYPE.TOTAL_DIFF_BAL
+        Count(x002vpc.STUDENT) As COUNT,
+        x002vpc.CAMPUS_CLOS,
+        Total(x002vpc.BAL_CLOS) As BAL_CLOS,
+        x002vpc.CAMPUS_OPEN,
+        Total(x002vpc.BAL_OPEN) As BAL_OPEN,
+        Total(x002vpc.DIFF_BAL) As DIFF
     From
-        X002dd_vss_closing_open_differ DIFF Left Join
-        X002de_vss_differ_type TYPE On TYPE.STUDENT = DIFF.STUDENT
-    ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
-    # ISOLATE THE ACCOUNTS WHERE CLOSE / OPEN BALANCES DIFFER
-    print("Isolate close open balances...")
-    sr_file = "X002dg_vss_differ_close_open_differ"
-    s_sql = "Create Table " + sr_file + " As " + """
-    Select
-        *
-    From
-        X002df_vss_differ_join
+        X002dc_vss_prevbal_curopen x002vpc
     Where
-        X002df_vss_differ_join.COUNT = 1
+        x002vpc.TYPE = 3
+    Group By
+        x002vpc.CAMPUS_CLOS,
+        x002vpc.CAMPUS_OPEN
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-    # ISOLATE THE ACCOUNTS CAMPUS DIFFER WITH ZERO BALANCE
-    print("Isolate campus differ zero balance...")
-    sr_file = "X002dh_vss_differ_campus_differ_zerobal"
-    s_sql = "Create Table " + sr_file + " As " + """
+    # SUMMARIZE DIFFERENT CAMPUS DIFFERENT BALANCE
+    print("Summarize campus different balance different (Type=4)...")
+    sr_file = "X002df_vss_campus_differ_bal_differ"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
-        *
+        Count(x002vpc.STUDENT) As COUNT,
+        x002vpc.CAMPUS_CLOS,
+        Total(x002vpc.BAL_CLOS) As BAL_CLOS,
+        x002vpc.CAMPUS_OPEN,
+        Total(x002vpc.BAL_OPEN) As BAL_OPEN,
+        Total(x002vpc.DIFF_BAL) As DIFF
     From
-        X002df_vss_differ_join
+        X002dc_vss_prevbal_curopen x002vpc
     Where
-        X002df_vss_differ_join.COUNT != 1 And
-        X002df_vss_differ_join.TOTAL_BAL_OPEN = 0
-    ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
-    # ISOLATE THE ACCOUNTS CAMPUS DIFFER WITH BALANCE
-    print("Isolate campus differ balance...")
-    sr_file = "X002di_vss_differ_campus_differ_bal"
-    s_sql = "Create Table " + sr_file + " As " + """
-    Select
-        *
-    From
-        X002df_vss_differ_join
-    Where
-        X002df_vss_differ_join.COUNT != 1 And
-        X002df_vss_differ_join.TOTAL_BAL_OPEN != 0
+        x002vpc.TYPE = 4
+    Group By
+        x002vpc.CAMPUS_CLOS,
+        x002vpc.CAMPUS_OPEN
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -4376,9 +4369,9 @@ def report_studdeb_recon(dopenmaf=0, dopenpot=0, dopenvaa=0, s_period="curr"):
 
 if __name__ == '__main__':
     try:
-        report_studdeb_recon()
+        # report_studdeb_recon()
         # 2021 balances
-        # report_studdeb_recon(65676774.13, 61655697.80, 41648563.00, "curr")
+        report_studdeb_recon(65676774.13, 61655697.80, 41648563.00, "curr")
         # 2020 balances
         # report_studdeb_recon(48501952.09, -12454680.98, 49976048.39, "curr")
         # 2019 balances
