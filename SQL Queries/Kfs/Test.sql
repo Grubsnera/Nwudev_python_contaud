@@ -1,13 +1,7 @@
 ﻿Select
-    X000_GL_trans.ACCOUNT_NBR,
-    X000_GL_trans.ACCOUNT_NM,
-    Total(X000_GL_trans.CALC_AMOUNT) As Total_CALC_AMOUNT
+    Count(x000v.NUMBERS) As Count_NUMBERS,
+    x000v.VNDR_TYP_CD
 From
-    X000_GL_trans
-Where
-    (X000_GL_trans.FIN_OBJECT_CD = '7551') Or
-    (X000_GL_trans.FIN_OBJECT_CD = '7552') Or
-    (X000_GL_trans.FIN_OBJECT_CD = '7553')
+    X000_Vendor x000v
 Group By
-    X000_GL_trans.ACCOUNT_NBR,
-    X000_GL_trans.ACCOUNT_NM
+    x000v.VNDR_TYP_CD
