@@ -1,12 +1,5 @@
 ﻿Select
-    x000t.STUDENT,
-    x000t.FINAIDCODE,
-    x000t.FINAIDNAAM,
-    Total(x000t.AMOUNT) As Total_AMOUNT,
-    Count(x000t.FFINAIDSITEID) As Count_FFINAIDSITEID
+    x000t.STUDENT
 From
-    X000_Transaction x000t
-Group By
-    x000t.STUDENT,
-    x000t.FINAIDCODE,
-    x000t.FINAIDNAAM
+    X000_Transaction x000t Inner Join
+    X000_Student x000s On x000s.KSTUDBUSENTID = x000t.STUDENT
