@@ -63,6 +63,10 @@ def vss_lists():
         so_curs = so_conn.cursor()
     funcfile.writelog("OPEN DATABASE: " + so_file)
 
+    # TODO DELETE SCRIPT AFTER FIRST RUN
+    so_curs.execute("DROP TABLE IF EXISTS LEARNERPRELIMREPORTDETAIL")
+    so_curs.execute("DROP TABLE IF EXISTS LEARNEREDUCATIONDEPTREPORT")
+
     """*************************************************************************
     BUILD STANDARD LOOKUP TABLES
     *************************************************************************"""

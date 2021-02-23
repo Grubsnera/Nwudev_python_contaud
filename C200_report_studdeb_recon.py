@@ -946,14 +946,6 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-    # TODO DELETE SCRIPT AFTER FIRST RUN
-    so_curs.execute("DROP TABLE IF EXISTS X002dd_vss_closing_open_differ")
-    so_curs.execute("DROP TABLE IF EXISTS X002de_vss_differ_type")
-    so_curs.execute("DROP TABLE IF EXISTS X002df_vss_differ_join")
-    so_curs.execute("DROP TABLE IF EXISTS X002dg_vss_differ_close_open_differ")
-    so_curs.execute("DROP TABLE IF EXISTS X002dh_vss_differ_campus_differ_zerobal")
-    so_curs.execute("DROP TABLE IF EXISTS X002di_vss_differ_campus_differ_bal")
-
     # JOIN PREVIOUS BALANCE AND CURRENT OPENING BALANCE
     print("Join previous balance and current opening balance...")
     sr_file = "X002dc_vss_prevbal_curopen"
