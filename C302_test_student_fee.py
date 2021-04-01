@@ -77,7 +77,7 @@ def student_fee(s_period="curr"):
     so_path = "W:/Vss_fee/"  # Source database path
     re_path = "R:/Vss/" + s_year
 
-    if s_period == "prev":
+    if s_period == "2019":
         f_reg_fee = 1830.00
         d_sem1_con = "2019-03-05"
         d_sem1_dis = "2019-03-05"
@@ -95,13 +95,31 @@ def student_fee(s_period="curr"):
         s_aud: str = "71839z71840z71841z71842z71820z71821z71822z1085390"  # Exclude these FQUALLEVELAPID
         l_record: bool = False
         l_export: bool = True
-    else:
+    elif s_period == "prev":
         f_reg_fee = 1930.00
         d_sem1_con = "2020-02-21"
         d_sem1_dis = "2020-03-09"
         d_sem2_con = "2020-09-04"
         d_sem2_dis = "2020-09-04"
         d_test_overcharge = "2020-07-15"  # Only month and day used
+        so_file = "Vss_test_fee_prev.sqlite"  # Source database
+        s_reg_trancode: str = "095"
+        s_qual_trancode: str = "004"
+        s_modu_trancode: str = "004"
+        s_burs_trancode: str = "042z052z381z500"
+        # Find these id's from Sqlite->Sqlite_vss_test_fee->Q021aa_qual_nofee_loaded
+        s_mba: str = "71500z2381692z2381690z665559"  # Exclude these FQUALLEVELAPID
+        s_mpa: str = "665566z618161z618167z618169"  # Exclude these FQUALLEVELAPID
+        s_aud: str = "71839z71840z71841z71842z71820z71821z71822z1085390"  # Exclude these FQUALLEVELAPID
+        l_record: bool = False
+        l_export: bool = True
+    else:
+        f_reg_fee = 2020.00
+        d_sem1_con = "2021-04-09"
+        d_sem1_dis = "2021-04-09"
+        d_sem2_con = "2021-09-04"
+        d_sem2_dis = "2021-09-04"
+        d_test_overcharge = "2021-07-15"  # Only month and day used
         so_file = "Vss_test_fee.sqlite"  # Source database
         s_reg_trancode: str = "095"
         s_qual_trancode: str = "004"
@@ -114,7 +132,9 @@ def student_fee(s_period="curr"):
         l_record: bool = True
         l_export: bool = True
 
-    l_mail: bool = False
+    l_debug: bool = False
+    l_mail: bool = funcconf.l_mail_project
+    # l_mail: bool = False
     l_mess: bool = funcconf.l_mess_project
     # l_mess: bool = True
     s_desc: str = ""
@@ -214,8 +234,8 @@ def student_fee(s_period="curr"):
     Select
         TRAN.FBUSENTID As STUDENT,
         CASE
-            WHEN TRAN.FDEBTCOLLECTIONSITE = '-9' THEN 'MAFIKENG'
-            WHEN TRAN.FDEBTCOLLECTIONSITE = '-2' THEN 'VAAL TRIANGLE'
+            WHEN TRAN.FDEBTCOLLECTIONSITE = '-9' THEN 'MAHIKENG'
+            WHEN TRAN.FDEBTCOLLECTIONSITE = '-2' THEN 'VANDERBIJLPARK'
             ELSE 'POTCHEFSTROOM'
         END AS CAMPUS,
         TRAN.TRANSDATE,
@@ -265,6 +285,50 @@ def student_fee(s_period="curr"):
         s_sql = s_sql.replace("%VSS%", "VSSCURR")
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # ADD THE TRANSACTION USER
+    # USE TRANSACTION USER IF POSITION IS STUDENT ACCOUNTS ELSE
+    # USE 26019817 VAN TONDER MRS. HC FOR POTCHEFSTROOM
+    # USE 13163140 BIERMAN MS. EJ FOR VANDERBIJLPARK
+    # USE 16343778 LEBEKO MRS. KV FOR MAHIKENG
+    if l_debug:
+        print("Add the transaction user...")
+    sr_file = "X000_Transaction_user"
+    s_sql = "Create table " + sr_file + " AS" + """
+    Select
+        TRAN.*,
+        CASE
+            WHEN PEOP.POSITION_FULL LIKE("%STUDENT ACCOUNTS%") THEN FUSERBUSINESSENTITYID
+            WHEN CAMPUS LIKE("P%") THEN 26019817
+            WHEN CAMPUS LIKE("V%") THEN 13163140
+            WHEN CAMPUS LIKE("M%") THEN 16343778
+            ELSE 0 
+        END AS FUSER
+    From
+        X000_Transaction TRAN Left Join
+        PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = CAST(TRAN.FUSERBUSINESSENTITYID AS TEXT)        
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # ADD THE TRANSACTION USER NAME
+    if l_debug:
+        print("Add the transaction user name...")
+    sr_file = "X000_Transaction"
+    s_sql = "Create table " + sr_file + " AS" + """
+    Select
+        TRAN.*,
+        PEOP.NAME_ADDR AS FUSERNAME
+    From
+        X000_Transaction_user TRAN Left Join
+        PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = CAST(TRAN.FUSER AS TEXT)        
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    sr_file = "X000_Transaction_user"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 
     """*****************************************************************************
     REGISTRATION FEE MASTER
