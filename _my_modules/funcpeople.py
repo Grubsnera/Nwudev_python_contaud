@@ -435,11 +435,13 @@ def people01(so_conn, s_table, s_source, s_peri, s_mess, s_acti):
     if "AGE" not in funccsv.get_colnames_sqlite(so_curs, s_table):
         so_curs.execute("ALTER TABLE " + s_table + " ADD COLUMN AGE INT;")
         s_sql = "UPDATE " + s_table + """
-                        SET AGE = cast( (strftime('%Y', 'now') - strftime('%Y', DATE_OF_BIRTH)) - (strftime('%m-%d', 'now') < strftime('%m-%d', DATE_OF_BIRTH)) As int)
+                        SET AGE = strftime('%Y', 'now') - strftime('%Y', DATE_OF_BIRTH)
                         ;"""
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t ADD COLUMN: AGE")
+        # SET AGE = cast( (strftime('%Y', 'now') - strftime('%Y', DATE_OF_BIRTH)) - (strftime('%m-%d', 'now') < strftime('%m-%d', DATE_OF_BIRTH)) As int)
+
 
     # Add column month
     if "MONTH" not in funccsv.get_colnames_sqlite(so_curs, s_table):
