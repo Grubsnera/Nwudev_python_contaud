@@ -326,7 +326,11 @@ def people01(so_conn, s_table, s_source, s_peri, s_mess, s_acti):
       Upper(ASSI.OE_CODE) As OE_CODE,
       Upper(ASSI.ORG_NAME) As ORG_NAME,
       ASSI.PRIMARY_FLAG,
-      Upper(ASSI.ACAD_SUPP) As ACAD_SUPP,
+      Case
+        When Upper(ASSI.ACAD_SUPP) = 'ACADEMIC' Then Upper(ASSI.ACAD_SUPP)
+        When Upper(ASSI.ACAD_SUPP) = 'SUPPORT' Then Upper(ASSI.ACAD_SUPP)
+        Else 'OTHER'
+      End as ACAD_SUPP,
       Upper(ASSI.FACULTY) As FACULTY,
       Upper(ASSI.DIVISION) As DIVISION,
       Case
