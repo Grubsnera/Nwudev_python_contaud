@@ -1,0 +1,34 @@
+20210419 (Roald)
+Die information_type vir die temp stelsel se info is XXTAS_TEMP_ASG_INFO
+ContractNumber AEI_INFORMATION1
+Information2 AEI_INFORMATION2
+Type AEI_INFORMATION3
+DateFrom AEI_INFORMATION4
+DateTo AEI_INFORMATION5
+Rate AEI_INFORMATION6
+Unit AEI_INFORMATION7
+TotalUnits AEI_INFORMATION8
+ContractAmount AEI_INFORMATION9
+AccountCombination AEI_INFORMATION10
+HoursWorked AEI_INFORMATION11
+Department AEI_INFORMATION12
+SARSReporting Account Number AEI_INFORMATION14
+Category AEI_INFORMATION15
+RemunerationBefore Amendment AEI_INFORMATION16
+Project and Task Number AEI_INFORMATION17
+SourceContract AEI_INFORMATION18
+UnitDescription AEI_INFORMATION19
+Account AEI_INFORMATION20
+Readyfor Claiming AEI_INFORMATION21
+Currency AEI_INFORMATION22
+ContractType AEI_INFORMATION25
+Manager AEI_INFORMATION26
+PermPost For Temp Appointment AEI_INFORMATION27
+AmendedDate from AEI_INFORMATION28
+AmendedDate to AEI_INFORMATION29
+Location AEI_INFORMATION30
+Jy sal ook sien meeste van die temps se Academic/Support flag as jy die hemis kategorie gebruik om dit te bepaal sal
+ SUPPORT wees omdat almal in 'n pool budget position gesit word.
+Die veld EMPLOYEE_CATEGORY in per_all_assignments_f kan gebruik word om dit te bepaal - dit word bepaal deur die
+ aanstelling wat hulle maak vir die temp.
+Die EMPLOYEE_CATEGORY veld is nou vir alle assignemnts perm/temp gepopulate.
