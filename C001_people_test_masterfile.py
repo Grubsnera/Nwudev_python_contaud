@@ -1,5 +1,7 @@
-""" Script to test PEOPLE master file data
+"""
+Script to test PEOPLE master file data
 Created on: 1 Mar 2019
+Modified on: 20 Apr 2021 (Albert)
 Author: Albert J v Rensburg (NWU21162395)
 """
 
@@ -17,7 +19,8 @@ from _my_modules import funcsms
 from _my_modules import funcsys
 from _my_modules import functest
 
-""" INDEX **********************************************************************
+# INDEX
+"""
 ENVIRONMENT
 OPEN THE DATABASES
 BEGIN OF SCRIPT
@@ -64,7 +67,10 @@ TEST PHONE WORK INVALID
 TEST ADDRESS PRIMARY INVALID
 
 END OF SCRIPT
-*****************************************************************************"""
+"""
+
+# SCRIPT WIDE VARIABLES
+s_function: str = "C001_people_test_masterfile"
 
 
 def people_test_masterfile():
@@ -83,27 +89,26 @@ def people_test_masterfile():
     ed_path = "S:/_external_data/" #external data path
     so_file = "People_test_masterfile.sqlite" # Source database
     s_sql = "" # SQL statements
-    l_record = True
-    l_export = False
-    # l_mail: bool = funcconf.l_mail_project
-    l_mail = False
+    l_debug: bool = False  # Display statements on screen
+    l_export: bool = False  # Export findings to text file
+    l_mail: bool = funcconf.l_mail_project
+    # l_mail: bool = False  # Send email messages
     l_mess: bool = funcconf.l_mess_project
-    # l_mess = False
+    # l_mess: bool = False  # Send communicator messages
+    l_record: bool = True  # Record findings for future use
     i_finding_before: int = 0
     i_finding_after: int = 0
 
-    # OPEN THE SCRIPT LOG FILE
-    print("---------------------------")
-    print("C001_PEOPLE_TEST_MASTERFILE")
-    print("---------------------------")
+    # LOG
     funcfile.writelog("Now")
-    funcfile.writelog("SCRIPT: C001_PEOPLE_TEST_MASTERFILE")
-    funcfile.writelog("-----------------------------------")
-    ilog_severity = 1
+    funcfile.writelog("SCRIPT: " + s_function.upper())
+    funcfile.writelog("-" * len("script: "+s_function))
+    if l_debug:
+        print(s_function.upper())
 
     # MESSAGE
     if l_mess:
-        funcsms.send_telegram("", "administrator", "<b>C001 People master file tests</b>")
+        funcsms.send_telegram("", "administrator", "<b>" + s_function.upper() + "</b>")
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -123,13 +128,14 @@ def people_test_masterfile():
     funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
 
     """ ****************************************************************************
-    TEMPORARY SCRIPT (Delete after one run) 2019-05-31
+    TEMPORARY SCRIPT
     *****************************************************************************"""    
 
     """ ****************************************************************************
     BEGIN OF SCRIPT
     *****************************************************************************"""
-    print("BEGIN OF SCRIPT")
+    if l_debug:
+        print("BEGIN OF SCRIPT")
     funcfile.writelog("BEGIN OF SCRIPT")
 
     """ ****************************************************************************
@@ -7205,21 +7211,22 @@ def people_test_masterfile():
 
     # MESSAGE
     # if l_mess:
-    #     funcsms.send_telegram("", "administrator", "Finished <b>People master file</b> tests.")
+    #     funcsms.send_telegram("", "administrator", "Finished <b>" + s_function.upper() + "</b> tests.")
 
     """ ****************************************************************************
     END OF SCRIPT
     *****************************************************************************"""
-    print("END OF SCRIPT")
     funcfile.writelog("END OF SCRIPT")
+    if l_debug:
+        print("END OF SCRIPT")
 
     # CLOSE THE DATABASE CONNECTION
     so_conn.commit()
     so_conn.close()
 
-    # CLOSE THE LOG WRITER
-    funcfile.writelog("--------------------------------------")
-    funcfile.writelog("COMPLETED: C001_PEOPLE_TEST_MASTERFILE")
+    # CLOSE THE LOG
+    funcfile.writelog("-" * len("completed: "+s_function))
+    funcfile.writelog("COMPLETED: " + s_function.upper())
 
     return
 
