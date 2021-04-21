@@ -88,6 +88,16 @@ def people_test_masterfile_xdev():
     TEMPORARY SCRIPT
     *****************************************************************************"""
 
+    """
+    # TODO Delete after first run
+    sr_file: str = s_file_prefix + "a_acadsupp"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sr_file: str = s_file_prefix + "b_detail"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sr_file: str = s_file_prefix + "x_acadsupp_invalid"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    """
+
     """ ****************************************************************************
     BEGIN OF SCRIPT
     *****************************************************************************"""

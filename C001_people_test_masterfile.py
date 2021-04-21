@@ -1,7 +1,7 @@
 """
 Script to test PEOPLE master file data
 Created on: 1 Mar 2019
-Modified on: 20 Apr 2021 (Albert)
+Modified on: 20 Apr 2021
 Author: Albert J v Rensburg (NWU21162395)
 """
 
@@ -108,7 +108,7 @@ def people_test_masterfile():
 
     # MESSAGE
     if l_mess:
-        funcsms.send_telegram("", "administrator", "<b>" + s_function.upper() + "</b>")
+        funcsms.send_telegram("", "administrator", "<b>" + s_function + "</b>")
 
     """*****************************************************************************
     OPEN THE DATABASES
@@ -5295,7 +5295,7 @@ def people_test_masterfile():
         X007_leave04_hoursum LIST2 On LIST2.EMPLOYEE_NUMBER = PEOPLE.EMPLOYEE_NUMBER     
     ;"""
     """
-    Removed it 20210420
+    20210420 Remove
     Where
         Substr(PEOPLE.PERSON_TYPE,1,6) <> 'AD HOC'
     """
@@ -5603,19 +5603,9 @@ def people_test_masterfile():
     if l_debug:
         print("TEST " + s_finding)
 
-    # TODO Delete after first run
-    sr_file: str = s_file_prefix + "a_acadsupp"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    sr_file: str = s_file_prefix + "b_detail"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    sr_file: str = s_file_prefix + "x_acadsupp_invalid"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-
     # OBTAIN MASTER DATA
-
     sr_file: str = s_file_prefix + "a_a_" + s_file_name
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-
     if l_debug:
         print("Obtain master data...")
     sr_file: str = s_file_prefix + "a_" + s_file_name
@@ -7241,7 +7231,7 @@ def people_test_masterfile():
 
     # MESSAGE
     # if l_mess:
-    #     funcsms.send_telegram("", "administrator", "Finished <b>" + s_function.upper() + "</b> tests.")
+    #     funcsms.send_telegram("", "administrator", "Finished <b>" + s_function + "</b> tests.")
 
     """ ****************************************************************************
     END OF SCRIPT
