@@ -32,3 +32,12 @@ Jy sal ook sien meeste van die temps se Academic/Support flag as jy die hemis ka
 Die veld EMPLOYEE_CATEGORY in per_all_assignments_f kan gebruik word om dit te bepaal - dit word bepaal deur die
  aanstelling wat hulle maak vir die temp.
 Die EMPLOYEE_CATEGORY veld is nou vir alle assignemnts perm/temp gepopulate.
+
+20210413 (Nadia)
+Dit is deel van die Temp online system veranderinge. Alle temp aanstellings gaan 'n Grade T99 hê. en as die persoon
+ meer as 24 uur gewerk het gaan die aanstelling 'n T05 leave kode hê ongeag die person type.
+
+20210412 (Siphiwe)
+Permanent Payroll Responsible Person is Mary Mphore and Temp Payroll Responsible Person is Sonja Nothnagel.
+Also all errors of invalid grades and leave codes, they should be separated between Permanent (Karen) and Temp Payroll
+ (Nadia) respectively.
