@@ -229,6 +229,7 @@ def vss_period_list(s_period="curr"):
         TRAN.POSTDATEDTRANSDATE,
         TRAN.FFINAIDSITEID,
         BURS.FINAIDCODE,
+        BURS.FINAIDNAME,
         BURS.FINAIDNAAM,
         TRAN.FRESIDENCELOGID,
         TRAN.FLEVYLOGID,
