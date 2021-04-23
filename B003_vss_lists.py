@@ -1225,30 +1225,36 @@ def vss_lists():
 
     s_sql = "CREATE TABLE X004_Bursaries AS " + """
     SELECT
-      X004ab_Bursary_site.KFINAIDSITEID,
-      X004ab_Bursary_site.FFINAIDID,
-      X004ab_Bursary_site.FSITEORGUNITNUMBER,
-      X004ab_Bursary_site.FFINAIDINSTBUSENTID,
-      X004ab_Bursary_site.FINAIDCODE,
-      X004ab_Bursary_site.FINAIDNAME,
-      X004ab_Bursary_site.FINAIDNAAM,
-      X004ab_Bursary_site.TYPE_E,
-      X004ab_Bursary_site.BURS_CATE_E,
-      X004ab_Bursary_site.ISAUTOAPPL,
-      X004ab_Bursary_site.ISWWWAPPLALLOWED,
-      X004ab_Bursary_site.FINAIDYEARS,
-      X004ab_Bursary_site.FUND_TYPE_E,
-      X004ab_Bursary_site.STUDY_TYPE_E,
-      X004ab_Bursary_site.CC,
-      X004ab_Bursary_site.ACC,
-      X004ab_Bursary_site.LOANTYPECODE,
-      X004ab_Bursary_site.STARTDATE,
-      X004ab_Bursary_site.ENDDATE,
-      X004ab_Bursary_site.FCOAID
+      b.KFINAIDSITEID,
+      b.FFINAIDID,
+      b.FSITEORGUNITNUMBER,
+      b.FFINAIDINSTBUSENTID,
+      b.FINAIDCODE,
+      Case
+        When Trim(b.FINAIDNAME) = '' and Trim(b.FINAIDNAAM) <> '' Then b.FINAIDNAAM
+        Else b.FINAIDNAME
+      End As FINAIDNAME,
+      Case
+        When Trim(b.FINAIDNAAM) = '' and Trim(b.FINAIDNAME) <> '' Then b.FINAIDNAME
+        Else b.FINAIDNAAM
+      End As FINAIDNAAM,
+      Upper(b.TYPE_E) As TYPE_E,
+      Upper(b.BURS_CATE_E) As BURS_CATE_E,
+      b.ISAUTOAPPL,
+      b.ISWWWAPPLALLOWED,
+      b.FINAIDYEARS,
+      Upper(b.FUND_TYPE_E) As FUND_TYPE_E,
+      Upper(b.STUDY_TYPE_E) As STUDY_TYPE_E,
+      b.CC,
+      b.ACC,
+      b.LOANTYPECODE,
+      b.STARTDATE,
+      b.ENDDATE,
+      b.FCOAID
     FROM
-      X004ab_Bursary_site
+      X004ab_Bursary_site b
     ORDER BY
-      X004ab_Bursary_site.KFINAIDSITEID
+      b.KFINAIDSITEID
     """
     so_curs.execute("DROP TABLE IF EXISTS X000_Bursaries")
     so_curs.execute("DROP TABLE IF EXISTS X004_Bursaries")    
