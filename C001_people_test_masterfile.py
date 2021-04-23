@@ -174,24 +174,21 @@ def people_test_masterfile():
         s_sql = s_sql.replace("%WHERE%","StrfTime('%m-%d',PEOPLE.X002_PEOPLE_CURR.DATE_OF_BIRTH)>=StrfTime('%m-%d','now') AND StrfTime('%m-%d',PEOPLE.X002_PEOPLE_CURR.DATE_OF_BIRTH)<=StrfTime('%m-%d','now','+2 day')")
     else:
         s_sql = s_sql.replace("%WHERE%","StrfTime('%m-%d',PEOPLE.X002_PEOPLE_CURR.DATE_OF_BIRTH)>=StrfTime('%m-%d','now') AND StrfTime('%m-%d',PEOPLE.X002_PEOPLE_CURR.DATE_OF_BIRTH)<=StrfTime('%m-%d','now')")
-    #print(s_sql) # DEBUG
+    # print(s_sql) # DEBUG
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)        
     # Export the birthdays
-    """
-    if l_export == True:
-        sr_filet = sr_file
-        sx_path = re_path + funcdate.cur_year() + "/"
-        sx_file = "People_003_birthday_"
-        sx_filet = sx_file + funcdate.cur_month()
-        print("Export people birthday..." + sx_path + sx_filet)
-        # Read the header data
-        s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-        # Write the data
-        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
-    """
+    sr_filet = sr_file
+    sx_path = re_path + funcdate.cur_year() + "/"
+    sx_file = "People_003_birthday_"
+    sx_filet = sx_file + funcdate.cur_month()
+    print("Export people birthday..." + sx_path + sx_filet)
+    # Read the header data
+    s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+    # Write the data
+    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
+    funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
     # Mail the birthdays
     if l_mail:
         funcmail.Mail("hr_people_birthday")
