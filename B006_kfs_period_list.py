@@ -212,7 +212,8 @@ def kfs_period_list(s_period="curr"):
         PAY.PMT_TXBL_IND,
         PAY.ADV_EMAIL_ADDR,
         PAY.PMT_FIL_ID,
-        PAY.PROC_ID    
+        PAY.PROC_ID,
+        DET.PMT_DTL_ID
     From
         PDP_PMT_GRP_T PAY Left Join
         KFS.PDP_PMT_DTL_T DET On DET.PMT_GRP_ID = PAY.PMT_GRP_ID Left Join
@@ -592,6 +593,7 @@ def kfs_period_list(s_period="curr"):
         PAY.INV_DT,
         PAY.ORIG_INV_AMT,
         PAY.NET_PMT_AMT,
+        PAY.PMT_DTL_ID,
         PAY.PMT_DT,
         PAY.PMT_STAT_CD,    
         Upper(STA.PMT_STAT_CD_DESC) AS PAYMENT_STATUS,
@@ -661,6 +663,7 @@ def kfs_period_list(s_period="curr"):
         PAYMENT.VENDOR_TYPE_CALC,
         PAYMENT.DISB_NBR,
         PAYMENT.DISB_TS,
+        PAYMENT.PMT_DTL_ID,
         PAYMENT.PMT_DT,
         PAYMENT.PMT_STAT_CD,
         PAYMENT.PAYMENT_STATUS,
@@ -720,6 +723,7 @@ def kfs_period_list(s_period="curr"):
         PAYMENT.VENDOR_TYPE_CALC,
         PAYMENT.DISB_NBR,
         PAYMENT.DISB_TS,
+        PAYMENT.PMT_DTL_ID,
         PAYMENT.PMT_DT,
         PAYMENT.PMT_STAT_CD,
         PAYMENT.PAYMENT_STATUS,
