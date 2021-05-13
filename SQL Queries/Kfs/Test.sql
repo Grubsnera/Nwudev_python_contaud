@@ -1,7 +1,7 @@
 ﻿Select
-    Count(x000v.NUMBERS) As Count_NUMBERS,
-    x000v.VNDR_TYP_CD
+    aprt.FDOC_NBR,
+    Count(aprt.PO_ID) As Count_PO_ID
 From
-    X000_Vendor x000v
+    AP_PMT_RQST_T aprt
 Group By
-    x000v.VNDR_TYP_CD
+    aprt.FDOC_NBR
