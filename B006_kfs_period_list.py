@@ -67,7 +67,7 @@ def kfs_period_list(s_period="curr"):
     l_export: bool = True
     so_path = "W:/Kfs/"  # Source database path
     re_path = "R:/Kfs/"  # Results path
-    ed_path = "S:/_external_data/"  # external data path
+    # ed_path = "S:/_external_data/"  # external data path
     if s_period == "curr":
         s_year = funcdate.cur_year()
         so_file = "Kfs_curr.sqlite"  # Source database
@@ -178,8 +178,8 @@ def kfs_period_list(s_period="curr"):
     """ ****************************************************************************
     PAYMENT SUMMARY LIST
     *****************************************************************************"""
-    print("PAYMENT INITIATE LIST")
-    funcfile.writelog("PAYMENT INITIATE LIST")
+    print("PAYMENT SUMMARY LIST")
+    funcfile.writelog("PAYMENT SUMMARY LIST")
 
     # BUILD PAYMENTS SUMMARY LIST
     print("Build payments...")
@@ -190,8 +190,16 @@ def kfs_period_list(s_period="curr"):
         PAY.PMT_DT,
         DET.REQS_NBR,
         DET.PO_NBR,
-        DET.INV_NBR,
-        DET.INV_DT,
+        Case
+            When PR.FDOC_NBR Is Not Null Then PR.INV_NBR 
+            When DV.FDOC_NBR Is Not Null Then DV.INV_NBR
+            Else DET.INV_NBR
+        End As INV_NBR,
+        Case
+            When PR.FDOC_NBR Is Not Null Then PR.INV_DT
+            When DV.FDOC_NBR Is Not Null Then DV.INV_DATE
+            Else DET.INV_DT
+        End As INV_DT,
         DET.ORIG_INV_AMT,
         PAY.PAYEE_ID AS PAYEE_ID,
         PAY.PAYEE_ID_TYP_CD AS PAYEE_TYPE,
@@ -217,6 +225,8 @@ def kfs_period_list(s_period="curr"):
     From
         PDP_PMT_GRP_T PAY Left Join
         KFS.PDP_PMT_DTL_T DET On DET.PMT_GRP_ID = PAY.PMT_GRP_ID Left Join
+        KFS.AP_PMT_RQST_T PR On PR.FDOC_NBR = DET.CUST_PMT_DOC_NBR Left Join
+        KFS.FP_DV_PAYEE_DTL_EXT_T DV On DV.FDOC_NBR = DET.CUST_PMT_DOC_NBR Left Join
         KFS.X000_Document DOC On DOC.DOC_HDR_ID = DET.CUST_PMT_DOC_NBR
     Where
         DET.CUST_PMT_DOC_NBR Is Not NULL
