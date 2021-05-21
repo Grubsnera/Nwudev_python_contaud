@@ -405,7 +405,8 @@ def people_test_conflict():
             When FULL_DISCLOSURE_FLAG = 'Y' Then 'YES'
             Else 'NA'
         End As FULL_DISCLOSURE,
-        Upper(STATUS) AS DECLARE_STATUS
+        Upper(STATUS) AS DECLARE_STATUS,
+        DECLARE.LINE_MANAGER
     From
         X001_declarations_curr DECLARE
     Group By
@@ -493,7 +494,8 @@ def people_test_conflict():
             When FULL_DISCLOSURE_FLAG = 'Y' Then 'YES'
             Else 'NA'
         End As FULL_DISCLOSURE,
-        Upper(STATUS) AS DECLARE_STATUS
+        Upper(STATUS) AS DECLARE_STATUS,
+        DECLARE.LINE_MANAGER
     From
         X001_declarations_prev DECLARE
     Group By
