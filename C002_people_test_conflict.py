@@ -33,7 +33,7 @@ END OF SCRIPT
 
 def people_test_conflict():
     """
-    Cript to test PEOPLE conflict of interest
+    Script to test PEOPLE conflict of interest
     :return:
     """
 
@@ -46,11 +46,11 @@ def people_test_conflict():
     re_path = "R:/People/" + funcdate.cur_year() + "/"  # Results path
     ed_path = "S:/_external_data/"   # external data path
     so_file = "People_conflict.sqlite"  # Source database
+    l_debug: bool = False
     l_export: bool = False
     l_mail: bool = False
     l_mess: bool = True
     l_record: bool = True
-    l_debug: bool = False
 
     # OPEN THE SCRIPT LOG FILE
     print("-----------------------------")
@@ -226,13 +226,13 @@ def people_test_conflict():
         SUPERVISOR.EMAIL_ADDRESS AS SUP_MAIL,
         SUPERVISOR.POSITION_FULL AS SUP_POSITION
     From
-        X000_declarations_all
-        Left Join PEOPLE.X002_PEOPLE_CURR_YEAR EMPLOYEE ON EMPLOYEE.EMPLOYEE_NUMBER = X000_declarations_all.EMPLOYEE_NUMBER
-        Left Join PEOPLE.X002_PEOPLE_CURR_YEAR MANAGER ON MANAGER.EMPLOYEE_NUMBER = X000_declarations_all.LINE_MANAGER
-        Left Join PEOPLE.X002_PEOPLE_CURR_YEAR SUPERVISOR ON SUPERVISOR.EMPLOYEE_NUMBER = EMPLOYEE.SUPERVISOR
+        X000_declarations_all Left Join
+        PEOPLE.X002_PEOPLE_CURR_YEAR EMPLOYEE ON EMPLOYEE.EMPLOYEE_NUMBER = X000_declarations_all.EMPLOYEE_NUMBER Left join
+        PEOPLE.X002_PEOPLE_CURR_YEAR MANAGER ON MANAGER.EMPLOYEE_NUMBER = X000_declarations_all.LINE_MANAGER Left Join
+        PEOPLE.X002_PEOPLE_CURR_YEAR SUPERVISOR ON SUPERVISOR.EMPLOYEE_NUMBER = EMPLOYEE.SUPERVISOR
     Where
-      X000_declarations_all.DECLARATION_DATE >= Date("%CYEARB%") AND
-      X000_declarations_all.DECLARATION_DATE <= Date("%CYEARE%")
+        X000_declarations_all.DECLARATION_DATE >= Date("%CYEARB%") AND
+        X000_declarations_all.DECLARATION_DATE <= Date("%CYEARE%")
     Order By
         EMPLOYEE.LAST_NAME,
         EMPLOYEE.NAME_ADDR,
@@ -385,7 +385,7 @@ def people_test_conflict():
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
     # BUILD CURRENT DECLARATION DASHBOARD DECLARATION DATA
-    print("Build current declaration dashboard unique declarions...")
+    print("Build current declaration dashboard unique declarations...")
     sr_file = "X003ab_declarations_curr"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     Select
@@ -475,7 +475,7 @@ def people_test_conflict():
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
     # BUILD PREVIOUS DECLARATION DASHBOARD DECLARATION DATA
-    print("Build previous declaration dashboard unique declarions...")
+    print("Build previous declaration dashboard unique declarations...")
     sr_file = "X003ab_declarations_prev"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     Select
@@ -903,7 +903,7 @@ def people_test_conflict():
             s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "')"
             so_curs.execute(s_cols)
     so_conn.commit()
-    # Close the impoted data file
+    # Close the imported data file
     co.close()
     funcfile.writelog("%t IMPORT TABLE: " + ed_path + "201_vendor_new.csv (" + sr_file + ")")
 
