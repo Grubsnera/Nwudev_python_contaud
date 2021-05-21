@@ -1,7 +1,7 @@
 ﻿Select
-    x001b.DIFF,
-    Count(x001b.FFINAIDSITEID) As Count_FFINAIDSITEID
+    x000t.CAMPUS,
+    Total(x000t.AMOUNT) As Total_AMOUNT
 From
-    X001ad_Bursary_student_compare x001b
+    X000_Transaction x000t
 Group By
-    x001b.DIFF
+    x000t.CAMPUS

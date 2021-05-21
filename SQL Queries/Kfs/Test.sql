@@ -1,7 +1,7 @@
 ﻿Select
-    aprt.FDOC_NBR,
-    Count(aprt.PO_ID) As Count_PO_ID
+    x000v.VEND_BANK,
+    Count(x000v.NUMBERS) As Count_NUMBERS
 From
-    AP_PMT_RQST_T aprt
+    X000_Vendor x000v
 Group By
-    aprt.FDOC_NBR
+    x000v.VEND_BANK
