@@ -406,7 +406,8 @@ def people_test_conflict():
             Else 'NA'
         End As FULL_DISCLOSURE,
         Upper(STATUS) AS DECLARE_STATUS,
-        DECLARE.LINE_MANAGER
+        DECLARE.LINE_MANAGER,
+        Upper(DECLARE.REJECTION_REASON) As REJECTION_REASON
     From
         X001_declarations_curr DECLARE
     Group By
@@ -495,7 +496,8 @@ def people_test_conflict():
             Else 'NA'
         End As FULL_DISCLOSURE,
         Upper(STATUS) AS DECLARE_STATUS,
-        DECLARE.LINE_MANAGER
+        DECLARE.LINE_MANAGER,
+        Upper(DECLARE.REJECTION_REASON) As REJECTION_REASON
     From
         X001_declarations_prev DECLARE
     Group By
