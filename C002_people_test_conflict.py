@@ -26,6 +26,7 @@ BUILD DASHBOARD TABLES
 BANK NUMBER MASTER FILES
 TEST EMPLOYEE VENDOR SHARE BANK ACCOUNT (V1.1.2)
 TEST EMPLOYEE VENDOR SHARE EMAIL ADDRESS (V2.0.3)
+TEST EMPLOYEE NO DECLARATION (V2.0.4)
 END OF SCRIPT
 *****************************************************************************"""
 
@@ -46,8 +47,10 @@ def people_test_conflict():
     ed_path = "S:/_external_data/"   # external data path
     so_file = "People_conflict.sqlite"  # Source database
     l_export: bool = False
+    l_mail: bool = False
     l_mess: bool = True
     l_record: bool = True
+    l_debug: bool = False
 
     # OPEN THE SCRIPT LOG FILE
     print("-----------------------------")
@@ -1348,6 +1351,352 @@ def people_test_conflict():
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    """*****************************************************************************
+    TEST EMPLOYEE NO DECLARATION
+    *****************************************************************************"""
+
+    """
+    Test if employees declared conflict of interest.
+        Request remediation from employee.
+        Notify employee line manager.
+    Test exclude:
+        Person type:
+        AD HOC APPOINTMENT
+        COUNCIL MEMBER
+        ADVISORY BOARD MEMBER
+        If no supervisor.
+        If employed less than 31 days.                
+    Created: 21 May 2021 (Albert J v Rensburg NWU:21162395)
+    """
+
+    # TABLES NEEDED
+    # X003_dashboard_curr
+    # PEOPLE.X002_PEOPLE_CURR
+
+    # TEST WILL ONLY RUN FROM MAY TO NOVEMBER
+    if funcdate.cur_month() in ("05", "06", "07", "08", "09", "10", "11"):
+
+        # DECLARE TEST VARIABLES
+        i_finding_after: int = 0
+        s_description = "Employee did not declare interest"
+        s_file_name: str = "employee_no_declaration"
+        s_file_prefix: str = "X101a"
+        s_finding: str = "EMPLOYEE NO DECLARATION"
+        s_report_file: str = "002_reported.txt"
+
+        # OPEN LOG
+        if l_debug:
+            print("TEST " + s_finding)
+        funcfile.writelog("TEST " + s_finding)
+
+        # OBTAIN TEST DATA FOR EMPLOYEES
+        if l_debug:
+            print("Obtain test data...")
+        sr_file: str = s_file_prefix + "a_" + s_file_name
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            'NWU' As ORG,
+            Substr(a.LOCATION,1,3) As LOC,
+            a.EMPLOYEE,
+            a.CATEGORY,
+            a.PERSON_TYPE,
+            a.SUPERVISOR,
+            a.DECLARED,
+            Cast(Julianday('%TODAY%') - Julianday(a.EMP_START) As Int) As DAYS_IN_SERVICE
+        From
+            X003_dashboard_curr a
+        ;"""
+        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+        # SELECT TEST DATA
+        if l_debug:
+            print("Identify findings...")
+        sr_file = s_file_prefix + "b_finding"
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            FIND.ORG,
+            FIND.LOC,
+            FIND.SUPERVISOR,
+            FIND.EMPLOYEE,
+            FIND.CATEGORY
+        From
+            %FILEP%%FILEN% FIND
+        Where
+            FIND.PERSON_TYPE Not In (
+                'AD HOC APPOINTMENT',
+                'COUNCIL MEMBER',
+                'ADVISORY BOARD MEMBER'
+                ) And
+            FIND.DECLARED = 'NO DECLARATION' And
+            FIND.SUPERVISOR Is Not Null And
+            FIND.DAYS_IN_SERVICE > 30
+        Order By
+            FIND.SUPERVISOR,
+            FIND.EMPLOYEE    
+        ;"""
+        s_sql = s_sql.replace("%FILEP%", s_file_prefix)
+        s_sql = s_sql.replace("%FILEN%", "a_" + s_file_name)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+        # COUNT THE NUMBER OF FINDINGS
+        i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
+        if l_debug:
+            print("*** Found " + str(i_finding_before) + " exceptions ***")
+        funcfile.writelog("%t FINDING: " + str(i_finding_before) + " " + s_finding + " finding(s)")
+
+        # GET PREVIOUS FINDINGS
+        if i_finding_before > 0:
+            functest.get_previous_finding(so_curs, ed_path, s_report_file, s_finding, "TTTTT")
+            so_conn.commit()
+
+        # SET PREVIOUS FINDINGS
+        if i_finding_before > 0:
+            functest.set_previous_finding(so_curs)
+            so_conn.commit()
+
+        # ADD PREVIOUS FINDINGS
+        sr_file = s_file_prefix + "d_addprev"
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        if i_finding_before > 0:
+            if l_debug:
+                print("Join previously reported to current findings...")
+            s_sql = "CREATE TABLE " + sr_file + " AS" + """
+            Select
+                FIND.*,
+                Lower('%FINDING%') AS PROCESS,
+                '%TODAY%' AS DATE_REPORTED,
+                '%DAYS%' AS DATE_RETEST,
+                PREV.PROCESS AS PREV_PROCESS,
+                PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
+                PREV.DATE_RETEST AS PREV_DATE_RETEST,
+                PREV.REMARK
+            From
+                %FILEP%b_finding FIND Left Join
+                Z001ab_setprev PREV ON
+                 PREV.FIELD1 = FIND.SUPERVISOR And
+                 PREV.FIELD2 = FIND.EMPLOYEE
+            ;"""
+            s_sql = s_sql.replace("%FINDING%", s_finding)
+            s_sql = s_sql.replace("%FILEP%", s_file_prefix)
+            s_sql = s_sql.replace("%TODAY%", funcdate.today())
+            s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
+            so_curs.execute(s_sql)
+            so_conn.commit()
+            funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+        # BUILD LIST TO UPDATE FINDINGS
+        sr_file = s_file_prefix + "e_newprev"
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        if i_finding_before > 0:
+            s_sql = "CREATE TABLE " + sr_file + " AS " + """
+            Select
+                PREV.PROCESS,
+                PREV.SUPERVISOR AS FIELD1,
+                PREV.EMPLOYEE AS FIELD2,
+                '' AS FIELD3,
+                '' AS FIELD4,
+                '' AS FIELD5,
+                PREV.DATE_REPORTED,
+                PREV.DATE_RETEST,
+                PREV.REMARK
+            From
+                %FILEP%d_addprev PREV
+            Where
+                PREV.PREV_PROCESS Is Null Or
+                PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""        
+            ;"""
+            s_sql = s_sql.replace("%FILEP%", s_file_prefix)
+            so_curs.execute(s_sql)
+            so_conn.commit()
+            funcfile.writelog("%t BUILD TABLE: " + sr_file)
+            # Export findings to previous reported file
+            i_finding_after = funcsys.tablerowcount(so_curs, sr_file)
+            if i_finding_after > 0:
+                if l_debug:
+                    print("*** " + str(i_finding_after) + " Finding(s) to report ***")
+                sx_path = ed_path
+                sx_file = s_report_file[:-4]
+                # Read the header data
+                s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+                # Write the data
+                if l_record:
+                    funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
+                    funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
+                    funcfile.writelog("%t EXPORT DATA: " + sr_file)
+                if l_mess:
+                    funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_before) + '/' + str(
+                        i_finding_after) + '</b> ' + s_description)
+            else:
+                if l_debug:
+                    print("*** No new findings to report ***")
+                funcfile.writelog("%t FINDING: No new findings to export")
+
+        # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
+        if i_finding_before > 0 and i_finding_after > 0:
+            functest.get_officer(so_curs, "HR", "TEST " + s_finding + " OFFICER")
+            so_conn.commit()
+
+        # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
+        if i_finding_before > 0 and i_finding_after > 0:
+            functest.get_supervisor(so_curs, "HR", "TEST " + s_finding + " SUPERVISOR")
+            so_conn.commit()
+
+        # ADD CONTACT DETAILS TO FINDINGS
+        sr_file = s_file_prefix + "h_detail"
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        if i_finding_before > 0 and i_finding_after > 0:
+            if l_debug:
+                print("Add contact details to findings...")
+            s_sql = "CREATE TABLE " + sr_file + " AS " + """
+            Select
+                PREV.ORG,
+                PREV.LOC,
+                PREV.CATEGORY,
+                PREV.EMPLOYEE,
+                EMPL.NAME_ADDR As EMP_NAME,
+                EMPL.PERSON_TYPE As EMP_PERSON_TYPE,        
+                Upper(EMPL.POSITION_FULL) As EMP_POSITION,
+                EMPL.EMAIL_ADDRESS As EMP_MAIL1,
+                PREV.EMPLOYEE || '@nwu.ac.za' As EMP_MAIL2,
+                PREV.SUPERVISOR,
+                SUPE.NAME_ADDR As SUP_NAME,
+                SUPE.EMAIL_ADDRESS As SUP_MAIL1,
+                PREV.SUPERVISOR || '@nwu.ac.za' As SUP_MAIL2,
+                CAMP_OFF.EMPLOYEE_NUMBER AS CAMP_OFF_NUMB,
+                CAMP_OFF.NAME_ADDR AS CAMP_OFF_NAME,
+                CAMP_OFF.EMAIL_ADDRESS AS CAMP_OFF_MAIL1,        
+                CASE
+                    WHEN  CAMP_OFF.EMPLOYEE_NUMBER != '' THEN CAMP_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                    ELSE CAMP_OFF.EMAIL_ADDRESS
+                END AS CAMP_OFF_MAIL2,
+                CAMP_SUP.EMPLOYEE_NUMBER AS CAMP_SUP_NUMB,
+                CAMP_SUP.NAME_ADDR AS CAMP_SUP_NAME,
+                CAMP_SUP.EMAIL_ADDRESS AS CAMP_SUP_MAIL1,
+                CASE
+                    WHEN CAMP_SUP.EMPLOYEE_NUMBER != '' THEN CAMP_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                    ELSE CAMP_SUP.EMAIL_ADDRESS
+                END AS CAMP_SUP_MAIL2,
+                ORG_OFF.EMPLOYEE_NUMBER AS ORG_OFF_NUMB,
+                ORG_OFF.NAME_ADDR AS ORG_OFF_NAME,
+                ORG_OFF.EMAIL_ADDRESS AS ORG_OFF_MAIL1,
+                CASE
+                    WHEN ORG_OFF.EMPLOYEE_NUMBER != '' THEN ORG_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                    ELSE ORG_OFF.EMAIL_ADDRESS
+                END AS ORG_OFF_MAIL2,
+                ORG_SUP.EMPLOYEE_NUMBER AS ORG_SUP_NUMB,
+                ORG_SUP.NAME_ADDR AS ORG_SUP_NAME,
+                ORG_SUP.EMAIL_ADDRESS AS ORG_SUP_MAIL1,
+                CASE
+                    WHEN ORG_SUP.EMPLOYEE_NUMBER != '' THEN ORG_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                    ELSE ORG_SUP.EMAIL_ADDRESS
+                END AS ORG_SUP_MAIL2,
+                AUD_OFF.EMPLOYEE_NUMBER As AUD_OFF_NUMB,
+                AUD_OFF.NAME_ADDR As AUD_OFF_NAME,
+                AUD_OFF.EMAIL_ADDRESS As AUD_OFF_MAIL,
+                AUD_SUP.EMPLOYEE_NUMBER As AUD_SUP_NUMB,
+                AUD_SUP.NAME_ADDR As AUD_SUP_NAME,
+                AUD_SUP.EMAIL_ADDRESS As AUD_SUP_MAIL
+            From
+                %FILEP%d_addprev PREV Left Join
+                PEOPLE.X002_PEOPLE_CURR EMPL On EMPL.EMPLOYEE_NUMBER = PREV.EMPLOYEE Left Join
+                PEOPLE.X002_PEOPLE_CURR SUPE On SUPE.EMPLOYEE_NUMBER = PREV.SUPERVISOR Left Join
+                Z001af_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.CATEGORY Left Join
+                Z001af_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG Left Join
+                Z001af_officer AUD_OFF On AUD_OFF.CAMPUS = 'AUD' Left Join
+                Z001ag_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.CATEGORY Left Join
+                Z001ag_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG Left Join
+                Z001ag_supervisor AUD_SUP On AUD_SUP.CAMPUS = 'AUD'
+            Where
+                PREV.PREV_PROCESS Is Null Or
+                PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
+            ;"""
+            """
+                EMPL.NAME_ADDR,
+                EMPL.PERSON_TYPE,
+                Upper(EMPL.POSITION_FULL) As POSITION,
+                PREV.EMPLOYEE_NUMBER || '@nwu.ac.za' As EMAIL2,
+                EMPL.EMAIL_ADDRESS As EMAIL1,
+            """
+            s_sql = s_sql.replace("%FILEP%", s_file_prefix)
+            s_sql = s_sql.replace("%FILEN%", "a_" + s_file_name)
+            so_curs.execute(s_sql)
+            so_conn.commit()
+            funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+        # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
+        sr_file = s_file_prefix + "x_" + s_file_name
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        if l_debug:
+            print("Build the final report")
+        if i_finding_before > 0 and i_finding_after > 0:
+            s_sql = "CREATE TABLE " + sr_file + " AS " + """
+            Select
+                '%FIND%' As Audit_finding,
+                FIND.CATEGORY As Employee_category,
+                FIND.EMP_PERSON_TYPE As Employee_type,
+                FIND.EMPLOYEE As Employee_number,
+                FIND.EMP_NAME As Employee_name,
+                FIND.EMP_POSITION As Employee_position,
+                FIND.EMP_MAIL1 As Employee_mail_address,
+                FIND.EMP_MAIL2 As Employee_mail_alternate,
+                FIND.SUPERVISOR As Supervisor_number,
+                FIND.SUP_NAME As Supervisor_name,
+                FIND.SUP_MAIL1 As Supervisor_mail_address,
+                FIND.SUP_MAIL2 As Supervisor_mail_alternate,
+                FIND.ORG As Organization,
+                FIND.LOC As Campus,
+                FIND.CAMP_OFF_NAME AS Responsible_officer,
+                FIND.CAMP_OFF_NUMB AS Responsible_officer_numb,
+                FIND.CAMP_OFF_MAIL1 AS Responsible_officer_mail,
+                FIND.CAMP_SUP_NAME AS Resp_supervisor,
+                FIND.CAMP_SUP_NUMB AS Resp_supervisor_numb,
+                FIND.CAMP_SUP_MAIL1 AS Resp_supervisor_mail,
+                FIND.ORG_OFF_NAME AS Org_officer,
+                FIND.ORG_OFF_NUMB AS Org_officer_numb,
+                FIND.ORG_OFF_MAIL1 AS Org_officer_mail,
+                FIND.ORG_SUP_NAME AS Org_supervisor,
+                FIND.ORG_SUP_NUMB AS Org_supervisor_numb,
+                FIND.ORG_SUP_MAIL1 AS Org_Supervisor_mail,
+                FIND.AUD_OFF_NAME AS Audit_officer,
+                FIND.AUD_OFF_NUMB AS Audit_officer_numb,
+                FIND.AUD_OFF_MAIL AS Audit_officer_mail,
+                FIND.AUD_SUP_NAME AS Audit_supervisor,
+                FIND.AUD_SUP_NUMB AS Audit_supervisor_numb,
+                FIND.AUD_SUP_MAIL AS Audit_supervisor_mail
+            From
+                %FILEP%h_detail FIND
+            ;"""
+            s_sql = s_sql.replace("%FIND%", s_finding)
+            s_sql = s_sql.replace("%FILEP%", s_file_prefix)
+            so_curs.execute(s_sql)
+            so_conn.commit()
+            funcfile.writelog("%t BUILD TABLE: " + sr_file)
+            # Export findings
+            if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
+                print("Export findings...")
+                sx_path = re_path
+                sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
+                sx_file_dated = sx_file + funcdate.today_file()
+                s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+                funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
+                funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
+                funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
+        else:
+            s_sql = "CREATE TABLE " + sr_file + " (" + """
+            BLANK TEXT
+            );"""
+            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+            so_curs.execute(s_sql)
+            so_conn.commit()
+            funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """*****************************************************************************
     END OF SCRIPT
