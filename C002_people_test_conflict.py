@@ -366,15 +366,13 @@ def people_test_conflict():
         Upper(PERSON.ACAD_SUPP) As ACAD_SUPP,
         Upper(PERSON.FACULTY) As FACULTY,
         Upper(PERSON.DIVISION) As DIVISION,
-        Case
-            When PERSON.EMPLOYMENT_CATEGORY = 'T' Then 'TEMPORARY'
-            When PERSON.EMPLOYMENT_CATEGORY = 'P' Then 'PERMANENT'
-            Else 'OTHER'
-        End As CATEGORY,
+        PERSON.EMPLOYMENT_CATEGORY As CATEGORY,
         Upper(PERSON.GRADE_CALC) As POS_GRADE,
         Upper(PERSON.JOB_NAME) As JOB_NAME,
         Upper(PERSON.PERSON_TYPE) As PERSON_TYPE,
-        PERSON.AGE
+        PERSON.AGE,
+        PERSON.SUPERVISOR,
+        PERSON.EMP_START
     From
         PEOPLE.X002_PEOPLE_CURR PERSON 
     ;"""
@@ -391,6 +389,7 @@ def people_test_conflict():
         DECLARE.DECLARATION_ID,
         DECLARE.EMPLOYEE,
         DECLARE.DECLARATION_DATE,
+        Max(DECLARE.CREATION_DATE) As CREATION_DATE,
         Case
             When UNDERSTAND_POLICY_FLAG = 'N' Then 'NO'
             When UNDERSTAND_POLICY_FLAG = 'Y' Then 'YES'
@@ -453,15 +452,13 @@ def people_test_conflict():
         Upper(PERSON.ACAD_SUPP) As ACAD_SUPP,
         Upper(PERSON.FACULTY) As FACULTY,
         Upper(PERSON.DIVISION) As DIVISION,
-        Case
-            When PERSON.EMPLOYMENT_CATEGORY = 'T' Then 'TEMPORARY'
-            When PERSON.EMPLOYMENT_CATEGORY = 'P' Then 'PERMANENT'
-            Else 'OTHER'
-        End As CATEGORY,
+        PERSON.EMPLOYMENT_CATEGORY As CATEGORY,
         Upper(PERSON.GRADE_CALC) As POS_GRADE,
         Upper(PERSON.JOB_NAME) As JOB_NAME,
         Upper(PERSON.PERSON_TYPE) As PERSON_TYPE,
-        PERSON.AGE
+        PERSON.AGE,
+        PERSON.SUPERVISOR,
+        PERSON.EMP_START
     From
         PEOPLE.X002_PEOPLE_PREV_YEAR PERSON
     Where
@@ -480,6 +477,7 @@ def people_test_conflict():
         DECLARE.DECLARATION_ID,
         DECLARE.EMPLOYEE,
         DECLARE.DECLARATION_DATE,
+        Max(DECLARE.CREATION_DATE) As CREATION_DATE,
         Case
             When UNDERSTAND_POLICY_FLAG = 'N' Then 'NO'
             When UNDERSTAND_POLICY_FLAG = 'Y' Then 'YES'
