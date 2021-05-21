@@ -1,11 +1,6 @@
 ﻿Select
-    x003d.CATEGORY,
-    x003d.PERSON_TYPE,
-    x003d.DECLARED,
-    Count(x003d.AGE) As EMP_COUNT
+    x101e.Supervisor_number
 From
-    X003_dashboard_curr x003d
+    X101ax_employee_no_declaration x101e
 Group By
-    x003d.CATEGORY,
-    x003d.PERSON_TYPE,
-    x003d.DECLARED
+    x101e.Supervisor_number
