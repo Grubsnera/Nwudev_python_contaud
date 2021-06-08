@@ -1365,7 +1365,6 @@ def people_test_conflict():
         AD HOC APPOINTMENT
         COUNCIL MEMBER
         ADVISORY BOARD MEMBER
-        If no supervisor.
         If employed less than 31 days.                
     Created: 21 May 2021 (Albert J v Rensburg NWU:21162395)
     """
@@ -1400,10 +1399,12 @@ def people_test_conflict():
             'NWU' As ORG,
             Substr(a.LOCATION,1,3) As LOC,
             a.EMPLOYEE,
+            a.NAME,
             a.CATEGORY,
             a.PERSON_TYPE,
             a.SUPERVISOR,
             a.DECLARED,
+            a.EMP_START,
             Cast(Julianday('%TODAY%') - Julianday(a.EMP_START) As Int) As DAYS_IN_SERVICE
         From
             X003_dashboard_curr a
@@ -1435,6 +1436,7 @@ def people_test_conflict():
                 ) And
             FIND.DECLARED = 'NO DECLARATION' And
             FIND.SUPERVISOR Is Not Null And
+            FIND.EMP_START < '%YEAR_BEGIN%' And
             FIND.DAYS_IN_SERVICE > 30
         Order By
             FIND.SUPERVISOR,
@@ -1442,6 +1444,7 @@ def people_test_conflict():
         ;"""
         s_sql = s_sql.replace("%FILEP%", s_file_prefix)
         s_sql = s_sql.replace("%FILEN%", "a_" + s_file_name)
+        s_sql = s_sql.replace("%YEAR_BEGIN%", funcdate.cur_yearbegin())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
