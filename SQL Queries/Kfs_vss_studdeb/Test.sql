@@ -1,14 +1,9 @@
 ﻿Select
-    Count(x002vpc.STUDENT) As Count_STUDENT,
-    x002vpc.CAMPUS_CLOS,
-    Total(x002vpc.BAL_CLOS) As Total_BAL_CLOS,
-    x002vpc.CAMPUS_OPEN,
-    Total(x002vpc.BAL_OPEN) As Total_BAL_OPEN,
-    Total(x002vpc.DIFF_BAL) As Total_DIFF_BAL
+    x004i.Tran_type,
+    x004i.Tran_description,
+    Sum(x004i.Amount_vss) As Sum_Amount_vss
 From
-    X002dc_vss_prevbal_curopen x002vpc
-Where
-    x002vpc.TYPE = 3
+    X004cx_invss_nogl x004i
 Group By
-    x002vpc.CAMPUS_CLOS,
-    x002vpc.CAMPUS_OPEN
+    x004i.Tran_type,
+    x004i.Tran_description
