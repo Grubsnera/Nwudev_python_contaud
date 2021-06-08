@@ -407,6 +407,13 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'HOSTELFEESAKASIA','RESIDENCEFEESAKASIA');")
     so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'HOSTELFEESORYX','RESIDENCEFEESORYX');")
     so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'BARNARDATTORNEYS','FOURIETRUTERINCORPORATED');")
+    so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'CORRECTIONOFMEALALLOWANCETOSTUDENT','CORRECTIONOFLIVINGALLOWANCETOSTUDENT');")
+    so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'CORRECTIONPAYMENTMEALALLOWANCE','CORRECTIONPAYMENTLIVINGALLOWANCE');")
+    so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'MEALALLOWANCETOSTUDENT','LIVINGALLOWANCETOSTUDENT');")
+    so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'NSFASBOOKALLOWANCE','BOOKALLOWANCE');")
+    so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'NSFASMEALALLOWANCE','LIVINGALLOWANCE');")
+    so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'NSFASTRANSPORTALLOWANCE','TRANSPORTALLOWANCE');")
+    so_curs.execute("UPDATE X001aa_gl_tranlist_lang SET DESC_GL = REPLACE(DESC_GL,'PAYMENTMEALALLOWANCE','PAYMENTLIVINGALLOWANCE');")
 
     # Build sort rename column gl transaction file *****************************
     print("Build and sort gl transaction file...")
