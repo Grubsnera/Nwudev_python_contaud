@@ -177,7 +177,7 @@ def people_test_masterfile():
     # print(s_sql) # DEBUG
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)        
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
     # Export the birthdays
     sr_filet = sr_file
     sx_path = re_path + funcdate.cur_year() + "/"
@@ -5290,6 +5290,8 @@ def people_test_masterfile():
         X007_long_service_date LONG On LONG.EMPLOYEE_NUMBER = PEOPLE.EMPLOYEE_NUMBER Left Join
         X007_leave03_ms_empl LIST1 On LIST1.EMPLOYEE_NUMBER = PEOPLE.EMPLOYEE_NUMBER Left Join
         X007_leave04_hoursum LIST2 On LIST2.EMPLOYEE_NUMBER = PEOPLE.EMPLOYEE_NUMBER     
+    Where
+        Substr(PEOPLE.PERSON_TYPE,1,6) <> 'AD HOC'
     ;"""
     """
     20210420 Remove
