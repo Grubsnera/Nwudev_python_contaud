@@ -38,6 +38,7 @@ BUILD PERSON TYPES
 COUNT RECORDS
 BUILD ADDRESSES AND PHONES
 BUILD ASSIGNMENTS AND PEOPLE
+BUILD LIST OF CURRENT PEOPLE
 PEOPLE ORGANIZATION STRUCTURE REF (Employee numbers of structure)
 BUILD CURRENT SYSTEM USERS (X000_USER_CURR)
 BUILD PEOPLE LEAVE
@@ -57,7 +58,9 @@ def people_lists():
     # DECLARE VARIABLES
     so_path = "W:/People/"  # Source database path
     so_file = "People.sqlite"  # Source database
+    # sr_file: str = ""  # Current sqlite table
     re_path = "R:/People/"  # Results path
+    l_debug: bool = False
     l_export: bool = True
     l_mail: bool = True
 
@@ -83,6 +86,10 @@ def people_lists():
     with sqlite3.connect(so_path + so_file) as so_conn:
         so_curs = so_conn.cursor()
     funcfile.writelog("OPEN DATABASE: " + so_file)
+
+    # ATTACH DATA SOURCES
+    so_curs.execute("ATTACH DATABASE 'W:/People_payroll/People_payroll.sqlite' AS 'PAYROLL'")
+    funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
 
     """ ****************************************************************************
     BEGIN OF SCRIPT
@@ -161,84 +168,239 @@ def people_lists():
     funcfile.writelog("BUILD POSITIONS")
 
     print("Build positions...")
-    s_sql = "CREATE TABLE X000_POSITIONS AS " + """
+    sr_file = "X000_POSITIONS"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
     SELECT
-      PER_ALL_POSITIONS.POSITION_ID,
-      PER_ALL_POSITIONS.DATE_EFFECTIVE,
-      PER_ALL_POSITIONS.DATE_END,
-      PER_ALL_POSITIONS.POSITION_DEFINITION_ID,
-      PER_POSITION_DEFINITIONS.SEGMENT1 AS POSITION,
-      PER_POSITION_DEFINITIONS.SEGMENT2 AS POSITION_NAME,
-      PER_ALL_POSITIONS.BUSINESS_GROUP_ID,
-      PER_ALL_POSITIONS.JOB_ID,
-      PER_ALL_POSITIONS.ORGANIZATION_ID,
-      PER_ALL_POSITIONS.LOCATION_ID,
-      PER_ALL_POSITIONS.PROBATION_PERIOD,
-      PER_ALL_POSITIONS.PROBATION_PERIOD_UNITS,
-      PER_ALL_POSITIONS.WORKING_HOURS,
-      PER_ALL_POSITIONS.STATUS,
-      PER_ALL_POSITIONS.ATTRIBUTE1,
-      PER_ALL_POSITIONS.ATTRIBUTE2,
-      PER_ALL_POSITIONS.ATTRIBUTE3,
-      PER_ALL_POSITIONS.ATTRIBUTE4,
-      PER_ALL_POSITIONS.ATTRIBUTE5,
-      PER_ALL_POSITIONS.ATTRIBUTE6,
-      PER_ALL_POSITIONS.ATTRIBUTE7,
-      PER_ALL_POSITIONS.ATTRIBUTE8,
-      PER_ALL_POSITIONS.ATTRIBUTE9,
-      PER_ALL_POSITIONS.ATTRIBUTE10,
-      PER_ALL_POSITIONS.ATTRIBUTE11,
-      PER_ALL_POSITIONS.ATTRIBUTE12,
-      PER_ALL_POSITIONS.ATTRIBUTE13,
-      PER_ALL_POSITIONS.ATTRIBUTE14,
-      PER_ALL_POSITIONS.ATTRIBUTE15,
-      PER_ALL_POSITIONS.ATTRIBUTE16,
-      PER_ALL_POSITIONS.ATTRIBUTE17,
-      PER_ALL_POSITIONS.ATTRIBUTE18,
-      PER_ALL_POSITIONS.ATTRIBUTE19,
-      PER_ALL_POSITIONS.ATTRIBUTE20,
-      PER_ALL_POSITIONS.ATTRIBUTE21,
-      PER_ALL_POSITIONS.ATTRIBUTE22,
-      PER_ALL_POSITIONS.ATTRIBUTE23,
-      PER_ALL_POSITIONS.ATTRIBUTE24,
-      PER_ALL_POSITIONS.ATTRIBUTE25,
-      PER_ALL_POSITIONS.ATTRIBUTE26,
-      PER_ALL_POSITIONS.ATTRIBUTE27,
-      PER_ALL_POSITIONS.ATTRIBUTE28,
-      PER_ALL_POSITIONS.ATTRIBUTE29,
-      PER_ALL_POSITIONS.ATTRIBUTE30,
-      PER_ALL_POSITIONS.CREATION_DATE,
-      PER_ALL_POSITIONS.CREATED_BY,
-      PER_ALL_POSITIONS.LAST_UPDATE_DATE,
-      PER_ALL_POSITIONS.LAST_UPDATED_BY,
-      PER_ALL_POSITIONS.LAST_UPDATE_LOGIN,
-      PER_POSITION_DEFINITIONS.ID_FLEX_NUM,
-      PER_POSITION_DEFINITIONS.SUMMARY_FLAG,
-      PER_POSITION_DEFINITIONS.ENABLED_FLAG,
-      PER_POSITION_DEFINITIONS.SEGMENT3 AS POS_DEF_SEGMENT3,
-      PER_POSITION_DEFINITIONS.SEGMENT4 AS POS_DEF_SEGMENT4
+        POS.POSITION_ID,
+        POS.EFFECTIVE_START_DATE,
+        POS.EFFECTIVE_END_DATE,
+        POS.DATE_EFFECTIVE,
+        POS.DATE_END,
+        POS.POSITION_DEFINITION_ID,
+        PPD.SEGMENT1 AS POSITION,
+        PPD.SEGMENT2 AS POSITION_NAME,
+        POS.BUSINESS_GROUP_ID,
+        POS.JOB_ID,
+        POS.ORGANIZATION_ID,
+        POS.LOCATION_ID,
+        POS.PROBATION_PERIOD,
+        POS.WORKING_HOURS,
+        POS.STATUS,
+        POS.ATTRIBUTE1,
+        POS.ATTRIBUTE2,
+        POS.ATTRIBUTE3,
+        POS.ATTRIBUTE4,
+        POS.ATTRIBUTE5,
+        POS.ATTRIBUTE6,
+        POS.ATTRIBUTE7,
+        POS.ATTRIBUTE8,
+        POS.ATTRIBUTE9,
+        POS.ATTRIBUTE10,
+        POS.ATTRIBUTE11,
+        POS.ATTRIBUTE12,
+        POS.ATTRIBUTE13,
+        POS.ATTRIBUTE14,
+        POS.ATTRIBUTE15,
+        POS.ATTRIBUTE16,
+        POS.ATTRIBUTE17,
+        POS.ATTRIBUTE18,
+        POS.ATTRIBUTE19,
+        POS.ATTRIBUTE20,
+        POS.ATTRIBUTE21,
+        POS.ATTRIBUTE22,
+        POS.ATTRIBUTE23,
+        POS.ATTRIBUTE24,
+        POS.ATTRIBUTE25,
+        POS.ATTRIBUTE26,
+        POS.ATTRIBUTE27,
+        POS.ATTRIBUTE28,
+        POS.ATTRIBUTE29,
+        POS.ATTRIBUTE30,
+        POS.CREATION_DATE,
+        POS.CREATED_BY,
+        POS.LAST_UPDATE_DATE,
+        POS.LAST_UPDATED_BY,
+        POS.LAST_UPDATE_LOGIN,
+        PPD.ID_FLEX_NUM,
+        PPD.SUMMARY_FLAG,
+        PPD.ENABLED_FLAG,
+        PPD.SEGMENT3 AS POS_DEF_SEGMENT3,
+        PPD.SEGMENT4 AS POS_DEF_SEGMENT4,
+        CASE
+           WHEN PPD.SEGMENT4 = '1' THEN 'ACADEMIC'
+           ELSE "SUPPORT"
+        END AS ACAD_SUPP,
+        PPS.PARENT_POSITION_ID,
+        POS.MAX_PERSONS
     FROM
-      PER_ALL_POSITIONS
-      LEFT JOIN PER_POSITION_DEFINITIONS ON PER_POSITION_DEFINITIONS.POSITION_DEFINITION_ID =
-        PER_ALL_POSITIONS.POSITION_DEFINITION_ID
+        HR_ALL_POSITIONS_F POS Left Join
+        PER_POSITION_DEFINITIONS PPD On PPD.POSITION_DEFINITION_ID = POS.POSITION_DEFINITION_ID Left Join
+        PER_POS_STRUCTURE_ELEMENTS_NWU PPS On PPS.SUBORDINATE_POSITION_ID = POS.POSITION_ID
     """
-    so_curs.execute("DROP TABLE IF EXISTS X000_POSITIONS")
     so_curs.execute(s_sql)
     so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-    funcfile.writelog("%t BUILD TABLE: X000_POSITIONS")
+    # BUILD POSITION STRUCTURE STEP 1
+    print("Build position structure step 1...")
+    sr_file = "X000_POS_STRUCT_01"
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
+    Select
+        ppsen.POS_STRUCTURE_ELEMENT_ID,
+        ppsen.SUBORDINATE_POSITION_ID As POS01,
+        ppsen.PARENT_POSITION_ID As POS02
+    From
+        PER_POS_STRUCTURE_ELEMENTS_NWU ppsen
+    ;"""
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
-    if "ACAD_SUPP" not in funccsv.get_colnames_sqlite(so_curs, "X000_POSITIONS"):
-        so_curs.execute("ALTER TABLE X000_POSITIONS ADD COLUMN ACAD_SUPP TEXT;")
-        so_curs.execute("UPDATE X000_POSITIONS " + """
-                        SET ACAD_SUPP = 
-                        CASE
-                           WHEN POS_DEF_SEGMENT4 = "1" THEN "Academic"
-                           ELSE "Support"
-                        END
-                        ;""")
-        so_conn.commit()
-        funcfile.writelog("%t ADD COLUMN: ACAD_SUPP")
+    # BUILD POSITION STRUCTURE STEP 2
+    print("Build position structure step 2...")
+    sr_file = "X000_POS_STRUCT_02"
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
+    Select
+        x000p.*,
+        ppsen.PARENT_POSITION_ID As POS03
+    From
+        X000_POS_STRUCT_01 x000p Left Join
+        PER_POS_STRUCTURE_ELEMENTS_NWU ppsen On ppsen.SUBORDINATE_POSITION_ID = x000p.POS02
+    ;"""
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
+
+    # BUILD POSITION STRUCTURE STEP 3
+    print("Build position structure step 3...")
+    sr_file = "X000_POS_STRUCT_03"
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
+    Select
+        x000p.*,
+        ppsen.PARENT_POSITION_ID As POS04
+    From
+        X000_POS_STRUCT_02 x000p Left Join
+        PER_POS_STRUCTURE_ELEMENTS_NWU ppsen On ppsen.SUBORDINATE_POSITION_ID = x000p.POS03
+    ;"""
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
+
+    # BUILD POSITION STRUCTURE STEP 4
+    print("Build position structure step 4...")
+    sr_file = "X000_POS_STRUCT_04"
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
+    Select
+        x000p.*,
+        ppsen.PARENT_POSITION_ID As POS05
+    From
+        X000_POS_STRUCT_03 x000p Left Join
+        PER_POS_STRUCTURE_ELEMENTS_NWU ppsen On ppsen.SUBORDINATE_POSITION_ID = x000p.POS04
+    ;"""
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
+
+    # BUILD POSITION STRUCTURE STEP 5
+    print("Build position structure step 5...")
+    sr_file = "X000_POS_STRUCT_05"
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
+    Select
+        x000p.*,
+        ppsen.PARENT_POSITION_ID As POS06
+    From
+        X000_POS_STRUCT_04 x000p Left Join
+        PER_POS_STRUCTURE_ELEMENTS_NWU ppsen On ppsen.SUBORDINATE_POSITION_ID = x000p.POS05
+    ;"""
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
+
+    # BUILD POSITION STRUCTURE STEP 6
+    print("Build position structure step 6...")
+    sr_file = "X000_POS_STRUCT_06"
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
+    Select
+        x000p.*,
+        ppsen.PARENT_POSITION_ID As POS07
+    From
+        X000_POS_STRUCT_05 x000p Left Join
+        PER_POS_STRUCTURE_ELEMENTS_NWU ppsen On ppsen.SUBORDINATE_POSITION_ID = x000p.POS06
+    ;"""
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
+
+    # BUILD POSITION STRUCTURE STEP 7
+    print("Build position structure step 7...")
+    sr_file = "X000_POS_STRUCT_07"
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
+    Select
+        x000p.*,
+        ppsen.PARENT_POSITION_ID As POS08
+    From
+        X000_POS_STRUCT_06 x000p Left Join
+        PER_POS_STRUCTURE_ELEMENTS_NWU ppsen On ppsen.SUBORDINATE_POSITION_ID = x000p.POS07
+    ;"""
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
+
+    # BUILD POSITION STRUCTURE STEP 8
+    print("Build position structure step 8...")
+    sr_file = "X000_POS_STRUCT_08"
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
+    Select
+        x000p.*,
+        ppsen.PARENT_POSITION_ID As POS09
+    From
+        X000_POS_STRUCT_07 x000p Left Join
+        PER_POS_STRUCTURE_ELEMENTS_NWU ppsen On ppsen.SUBORDINATE_POSITION_ID = x000p.POS08
+    ;"""
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
+
+    # BUILD POSITION STRUCTURE STEP 9
+    print("Build position structure step 9...")
+    sr_file = "X000_POS_STRUCT_09"
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
+    Select
+        x000p.*,
+        ppsen.PARENT_POSITION_ID As POS10
+    From
+        X000_POS_STRUCT_08 x000p Left Join
+        PER_POS_STRUCTURE_ELEMENTS_NWU ppsen On ppsen.SUBORDINATE_POSITION_ID = x000p.POS09
+    ;"""
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
+
+    # BUILD POSITION STRUCTURE STEP 10
+    print("Build position structure step 10...")
+    sr_file = "X000_POS_STRUCT_10"
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
+    Select
+        x000p.*,
+        ppsen.PARENT_POSITION_ID As POS11
+    From
+        X000_POS_STRUCT_09 x000p Left Join
+        PER_POS_STRUCTURE_ELEMENTS_NWU ppsen On ppsen.SUBORDINATE_POSITION_ID = x000p.POS10
+    ;"""
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
     """ ****************************************************************************
     BUILD JOBS
@@ -286,43 +448,44 @@ def people_lists():
     """ ****************************************************************************
     BUILD ORGANIZATION
     *****************************************************************************"""
-    print("BUILD ORGANIZATION")
+    if l_debug:
+        print("BUILD ORGANIZATION")
     funcfile.writelog("BUILD ORGANIZATION")
 
-    print("Build organization...")
-    s_sql = "CREATE TABLE X000_ORGANIZATION AS " + """
+    if l_debug:
+        print("Build organization...")
+    sr_file = "X000_ORGANIZATION"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
     SELECT
-      ORG.ORGANIZATION_ID,
-      ORG.LOCATION_ID,
-      ORG.DATE_FROM,
-      ORG.DATE_TO,
-      ORG.TYPE AS ORG_TYPE,
-      ORG.ATTRIBUTE_CATEGORY AS ORG_TYPE_DESC,
-      ORG.ATTRIBUTE1,
-      ORG.ATTRIBUTE2 AS ORG_NAAM,
-      ORG.NAME AS OE_CODE,
-      HR_ORGANIZATION_INFORMATION.ORG_INFORMATION1 AS ORG_NAME,
-      ORG.CREATION_DATE,
-      ORG.CREATED_BY,
-      ORG.LAST_UPDATE_DATE,
-      ORG.LAST_UPDATED_BY,
-      ORG.LAST_UPDATE_LOGIN,
-      ORG.BUSINESS_GROUP_ID,
-      ORG.COST_ALLOCATION_KEYFLEX_ID,
-      ORG.SOFT_CODING_KEYFLEX_ID,
-      OWN_HR_LOOKUPS_MAILTO.LOOKUP_DESCRIPTION AS MAILTO
+        ORG.ORGANIZATION_ID,
+        ORG.LOCATION_ID,
+        ORG.DATE_FROM,
+        ORG.DATE_TO,
+        ORG.TYPE AS ORG_TYPE,
+        ORG.ATTRIBUTE_CATEGORY AS ORG_TYPE_DESC,
+        ORG.ATTRIBUTE1,
+        ORG.ATTRIBUTE2 AS ORG_NAAM,
+        ORG.NAME AS OE_CODE,
+        ORI.ORG_INFORMATION1 AS ORG_NAME,
+        ORI.ORG_INFORMATION5 AS ORG_HEAD_PERSON_ID,
+        ORG.CREATION_DATE,
+        ORG.CREATED_BY,
+        ORG.LAST_UPDATE_DATE,
+        ORG.LAST_UPDATED_BY,
+        ORG.LAST_UPDATE_LOGIN,
+        ORG.BUSINESS_GROUP_ID,
+        ORG.COST_ALLOCATION_KEYFLEX_ID,
+        ORG.SOFT_CODING_KEYFLEX_ID,
+        '' AS MAILTO
     FROM
-      HR_ALL_ORGANIZATION_UNITS ORG
-      LEFT JOIN HR_ORGANIZATION_INFORMATION ON HR_ORGANIZATION_INFORMATION.ORGANIZATION_ID = ORG.ORGANIZATION_ID
-        AND HR_ORGANIZATION_INFORMATION.ORG_INFORMATION_CONTEXT = 'NWU_ORG_INFO'
-      LEFT JOIN X000_OWN_HR_LOOKUPS OWN_HR_LOOKUPS_MAILTO ON OWN_HR_LOOKUPS_MAILTO.LOOKUP_CODE = ORG.NAME
-        AND OWN_HR_LOOKUPS_MAILTO.LOOKUP = 'CHECK_OFFICER'
+        HR_ALL_ORGANIZATION_UNITS ORG LEFT JOIN
+        HR_ORGANIZATION_INFORMATION ORI ON ORI.ORGANIZATION_ID = ORG.ORGANIZATION_ID AND
+            ORI.ORG_INFORMATION_CONTEXT = 'NWU_ORG_INFO'
     """
-    so_curs.execute("DROP TABLE IF EXISTS X000_ORGANIZATION")
     so_curs.execute(s_sql)
     so_conn.commit()
-
-    funcfile.writelog("%t BUILD TABLE: X000_ORGANIZATION")
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # Build organization structure step 1*******************************************
     print("Build organization structure step 1...")
@@ -1334,7 +1497,7 @@ def people_lists():
       X000_PHONE_MOBI_CURR.PERSON_ID,
       X000_PHONE_MOBI_CURR.DATE_EMP_LOOKUP,
       X000_PHONE_MOBI_CURR.PHONE_ID,
-      X000_PHONE_MOBI_CURR.DATE_FROM,
+      MAX(X000_PHONE_MOBI_CURR.DATE_FROM) DATE_FROM,
       X000_PHONE_MOBI_CURR.DATE_TO,
       X000_PHONE_MOBI_CURR.PHONE_TYPE,
       X000_PHONE_MOBI_CURR.PHONE_MOBI
@@ -1388,7 +1551,7 @@ def people_lists():
       X000_PHONE_WORK_CURR.PERSON_ID,
       X000_PHONE_WORK_CURR.DATE_EMP_LOOKUP,
       X000_PHONE_WORK_CURR.PHONE_ID,
-      X000_PHONE_WORK_CURR.DATE_FROM,
+      MAX(X000_PHONE_WORK_CURR.DATE_FROM) DATE_FROM,
       X000_PHONE_WORK_CURR.DATE_TO,
       X000_PHONE_WORK_CURR.PHONE_TYPE,
       X000_PHONE_WORK_CURR.PHONE_WORK
@@ -1442,7 +1605,7 @@ def people_lists():
       X000_PHONE_HOME_CURR.PERSON_ID,
       X000_PHONE_HOME_CURR.DATE_EMP_LOOKUP,
       X000_PHONE_HOME_CURR.PHONE_ID,
-      X000_PHONE_HOME_CURR.DATE_FROM,
+      MAX(X000_PHONE_HOME_CURR.DATE_FROM) AS DATE_FROM,
       X000_PHONE_HOME_CURR.DATE_TO,
       X000_PHONE_HOME_CURR.PHONE_TYPE,
       X000_PHONE_HOME_CURR.PHONE_HOME
@@ -1454,14 +1617,69 @@ def people_lists():
     so_curs.execute("DROP VIEW IF EXISTS X000_PHONE_HOME_CURR_LIST")
     so_curs.execute(s_sql)
     so_conn.commit()
-
     funcfile.writelog("%t BUILD VIEW: X000_PHONE_HOME_CURR_LIST")
+
+    print("Build view phone work latest...")
+    sr_file = "X000_PHONE_WORK_LATEST"
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
+    Select
+        ph.PARENT_ID,
+        ph.PHONE_NUMBER,
+        Max(ph.DATE_FROM) As DATE_FROM,
+        ph.DATE_TO,
+        ph.PHONE_ID
+    From
+        PER_PHONES ph
+    Where
+        ph.PHONE_TYPE = 'W1' And
+        ph.PARENT_TABLE = 'PER_ALL_PEOPLE_F'
+    Group By
+        ph.PARENT_ID
+    ;"""
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
+
+    print("Build view phone mobile latest...")
+    sr_file = "X000_PHONE_MOBILE_LATEST"
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
+    Select
+        ph.PARENT_ID,
+        ph.PHONE_NUMBER,
+        Max(ph.DATE_FROM) As DATE_FROM,
+        ph.DATE_TO,
+        ph.PHONE_ID
+    From
+        PER_PHONES ph
+    Where
+        ph.PHONE_TYPE = 'M' And
+        ph.PARENT_TABLE = 'PER_ALL_PEOPLE_F'
+    Group By
+        ph.PARENT_ID
+    ;"""
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
     """ ****************************************************************************
     BUILD ASSIGNMENTS AND PEOPLE
     *****************************************************************************"""
-    print("BUILD ASSIGNMENTS AND PEOPLE")
+    if l_debug:
+        print("BUILD ASSIGNMENTS AND PEOPLE")
     funcfile.writelog("BUILD ASSIGNMENTS AND PEOPLE")
+
+    # BUILD LIST OF CURRENT PEOPLE
+    i_count = funcpeople.people_detail_list(so_conn)
+    if l_debug:
+        print(i_count)
+
+    # MESSAGE TO ADMIN
+    if funcconf.l_mess_project:
+        # ACTIVE EMPLOYEES
+        funcsms.send_telegram("", "administrator", "<b>" + str(i_count) + "</b> Active employees method 1")
+
 
     # Build current year assignment round 1 ******************************************
     funcpeople.assign01(so_conn, "X001_ASSIGNMENT_CURR_01", funcdate.cur_yearbegin(), funcdate.cur_yearend(),
@@ -1500,7 +1718,7 @@ def people_lists():
     # MESSAGE TO ADMIN
     if funcconf.l_mess_project:
         # ACTIVE EMPLOYEES
-        funcsms.send_telegram("", "administrator", "<b>" + str(i_count) + "</b> Active employees")
+        funcsms.send_telegram("", "administrator", "<b>" + str(i_count) + "</b> Active employees method 2")
 
     if l_export:
         # Data export
