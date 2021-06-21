@@ -1,15 +1,265 @@
-""" FUNCPEOPLE.PY **************************************************************
-Script for re-useable people functions
-Copyright (c) AB Janse van Rensburg 25 May 2018
+"""
+PEOPLE Functions
+Created on: 18 Jun 2021
+Author: Albert J v Rensburg (NWU21162395)
 """
 
 # Import python objects
-import sys
+# import sys
 
 # Import own functions
 from _my_modules import funccsv
+from _my_modules import funcdate
 from _my_modules import funcfile
 from _my_modules import funcsys
+
+# INDEX
+"""
+Function to build ASSIGNMENTS (X000_Assignment) for different date periods
+Function to build ASSIGNMENT for different date periods
+Function to build PEOPLE table from different assignments
+"""
+
+
+def people_detail_list(
+        so_conn,
+        s_table: str = 'X000_PEOPLE',
+        s_date: str = funcdate.today()
+        ) -> int:
+    """
+    Function to build PEOPLE lists on any given date.
+
+    :param so_conn: object: Table connection object
+    :param s_table: str: Table name to create (Default=X000_PEOPLE)
+    :param s_date: str: List date (Default=Today)
+    :return: int: Table row count
+    """
+
+    # IMPORT FUNCTIONS
+    from _my_modules import funcpayroll
+
+    # DECLARE VARIABLES
+    l_debug: bool = True
+
+    # OPEN THE DATABASE CURSOR
+    so_curs = so_conn.cursor()
+
+    # BUILD TOTAL ANNUAL PACKAGE
+    i_records = funcpayroll.payroll_element_screen_value(
+        so_conn,
+        'X000_PACKAGE',
+        'nwu total_package',
+        'annual amount',
+        s_date)
+    if l_debug:
+        print(i_records)
+
+    # BUILD NRF ALLOWANCE
+    i_records = funcpayroll.payroll_element_screen_value(
+        so_conn,
+        'X000_NRF_ALLOWANCE',
+        'nwu allowance nrf',
+        'option',
+        s_date)
+    if l_debug:
+        print(i_records)
+
+    # BUILD ACTUAL START DATE
+    i_records = funcpayroll.payroll_element_screen_value(
+        so_conn,
+        'X000_LONG_SERVICE_DATE',
+        'nwu long service award',
+        'long service date',
+        s_date)
+    if l_debug:
+        print(i_records)
+
+    # BUILD PENSIONABLE SALARY
+    i_records = funcpayroll.payroll_element_screen_value(
+        so_conn,
+        'X000_PENSIONABLE_SALARY',
+        'nwu pensionable salary',
+        'pension ratio',
+        s_date)
+    if l_debug:
+        print(i_records)
+
+    # BUILD CURRENT PEOPLE
+    if l_debug:
+        print("Build people list...")
+        print(s_table)
+        print(s_date)
+    sr_file = s_table
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        papf.employee_number employee_number,
+        papf.full_name name_full,
+        '' name_list,
+        '' name_address,
+        papf.attribute4 preferred_name,
+        case
+            when upper(titl.meaning) = 'MR.' then 'MR'
+            when upper(titl.meaning) = 'MRS.' then 'MRS'
+            when upper(titl.meaning) = 'MS.' then 'MS'
+            else upper(titl.meaning)
+        end as title,
+        case
+            when instr(papf.middle_names,' ') > 1 then
+                substr(papf.first_name,1,1) ||
+                 substr(papf.middle_names,1,1) ||
+                  trim(substr(papf.middle_names,instr(papf.middle_names,' '),2))
+            when length(papf.middle_names) > 0 then
+                substr(papf.first_name,1,1) || substr(papf.middle_names,1,1)
+            else substr(papf.first_name,1,1)
+        end as initials,
+        papf.last_name name_last,
+        papf.date_of_birth date_of_birth,
+        strftime('%Y','%DATE%') - strftime('%Y', papf.date_of_birth) as employee_age,
+        upper(sex.meaning) gender,
+        upper(race.meaning) race,
+        case
+            when papf.attribute3 = 'A' then 'AFRIKAANS'
+            else 'ENGLISH'
+        end as corr_language,
+        upper(mar.meaning) marital_status,
+        upper(dis.meaning) disabled,
+        upper(nat.meaning) nationality,
+        papf.national_identifier national_identifier,
+        upper(papf.per_information2) passport,
+        upper(papf.per_information3) permit,
+        papf.per_information8 permit_expire,
+        ph.phone_number phone_work,
+        mo.phone_number phone_mobile,
+        papf.email_address email_address,
+        papf.attribute2 internal_box,
+        sars.address_sars address_sars,
+        post.address_post address_post,
+        Substr(lsd.element_value,1,10) date_started,
+        papf.effective_start_date people_start_date,
+        papf.effective_end_date people_end_date,    
+        paaf.effective_start_date assign_start_date,
+        paaf.effective_end_date assign_end_date,
+        pps.date_start service_start_date,
+        pps.actual_termination_date service_end_date,
+        pps.leaving_reason end_reason,
+        upper(ler.meaning) leaving_reason,
+        papf.person_id person_id,
+        paaf.assignment_id assignment_id,
+        paaf.assignment_number assignment_number,
+        upper(cat.meaning) assignment_category,
+        hrp.acad_supp as employee_category,
+        upper(ppt.user_person_type) user_person_type,
+        pg.grade grade,
+        pg.grade_calc grade_calc,       
+        upper(pg.grade_name) grade_name,
+        ppg.segment1 leave_code,
+        paaf.ass_attribute1 type_of_shift,
+        paaf.ass_attribute2 joint_appt,
+        paaf.organization_id organization_id,
+        upper(hrl.location_code) location,
+        upper(hos.division) division,
+        upper(hos.faculty) faculty,     
+        hro.oe_code oe_code,
+        upper(hro.org_name) organization,
+        upper(hro.org_type) organization_type,
+        upper(hro.org_type_desc) organization_description,
+        hro.org_head_person_id org_head_person_id,
+        head.employee_number oe_head_number,
+        head.full_name oe_head_name_name,
+        sup.employee_number supervisor_number,
+        sup.full_name supervisor_name,
+        paaf.position_id position_id,
+        hrp.position position,
+        hrp.max_persons max_persons,
+        upper(hrp.position_name) position_name,
+        hrp.parent_position_id parent_position_id,
+        upper(pj.job_name) job_name,
+        upper(pj.job_segment_name) job_segment_name,
+        ppb.name salary_basis,
+        cast(pack.element_value As Real) annual_package,
+        hrp.attribute1 account_cost,
+        upper(hrp.attribute2) account_allocate,
+        cast(hrp.attribute3 as int) account_part,
+        cast(pes.element_value As Real) pension_ratio,
+        nrf.element_value nrf_rated,
+        acc.acc_type account_type,
+        acc.acc_branch account_branch,
+        acc.acc_number account_number,
+        acc.acc_relation account_relation,
+        acc.ppm_information1 account_sars
+    FROM
+        per_all_people_f papf left join
+        per_all_assignments_f paaf on paaf.person_id = papf.person_id left join
+        per_periods_of_service pps on pps.person_id = papf.person_id and
+            paaf.effective_end_date between pps.date_start and
+             ifnull(pps.actual_termination_date, '4712-12-31') left join
+        X000_positions hrp on hrp.position_id = paaf.position_id and 
+            paaf.effective_end_date between hrp.effective_start_date and hrp.effective_end_date left join
+        x000_organization hro on hro.organization_id = paaf.organization_id left join
+        x000_organization_struct hos on hos.org1 = paaf.organization_id left join 
+        hr_locations_all hrl on hrl.location_id = paaf.location_id left join
+        per_all_people_f sup on sup.person_id = paaf.supervisor_id and
+            paaf.effective_end_date between sup.effective_start_date and sup.effective_end_date left join
+        per_all_people_f head on head.person_id = hro.org_head_person_id and
+            paaf.effective_end_date between head.effective_start_date and head.effective_end_date left join        
+        per_person_type_usages_f pptuf on pptuf.person_id = papf.person_id and
+            paaf.effective_end_date between pptuf.effective_start_date and pptuf.effective_end_date left join
+        per_person_types ppt on pptuf.person_type_id = ppt.person_type_id left join
+        x000_grades pg on pg.grade_id = paaf.grade_id and
+            paaf.effective_end_date between pg.date_from and ifnull(pg.date_to, '4712-12-31') left join
+        x000_jobs pj on pj.job_id = hrp.job_id and
+            hrp.effective_end_date between pj.date_from and ifnull(pj.date_to, '4712-12-31') left join
+        pay_people_groups ppg on ppg.people_group_id = paaf.people_group_id and
+            ppg.enabled_flag = 'Y' left join
+        per_pay_bases ppb on ppb.pay_basis_id = paaf.pay_basis_id left join
+        hr_lookups cat on cat.lookup_type = 'EMP_CAT' and cat.lookup_code = paaf.employment_category left join
+        hr_lookups titl on titl.lookup_type = 'TITLE' and titl.lookup_code = papf.title left join
+        hr_lookups sex on sex.lookup_type = 'SEX' and sex.lookup_code = papf.sex and sex.enabled_flag = 'Y' left join
+        hr_lookups nat on nat.lookup_type = 'NATIONALITY' and nat.lookup_code = papf.nationality left join
+        hr_lookups race on race.lookup_type = 'ZA_RACE' and race.lookup_code = papf.per_information4 and
+         race.enabled_flag = 'Y' left join
+        hr_lookups mar on mar.lookup_type = 'MAR_STATUS' and mar.lookup_code = papf.marital_status and
+         mar.enabled_flag = 'Y' left join
+        hr_lookups dis on dis.lookup_type = 'REGISTERED_DISABLED' and
+         dis.lookup_code = papf.registered_disabled_flag left join
+        hr_lookups ler on ler.lookup_type = 'LEAV_REAS' and ler.lookup_code = pps.leaving_reason left join
+        X000_phone_work_latest ph on ph.parent_id = papf.person_id and
+            strftime('%Y-%m-%d', '%DATE%') between ph.date_from and ifnull(ph.date_to, '31-DEC-4712') left join
+        x000_phone_mobile_latest mo on mo.parent_id = papf.person_id and
+            strftime('%Y-%m-%d', '%DATE%') between mo.date_from and ifnull(mo.date_to, '31-DEC-4712') left join
+        x000_package pack on pack.employee_number = papf.employee_number left join
+        x000_nrf_allowance nrf on nrf.employee_number = papf.employee_number left join
+        x000_long_service_date lsd on lsd.employee_number = papf.employee_number left join
+        x000_pensionable_salary pes on pes.employee_number = papf.employee_number left join
+        x000_pay_accounts acc on acc.assignment_id = paaf.assignment_id and
+            acc.org_payment_method_id = 61 and
+            paaf.effective_end_date between acc.effective_start_date and acc.effective_end_date left join
+        x000_address_sars sars on sars.person_id = papf.person_id and
+            paaf.effective_end_date between sars.date_from and sars.date_to left join
+        x000_address_post post on post.person_id = papf.person_id and
+            paaf.effective_end_date between post.date_from and post.date_to
+    WHERE
+        paaf.assignment_status_type_id in (1) and
+        strftime('%Y-%m-%d', '%DATE%') between paaf.effective_start_date and paaf.effective_end_date and
+        paaf.effective_end_date between papf.effective_start_date and papf.effective_end_date and
+        ppt.user_person_type != 'Retiree'
+    ORDER BY
+        papf.employee_number    
+    ;"""
+    s_sql = s_sql.replace("%DATE%", s_date)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    so_curs.execute("Update " + sr_file + " Set name_list = name_last||' '||title||' '||initials;")
+    so_conn.commit()
+    so_curs.execute("Update " + sr_file + " Set name_address = title||' '||initials||' '||name_last;")
+    so_conn.commit()
+
+    # RETURN VALUE
+    i_return = funcsys.tablerowcount(so_curs, s_table)
+
+    return i_return
 
 
 def assign01(so_conn, s_table, s_from, s_to, s_on, s_mess):
@@ -420,7 +670,9 @@ def people01(so_conn, s_table, s_source, s_peri, s_mess, s_acti):
         SET INITIALS = 
         CASE
             WHEN INSTR(MIDDLE_NAMES,' ') > 1
-                THEN SUBSTR(FIRST_NAME,1,1) || SUBSTR(MIDDLE_NAMES,1,1) || TRIM(SUBSTR(MIDDLE_NAMES,INSTR(MIDDLE_NAMES,' '),2))
+                THEN SUBSTR(FIRST_NAME,1,1) ||
+                 SUBSTR(MIDDLE_NAMES,1,1) ||
+                  TRIM(SUBSTR(MIDDLE_NAMES,INSTR(MIDDLE_NAMES,' '),2))
             WHEN LENGTH(MIDDLE_NAMES) > 0 THEN
                 SUBSTR(FIRST_NAME,1,1) || SUBSTR(MIDDLE_NAMES,1,1)
             ELSE SUBSTR(FIRST_NAME,1,1)
@@ -444,8 +696,6 @@ def people01(so_conn, s_table, s_source, s_peri, s_mess, s_acti):
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t ADD COLUMN: AGE")
-        # SET AGE = cast( (strftime('%Y', 'now') - strftime('%Y', DATE_OF_BIRTH)) - (strftime('%m-%d', 'now') < strftime('%m-%d', DATE_OF_BIRTH)) As int)
-
 
     # Add column month
     if "MONTH" not in funccsv.get_colnames_sqlite(so_curs, s_table):
