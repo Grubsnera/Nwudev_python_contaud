@@ -97,7 +97,8 @@ Where
     pivf.input_value_id = peevf.input_value_id And
     paaf.primary_flag = 'Y' And
     peevf.screen_entry_value > 0 And
-    Upper(petf.element_name) Like 'NWU LONG SERVICE AWARD' And
+    --Upper(petf.element_name) Like 'NWU LONG SERVICE AWARD' And
+    Upper(petf.element_name) Like 'NWU ALLOWANCE NRF' And
     Date('%TODAY%') Between peef.effective_start_date And peef.effective_end_date And
     Date('%TODAY%') Between per.effective_start_date And per.effective_end_date And
     Date('%TODAY%') Between paaf.effective_start_date And paaf.effective_end_date And

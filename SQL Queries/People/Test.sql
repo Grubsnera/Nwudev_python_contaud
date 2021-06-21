@@ -1,7 +1,7 @@
 ﻿Select
-    papf.PERSON_ID,
-    Count(papf.BUSINESS_GROUP_ID) As Count_BUSINESS_GROUP_ID
+    x999p.employee_number,
+    Count(x999p.parent_position_id) As Count_parent_position_id
 From
-    PER_ALL_PEOPLE_F papf
+    X999_PEOPLE_CURR x999p
 Group By
-    papf.PERSON_ID
+    x999p.employee_number
