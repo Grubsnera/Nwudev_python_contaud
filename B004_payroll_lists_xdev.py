@@ -13,6 +13,7 @@ import sqlite3
 from _my_modules import funcdate
 from _my_modules import funccsv
 from _my_modules import funcfile
+from _my_modules import funcpayroll
 
 # OPEN THE LOG FILE
 funcfile.writelog("Now")
@@ -41,16 +42,15 @@ funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
 BEGIN
 *****************************************************************************"""
 
-
 # NOTE TO SELF
 # The following code used in people test leave code invalid
-# It show the relationship betwee the elements file
+# It show the relationship between the elements file
 # Do not delete, but save somewhere else
 # -----------------------------
 
 # BUILD THE CURRENT ELEMENT LIST
 print("Testing element list...")
-sr_file = "A_Test_element_list"
+sr_file = "A_test_element_list"
 s_sql = "CREATE TABLE " + sr_file + " AS " + """
 Select Distinct
     per.employee_number,
