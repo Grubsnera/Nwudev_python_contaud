@@ -250,8 +250,8 @@ class RunLarge(Thread):
         import C301_report_student_deferment
 
         # DECLARE VARIABLES
-        l_clock: bool = True  # Display the local clock
-        i_sleep: int = 50  # Sleeping time in seconds
+        l_clock: bool = False  # Display the local clock
+        i_sleep: int = 60  # Sleeping time in seconds
 
         # SEND MESSAGE TO INDICATE START OF LARGE THREAD
         if funcconf.l_mess_project:
