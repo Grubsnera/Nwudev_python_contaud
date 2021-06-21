@@ -4,7 +4,7 @@ Author: Albert J v Rensburg (NWU21162395)
 """
 
 # Import python modules
-import sys
+# import sys
 import sqlite3
 
 # Import own modules
@@ -47,9 +47,9 @@ def mysql_lists(s_database):
         s_schema = "Ia_joomla"
     elif s_database == "Mysql_ia_server":
         s_schema = "nwuiaca"
-    l_export = True
-    l_mail = True
-    l_vacuum = False
+    # l_export = True
+    # l_mail = True
+    # l_vacuum = False
 
     # Script log file
     funcfile.writelog("Now")
@@ -87,8 +87,8 @@ def mysql_lists(s_database):
     funcfile.writelog("OPEN THE PEOPLE DATABASES")
 
     # Open the SQLITE SOURCE file
-    so_path = "W:/People/" #Source database path
-    so_file = "People.sqlite" #Source database
+    so_path = "W:/People/"  # Source database path
+    so_file = "People.sqlite"  # Source database
     with sqlite3.connect(so_path+so_file) as so_conn:
         so_curs = so_conn.cursor()
     funcfile.writelog("OPEN DATABASE: " + so_file)
@@ -103,7 +103,7 @@ def mysql_lists(s_database):
     print("Build mysql current people...")
     ms_curs.execute("DROP TABLE IF EXISTS ia_people")
     funcfile.writelog("%t DROP MYSQL TABLE: PEOPLE (ia_people)")
-    #ia_find_1_auto INT(11) NOT NULL AUTO_INCREMENT,
+    # ia_find_1_auto INT(11) NOT NULL AUTO_INCREMENT,
     s_sql = """
     CREATE TABLE IF NOT EXISTS ia_people (
     ia_find_auto INT(11) NOT NULL,
@@ -213,7 +213,7 @@ def mysql_lists(s_database):
     # Open the SOURCE file to obtain column headings
     print("Build mysql current people columns...")
     funcfile.writelog("GET COLUMN NAME: People")
-    s_head = funcmysql.get_colnames_sqlite_text(so_curs,"X002_PEOPLE_CURR","people_")
+    s_head = funcmysql.get_colnames_sqlite_text(so_curs, "X002_PEOPLE_CURR", "people_")
     s_head = "(`ia_find_auto`, " + s_head.rstrip(", ") + ")"
     # print(s_head)
 
@@ -297,7 +297,7 @@ def mysql_lists(s_database):
     print("Build mysql current people structure...")
     ms_curs.execute("DROP TABLE IF EXISTS ia_people_struct")
     funcfile.writelog("%t DROP MYSQL TABLE: PEOPLE_STRUCT (ia_people_struct)")
-    #ia_find_1_auto INT(11) NOT NULL AUTO_INCREMENT,
+    # ia_find_1_auto INT(11) NOT NULL AUTO_INCREMENT,
     s_sql = """
     CREATE TABLE IF NOT EXISTS ia_people_struct (
     ia_find_auto INT(11) NOT NULL,
@@ -353,7 +353,7 @@ def mysql_lists(s_database):
     # Open the SOURCE file to obtain column headings
     print("Build mysql current people structure columns...")
     funcfile.writelog("GET COLUMN NAME: People org structure")
-    s_head = funcmysql.get_colnames_sqlite_text(so_curs,"X003_PEOPLE_ORGA_REF","struct_")
+    s_head = funcmysql.get_colnames_sqlite_text(so_curs, "X003_PEOPLE_ORGA_REF", "struct_")
     s_head = "(`ia_find_auto`, " + s_head.rstrip(", ") + ")"
     # print(s_head)
     # Open the SOURCE file to obtain the data
@@ -406,8 +406,8 @@ def mysql_lists(s_database):
     funcfile.writelog("OPEN THE PEOPLE DATABASES")
 
     # Open the SQLITE SOURCE file
-    so_path = "W:/Kfs_vss_studdeb/" #Source database path
-    so_file = "Kfs_vss_studdeb.sqlite" #Source database
+    so_path = "W:/Kfs_vss_studdeb/"  # Source database path
+    so_file = "Kfs_vss_studdeb.sqlite"  # Source database
     with sqlite3.connect(so_path+so_file) as so_conn:
         so_curs = so_conn.cursor()
     funcfile.writelog("OPEN DATABASE: " + so_file)
@@ -468,9 +468,9 @@ def mysql_lists(s_database):
     # Open the SOURCE file to obtain column headings
     print("Build mysql vss gl monthly balance columns...")
     funcfile.writelog("GET COLUMN NAME: ia_finding_5")
-    s_head = funcmysql.get_colnames_sqlite_text(so_curs,"X002ex_vss_gl_balance_month","ia_find5_")
+    s_head = funcmysql.get_colnames_sqlite_text(so_curs, "X002ex_vss_gl_balance_month", "ia_find5_")
     s_head = "(`ia_find_auto`, " + s_head.rstrip(", ") + ")"
-    #print(s_head)
+    # print(s_head)
     # Open the SOURCE file to obtain the data
     print("Insert mysql vss gl monthly balance data...")
     with sqlite3.connect(so_path+so_file) as rs_conn:
@@ -539,9 +539,9 @@ def mysql_lists(s_database):
     # Open the SOURCE file to obtain column headings
     print("Build mysql vss gl comparison columns...")
     funcfile.writelog("GET COLUMN NAME: ia_finding_6")
-    s_head = funcmysql.get_colnames_sqlite_text(so_curs,"X003ax_vss_gl_join","ia_find6_")
+    s_head = funcmysql.get_colnames_sqlite_text(so_curs, "X003ax_vss_gl_join", "ia_find6_")
     s_head = "(ia_find_auto, " + s_head.rstrip(", ") + ")"
-    #print(s_head)
+    # print(s_head)
     # Open the SOURCE file to obtain the data
     print("Insert mysql vss gl comparison data...")
     with sqlite3.connect(so_path+so_file) as rs_conn:
