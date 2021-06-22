@@ -80,7 +80,8 @@ def payroll_element_screen_value(
     """ ****************************************************************************
     BEGIN OF SCRIPT
     *****************************************************************************"""
-    print("BEGIN OF SCRIPT")
+    if l_debug:
+        print("BEGIN OF SCRIPT")
     funcfile.writelog("BEGIN OF SCRIPT")
 
     # NO FILE NAME - TEST
@@ -155,7 +156,8 @@ def payroll_element_screen_value(
     # print(s_sql)
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    i_return = funcsys.tablerowcount(so_curs, s_table)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file + ' (' + str(i_return) + ' RECORDS)')
 
     """ ****************************************************************************
     END OF SCRIPT
@@ -171,4 +173,4 @@ def payroll_element_screen_value(
     funcfile.writelog("---------------------------------------")
     funcfile.writelog("COMPLETED: PAYROLL_ELEMENT_SCREEN_VALUE")
 
-    return funcsys.tablerowcount(so_curs, s_table)
+    return i_return
