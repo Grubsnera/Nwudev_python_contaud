@@ -39,7 +39,7 @@ def people_detail_list(
     from _my_modules import funcpayroll
 
     # DECLARE VARIABLES
-    l_debug: bool = True
+    l_debug: bool = False
 
     # OPEN THE DATABASE CURSOR
     so_curs = so_conn.cursor()
@@ -187,7 +187,11 @@ def people_detail_list(
         acc.acc_branch account_branch,
         acc.acc_number account_number,
         acc.acc_relation account_relation,
-        acc.ppm_information1 account_sars
+        acc.ppm_information1 account_sars,
+        papf.last_update_date people_update_date,
+        papf.last_updated_by people_update_by,
+        paaf.last_update_date assignment_update_date,
+        paaf.last_updated_by assignment_update_by
     FROM
         per_all_people_f papf left join
         per_all_assignments_f paaf on paaf.person_id = papf.person_id left join
