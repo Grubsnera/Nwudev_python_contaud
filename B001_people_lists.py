@@ -1675,11 +1675,27 @@ def people_lists():
     if l_debug:
         print(i_count)
 
+    if l_export:
+        # EXPORT TABLE
+        sr_file = "X000_PEOPLE"
+        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_file = "People_000_all_"
+        sx_file_dated = sx_file + funcdate.cur_year()
+        if l_debug:
+            print("Export current people..." + sx_path + sx_file)
+        # Read the header data
+        s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+        # Write the data
+        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
+        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
+        # Write the data dated
+        # funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
+        # funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file_dated)
+
     # MESSAGE TO ADMIN
     if funcconf.l_mess_project:
         # ACTIVE EMPLOYEES
         funcsms.send_telegram("", "administrator", "<b>" + str(i_count) + "</b> Active employees method 1")
-
 
     # Build current year assignment round 1 ******************************************
     funcpeople.assign01(so_conn, "X001_ASSIGNMENT_CURR_01", funcdate.cur_yearbegin(), funcdate.cur_yearend(),
@@ -1687,18 +1703,6 @@ def people_lists():
     # Build current year assignment round 2 ******************************************
     funcpeople.assign02(so_conn, "X001_ASSIGNMENT_CURR", "X001_ASSIGNMENT_CURR_01",
                         "Build current year assignments 2...")
-    if l_export:
-        # Data export
-        sr_file = "X001_ASSIGNMENT_CURR"
-        sx_path = re_path + funcdate.cur_year() + "/"
-        sx_file = "Assignment_001_all_"
-        sx_file_dated = sx_file + funcdate.cur_year()
-        print("Export current year assignments..." + sx_path + sx_file_dated)
-        # Read the header data
-        s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
-        # Write the data
-        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
-        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file_dated)
 
     # Build previous year assignment round 1 ******************************************
     funcpeople.assign01(so_conn, "X001_ASSIGNMENT_PREV_01", funcdate.prev_yearbegin(), funcdate.prev_yearend(),
@@ -1719,19 +1723,6 @@ def people_lists():
     if funcconf.l_mess_project:
         # ACTIVE EMPLOYEES
         funcsms.send_telegram("", "administrator", "<b>" + str(i_count) + "</b> Active employees method 2")
-
-    if l_export:
-        # Data export
-        sr_file = "X002_PEOPLE_CURR"
-        sx_path = re_path + funcdate.cur_year() + "/"
-        sx_file = "People_002_all_"
-        sx_file_dated = sx_file + funcdate.cur_year()
-        print("Export current year people..." + sx_path + sx_file_dated)
-        # Read the header data
-        s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
-        # Write the data
-        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
-        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file_dated)
 
     # Build PEOPLE CURRENT ******************************************************
     funcpeople.people01(so_conn, "X002_PEOPLE_CURR_YEAR", "X001_ASSIGNMENT_CURR", "CURR",
@@ -1830,28 +1821,7 @@ def people_lists():
 
     funcfile.writelog("%t BUILD TABLE: X003_PEOPLE_SUMM")
 
-    if l_export:
-        # Data export
-        sr_file = "X003_PEOPLE_SUMM"
-        sx_path = re_path + funcdate.cur_year() + "/"
-        sx_file = "People_003_summary_"
-        sx_file_dated = sx_file + funcdate.cur_month()
-
-        print("Export current people summary..." + sx_path + sx_file_dated)
-
-        # Read the header data
-        s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
-
-        # Write the data
-        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
-        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
-
-        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file_dated)
-
-    if l_mail:
-        funcmail.Mail("hr_people_summary")
-
-        # 30 Build PEOPLE ORGANIZATION MONTH *******************************************
+    # 30 Build PEOPLE ORGANIZATION MONTH *******************************************
 
     print("Build month people organogram...")
 
@@ -1922,28 +1892,6 @@ def people_lists():
     so_conn.commit()
 
     funcfile.writelog("%t BUILD TABLE: X003_PEOPLE_ORGA")
-
-    if l_export:
-        # Data export
-        sr_file = "X003_PEOPLE_ORGA"
-        sr_filet = sr_file
-        sx_path = re_path + funcdate.cur_year() + "/"
-        sx_file = "People_003_organogram_"
-        sx_file_dated = sx_file + funcdate.cur_month()
-
-        print("Export month people organogram..." + sx_path + sx_file_dated)
-
-        # Read the header data
-        s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-
-        # Write the data
-        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file_dated, s_head)
-
-        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file_dated)
-
-    if l_mail:
-        funcmail.Mail("hr_people_organogram")
 
     """ ****************************************************************************
     BUILD CURRENT SYSTEM USERS
