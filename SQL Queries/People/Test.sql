@@ -1,7 +1,9 @@
 ﻿Select
-    x999p.employee_number,
-    Count(x999p.parent_position_id) As Count_parent_position_id
+    x000p.may_be_nominated,
+    x000p.may_vote,
+    Count(x000p.nominated) As Count_nominated
 From
-    X999_PEOPLE_CURR x999p
+    X000_PEOPLE_LIST_SELECTED x000p
 Group By
-    x999p.employee_number
+    x000p.may_be_nominated,
+    x000p.may_vote
