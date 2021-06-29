@@ -58,7 +58,7 @@ TEST NAME DUPLICATE *
 
 GRADE LEAVE MASTER FILE
 TEST ASSIGNMENT CATEGORY INVALID (PERMANENT:TEMPORARY) (X007ax)(V2.0.4)
-TEST ACADEMIC SUPPORT INVALID (X007bx)(V2.0.3)
+TEST EMPLOYEE CATEGORY INVALID (ACADEMIC:SUPPORT) (X007bx)(V2.0.4)
 TEST GRADE INVALID
 TEST LEAVE CODE INVALID
 
@@ -145,6 +145,11 @@ def people_test_masterfile():
     sr_file: str = s_file_prefix + "b_detail"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     sr_file: str = s_file_prefix + "x_acadsupp_invalid"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_file_prefix: str = "X007b"
+    sr_file: str = s_file_prefix + "a_academic_support_invalid"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sr_file: str = s_file_prefix + "x_academic_support_invalid"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 
     """ ****************************************************************************
@@ -5658,19 +5663,25 @@ def people_test_masterfile():
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """*****************************************************************************
-    TEST ACADEMIC SUPPORT INVALID
+    TEST EMPLOYEE CATEGORY INVALID (ACADEMIC:SUPPORT)
     *****************************************************************************"""
 
     # FILES NEEDED
-    # X007_grade_leave_master
+    # X000_PEOPLE
+
+    # DEFAULT TRANSACTION OWNER PEOPLE
+    # 21022402 MS AC COERTZEN for permanent employees
+    # 20742010 MRS N BOTHA for temporary employees
+    # Exclude 12795631 MR R VAN DEN BERG
+    # Exclude 13277294 MRS MC STRYDOM
 
     # DECLARE TEST VARIABLES
     i_finding_before = 0
     i_finding_after = 0
-    s_description = "Academic support invalid"
+    s_description = "Employee category invalid"
     s_file_prefix: str = "X007b"
-    s_file_name: str = "academic_support_invalid"
-    s_finding: str = "ACADEMIC SUPPORT INVALID"
+    s_file_name: str = "employee_category_invalid"
+    s_finding: str = "EMPLOYEE CATEGORY INVALID"
     s_report_file: str = "001_reported.txt"
 
     # LOG
@@ -5685,13 +5696,28 @@ def people_test_masterfile():
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "Create Table " + sr_file + " As " + """
     Select
-        a.ORG,
-        a.LOC,
-        a.EMPLOYEE_NUMBER,
-        a.EMPLOYMENT_CATEGORY,
-        a.ACAD_SUPP
+        'NWU' As ORG,
+        Substr(p.location,1,3) As LOC,
+        p.employee_number As EMPLOYEE_NUMBER,
+        p.assignment_category As ASSIGNMENT_CATEGORY,
+        p.employee_category As EMPLOYEE_CATEGORY,
+        Case
+            When au.EMPLOYEE_NUMBER Is Not Null And
+             au.EMPLOYEE_NUMBER Not In ('12795631','13277294') Then
+             au.EMPLOYEE_NUMBER
+            When p.assignment_category = 'PERMANENT' Then '21022402'
+            Else '20742010'
+        End As TRAN_OWNER,
+        p.assignment_update_by As ASSIGN_USER_ID,
+        au.EMPLOYEE_NUMBER As ASSIGN_UPDATE,
+        au.NAME_ADDR As ASSIGN_UPDATE_NAME,
+        p.people_update_by As PEOPLE_USER_ID,
+        pu.EMPLOYEE_NUMBER As PEOPLE_UPDATE,
+        pu.NAME_ADDR As PEOPLE_UPDATE_NAME
     From
-        X007_grade_leave_master a
+        X000_PEOPLE p Left Join
+        X000_USER_CURR au On au.USER_ID = p.assignment_update_by Left join
+        X000_USER_CURR pu On pu.USER_ID = p.people_update_by
     ;"""
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -5705,12 +5731,16 @@ def people_test_masterfile():
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
      Select
-        FIND.*
+        FIND.ORG,
+        FIND.LOC,
+        FIND.EMPLOYEE_NUMBER,
+        FIND.ASSIGNMENT_CATEGORY,
+        FIND.TRAN_OWNER
     From
         %FILEP%%FILEN% FIND
     Where
-        FIND.ACAD_SUPP = 'OTHER' or
-        FIND.ACAD_SUPP Is Null   
+        FIND.EMPLOYEE_CATEGORY Is Null And
+        FIND.ASSIGNMENT_CATEGORY Is Not Null   
     ;"""
     s_sql = s_sql.replace("%FILEP%", s_file_prefix)
     s_sql = s_sql.replace("%FILEN%", "a_" + s_file_name)
@@ -5729,7 +5759,7 @@ def people_test_masterfile():
 
     # GET PREVIOUS FINDINGS
     if i_finding_before > 0:
-        functest.get_previous_finding(so_curs, ed_path, s_report_file, s_finding, "TITTT")
+        functest.get_previous_finding(so_curs, ed_path, s_report_file, s_finding, "TTTTT")
         if l_debug:
             so_conn.commit()
 
@@ -5839,36 +5869,44 @@ def people_test_masterfile():
             PREV.ORG,
             PREV.LOC,
             PREV.EMPLOYEE_NUMBER,
-            PEOP.NAME_LIST,
-            PREV.EMPLOYMENT_CATEGORY,
+            PEOP.name_address As NAME_ADDRESS,
+            PEOP.assignment_category As ASSIGNMENT_CATEGORY,
+            PEOP.user_person_type As PERSON_TYPE,
+            OWNR.EMPLOYEE_NUMBER AS TRAN_OWNER_NUMB,
+            OWNR.name_address AS TRAN_OWNER_NAME,
+            OWNR.EMAIL_ADDRESS AS TRAN_OWNER_MAIL1,        
+            CASE
+                WHEN  OWNR.EMPLOYEE_NUMBER != '' THEN OWNR.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                ELSE OWNR.EMAIL_ADDRESS
+            END AS TRAN_OWNER_MAIL2,
             CAMP_OFF.EMPLOYEE_NUMBER AS CAMP_OFF_NUMB,
             CAMP_OFF.NAME_ADDR AS CAMP_OFF_NAME,
+            CAMP_OFF.EMAIL_ADDRESS AS CAMP_OFF_MAIL1,        
             CASE
                 WHEN  CAMP_OFF.EMPLOYEE_NUMBER != '' THEN CAMP_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
                 ELSE CAMP_OFF.EMAIL_ADDRESS
-            END AS CAMP_OFF_MAIL,
-            CAMP_OFF.EMAIL_ADDRESS AS CAMP_OFF_MAIL2,        
+            END AS CAMP_OFF_MAIL2,
             CAMP_SUP.EMPLOYEE_NUMBER AS CAMP_SUP_NUMB,
             CAMP_SUP.NAME_ADDR AS CAMP_SUP_NAME,
+            CAMP_SUP.EMAIL_ADDRESS AS CAMP_SUP_MAIL1,
             CASE
                 WHEN CAMP_SUP.EMPLOYEE_NUMBER != '' THEN CAMP_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
                 ELSE CAMP_SUP.EMAIL_ADDRESS
-            END AS CAMP_SUP_MAIL,
-            CAMP_SUP.EMAIL_ADDRESS AS CAMP_SUP_MAIL2,
+            END AS CAMP_SUP_MAIL2,
             ORG_OFF.EMPLOYEE_NUMBER AS ORG_OFF_NUMB,
             ORG_OFF.NAME_ADDR AS ORG_OFF_NAME,
+            ORG_OFF.EMAIL_ADDRESS AS ORG_OFF_MAIL1,
             CASE
                 WHEN ORG_OFF.EMPLOYEE_NUMBER != '' THEN ORG_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
                 ELSE ORG_OFF.EMAIL_ADDRESS
-            END AS ORG_OFF_MAIL,
-            ORG_OFF.EMAIL_ADDRESS AS ORG_OFF_MAIL2,
+            END AS ORG_OFF_MAIL2,
             ORG_SUP.EMPLOYEE_NUMBER AS ORG_SUP_NUMB,
             ORG_SUP.NAME_ADDR AS ORG_SUP_NAME,
+            ORG_SUP.EMAIL_ADDRESS AS ORG_SUP_MAIL1,
             CASE
                 WHEN ORG_SUP.EMPLOYEE_NUMBER != '' THEN ORG_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
                 ELSE ORG_SUP.EMAIL_ADDRESS
-            END AS ORG_SUP_MAIL,
-            ORG_SUP.EMAIL_ADDRESS AS ORG_SUP_MAIL2,
+            END AS ORG_SUP_MAIL2,
             AUD_OFF.EMPLOYEE_NUMBER As AUD_OFF_NUMB,
             AUD_OFF.NAME_ADDR As AUD_OFF_NAME,
             AUD_OFF.EMAIL_ADDRESS As AUD_OFF_MAIL,
@@ -5877,8 +5915,9 @@ def people_test_masterfile():
             AUD_SUP.EMAIL_ADDRESS As AUD_SUP_MAIL
         From
             %FILEP%d_addprev PREV Left Join
-            PEOPLE.X002_PEOPLE_CURR PEOP ON PEOP.EMPLOYEE_NUMBER = PREV.EMPLOYEE_NUMBER Left Join
-            Z001af_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.EMPLOYMENT_CATEGORY Left Join
+            PEOPLE.X000_PEOPLE PEOP ON PEOP.EMPLOYEE_NUMBER = PREV.EMPLOYEE_NUMBER Left Join
+            PEOPLE.X000_PEOPLE OWNR ON OWNR.EMPLOYEE_NUMBER = PREV.TRAN_OWNER Left Join
+            Z001af_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.ASSIGNMENT_CATEGORY Left Join
             Z001af_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG Left Join
             Z001af_officer AUD_OFF On AUD_OFF.CAMPUS = 'AUD' Left Join
             Z001ag_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.LOC Left Join
@@ -5904,22 +5943,27 @@ def people_test_masterfile():
         Select
             '%FIND%' As Audit_finding,
             FIND.EMPLOYEE_NUMBER As Employee,
-            FIND.NAME_LIST As Name,
-            FIND.EMPLOYMENT_CATEGORY As Category,
+            FIND.NAME_ADDRESS As Name,
+            FIND.ASSIGNMENT_CATEGORY As Category,
+            FIND.PERSON_TYPE As Type,
             FIND.ORG As Organization,
             FIND.LOC As Campus,
-            FIND.CAMP_OFF_NAME AS Responsible_Officer,
-            FIND.CAMP_OFF_NUMB AS Responsible_Officer_Numb,
-            FIND.CAMP_OFF_MAIL AS Responsible_Officer_Mail,
+            FIND.TRAN_OWNER_NAME AS Responsible_Officer,
+            FIND.TRAN_OWNER_NUMB AS Responsible_Officer_Numb,
+            FIND.TRAN_OWNER_MAIL1 AS Responsible_Officer_Mail,
+            FIND.TRAN_OWNER_MAIL2 AS Responsible_Officer_Mail_Alternate,
+            FIND.CAMP_OFF_NAME AS Officer,
+            FIND.CAMP_OFF_NUMB AS Officer_Numb,
+            FIND.CAMP_OFF_MAIL1 AS Officer_Mail,
             FIND.CAMP_SUP_NAME AS Supervisor,
             FIND.CAMP_SUP_NUMB AS Supervisor_Numb,
-            FIND.CAMP_SUP_MAIL AS Supervisor_Mail,
+            FIND.CAMP_SUP_MAIL1 AS Supervisor_Mail,
             FIND.ORG_OFF_NAME AS Org_Officer,
             FIND.ORG_OFF_NUMB AS Org_Officer_Numb,
-            FIND.ORG_OFF_MAIL AS Org_Officer_Mail,
+            FIND.ORG_OFF_MAIL1 AS Org_Officer_Mail,
             FIND.ORG_SUP_NAME AS Org_Supervisor,
             FIND.ORG_SUP_NUMB AS Org_Supervisor_Numb,
-            FIND.ORG_SUP_MAIL AS Org_Supervisor_Mail,
+            FIND.ORG_SUP_MAIL1 AS Org_Supervisor_Mail,
             FIND.AUD_OFF_NAME AS Audit_Officer,
             FIND.AUD_OFF_NUMB AS Audit_Officer_Numb,
             FIND.AUD_OFF_MAIL AS Audit_Officer_Mail,
