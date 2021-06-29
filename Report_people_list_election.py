@@ -218,6 +218,7 @@ def report_people_list_election(
         p.employee_number as user1,
         '' as user2,
         p.position_name,
+        p.title ||' '|| p.initials ||' ('||p.preferred_name ||') '||p.name_last ||' - '||p.organization as name_long,    
         p.nrf_rated as nrf_rating,
         p.name_last,
         p.employee_age,
@@ -227,6 +228,7 @@ def report_people_list_election(
         p.employee_category,
         p.user_person_type,
         p.faculty,
+        p.organization,
         p.assign_start_date,
         p.assign_end_date,
         p.service_end_date
