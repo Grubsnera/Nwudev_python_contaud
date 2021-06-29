@@ -1,15 +1,10 @@
 ﻿Select
-    x010s.FBUSENTID,
-    x010s.AMOUNT,
-    x010s.TRANSCODE,
-    x010s.FDEBTCOLLECTIONSITE,
-    x010s.TRANSDATE
+    s.FBUSENTID,
+    Count(s.FSERVICESITE) As TRAN_COUNT,
+    Total(s.AMOUNT) As TRAN_VALUE
 From
-    X010_Studytrans x010s
+    X010_Studytrans s
 Where
-    (x010s.TRANSCODE = '214' And
-        x010s.FDEBTCOLLECTIONSITE = -1 And
-        x010s.TRANSDATE Like ('2021-01%')) Or
-    (x010s.TRANSCODE = '214' And
-        x010s.FDEBTCOLLECTIONSITE = -1 And
-        x010s.TRANSDATE Like ('2021-02%'))
+    s.TRANSCODE = '021'
+Group By
+    s.FBUSENTID

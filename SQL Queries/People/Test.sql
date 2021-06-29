@@ -1,9 +1,7 @@
 ﻿Select
-    x000p.may_be_nominated,
-    x000p.may_vote,
-    Count(x000p.nominated) As Count_nominated
+    x000u.USER_ID,
+    Count(x000u.EMPLOYEE_NUMBER) As Count_EMPLOYEE_NUMBER
 From
-    X000_PEOPLE_LIST_SELECTED x000p
+    X000_USER_CURR x000u
 Group By
-    x000p.may_be_nominated,
-    x000p.may_vote
+    x000u.USER_ID

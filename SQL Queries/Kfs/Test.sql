@@ -1,7 +1,16 @@
 ﻿Select
-    x000v.VEND_BANK,
-    Count(x000v.NUMBERS) As Count_NUMBERS
+    x000g.ACCOUNT_NBR,
+    x000g.ORG_NM,
+    x000g.ACCOUNT_NM,
+    x000g.FIN_OBJECT_CD,
+    x000g.FIN_OBJ_CD_NM,
+    Total(x000g.CALC_AMOUNT) As TOTAL_AMOUNT,
+    Count(x000g.UNIV_FISCAL_YR) As TRAN_COUNT
 From
-    X000_Vendor x000v
+    X000_GL_trans x000g
 Group By
-    x000v.VEND_BANK
+    x000g.ACCOUNT_NBR,
+    x000g.ORG_NM,
+    x000g.ACCOUNT_NM,
+    x000g.FIN_OBJECT_CD,
+    x000g.FIN_OBJ_CD_NM
