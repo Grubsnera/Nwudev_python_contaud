@@ -15,6 +15,7 @@ from _my_modules import funccsv
 from _my_modules import funcdate
 from _my_modules import funcfile
 from _my_modules import funcmail
+from _my_modules import funcpayroll
 from _my_modules import funcpeople
 from _my_modules import funcsms
 from _my_modules import funcsys
@@ -41,7 +42,9 @@ print("---------------------")
 # DECLARE VARIABLES
 so_path = "W:/People/"  # Source database path
 so_file = "People.sqlite"  # Source database
+sr_file: str = ""  # Current sqlite table
 re_path = "R:/People/"  # Results path
+l_debug: bool = True
 l_export: bool = True
 l_mail: bool = True
 l_vacuum: bool = False
@@ -56,6 +59,10 @@ funcfile.writelog("OPEN THE DATABASES")
 with sqlite3.connect(so_path + so_file) as so_conn:
     so_curs = so_conn.cursor()
 funcfile.writelog("OPEN DATABASE: " + so_file)
+
+# ATTACH DATA SOURCES
+so_curs.execute("ATTACH DATABASE 'W:/People_payroll/People_payroll.sqlite' AS 'PAYROLL'")
+funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
 
 """*****************************************************************************
 DO NOT DELETE
@@ -85,13 +92,47 @@ funcfile.writelog("%t IMPORT TABLE: " + tb_name)
 """*****************************************************************************
 BEGIN OF SCRIPT
 *****************************************************************************"""
-print("BEGIN OF SCRIPT")
+if l_debug:
+    print("BEGIN OF SCRIPT")
 funcfile.writelog("BEGIN OF SCRIPT")
+
+print("Build position structure...")
+sr_file = "X000_POSITIONS_STRUCT"
+so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+s_sql = "CREATE TABLE " + sr_file + " AS " + """
+Select
+    peop.max_persons,
+    peop.position_id As position1,
+    peop.position_name As position_name1,
+    peop.employee_number As employee1,
+    peop.name_full As name1,
+    peop.employee_category As category1,
+    peop.user_person_type As type1,
+    peop2.max_persons max_persons2,
+    post.POS02 As position2,
+    peop2.position_name As position_name2,
+    peop2.employee_number As employee2,
+    peop2.name_full As name2,
+    peop.supervisor_name,
+    peop.oe_head_name_name
+From
+    X000_PEOPLE peop Left Join
+    X000_POS_STRUCT_10 post On post.POS01 = peop.position_id Left Join
+    X000_PEOPLE peop2 On peop2.position_id = post.POS02
+Order By
+    employee2,
+    position2,
+    position1
+;"""
+so_curs.execute(s_sql)
+so_conn.commit()
+funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
 """ ****************************************************************************
 End OF SCRIPT
 *****************************************************************************"""
-print("END OF SCRIPT")
+if l_debug:
+    print("END OF SCRIPT")
 funcfile.writelog("END OF SCRIPT")
 
 # CLOSE THE DATABASE CONNECTION
