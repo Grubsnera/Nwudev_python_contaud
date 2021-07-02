@@ -84,11 +84,11 @@ def people_test_masterfile():
     *****************************************************************************"""
 
     # DECLARE VARIABLES
-    so_path = "W:/People/" #Source database path
-    re_path = "R:/People/" # Results path
-    ed_path = "S:/_external_data/" #external data path
-    so_file = "People_test_masterfile.sqlite" # Source database
-    s_sql = "" # SQL statements
+    so_path = "W:/People/"  # Source database path
+    re_path = "R:/People/"  # Results path
+    ed_path = "S:/_external_data/"  # external data path
+    so_file = "People_test_masterfile.sqlite"  # Source database
+    s_sql = ""  # SQL statements
     l_debug: bool = False  # Display statements on screen
     l_export: bool = False  # Export findings to text file
     l_mail: bool = funcconf.l_mail_project
@@ -5371,6 +5371,7 @@ def people_test_masterfile():
             Else '20742010'
         End As TRAN_OWNER,
         p.service_start_date As SERVICE_START_DATE,
+        p.assign_start_date As ASSIGN_START_DATE,
         Case
             When p.service_start_date Is Null Then 'PERMANENT'
             Else 'TEMPORARY'
@@ -5406,7 +5407,8 @@ def people_test_masterfile():
     From
         %FILEP%%FILEN% FIND
     Where
-        FIND.ASSIGNMENT_CATEGORY Is Null   
+        FIND.ASSIGNMENT_CATEGORY Is Null And
+        Strftime('%Y-%m-%d',FIND.ASSIGN_START_DATE,'+10 days') < Strftime('%Y-%m-%d','now')
     ;"""
     s_sql = s_sql.replace("%FILEP%", s_file_prefix)
     s_sql = s_sql.replace("%FILEN%", "a_" + s_file_name)
@@ -5708,6 +5710,7 @@ def people_test_masterfile():
             When p.assignment_category = 'PERMANENT' Then '21022402'
             Else '20742010'
         End As TRAN_OWNER,
+        p.assign_start_date As ASSIGN_START_DATE,
         p.assignment_update_by As ASSIGN_USER_ID,
         au.EMPLOYEE_NUMBER As ASSIGN_UPDATE,
         au.NAME_ADDR As ASSIGN_UPDATE_NAME,
@@ -5740,7 +5743,8 @@ def people_test_masterfile():
         %FILEP%%FILEN% FIND
     Where
         FIND.EMPLOYEE_CATEGORY Is Null And
-        FIND.ASSIGNMENT_CATEGORY Is Not Null   
+        FIND.ASSIGNMENT_CATEGORY Is Not Null And
+        Strftime('%Y-%m-%d',FIND.ASSIGN_START_DATE,'+10 days') < Strftime('%Y-%m-%d','now')
     ;"""
     s_sql = s_sql.replace("%FILEP%", s_file_prefix)
     s_sql = s_sql.replace("%FILEN%", "a_" + s_file_name)
