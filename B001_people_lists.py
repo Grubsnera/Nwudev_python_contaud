@@ -1904,16 +1904,16 @@ def people_lists():
     sr_file = "X000_USER_CURR_PARTY"
     s_sql = "CREATE VIEW " + sr_file + " AS " + """
     Select
-        FND_USER.USER_ID,
-        FND_USER.USER_NAME,
-        FND_USER.PERSON_PARTY_ID,
-        X002_PEOPLE_CURR.PARTY_ID
+        u.USER_ID,
+        u.USER_NAME,
+        u.PERSON_PARTY_ID,
+        p.PARTY_ID
     From
-        FND_USER Inner Join
-        X002_PEOPLE_CURR On X002_PEOPLE_CURR.EMPLOYEE_NUMBER = FND_USER.USER_NAME
+        FND_USER u Inner Join
+        X002_PEOPLE_CURR p On p.EMPLOYEE_NUMBER = u.USER_NAME
     Where
-        FND_USER.PERSON_PARTY_ID = 0 And
-        Cast(FND_USER.USER_NAME As Integer) > 0
+        u.PERSON_PARTY_ID = 0 And
+        Cast(u.USER_NAME As Integer) > 0
     ;"""
     so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -1925,11 +1925,11 @@ def people_lists():
     sr_file = "FND_USER_PARTY"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
-        FND_USER.*,
-        X000_USER_CURR_PARTY.PARTY_ID As PEOPLE_PARTY_ID
+        u.*,
+        p.PARTY_ID As PEOPLE_PARTY_ID
     From
-        FND_USER Left Join
-        X000_USER_CURR_PARTY On X000_USER_CURR_PARTY.USER_ID = FND_USER.USER_ID
+        FND_USER u Left Join
+        X000_USER_CURR_PARTY p On p.USER_ID = u.USER_ID
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -1954,16 +1954,17 @@ def people_lists():
     sr_file = "X000_USER_CURR"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
-        FND_USER_PARTY.USER_ID,
-        FND_USER_PARTY.USER_NAME,
-        X002_PEOPLE_CURR.EMPLOYEE_NUMBER,
-        X002_PEOPLE_CURR.KNOWN_NAME,
-        X002_PEOPLE_CURR.NAME_ADDR,
-        X002_PEOPLE_CURR.EMAIL_ADDRESS,
-        FND_USER_PARTY.LAST_LOGON_DATE
+        u.USER_ID,
+        u.USER_NAME,
+        p.EMPLOYEE_NUMBER,
+        p.KNOWN_NAME,
+        p.NAME_ADDR,
+        p.EMAIL_ADDRESS,
+        u.LAST_LOGON_DATE,
+        p.ORG_NAME
     From
-        FND_USER_PARTY Inner Join
-        X002_PEOPLE_CURR On X002_PEOPLE_CURR.PARTY_ID = FND_USER_PARTY.CALC_PARTY_ID
+        FND_USER_PARTY u Inner Join
+        X002_PEOPLE_CURR p On p.PARTY_ID = u.CALC_PARTY_ID
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
