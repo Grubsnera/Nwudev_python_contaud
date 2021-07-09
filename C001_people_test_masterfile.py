@@ -5353,9 +5353,10 @@ def people_test_masterfile():
         p.employee_category As EMPLOYEE_CATEGORY,
         Case
             When au.EMPLOYEE_NUMBER Is Not Null And
-             au.EMPLOYEE_NUMBER Not In ('12795631','13277294') Then
+             au.EMPLOYEE_NUMBER Not In ('12795631','13277294') And
+             au.ORG_NAME Like('NWU P&C REMUNERATION%') Then
              au.EMPLOYEE_NUMBER
-            When p.service_start_date Is Null Then '21022402'
+            When p.assignment_category = 'PERMANENT' Then '21022402'
             Else '20742010'
         End As TRAN_OWNER,
         p.service_start_date As SERVICE_START_DATE,
@@ -5693,7 +5694,8 @@ def people_test_masterfile():
         p.employee_category As EMPLOYEE_CATEGORY,
         Case
             When au.EMPLOYEE_NUMBER Is Not Null And
-             au.EMPLOYEE_NUMBER Not In ('12795631','13277294') Then
+             au.EMPLOYEE_NUMBER Not In ('12795631','13277294') And
+             au.ORG_NAME Like('NWU P&C REMUNERATION%') Then
              au.EMPLOYEE_NUMBER
             When p.assignment_category = 'PERMANENT' Then '21022402'
             Else '20742010'
@@ -6056,7 +6058,8 @@ def people_test_masterfile():
         g.grade As GRADE_BENCHMARK,
         Case
             When au.EMPLOYEE_NUMBER Is Not Null And
-             au.EMPLOYEE_NUMBER Not In ('12795631','13277294') Then
+             au.EMPLOYEE_NUMBER Not In ('12795631','13277294') And
+             au.ORG_NAME Like('NWU P&C REMUNERATION%') Then
              au.EMPLOYEE_NUMBER
             When p.assignment_category = 'PERMANENT' Then '21022402'
             Else '20742010'
