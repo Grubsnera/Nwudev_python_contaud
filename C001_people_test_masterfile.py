@@ -132,12 +132,12 @@ def people_test_masterfile():
     *****************************************************************************"""
 
     # TODO Delete after first run
-    s_file_prefix: str = "X007c"
+    s_file_prefix: str = "X007b"
     sr_file: str = s_file_prefix + "a_grade"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     sr_file: str = s_file_prefix + "b_detail"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    sr_file: str = s_file_prefix + "x_grade_invalid"
+    sr_file: str = s_file_prefix + "x_academic_support_invalid"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 
     """ ****************************************************************************
