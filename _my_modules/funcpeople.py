@@ -135,7 +135,7 @@ def people_detail_list(
         papf.attribute2 internal_box,
         sars.address_sars address_sars,
         post.address_post address_post,
-        Substr(lsd.element_value,1,10) date_started,
+        Replace(Substr(lsd.element_value,1,10),'/','-') date_started,
         papf.effective_start_date people_start_date,
         papf.effective_end_date people_end_date,    
         paaf.effective_start_date assign_start_date,
