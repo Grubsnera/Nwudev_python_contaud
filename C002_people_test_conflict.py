@@ -1436,7 +1436,7 @@ def people_test_conflict():
                 ) And
             FIND.DECLARED = 'NO DECLARATION' And
             FIND.SUPERVISOR Is Not Null And
-            FIND.EMP_START < '%YEAR_BEGIN%' And
+            --FIND.EMP_START < '%YEAR_BEGIN%' And
             FIND.DAYS_IN_SERVICE > 30
         Order By
             FIND.SUPERVISOR,
