@@ -14,6 +14,15 @@ from _my_modules import funcsys
 # VARIABLES
 l_debug: bool = False
 
+# INDEX
+"""
+get_previous_finding
+set_previous_finding
+get_officer
+get_supervisor
+get_test_flag
+"""
+
 
 def get_previous_finding(o_cursor, s_path, s_source, s_key, s_format="ITTTT"):
     """
@@ -198,3 +207,41 @@ def get_supervisor(o_cursor, s_source="HR", s_key=""):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     return funcsys.tablerowcount(o_cursor, sr_file)
+
+
+def get_test_flag(o_cursor, s_source = "HR", s_key = "", s_code = ""):
+    """
+    Function to obtain a test flag.
+
+    :param o_cursor: object: Database cursor
+    :param s_source: str: Table to read lookups
+    :param s_key: str: Test search key
+    :param s_code: str: Test lookup code
+    :return: str: Value of lookup description
+    """
+
+    # SET PREVIOUS FINDINGS
+    if l_debug:
+        print("Obtain a test flag flag...")
+    s_sql = """
+        Select
+            l.LOOKUP_DESCRIPTION
+        FROM
+            %TABLE% l
+        WHERE
+            l.LOOKUP = '%KEY%' And
+            l.LOOKUP_CODE = '%CODE%'
+        ;"""
+    s_sql = s_sql.replace("%KEY%", s_key)
+    s_sql = s_sql.replace("%CODE%", s_code)
+    if s_source == "VSS":
+        s_sql = s_sql.replace("%TABLE%", "VSS.X000_OWN_LOOKUPS")
+    elif s_source == "KFS":
+        s_sql = s_sql.replace("%TABLE%", "KFS.X000_OWN_KFS_LOOKUPS")
+    else:
+        s_sql = s_sql.replace("%TABLE%", "PEOPLE.X000_OWN_HR_LOOKUPS")
+    t_return = o_cursor.execute(s_sql).fetchone()
+    s_return = str(t_return[0])
+    funcfile.writelog("%t OBTAIN TEST FLAG: " + s_key + " " + s_code + " " + s_return)
+
+    return s_return
