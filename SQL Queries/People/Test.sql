@@ -1,38 +1,13 @@
 ﻿Select
-    c.ASSIGNMENT_EXTRA_INFO_ID,
-    c.ASSIGNMENT_ID,
-    c.CONTRACT_NUMBER,
-    c.PERSON_TYPE,
-    c.CONTRACT_CATEGORY,
-    c.CONTRACT_TYPE,
-    c.CONTRACT_FROM,
-    c.CONTRACT_TO,
-    c.AMEND_FROM,
-    c.AMEND_TO,
-    c.CONTRACT_RATE,
-    c.CONTRACT_UNIT,
-    c.UNIT_DESCRIPTION,
-    c.UNIT_CURRENCY,
-    c.CONTRACT_TOTAL_UNITS,
-    c.CONTRACT_TOTAL_AMOUNT,
-    c.HOURS_WORKED,
-    c.READY_TO_CLAIM,
-    c.MANAGER_ID,
-    c.POSITION_PERM,
-    c.LOCATION,
-    c.ACCOUNT_ID,
-    c.ACCOUNT_COMBINATION_ID,
-    c.DEPARTMENT_ID,
-    c.UNKNOWN_ID,
-    c.SARS_REPORT_ID,
-    c.REMUNERATION_BEFORE_ID,
-    c.PROJECT_ID,
-    c.SOURCE_CONTRACT_ID,
-    c.LAST_UPDATE_DATE,
-    c.LAST_UPDATED_BY,
-    c.LAST_UPDATE_LOGIN,
-    c.CREATED_BY,
-    c.CREATION_DATE
+    x000p.employee_number,
+    x000p.name_full,
+    x000p.preferred_name,
+    SubStr(x000p.name_last, 1, 2) As name_last,
+    x000p.employee_age
 From
-    X004_CONTRACT_CURR c,
-    X004_CONTRACT_CURR_SUMM n
+    X000_PEOPLE x000p
+Where
+    SubStr(x000p.name_last, 1, 2) >= 'JA' And
+    SubStr(x000p.name_last, 1, 2) <= 'LI' And
+    x000p.employee_age >= 35 And
+    x000p.location Like ('POT%')
