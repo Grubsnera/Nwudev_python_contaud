@@ -54,5 +54,8 @@ V2.0.4 (21 May 2021)
 01. System (oracle) person email becomes mail1 and calculated email (nwu number + @nwu.ac.za) becomes mail2 for
     all remediation and organization officers.
 
+V2.0.5 (16 Jul 2021)
+01. Add test flag system. Use FUNCTEST.GET_TEST_FLAG to read the variable.
+
 
 
