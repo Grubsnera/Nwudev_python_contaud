@@ -15,6 +15,7 @@ from _my_modules import funcsys
 
 # INDEX
 """
+Function to build PEOPLE lists on any given date
 Function to build ASSIGNMENTS (X000_Assignment) for different date periods
 Function to build ASSIGNMENT for different date periods
 Function to build PEOPLE table from different assignments
