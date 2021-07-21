@@ -89,6 +89,9 @@ def stat_list(o_cursor, s_table, s_column, s_where=""):
     :return: List
     """
 
+    # DECLARE VARIABLES
+    l_debug: bool = False
+
     # Convert the table column into a list and the calculate the mode
     s_sql = "SELECT " + s_column
     s_sql += " FROM " + s_table
@@ -100,6 +103,9 @@ def stat_list(o_cursor, s_table, s_column, s_where=""):
     a_list = []
     for row in o_cursor.execute(s_sql).fetchall():
         a_list.append(row[0])
+    if l_debug:
+        for i in a_list:
+            print(i)
     return a_list
 
 
