@@ -129,7 +129,7 @@ def people_detail_list(
         papf.national_identifier national_identifier,
         upper(papf.per_information2) passport,
         upper(papf.per_information3) permit,
-        papf.per_information8 permit_expire,
+        Replace(Substr(papf.per_information8,1,10),'/','-') permit_expire,
         ph.phone_number phone_work,
         mo.phone_number phone_mobile,
         papf.email_address email_address,
