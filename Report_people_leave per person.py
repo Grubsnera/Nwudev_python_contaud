@@ -51,71 +51,69 @@ print("Build employee absence attendances...")
 
 s_sql = "CREATE TABLE X104_PER_ABSENCE_ATTENDANCES_EMPL AS " + """
 SELECT
-  X100_Per_absence_attendances.EMPLOYEE_NUMBER,
-  X100_Per_absence_attendances.PERSON_ID,
-  X100_Per_absence_attendances.ABSENCE_ATTENDANCE_ID,
-  X100_Per_absence_attendances.BUSINESS_GROUP_ID,
-  X100_Per_absence_attendances.DATE_NOTIFICATION,
-  X100_Per_absence_attendances.DATE_START,
-  X100_Per_absence_attendances.DATE_END,
-  X100_Per_absence_attendances.ABSENCE_DAYS,
-  X100_Per_absence_attendances.ABSENCE_ATTENDANCE_TYPE_ID,
-  X102_Per_absence_attendance_types.NAME AS LEAVE_TYPE,
-  X100_Per_absence_attendances.ABS_ATTENDANCE_REASON_ID,
-  X101_Per_abs_attendance_reasons.NAME AS LEAVE_REASON,
-  X101_Per_abs_attendance_reasons.MEANING AS REASON_DESCRIP,
-  X100_Per_absence_attendances.AUTHORISING_PERSON_ID,
-  PEOPLE.PER_ALL_PEOPLE_F.EMPLOYEE_NUMBER AS EMPLOYEE_AUTHORISE,
-  X100_Per_absence_attendances.ABSENCE_HOURS,
-  X100_Per_absence_attendances.OCCURRENCE,
-  X100_Per_absence_attendances.SSP1_ISSUED,
-  X100_Per_absence_attendances.PROGRAM_APPLICATION_ID,
-  X100_Per_absence_attendances.ATTRIBUTE1,
-  X100_Per_absence_attendances.ATTRIBUTE2,
-  X100_Per_absence_attendances.ATTRIBUTE3,
-  X100_Per_absence_attendances.LAST_UPDATE_DATE,
-  X100_Per_absence_attendances.LAST_UPDATED_BY,
-  X100_Per_absence_attendances.LAST_UPDATE_LOGIN,
-  X100_Per_absence_attendances.CREATED_BY,
-  X100_Per_absence_attendances.CREATION_DATE,
-  X100_Per_absence_attendances.REASON_FOR_NOTIFICATION_DELAY,
-  X100_Per_absence_attendances.ACCEPT_LATE_NOTIFICATION_FLAG,
-  X100_Per_absence_attendances.OBJECT_VERSION_NUMBER,
-  X102_Per_absence_attendance_types.INPUT_VALUE_ID,
-  X102_Per_absence_attendance_types.ABSENCE_CATEGORY,
-  X102_Per_absence_attendance_types.MEANING AS TYPE_DESCRIP
+  aa.EMPLOYEE_NUMBER,
+  aa.PERSON_ID,
+  aa.ABSENCE_ATTENDANCE_ID,
+  aa.BUSINESS_GROUP_ID,
+  aa.DATE_NOTIFICATION,
+  aa.DATE_START,
+  aa.DATE_END,
+  aa.ABSENCE_DAYS,
+  aa.ABSENCE_ATTENDANCE_TYPE_ID,
+  at.NAME AS LEAVE_TYPE,
+  aa.ABS_ATTENDANCE_REASON_ID,
+  ar.NAME AS LEAVE_REASON,
+  ar.MEANING AS REASON_DESCRIP,
+  aa.AUTHORISING_PERSON_ID,
+  pe.EMPLOYEE_NUMBER AS EMPLOYEE_AUTHORISE,
+  aa.ABSENCE_HOURS,
+  aa.OCCURRENCE,
+  aa.SSP1_ISSUED,
+  aa.PROGRAM_APPLICATION_ID,
+  aa.ATTRIBUTE1,
+  aa.ATTRIBUTE2,
+  aa.ATTRIBUTE3,
+  aa.LAST_UPDATE_DATE,
+  aa.LAST_UPDATED_BY,
+  aa.LAST_UPDATE_LOGIN,
+  aa.CREATED_BY,
+  aa.CREATION_DATE,
+  aa.REASON_FOR_NOTIFICATION_DELAY,
+  aa.ACCEPT_LATE_NOTIFICATION_FLAG,
+  aa.OBJECT_VERSION_NUMBER,
+  at.INPUT_VALUE_ID,
+  at.ABSENCE_CATEGORY,
+  at.MEANING AS TYPE_DESCRIP
 FROM
-  X100_Per_absence_attendances
-  LEFT JOIN X102_Per_absence_attendance_types ON X102_Per_absence_attendance_types.ABSENCE_ATTENDANCE_TYPE_ID =
-    X100_Per_absence_attendances.ABSENCE_ATTENDANCE_TYPE_ID
-  LEFT JOIN X101_Per_abs_attendance_reasons ON X101_Per_abs_attendance_reasons.ABS_ATTENDANCE_REASON_ID =
-    X100_Per_absence_attendances.ABS_ATTENDANCE_REASON_ID
-  LEFT JOIN PEOPLE.PER_ALL_PEOPLE_F ON PEOPLE.PER_ALL_PEOPLE_F.PERSON_ID = X100_Per_absence_attendances.AUTHORISING_PERSON_ID AND
-    PEOPLE.PER_ALL_PEOPLE_F.EFFECTIVE_START_DATE <= X100_Per_absence_attendances.DATE_START AND
-    PEOPLE.PER_ALL_PEOPLE_F.EFFECTIVE_END_DATE >= X100_Per_absence_attendances.DATE_START"""
+  X100_Per_absence_attendances aa LEFT JOIN
+  X102_Per_absence_attendance_types at ON at.ABSENCE_ATTENDANCE_TYPE_ID = aa.ABSENCE_ATTENDANCE_TYPE_ID LEFT JOIN
+  X101_Per_abs_attendance_reasons ar ON ar.ABS_ATTENDANCE_REASON_ID = aa.ABS_ATTENDANCE_REASON_ID LEFT JOIN
+  PEOPLE.PER_ALL_PEOPLE_F pe ON pe.PERSON_ID = aa.AUTHORISING_PERSON_ID AND
+    pe.EFFECTIVE_START_DATE <= aa.DATE_START AND pe.EFFECTIVE_END_DATE >= aa.DATE_START
+;"""
 
 if s_em != "":
    s_sql += """
 WHERE
-  (X100_Per_absence_attendances.EMPLOYEE_NUMBER = '""" + s_em + "')"
+  (aa.EMPLOYEE_NUMBER = '""" + s_em + "')"
 
 s_sql += """
 ORDER BY
-  X100_Per_absence_attendances.EMPLOYEE_NUMBER,
-  X100_Per_absence_attendances.DATE_START,
-  X100_Per_absence_attendances.DATE_END
+  aa.EMPLOYEE_NUMBER,
+  aa.DATE_START,
+  aa.DATE_END
 """
 
 # print(s_sql)
 
 """
 WHERE
-  (X100_Per_absence_attendances.DATE_START >= Date("%CYEARB%") AND
-  X100_Per_absence_attendances.DATE_END <= Date("%CYEARE%")) OR
-  (X100_Per_absence_attendances.DATE_START >= Date("%CYEARB%") AND
-  X100_Per_absence_attendances.DATE_START <= Date("%CYEARE%")) OR
-  (X100_Per_absence_attendances.DATE_END >= Date("%CYEARB%") AND
-  X100_Per_absence_attendances.DATE_END <= Date("%CYEARE%"))
+  (aa.DATE_START >= Date("%CYEARB%") AND
+  aa.DATE_END <= Date("%CYEARE%")) OR
+  (aa.DATE_START >= Date("%CYEARB%") AND
+  aa.DATE_START <= Date("%CYEARE%")) OR
+  (aa.DATE_END >= Date("%CYEARB%") AND
+  aa.DATE_END <= Date("%CYEARE%"))
 """
 
 so_curs.execute("DROP TABLE IF EXISTS X104_PER_ABSENCE_ATTENDANCES_EMPL")
