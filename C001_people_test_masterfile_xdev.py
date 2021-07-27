@@ -88,10 +88,11 @@ def people_test_masterfile_xdev():
     TEMPORARY SCRIPT
     *****************************************************************************"""
 
-    """
     # TODO Delete after first run
-    s_file_prefix: str = "X007d"
-    sr_file: str = s_file_prefix + "a_leave"
+    s_file_prefix: str = "X003e"
+    sr_file: str = s_file_prefix + "a_permit_expire"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sr_file: str = s_file_prefix + "a_work_permit_expire"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     sr_file: str = s_file_prefix + "b_detail"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -101,9 +102,8 @@ def people_test_masterfile_xdev():
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     sr_file: str = s_file_prefix + "h_contact"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    sr_file: str = s_file_prefix + "x_leavecode_invalid"
+    sr_file: str = s_file_prefix + "x_work_permit_expire"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    """
 
     """ ****************************************************************************
     BEGIN OF SCRIPT
@@ -115,6 +115,387 @@ def people_test_masterfile_xdev():
     """ ****************************************************************************
     MASTER FILE LISTS
     *****************************************************************************"""
+
+    """*****************************************************************************
+    TEST FOREIGN EMPLOYEE WORK PERMIT EXPIRED
+    *****************************************************************************"""
+
+    # FILES NEEDED
+    # X000_PEOPLE
+
+    # DEFAULT TRANSACTION OWNER PEOPLE
+    # 21022402 MS AC COERTZEN for permanent employees
+    # 20742010 MRS N BOTHA for temporary employees
+    # Exclude 12795631 MR R VAN DEN BERG
+    # Exclude 13277294 MRS MC STRYDOM
+
+    # DECLARE TEST VARIABLES
+    i_finding_before = 0
+    i_finding_after = 0
+    s_description = "Work permit expired"
+    s_file_prefix: str = "X003e"
+    s_file_name: str = "work_permit_expired"
+    s_finding: str = "EMPLOYEE WORK PERMIT EXPIRED"
+    s_report_file: str = "001_reported.txt"
+
+    # OBTAIN TEST RUN FLAG
+    if functest.get_test_flag(so_curs, "HR", "TEST " + s_finding, "RUN") == "FALSE":
+
+        if l_debug:
+            print('TEST DISABLED')
+        funcfile.writelog("TEST " + s_finding + " DISABLED")
+
+    else:
+
+        # LOG
+        funcfile.writelog("TEST " + s_finding)
+        if l_debug:
+            print("TEST " + s_finding)
+
+        # OBTAIN MASTER DATA
+        if l_debug:
+            print("Obtain master data...")
+        sr_file: str = s_file_prefix + "a_" + s_file_name
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        s_sql = "Create Table " + sr_file + " As " + """
+        Select
+            'NWU' ORG,
+            Substr(p.location,1,3) LOC,
+            p.employee_number EMPLOYEE_NUMBER,
+            p.nationality NATIONALITY,
+            p.national_identifier IDNO,
+            p.passport PASSPORT,
+            p.permit PERMIT,
+            p.permit_expire PERMIT_EXPIRE,
+            Case
+                When p.permit Like('PRP%') Then '0 PRP PERMIT'
+                When p.position_name Like('EXTRA%') And p.permit = '' Then '0 EXTRAORDINARY POSITION'
+                When p.position_name Like('EXTRA%') And p.permit != '' Then '1 PERMIT EXPIRED EXTRAORDINARY'
+                When p.passport != '' And p.permit_expire >= Date('1900-01-01') And p.permit_expire < Date('%TODAY%')
+                 Then '1 PERMIT EXPIRED'
+                When p.passport != '' And p.permit_expire >= Date('1900-01-01') And p.permit_expire < Date('%MONTH%')
+                 Then '1 PERMIT EXPIRE SOON'
+                When p.passport != '' And p.permit_expire  = '' Then '1 BLANK PERMIT EXPIRY DATE'
+                Else '0 PERMIT EXPIRE IN FUTURE'
+            End as VALID,
+            p.position_name POSITION,
+            p.assignment_category ASSIGNMENT_CATEGORY,
+            Case
+                When pu.EMPLOYEE_NUMBER Is Not Null And
+                 pu.EMPLOYEE_NUMBER Not In ('12795631','13277294') And
+                 pu.ORG_NAME Like('NWU P&C REMUNERATION%') Then
+                 pu.EMPLOYEE_NUMBER
+                When p.assignment_category = 'PERMANENT' Then '21022402'
+                Else '20742010'
+            End As TRAN_OWNER,
+            p.assignment_update_by As ASSIGN_USER_ID,
+            au.EMPLOYEE_NUMBER As ASSIGN_UPDATE,
+            au.NAME_ADDR As ASSIGN_UPDATE_NAME,
+            p.people_update_by As PEOPLE_USER_ID,
+            pu.EMPLOYEE_NUMBER As PEOPLE_UPDATE,
+            pu.NAME_ADDR As PEOPLE_UPDATE_NAME
+        From
+            X000_PEOPLE p Left Join
+            X000_USER_CURR au On au.USER_ID = p.assignment_update_by Left join
+            X000_USER_CURR pu On pu.USER_ID = p.people_update_by
+        Where
+            p.national_identifier = ''
+        Order By
+            VALID,
+            EMPLOYEE_NUMBER                        
+        ;"""
+        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%MONTH%", funcdate.cur_monthendnext())
+        so_curs.execute(s_sql)
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+        if l_debug:
+            so_conn.commit()
+
+        # IDENTIFY FINDINGS
+        if l_debug:
+            print("Identify findings...")
+        sr_file = s_file_prefix + "b_finding"
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            FIND.ORG,
+            FIND.LOC,
+            FIND.EMPLOYEE_NUMBER,
+            FIND.TRAN_OWNER,
+            FIND.ASSIGNMENT_CATEGORY,
+            FIND.VALID
+        From
+            %FILEP%%FILEN% FIND
+        Where
+            FIND.VALID Like ('1%')
+        ;"""
+        s_sql = s_sql.replace("%FILEP%", s_file_prefix)
+        s_sql = s_sql.replace("%FILEN%", "a_" + s_file_name)
+        so_curs.execute(s_sql)
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+        if l_debug:
+            so_conn.commit()
+
+        # COUNT THE NUMBER OF FINDINGS
+        if l_debug:
+            print("Count the number of findings...")
+        i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
+        funcfile.writelog("%t FINDING: " + str(i_finding_before) + " " + s_finding + " finding(s)")
+        if l_debug:
+            print("*** Found " + str(i_finding_before) + " exceptions ***")
+
+        # GET PREVIOUS FINDINGS
+        if i_finding_before > 0:
+            functest.get_previous_finding(so_curs, ed_path, s_report_file, s_finding, "TTTTT")
+            if l_debug:
+                so_conn.commit()
+
+        # SET PREVIOUS FINDINGS
+        if i_finding_before > 0:
+            functest.set_previous_finding(so_curs)
+            if l_debug:
+                so_conn.commit()
+
+        # ADD PREVIOUS FINDINGS
+        sr_file = s_file_prefix + "d_addprev"
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        if i_finding_before > 0:
+            if l_debug:
+                print("Join previously reported to current findings...")
+            s_sql = "CREATE TABLE " + sr_file + " AS" + """
+            Select
+                FIND.*,
+                Lower('%FINDING%') AS PROCESS,
+                '%TODAY%' AS DATE_REPORTED,
+                '%DATETEST%' AS DATE_RETEST,
+                PREV.PROCESS AS PREV_PROCESS,
+                PREV.DATE_REPORTED AS PREV_DATE_REPORTED,
+                PREV.DATE_RETEST AS PREV_DATE_RETEST,
+                PREV.REMARK
+            From
+                %FILEP%b_finding FIND Left Join
+                Z001ab_setprev PREV ON PREV.FIELD1 = FIND.EMPLOYEE_NUMBER
+            ;"""
+            s_sql = s_sql.replace("%FINDING%", s_finding)
+            s_sql = s_sql.replace("%FILEP%", s_file_prefix)
+            s_sql = s_sql.replace("%TODAY%", funcdate.today())
+            s_sql = s_sql.replace("%DATETEST%", funcdate.cur_monthendnext())
+            so_curs.execute(s_sql)
+            funcfile.writelog("%t BUILD TABLE: " + sr_file)
+            if l_debug:
+                so_conn.commit()
+
+        # BUILD LIST TO UPDATE FINDINGS
+        sr_file = s_file_prefix + "e_newprev"
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        if i_finding_before > 0:
+            if l_debug:
+                print("Build list to update findings...")
+            s_sql = "CREATE TABLE " + sr_file + " AS " + """
+            Select
+                PREV.PROCESS,
+                PREV.EMPLOYEE_NUMBER AS FIELD1,
+                '' AS FIELD2,
+                '' AS FIELD3,
+                '' AS FIELD4,
+                '' AS FIELD5,
+                PREV.DATE_REPORTED,
+                PREV.DATE_RETEST,
+                PREV.REMARK
+            From
+                %FILEP%d_addprev PREV
+            Where
+                PREV.PREV_PROCESS Is Null Or
+                PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""        
+            ;"""
+            s_sql = s_sql.replace("%FILEP%", s_file_prefix)
+            so_curs.execute(s_sql)
+            funcfile.writelog("%t BUILD TABLE: " + sr_file)
+            if l_debug:
+                so_conn.commit()
+            # Export findings to previous reported file
+            i_finding_after = funcsys.tablerowcount(so_curs, sr_file)
+            if i_finding_after > 0:
+                if l_debug:
+                    print("*** " + str(i_finding_after) + " Finding(s) to report ***")
+                sx_path = ed_path
+                sx_file = s_report_file[:-4]
+                # Read the header data
+                s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+                # Write the data
+                if l_record:
+                    funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
+                    funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
+                    funcfile.writelog("%t EXPORT DATA: " + sr_file)
+                if l_mess:
+                    funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_before) + '/' + str(
+                        i_finding_after) + '</b> ' + s_description)
+            else:
+                funcfile.writelog("%t FINDING: No new findings to export")
+                if l_debug:
+                    print("*** No new findings to report ***")
+
+        # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
+        if i_finding_before > 0 and i_finding_after > 0:
+            functest.get_officer(so_curs, "HR", "TEST " + s_finding + " OFFICER")
+            so_conn.commit()
+
+        # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
+        if i_finding_before > 0 and i_finding_after > 0:
+            functest.get_supervisor(so_curs, "HR", "TEST " + s_finding + " SUPERVISOR")
+            so_conn.commit()
+
+        # ADD CONTACT DETAILS TO FINDINGS
+        sr_file = s_file_prefix + "h_detail"
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        if i_finding_before > 0 and i_finding_after > 0:
+            if l_debug:
+                print("Add contact details to findings...")
+            s_sql = "CREATE TABLE " + sr_file + " AS " + """
+            Select
+                Substr(PREV.VALID,3,40) As VALID,
+                PREV.ORG,
+                PREV.LOC,
+                PREV.EMPLOYEE_NUMBER,
+                PEOP.name_address As NAME_ADDRESS,
+                MAST.NATIONALITY,
+                MAST.PASSPORT,
+                MAST.PERMIT,
+                MAST.PERMIT_EXPIRE,
+                MAST.POSITION,                
+                PREV.ASSIGNMENT_CATEGORY,
+                OWNR.EMPLOYEE_NUMBER AS TRAN_OWNER_NUMB,
+                OWNR.name_address AS TRAN_OWNER_NAME,
+                OWNR.EMAIL_ADDRESS AS TRAN_OWNER_MAIL1,        
+                CASE
+                    WHEN  OWNR.EMPLOYEE_NUMBER != '' THEN OWNR.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                    ELSE OWNR.EMAIL_ADDRESS
+                END AS TRAN_OWNER_MAIL2,
+                CAMP_OFF.EMPLOYEE_NUMBER AS CAMP_OFF_NUMB,
+                CAMP_OFF.NAME_ADDR AS CAMP_OFF_NAME,
+                CAMP_OFF.EMAIL_ADDRESS AS CAMP_OFF_MAIL1,        
+                CASE
+                    WHEN  CAMP_OFF.EMPLOYEE_NUMBER != '' THEN CAMP_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                    ELSE CAMP_OFF.EMAIL_ADDRESS
+                END AS CAMP_OFF_MAIL2,
+                CAMP_SUP.EMPLOYEE_NUMBER AS CAMP_SUP_NUMB,
+                CAMP_SUP.NAME_ADDR AS CAMP_SUP_NAME,
+                CAMP_SUP.EMAIL_ADDRESS AS CAMP_SUP_MAIL1,
+                CASE
+                    WHEN CAMP_SUP.EMPLOYEE_NUMBER != '' THEN CAMP_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                    ELSE CAMP_SUP.EMAIL_ADDRESS
+                END AS CAMP_SUP_MAIL2,
+                ORG_OFF.EMPLOYEE_NUMBER AS ORG_OFF_NUMB,
+                ORG_OFF.NAME_ADDR AS ORG_OFF_NAME,
+                ORG_OFF.EMAIL_ADDRESS AS ORG_OFF_MAIL1,
+                CASE
+                    WHEN ORG_OFF.EMPLOYEE_NUMBER != '' THEN ORG_OFF.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                    ELSE ORG_OFF.EMAIL_ADDRESS
+                END AS ORG_OFF_MAIL2,
+                ORG_SUP.EMPLOYEE_NUMBER AS ORG_SUP_NUMB,
+                ORG_SUP.NAME_ADDR AS ORG_SUP_NAME,
+                ORG_SUP.EMAIL_ADDRESS AS ORG_SUP_MAIL1,
+                CASE
+                    WHEN ORG_SUP.EMPLOYEE_NUMBER != '' THEN ORG_SUP.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                    ELSE ORG_SUP.EMAIL_ADDRESS
+                END AS ORG_SUP_MAIL2,
+                AUD_OFF.EMPLOYEE_NUMBER As AUD_OFF_NUMB,
+                AUD_OFF.NAME_ADDR As AUD_OFF_NAME,
+                AUD_OFF.EMAIL_ADDRESS As AUD_OFF_MAIL,
+                AUD_SUP.EMPLOYEE_NUMBER As AUD_SUP_NUMB,
+                AUD_SUP.NAME_ADDR As AUD_SUP_NAME,
+                AUD_SUP.EMAIL_ADDRESS As AUD_SUP_MAIL
+            From
+                %FILEP%d_addprev PREV Left Join
+                %FILEP%a_%FILEN% MAST On MAST.EMPLOYEE_NUMBER = PREV.EMPLOYEE_NUMBER Left Join
+                PEOPLE.X000_PEOPLE PEOP ON PEOP.EMPLOYEE_NUMBER = PREV.EMPLOYEE_NUMBER Left Join
+                PEOPLE.X000_PEOPLE OWNR ON OWNR.EMPLOYEE_NUMBER = PREV.TRAN_OWNER Left Join
+                Z001af_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.ASSIGNMENT_CATEGORY Left Join
+                Z001af_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG Left Join
+                Z001af_officer AUD_OFF On AUD_OFF.CAMPUS = 'AUD' Left Join
+                Z001ag_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.LOC Left Join
+                Z001ag_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG Left Join
+                Z001ag_supervisor AUD_SUP On AUD_SUP.CAMPUS = 'AUD'                    
+            Where
+                PREV.PREV_PROCESS Is Null Or
+                PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
+            ;"""
+            s_sql = s_sql.replace("%FILEP%", s_file_prefix)
+            s_sql = s_sql.replace("%FILEN%", s_file_name)
+            so_curs.execute(s_sql)
+            so_conn.commit()
+            funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+        # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
+        sr_file = s_file_prefix + "x_" + s_file_name
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        if i_finding_before > 0 and i_finding_after > 0:
+            if l_debug:
+                print("Build the final report")
+            s_sql = "CREATE TABLE " + sr_file + " AS " + """
+            Select
+                '%FIND%' As Audit_finding,
+                FIND.VALID As Reason,
+                FIND.EMPLOYEE_NUMBER As Employee,
+                FIND.NAME_ADDRESS As Name,
+                FIND.NATIONALITY As Nationality,
+                FIND.PASSPORT As Passport,
+                FIND.PERMIT As Permit,
+                FIND.PERMIT_EXPIRE As Permit_expire,
+                FIND.POSITION As Position,
+                FIND.ASSIGNMENT_CATEGORY As Ass_category,
+                FIND.ORG As Organization,
+                FIND.LOC As Campus,
+                FIND.TRAN_OWNER_NAME AS Responsible_officer,
+                FIND.TRAN_OWNER_NUMB AS Responsible_officer_numb,
+                FIND.TRAN_OWNER_MAIL1 AS Responsible_officer_mail,
+                FIND.TRAN_OWNER_MAIL2 AS Responsible_officer_mail_alt,
+                FIND.CAMP_OFF_NAME AS Responsible_officer_2,
+                FIND.CAMP_OFF_NUMB AS Responsible_officer_2_numb,
+                FIND.CAMP_OFF_MAIL1 AS Responsible_officer_2_mail,
+                FIND.CAMP_OFF_MAIL2 AS Responsible_officer_2_mail_alt,
+                FIND.CAMP_SUP_NAME AS Supervisor,
+                FIND.CAMP_SUP_NUMB AS Supervisor_numb,
+                FIND.CAMP_SUP_MAIL1 AS Supervisor_mail,
+                FIND.ORG_OFF_NAME AS Org_officer,
+                FIND.ORG_OFF_NUMB AS Org_officer_numb,
+                FIND.ORG_OFF_MAIL1 AS Org_officer_mail,
+                FIND.ORG_SUP_NAME AS Org_supervisor,
+                FIND.ORG_SUP_NUMB AS Org_supervisor_numb,
+                FIND.ORG_SUP_MAIL1 AS Org_supervisor_mail,
+                FIND.AUD_OFF_NAME AS Audit_officer,
+                FIND.AUD_OFF_NUMB AS Audit_officer_numb,
+                FIND.AUD_OFF_MAIL AS Audit_officer_mail,
+                FIND.AUD_SUP_NAME AS Audit_supervisor,
+                FIND.AUD_SUP_NUMB AS Audit_supervisor_numb,
+                FIND.AUD_SUP_MAIL AS Audit_supervisor_mail
+            From
+                %FILEP%h_detail FIND
+            ;"""
+            s_sql = s_sql.replace("%FIND%", s_finding)
+            s_sql = s_sql.replace("%FILEP%", s_file_prefix)
+            so_curs.execute(s_sql)
+            so_conn.commit()
+            funcfile.writelog("%t BUILD TABLE: " + sr_file)
+            # Export findings
+            if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
+                if l_debug:
+                    print("Export findings...")
+                sx_path = re_path + funcdate.cur_year() + "/"
+                sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
+                sx_file_dated = sx_file + funcdate.today_file()
+                s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+                funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
+                funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
+                funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
+        else:
+            s_sql = "CREATE TABLE " + sr_file + " (" + """
+            BLANK TEXT
+            );"""
+            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+            so_curs.execute(s_sql)
+            so_conn.commit()
+            funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # MESSAGE
     if l_mess:
