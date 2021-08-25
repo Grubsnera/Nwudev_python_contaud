@@ -132,19 +132,11 @@ def people_test_masterfile():
     *****************************************************************************"""
 
     # TODO Delete after first run
-    s_file_prefix: str = "X007d"
-    sr_file: str = s_file_prefix + "a_leave"
+    """
+    s_file_prefix: str = "X003e"
+    sr_file: str = s_file_prefix + "a_permit_expire"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    sr_file: str = s_file_prefix + "b_detail"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    sr_file: str = s_file_prefix + "f_officer"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    sr_file: str = s_file_prefix + "g_supervisor"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    sr_file: str = s_file_prefix + "h_contact"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    sr_file: str = s_file_prefix + "x_leavecode_invalid"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    """
 
     """ ****************************************************************************
     BEGIN OF SCRIPT
