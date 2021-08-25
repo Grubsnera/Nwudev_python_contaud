@@ -183,7 +183,7 @@ def people_list_masterfile():
     s_sql = "CREATE TABLE " + sr_file + " As " + """
     Select
         PEOP.EMPLOYEE_NUMBER AS EMP,
-        PEOP.NAME_LIST AS NAME,
+        PEOP.NAME_ADDR AS NAME,
         PEOP.EMPLOYMENT_CATEGORY AS PERM_TEMP,
         PEOP.ACAD_SUPP,
         PEOP.SEX As GENDER,
@@ -195,14 +195,22 @@ def people_list_masterfile():
             WHEN PEOP.NATIONALITY_NAME = 'SOUTH AFRICA' THEN PEOP.NATIONALITY_NAME
             ELSE 'FOREIGN'
         END AS NATIONALITY,
+        PEOP.NATIONALITY_NAME,
         PEOP.LOCATION_DESCRIPTION AS CAMPUS,
         CASE
             WHEN PEOP.FACULTY <> '' THEN PEOP.FACULTY
             ELSE 'SUPPORT'
         END AS FACULTY,
+        CASE
+            WHEN PEOP.FACULTY <> '' THEN PEOP.FACULTY
+            WHEN PEOP.DIVISION <> '' THEN PEOP.DIVISION
+            ELSE 'SUPPORT'
+        END AS WORKPLACE,
         PEOP.DIVISION,
+        PEOP.ORG_NAME,
         PEOP.POSITION_NAME,
         PEOP.JOB_NAME,
+        PEOP.DATE_OF_BIRTH,
         PEOP.AGE,
         CASE
             When PEOP.AGE >= 10 And PEOP.AGE <= 20 Then '00-20'
@@ -218,7 +226,12 @@ def people_list_masterfile():
             When PEOP.AGE >= 66 And PEOP.AGE <= 70 Then '66-70'
             Else '71-99'
         END As AGE_GROUP,
-        Cast(1 As Int) As COUNT
+        Cast(1 As Int) As COUNT,
+        PEOP.EMAIL_ADDRESS,
+        CASE
+            When PEOP.KNOWN_NAME = '' Then 'COLLEAGUE'
+            Else Replace(Lower(PEOP.TITLE_FULL),'.','')||'  '||PEOP.KNOWN_NAME
+        END AS KNOWN_NAME
     From
         PEOPLE.X002_PEOPLE_CURR PEOP
     Where
