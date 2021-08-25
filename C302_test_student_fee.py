@@ -17,6 +17,7 @@ from _my_modules import funcstat
 from _my_modules import funcsys
 from _my_modules import funcsms
 from _my_modules import functest
+from _my_modules import funcmail
 
 """ INDEX **********************************************************************
 ENVIRONMENT
