@@ -122,7 +122,6 @@ _my_modules/funcmail.py
 _my_modules/funcmysql.py
 _my_modules/funcsms.py
 .idea/
-.venv/
 _external_data/
 _external_data_history/
 History/
