@@ -1,5 +1,5 @@
 """
-Script to vacuum (clear) test finding export files.
+ Script to vacuum (clear) test finding export files.
 by Albert J v Rensburg (NWU21162395) on 16 Mar 2020
 """
 
