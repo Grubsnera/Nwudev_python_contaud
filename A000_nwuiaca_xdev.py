@@ -1,5 +1,5 @@
 """
-NWU INTERNAL AUDIT ROBOT USING TELEGRAM MESSAGING
+ NWU INTERNAL AUDIT ROBOT USING TELEGRAM MESSAGING
 Press Ctrl-C on the command line or send a signal to the process to stop the bot.
 Author: Albert B Janse van Rensburg (NWU:21162395)
 Date created: 17 Mar 2020
