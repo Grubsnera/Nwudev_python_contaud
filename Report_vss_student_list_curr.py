@@ -19,7 +19,7 @@ ilog_severity = 1
 # Declare variables
 so_path = "W:/Vss/" #Source database path
 re_path = "R:/Vss/" #Results
-so_file = "Vss.sqlite" #Source database
+so_file = "Vss_curr.sqlite" #Source database
 ed_path = "S:/_external_data/"
 s_sql = "" #SQL statements
 
@@ -44,7 +44,7 @@ s_sql = "CREATE TABLE "+ sr_file +" AS " + """
 SELECT
   STUDENT.*
 FROM
-  X001_Student_curr STUDENT
+  X001_Student STUDENT
 WHERE
   (STUDENT.DATEENROL <= Date('%DAY%') AND
   STUDENT.DISCONTINUEDATE >= Date('%DAY%') AND
