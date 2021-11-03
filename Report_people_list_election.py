@@ -212,6 +212,7 @@ def report_people_list_election(
             else False
         end as may_vote,
         p.email_address,
+        p.employee_number ||'@nwu.ac.za' as calc_email,
         p.name_address as first_name,
         p.employee_number as username,
         substr(cast(random() as text),19,-4) as password,
@@ -227,6 +228,7 @@ def report_people_list_election(
         p.assignment_category,
         p.employee_category,
         p.user_person_type,
+        p.location,
         p.faculty,
         p.organization,
         p.assign_start_date,
