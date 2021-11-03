@@ -2,6 +2,7 @@
 PEOPLE list election report and export
 Created: 21 June 2021
 Author: Albert J van Rensburg (NWU:21162395)
+Testing
 """
 
 # IMPORT PYTHON MODULES
