@@ -9,7 +9,8 @@ import datetime
 from _my_modules import funcfile
 
 # LOGGING
-funcfile.writelog("Now")
+# s_path = "S:/LOGS/"
+# s_file = "Python_log_" + datetime.datetime.now().strftime("%Y%m%d") + ".txt"
+# funcfile.writelog("Now", s_path, s_file)
 funcfile.writelog("SCRIPT: OPEN PROJECT NWU INTERNAL AUDIT CONTINUOUS AUDIT")
 funcfile.writelog("--------------------------------------------------------")
-funcfile.writelog("%t THREAD: SMALL TRHREAD STARTED")
