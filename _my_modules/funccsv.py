@@ -85,7 +85,7 @@ def read_header(c_rhd):
     # Read the columns from the column header file
     
     header_list = ""
-    f = open(c_rhd + "column_names.csv", "rU")
+    f = open(c_rhd + "column_names.csv", "r")
     reader = csv.reader(f)
     for row in reader:
         #c_data = row[1]
