@@ -97,7 +97,7 @@ def student_fee(s_period="curr"):
         s_aud: str = "71839z71840z71841z71842z71820z71821z71822z1085390"  # Exclude these FQUALLEVELAPID
         l_record: bool = False
         l_export: bool = True
-    elif s_period == "prev":
+    elif s_period == "2020":
         f_reg_fee = 1930.00
         d_sem1_con = "2020-02-21"
         d_sem1_dis = "2020-03-09"
@@ -115,13 +115,31 @@ def student_fee(s_period="curr"):
         s_aud: str = "71839z71840z71841z71842z71820z71821z71822z1085390"  # Exclude these FQUALLEVELAPID
         l_record: bool = False
         l_export: bool = True
-    else:
+    elif s_period == "prev":
         f_reg_fee = 2020.00
         d_sem1_con = "2021-04-09"
         d_sem1_dis = "2021-04-09"
         d_sem2_con = "2021-09-04"
         d_sem2_dis = "2021-09-04"
         d_test_overcharge = "2021-07-15"  # Only month and day used
+        so_file = "Vss_test_fee.sqlite"  # Source database
+        s_reg_trancode: str = "095"
+        s_qual_trancode: str = "004"
+        s_modu_trancode: str = "004"
+        s_burs_trancode: str = "042z052z381z500"
+        # Find these id's from Sqlite->Sqlite_vss_test_fee->Q021aa_qual_nofee_loaded
+        s_mba: str = "71500z2381692z2381690z665559"  # Exclude these FQUALLEVELAPID
+        s_mpa: str = "665566z618161z618167z618169"  # Exclude these FQUALLEVELAPID
+        s_aud: str = "71839z71840z71841z71842z71820z71821z71822z1085390"  # Exclude these FQUALLEVELAPID
+        l_record: bool = True
+        l_export: bool = True
+    else:
+        f_reg_fee = 2110.00
+        d_sem1_con = "2022-03-04"
+        d_sem1_dis = "2022-03-04"
+        d_sem2_con = "2022-08-05"
+        d_sem2_dis = "2022-08-05"
+        d_test_overcharge = "2022-07-15"  # Only month and day used
         so_file = "Vss_test_fee.sqlite"  # Source database
         s_reg_trancode: str = "095"
         s_qual_trancode: str = "004"
