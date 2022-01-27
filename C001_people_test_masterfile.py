@@ -2499,6 +2499,7 @@ def people_test_masterfile():
             p.permit PERMIT,
             p.permit_expire PERMIT_EXPIRE,
             Case
+                When p.nationality Like('ZIM%') Then '0 ZIMBABWE EXTEND TO END 2022'
                 When p.permit Like('PRP%') Then '0 PRP PERMIT'
                 When p.position_name Like('EXTRA%') And p.permit = '' Then '0 EXTRAORDINARY POSITION'
                 When p.position_name Like('EXTRA%') And p.permit != '' Then '1 PERMIT EXPIRED EXTRAORDINARY'
