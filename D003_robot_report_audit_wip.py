@@ -255,7 +255,7 @@ def robot_report_audit_wip(s_year: str = "", s_type: str = "", s_name: str = "",
 
 if __name__ == '__main__':
     try:
-        s_return = robot_report_audit_wip("2021", "0", "Albert", "21162395@nwu.ac.za")
+        s_return = robot_report_audit_wip("2022", "0", "Albert", "21162395@nwu.ac.za")
         if funcconf.l_mess_project:
             print("RETURN: " + s_return)
             print("LENGTH: " + str(len(s_return)))
