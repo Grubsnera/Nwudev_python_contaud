@@ -139,6 +139,8 @@ def robot_report_person_leave(s_nwu: str = "", s_name: str = "", s_mail: str = "
         aa.ATTRIBUTE1,
         aa.ATTRIBUTE2,
         aa.ATTRIBUTE3,
+        aa.ATTRIBUTE4,
+        aa.ATTRIBUTE5,
         aa.LAST_UPDATE_DATE,
         aa.LAST_UPDATED_BY,
         aa.LAST_UPDATE_LOGIN,

@@ -69,6 +69,8 @@ SELECT
   X100_Per_absence_attendances.ATTRIBUTE1,
   X100_Per_absence_attendances.ATTRIBUTE2,
   X100_Per_absence_attendances.ATTRIBUTE3,
+  X100_Per_absence_attendances.ATTRIBUTE4,
+  X100_Per_absence_attendances.ATTRIBUTE5,
   X100_Per_absence_attendances.LAST_UPDATE_DATE,
   X100_Per_absence_attendances.LAST_UPDATED_BY,
   X100_Per_absence_attendances.LAST_UPDATE_LOGIN,
