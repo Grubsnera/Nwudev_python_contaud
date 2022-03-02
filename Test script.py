@@ -12,5 +12,6 @@ from _my_modules import funcfile
 # s_path = "S:/LOGS/"
 # s_file = "Python_log_" + datetime.datetime.now().strftime("%Y%m%d") + ".txt"
 # funcfile.writelog("Now", s_path, s_file)
-funcfile.writelog("SCRIPT: OPEN PROJECT NWU INTERNAL AUDIT CONTINUOUS AUDIT")
-funcfile.writelog("--------------------------------------------------------")
+funcfile.writelog("Now","","","w")
+# funcfile.writelog("SCRIPT: OPEN PROJECT NWU INTERNAL AUDIT CONTINUOUS AUDIT")
+# funcfile.writelog("--------------------------------------------------------")

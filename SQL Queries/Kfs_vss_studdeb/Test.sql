@@ -1,9 +1,10 @@
 ﻿Select
-    x004i.Tran_type,
-    x004i.Tran_description,
-    Sum(x004i.Amount_vss) As Sum_Amount_vss
+    X002dc_vss_prevbal_curopen.TYPE,
+    Total(X002dc_vss_prevbal_curopen.BAL_CLOS) As Total_BAL_CLOS,
+    Total(X002dc_vss_prevbal_curopen.BAL_OPEN) As Total_BAL_OPEN,
+    Total(X002dc_vss_prevbal_curopen.DIFF_BAL) As Total_DIFF_BAL,
+    Count(X002dc_vss_prevbal_curopen.STUDENT) As Count_STUDENT
 From
-    X004cx_invss_nogl x004i
+    X002dc_vss_prevbal_curopen
 Group By
-    x004i.Tran_type,
-    x004i.Tran_description
+    X002dc_vss_prevbal_curopen.TYPE
