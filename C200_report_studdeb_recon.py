@@ -58,9 +58,9 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     """
 
     """ PARAMETERS *************************************************************
-    dopenmaf = GL Opening balances for Mafikeng campus
+    dopenmaf = GL Opening balances for Mahikeng campus
     dopenpot = GL Opening balances for Potchefstroom campus
-    dopenvaa = GL Opening balances for Vaal Triangle campus
+    dopenvaa = GL Opening balances for Vanderbijlpark campus
     Notes:
     1. When new financial year start, GL does not contain opening balances.
        Opening balances are the inserted manually here, until the are inserted
@@ -153,8 +153,8 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     SELECT
       *,
       CASE
-        WHEN FDEBTCOLLECTIONSITE = '-9' THEN 'Mafikeng'
-        WHEN FDEBTCOLLECTIONSITE = '-2' THEN 'Vaal Triangle'
+        WHEN FDEBTCOLLECTIONSITE = '-9' THEN 'Mahikeng'
+        WHEN FDEBTCOLLECTIONSITE = '-2' THEN 'Vanderbijlpark'
         ELSE 'Potchefstroom'
       END AS CAMPUS,
       CASE
@@ -511,7 +511,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
 
     # Add previous year gl opening balances (TEMPORARY)
     if dopenmaf != 0:
-        s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`, `MONTH`, `BALANCE`) VALUES ('Mafikeng', '00', %VALUE%);"
+        s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`, `MONTH`, `BALANCE`) VALUES ('Mahikeng', '00', %VALUE%);"
         s_sql = s_sql.replace("%VALUE%", str(dopenmaf))
         so_curs.execute(s_sql)
     if dopenpot != 0:
@@ -519,7 +519,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
         s_sql = s_sql.replace("%VALUE%", str(dopenpot))
         so_curs.execute(s_sql)
     if dopenvaa != 0:
-        s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`, `MONTH`, `BALANCE`) VALUES ('Vaal Triangle', '00', %VALUE%);"
+        s_sql = "INSERT INTO `X001cb_gl_balmonth` (`CAMPUS`, `MONTH`, `BALANCE`) VALUES ('Vanderbijlpark', '00', %VALUE%);"
         s_sql = s_sql.replace("%VALUE%", str(dopenvaa))
         so_curs.execute(s_sql)
     so_conn.commit()
@@ -937,8 +937,8 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
         s_sql = "Create Table " + sr_file + " As " + """
         Select
             Case
-                WHEN FDEBTCOLLECTIONSITE = '-9' THEN 'Mafikeng'
-                WHEN FDEBTCOLLECTIONSITE = '-2' THEN 'Vaal Triangle'
+                WHEN FDEBTCOLLECTIONSITE = '-9' THEN 'Mahikeng'
+                WHEN FDEBTCOLLECTIONSITE = '-2' THEN 'Vanderbijlpark'
                 ELSE 'Potchefstroom'    
             End AS CAMPUS,
             TRAN.FBUSENTID AS STUDENT,  
@@ -1031,7 +1031,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
                     CASE
                       WHEN CAMPUS_OPEN = CAMPUS_CLOS AND DIFF_BAL = 0.00 THEN 1
                       WHEN BAL_CLOS = 0.00 AND CAMPUS_OPEN IS NULL THEN 1
-                      WHEN CAMPUS_OPEN = CAMPUS_CLOS AND DIFF_BAL <> 0.00 THEN 4
+                      WHEN CAMPUS_OPEN = CAMPUS_CLOS AND DIFF_BAL <> 0.00 THEN 2
                       WHEN CAMPUS_OPEN IS NULL AND DIFF_BAL <> 0.00 THEN 2                      
                       WHEN CAMPUS_OPEN <> CAMPUS_CLOS AND DIFF_BAL = 0.00 THEN 3
                       WHEN CAMPUS_OPEN <> CAMPUS_CLOS AND DIFF_BAL <> 0.00 THEN 4
@@ -4401,7 +4401,7 @@ if __name__ == '__main__':
     try:
         # report_studdeb_recon(0,0,0,"curr")
         # 2022 balances
-        report_studdeb_recon(40948592.25, 6560827.10, 29029805.04, "curr")
+        report_studdeb_recon(40960505.33, 6573550.30, 29005168.76, "curr")
         # 2021 balances
         # report_studdeb_recon(65676774.13, 61655697.80, 41648563.00, "curr")
         # 2020 balances
