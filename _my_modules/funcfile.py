@@ -63,25 +63,31 @@ def get_field_value(o_cursor, s_table='', s_field='', s_where=''):
     return s_return
 
 
-def writelog(s_entry="\n", s_path="S:/Logs/",
-             s_file="Python_log_" + datetime.datetime.now().strftime("%Y%m%d") + ".txt"):
+def writelog(s_entry="\n",
+             s_path="S:/Logs/",
+             s_file="Python_log_" + datetime.datetime.now().strftime("%Y%m%d") + ".txt",
+             s_mode='a'):
     """
     Function to create log file
 
     :param s_entry: Log file entry
     :param s_path: Log file path
     :param s_file: Log file name
+    :param s_mode: File mode
     :return: Nothing
     """
 
     # DECLARE VARIABLES
+    if s_path == "":
+        s_path = "S:/Logs/"
+
     if s_file == "":
         s_file = "Python_log_" + datetime.datetime.now().strftime("%Y%m%d") + ".txt"
     s_project: str = "FUNCFILE:" + s_file
 
     try:
 
-        with open(s_path + s_file, 'a', encoding="utf-8") as fl:
+        with open(s_path + s_file, s_mode, encoding="utf-8") as fl:
             # file opened for writing. write to it here
             # Write the log
             if s_entry == "Now":
