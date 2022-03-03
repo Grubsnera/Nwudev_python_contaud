@@ -1,0 +1,21 @@
+﻿Select
+    TEST.Audit_finding,
+    TEST.Organization,
+    TEST.Campus,
+    TEST.Month,
+    TEST.Gl_description,
+    TEST.Amount_gl,
+    TEST.Responsible_Officer,
+    TEST.Responsible_Officer_Numb,
+    TEST.Responsible_Officer_Mail,
+    TEST.Supervisor,
+    TEST.Supervisor_Numb,
+    TEST.Supervisor_Mail,
+    TEST.Org_Officer,
+    TEST.Org_Officer_Numb,
+    TEST.Org_Officer_Mail,
+    TEST.Org_Supervisor,
+    TEST.Org_Supervisor_Numb,
+    TEST.Org_Supervisor_Mail
+From
+    X004dx_ingl_novss TEST
