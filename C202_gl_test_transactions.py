@@ -680,7 +680,7 @@ def gl_test_transactions():
             s_sql = s_sql.replace("%FINDING%", s_finding)
             s_sql = s_sql.replace("%FILEP%", s_file_prefix)
             s_sql = s_sql.replace("%TODAY%", funcdate.today())
-            s_sql = s_sql.replace("%DATETEST%", funcdate.cur_monthendnext())
+            s_sql = s_sql.replace("%DATETEST%", funcdate.cur_monthendnext(0))
             so_curs.execute(s_sql)
             funcfile.writelog("%t BUILD TABLE: " + sr_file)
             if l_debug:
@@ -826,7 +826,7 @@ def gl_test_transactions():
                 '%FIND%' As Audit_finding,
                 FIND.ORG As Organization,
                 FIND.LOC As Campus,
-                FIND.ORG_NM As Organization,
+                FIND.ORG_NM As Division,
                 FIND.ACCOUNT_NM As Account,
                 FIND.CALC_COST_STRING As Cost_string,
                 FIND.FIN_OBJ_CD_NM As Object_name,
