@@ -4400,8 +4400,10 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
 if __name__ == '__main__':
     try:
         # report_studdeb_recon(0,0,0,"curr")
-        # 2022 balances
-        report_studdeb_recon(40960505.33, 6573550.30, 29005168.76, "curr")
+        # 2022 balances journal test values
+        report_studdeb_recon(40961071.35, 6594337.25, 28983815.79, "curr")
+        # 2022 balances real values
+        # report_studdeb_recon(40960505.33, 6573550.30, 29005168.76, "curr")
         # 2021 balances
         # report_studdeb_recon(65676774.13, 61655697.80, 41648563.00, "curr")
         # 2020 balances
