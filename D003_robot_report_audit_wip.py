@@ -103,7 +103,8 @@ def robot_report_audit_wip(s_year: str = "", s_type: str = "", s_name: str = "",
     s_line += "START_DATE,"
     s_line += "DUE_DATE,"
     s_line += "COMPLETE_DATE,"
-    s_line += "NOTES"
+    s_line += "NOTES_OFFICIAL,"
+    s_line += "NOTES_OWN"
     funcfile.writelog(s_line, re_path, s_file)
 
     # BUILD THE WHERE CLAUSE
@@ -119,22 +120,23 @@ def robot_report_audit_wip(s_year: str = "", s_type: str = "", s_name: str = "",
     # BUILD THE SQL QUERY
     s_sql = """
     SELECT
-    ia_user.ia_user_name,
-    ia_assignment.ia_assi_year,
-    ia_assignment.ia_assi_name,
-    ia_assignment_type.ia_assitype_name, 
-    ia_assignment.ia_assi_priority,
-    ia_assignment_status.ia_assistat_name,
-    ia_assignment.ia_assi_startdate,
-    ia_assignment.ia_assi_completedate,
-    ia_assignment.ia_assi_finishdate,
-    ia_assignment.ia_assi_desc,
-    ia_assignment.ia_assi_auto
+    us.ia_user_name,
+    ia.ia_assi_year,
+    ia.ia_assi_name,
+    at.ia_assitype_name, 
+    ia.ia_assi_priority,
+    st.ia_assistat_name,
+    ia.ia_assi_startdate,
+    ia.ia_assi_completedate,
+    ia.ia_assi_finishdate,
+    ia.ia_assi_offi,
+    ia.ia_assi_desc,
+    ia.ia_assi_auto
     FROM
-    ia_assignment Left Join
-    ia_user On ia_user.ia_user_sysid = ia_assignment.ia_user_sysid Left Join
-    ia_assignment_type On ia_assignment_type.ia_assitype_auto = ia_assignment.ia_assitype_auto Left Join
-    ia_assignment_status On ia_assignment_status.ia_assistat_auto = ia_assignment.ia_assistat_auto
+    ia_assignment ia Left Join
+    ia_user us On us.ia_user_sysid = ia.ia_user_sysid Left Join
+    ia_assignment_type at On at.ia_assitype_auto = ia.ia_assitype_auto Left Join
+    ia_assignment_status st On st.ia_assistat_auto = ia.ia_assistat_auto
     WHERE %WHERE%
     ORDER BY
     ia_user_name,
@@ -160,7 +162,7 @@ def robot_report_audit_wip(s_year: str = "", s_type: str = "", s_name: str = "",
         s_line += str(row[1]) + ","
 
         # NAME
-        s_line += '"' + row[2].replace(",", "") + ' (' + str(row[10]) + ')",'
+        s_line += '"' + row[2].replace(",", "") + ' (' + str(row[11]) + ')",'
 
         # TYPE
         s_line += '"' + row[3] + '",'
@@ -171,6 +173,8 @@ def robot_report_audit_wip(s_year: str = "", s_type: str = "", s_name: str = "",
             s_priority = '"Closed"'
         elif row[4] == "8":
             s_priority = '"Continuous"'
+        elif row[4] == "4":
+            s_priority = '"Follow-up"'
         elif row[4] == "3":
             s_priority = '"High"'
         elif row[4] == "2":
@@ -200,8 +204,11 @@ def robot_report_audit_wip(s_year: str = "", s_type: str = "", s_name: str = "",
         else:
             s_line += ","
 
-        # NOTES
-        s_line += '"' + row[9].replace(",", "") + '"'
+        # NOTES_OFFICIAL
+        s_line += '"' + row[9].replace(",", "") + '",'
+
+        # NOTES_OWN
+        s_line += '"' + row[10].replace(",", "") + '"'
 
         # WRITE TO FILE
         funcfile.writelog(s_line, re_path, s_file)
