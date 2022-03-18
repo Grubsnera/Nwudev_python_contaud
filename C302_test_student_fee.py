@@ -135,8 +135,8 @@ def student_fee(s_period="curr"):
         l_export: bool = True
     else:
         f_reg_fee = 2110.00
-        d_sem1_con = "2022-03-04"
-        d_sem1_dis = "2022-03-04"
+        d_sem1_con = "2022-03-11"
+        d_sem1_dis = "2022-03-11"
         d_sem2_con = "2022-08-05"
         d_sem2_dis = "2022-08-05"
         d_test_overcharge = "2022-07-15"  # Only month and day used
