@@ -156,18 +156,29 @@ def robot_report_audit_wip(s_year: str = "", s_type: str = "", s_name: str = "",
     for row in ms_from_cursor.execute(s_sql).fetchall():
 
         # USER NAME
+        if l_debug:
+            print(row[0])
         s_line = '"' + row[0] + '",'
 
         # YEAR
+        if l_debug:
+            print(row[1])
         s_line += str(row[1]) + ","
 
         # NAME
+        if l_debug:
+            print(row[2])
+            print(row[11])
         s_line += '"' + row[2].replace(",", "") + ' (' + str(row[11]) + ')",'
 
         # TYPE
+        if l_debug:
+            print(row[3])
         s_line += '"' + row[3] + '",'
 
         # PRIORITY
+        if l_debug:
+            print(row[4])
         s_priority: str = '"Inactive"'
         if row[4] == "9":
             s_priority = '"Closed"'
@@ -184,31 +195,49 @@ def robot_report_audit_wip(s_year: str = "", s_type: str = "", s_name: str = "",
         s_line += s_priority + ","
 
         # STATUS
+        if l_debug:
+            print(row[5])
         s_line += '"' + row[5] + '",'
 
         # START DATE
+        if l_debug:
+            print(row[6])
         if row[6]:
             s_line += datetime.strftime(row[6], "%Y-%m-%d") + ","
         else:
             s_line += ","
 
         # DUE DATE
+        if l_debug:
+            print(row[7])
         if row[7]:
             s_line += datetime.strftime(row[7], "%Y-%m-%d") + ","
         else:
             s_line += ","
 
         # FINISH DATE
+        if l_debug:
+            print(row[8])
         if row[8]:
             s_line += datetime.strftime(row[8], "%Y-%m-%d") + ","
         else:
             s_line += ","
 
         # NOTES_OFFICIAL
-        s_line += '"' + row[9].replace(",", "") + '",'
+        if l_debug:
+            print(row[9])
+        s_data = row[9].replace(",", "")
+        s_data = s_data.replace("'", "")
+        s_data = s_data.replace('"', "")
+        s_line += '"' + s_data + '",'
 
         # NOTES_OWN
-        s_line += '"' + row[10].replace(",", "") + '"'
+        if l_debug:
+            print(row[10])
+        s_data = row[10].replace(",", "")
+        s_data = s_data.replace("'", "")
+        s_data = s_data.replace('"', "")
+        s_line += '"' + s_data + '"'
 
         # WRITE TO FILE
         funcfile.writelog(s_line, re_path, s_file)
