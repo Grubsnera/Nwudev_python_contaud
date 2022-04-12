@@ -4,7 +4,7 @@
 # SYSTEM MODULES
 
 # IMPORT OWN MODULES
-import datetime
+from datetime import date
 
 from _my_modules import funcfile
 
@@ -15,3 +15,11 @@ from _my_modules import funcfile
 funcfile.writelog("Now","","","w")
 # funcfile.writelog("SCRIPT: OPEN PROJECT NWU INTERNAL AUDIT CONTINUOUS AUDIT")
 # funcfile.writelog("--------------------------------------------------------")
+
+
+d0 = date(2020, 3, 27)
+d1 = date(2022, 4, 4)
+delta = d1 - d0
+print(delta. days)
+
+print()
