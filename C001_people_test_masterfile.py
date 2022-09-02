@@ -6596,7 +6596,7 @@ def people_test_masterfile():
             p.date_started AS LONG_SERVICE_DATE,
             Case
                 When p.assignment_category = 'TEMPORARY' Then 'TEMP'
-                Else d.PERIOD
+                Else 'ALL'
             End As PERIOD,
             Case
                 When p.assignment_category = 'TEMPORARY' Then 'ALL'
