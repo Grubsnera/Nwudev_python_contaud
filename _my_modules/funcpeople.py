@@ -149,7 +149,10 @@ def people_detail_list(
         paaf.assignment_id assignment_id,
         paaf.assignment_number assignment_number,
         upper(cat.meaning) assignment_category,
-        hrp.acad_supp as employee_category,
+        case
+            when paaf.position_id = 0 then paaf.EMPLOYEE_CATEGORY
+            else hrp.acad_supp
+        end as employee_category,
         upper(ppt.user_person_type) user_person_type,
         pg.grade grade,
         pg.grade_calc grade_calc,       
