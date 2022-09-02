@@ -241,8 +241,8 @@ def people_test_masterfile():
     #   Remove supervisor and org officer names in the highbond notification email.
 
     # DECLARE TEST VARIABLES
-    i_find = 0 # Number of findings before previous reported findings
-    i_coun = 0 # Number of new findings to report
+    i_find = 0  # Number of findings before previous reported findings
+    i_coun = 0  # Number of new findings to report
 
     # SELECT ALL EMPLOYEES WITHOUT AN ID NUMBER
     print("Select all employees without an ID number...")
@@ -278,7 +278,7 @@ def people_test_masterfile():
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
     # COUNT THE NUMBER OF FINDINGS
-    i_find = funcsys.tablerowcount(so_curs,sr_file)
+    i_find = funcsys.tablerowcount(so_curs, sr_file)
     print("*** Found "+str(i_find)+" exceptions ***")
     funcfile.writelog("%t FINDING: "+str(i_find)+" EMPL ID blank finding(s)")
 
@@ -353,7 +353,7 @@ def people_test_masterfile():
             X002ac_id_setprev PREV ON PREV.FIELD1 = X002ab_id_blank.EMP
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%",funcdate.today())
+        s_sql = s_sql.replace("%TODAY%", funcdate.today())
         s_sql = s_sql.replace("%TODAYPLUS%", funcdate.cur_monthendnext())
         so_curs.execute(s_sql)
         so_conn.commit()
@@ -6047,6 +6047,9 @@ def people_test_masterfile():
             funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
         # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
+        # TODO: Delete after run once
+        sr_file = s_file_prefix + "x_academic_support_invalid"
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         sr_file = s_file_prefix + "x_" + s_file_name
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         if i_finding_before > 0 and i_finding_after > 0:
