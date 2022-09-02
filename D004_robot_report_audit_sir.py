@@ -8,6 +8,7 @@ Created: 31 Mar 2022
 
 # IMPORT PYTHON MODULES
 # import sqlite3
+import re
 
 # IMPORT OWN MODULES
 from _my_modules import funcconf
@@ -43,7 +44,7 @@ def robot_report_audit_sir(s_year: str = "", s_type: str = "", s_name: str = "",
     from datetime import datetime
 
     # DECLARE VARIABLES
-    l_debug: bool = False
+    l_debug: bool = True
 
     """*************************************************************************
     ENVIRONMENT
@@ -94,7 +95,8 @@ def robot_report_audit_sir(s_year: str = "", s_type: str = "", s_name: str = "",
         print("BUILD THE REPORT")
 
     # BUILD THE HEADINGS
-    s_line: str = "AUDITOR,"
+    s_line: str = ""
+    s_line = "AUDITOR,"
     s_line += "YEAR,"
     s_line += "ASSIGNMENT,"
     s_line += "CASE_YEAR,"
@@ -118,6 +120,7 @@ def robot_report_audit_sir(s_year: str = "", s_type: str = "", s_name: str = "",
     s_line += "NOTES_OFFICIAL,"
     s_line += "NOTES_OWN"
     funcfile.writelog(s_line, re_path, s_file)
+    s_line = ""
 
     # BUILD THE WHERE CLAUSE
     if s_year != "":
@@ -165,12 +168,8 @@ def robot_report_audit_sir(s_year: str = "", s_type: str = "", s_name: str = "",
     ia_assignment_conducted co On co.ia_assicond_auto = ia.ia_assicond_auto
     WHERE %WHERE%
     ORDER BY
-    ia_user_name,
-    ia_assi_year,
-    ia_assi_completedate,
-    ia_assitype_name,
-    ia_assi_priority desc,
-    ia_assi_name
+    ia_assi_si_caseyear,
+    ia_assi_si_casenumber
     ;
     """
     s_sql = s_sql.replace("%WHERE%", s_where)
@@ -228,12 +227,18 @@ def robot_report_audit_sir(s_year: str = "", s_type: str = "", s_name: str = "",
         # 21 DATE
         if l_debug:
             print(row[8])
-        s_line += '"' + row[8] + '",'
+        if row[8]:
+            s_line += datetime.strftime(row[8], "%Y-%m-%d") + ","
+        else:
+            s_line += ","
 
         # 90 DATE
         if l_debug:
             print(row[9])
-        s_line += '"' + row[9] + '",'
+        if row[9]:
+            s_line += datetime.strftime(row[9], "%Y-%m-%d") + ","
+        else:
+            s_line += ","
 
         # START DATE
         if l_debug:
@@ -290,10 +295,11 @@ def robot_report_audit_sir(s_year: str = "", s_type: str = "", s_name: str = "",
         # ISSUE
         if l_debug:
             print(row[16])
-        s_data = row[16].replace(",", "")
-        s_data = s_data.replace("'", "")
-        s_data = s_data.replace('"', "")
-        s_line += '"' + s_data + '",'
+        # s_data = row[16].replace(",", "")
+        # s_data = s_data.replace("'", "")
+        # s_data = s_data.replace('"', "")
+        # s_line += '"' + s_data + '",'
+        s_line += '"' + re.sub('\W+', ' ', row[16]) + '",'
 
         # STATUS
         if l_debug:
@@ -308,10 +314,11 @@ def robot_report_audit_sir(s_year: str = "", s_type: str = "", s_name: str = "",
         # REFERENCE
         if l_debug:
             print(row[19])
-        s_data = row[19].replace(",", "")
-        s_data = s_data.replace("'", "")
-        s_data = s_data.replace('"', "")
-        s_line += '"' + s_data + '",'
+        # s_data = row[19].replace(",", "")
+        # s_data = s_data.replace("'", "")
+        # s_data = s_data.replace('"', "")
+        # s_line += '"' + s_data + '",'
+        s_line += '"' + re.sub('\W+', ' ', row[19]) + '",'
 
         # VALUE
         if l_debug:
@@ -324,25 +331,29 @@ def robot_report_audit_sir(s_year: str = "", s_type: str = "", s_name: str = "",
         # NOTES_OFFICIAL
         if l_debug:
             print(row[21])
-        s_line += '"' + row[21] + '",'
+        # s_line += '"' + row[21] + '",'
         # s_data = row[21].replace(",", "")
         # s_data = s_data.replace("'", "")
         # s_data = s_data.replace('"', "")
         # s_line += '"' + s_data + '",'
+        s_line += '"' + re.sub('\W+', ' ', row[21]) + '",'
 
         # NOTES_OWN
         if l_debug:
             print(row[22])
-        s_data = row[22].replace(",", "")
-        s_data = s_data.replace("'", "")
-        s_data = s_data.replace('"', "")
-        s_line += '"' + s_data + '"'
+        # s_data = row[22].replace(",", "")
+        # s_data = s_data.replace("'", "")
+        # s_data = s_data.replace('"', "")
+        # s_line += '"' + s_data + '"'
+        s_line += '"' + re.sub('\W+', ' ', row[22]) + '",'
+
+        if l_debug:
+            print(s_line)
 
         # WRITE TO FILE
         funcfile.writelog(s_line, re_path, s_file)
+        s_line = ""
 
-    if l_debug:
-        print(s_line)
     funcfile.writelog("%t Special investigation sir report requested by " + s_name)
     s_report = "Include all special investigations for the year mentioned and "
     s_report += "all previous special investigations with an unclosed priority."

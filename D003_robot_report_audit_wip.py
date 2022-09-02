@@ -94,7 +94,8 @@ def robot_report_audit_wip(s_year: str = "", s_type: str = "", s_name: str = "",
         print("BUILD THE REPORT")
 
     # BUILD THE HEADINGS
-    s_line: str = "AUDITOR,"
+    s_line: str = ""
+    s_line = "AUDITOR,"
     s_line += "YEAR,"
     s_line += "ASSIGNMENT,"
     s_line += "TYPE,"
@@ -106,6 +107,7 @@ def robot_report_audit_wip(s_year: str = "", s_type: str = "", s_name: str = "",
     s_line += "NOTES_OFFICIAL,"
     s_line += "NOTES_OWN"
     funcfile.writelog(s_line, re_path, s_file)
+    s_line = ""
 
     # BUILD THE WHERE CLAUSE
     if s_year != "":
@@ -239,11 +241,13 @@ def robot_report_audit_wip(s_year: str = "", s_type: str = "", s_name: str = "",
         s_data = s_data.replace('"', "")
         s_line += '"' + s_data + '"'
 
+        if l_debug:
+            print(s_line)
+
         # WRITE TO FILE
         funcfile.writelog(s_line, re_path, s_file)
+        s_line = ""
 
-    if l_debug:
-        print(s_line)
     funcfile.writelog("%t Audit assignment wip report requested by " + s_name)
     s_report = "Include all assignments for the year mentioned and "
     s_report += "all previous assignments with an unclosed priority."
