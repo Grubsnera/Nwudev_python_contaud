@@ -1,5 +1,7 @@
 ﻿Select
-    x000p.employee_number,
-    x000p.organization
+    X000_ADDRESSES.STYLE,
+    Count(X000_ADDRESSES.ADDRESS_ID) As Count_ADDRESS_ID
 From
-    X000_PEOPLE x000p
+    X000_ADDRESSES
+Group By
+    X000_ADDRESSES.STYLE
