@@ -41,6 +41,7 @@ BUILD ASSIGNMENTS AND PEOPLE
 BUILD LIST OF CURRENT PEOPLE
 PEOPLE ORGANIZATION STRUCTURE REF (Employee numbers of structure)
 BUILD CURRENT SYSTEM USERS (X000_USER_CURR)
+BUILD SPOUSES (X000_SPOUSE)
 BUILD PEOPLE LEAVE
 """
 
@@ -1979,6 +1980,42 @@ def people_lists():
     so_curs.execute("DROP VIEW IF EXISTS X000_PHONE_MOBI_CURR_LIST")
     so_curs.execute("DROP VIEW IF EXISTS X000_PHONE_WORK_CURR")
     so_curs.execute("DROP VIEW IF EXISTS X000_PHONE_WORK_CURR_LIST")
+
+    """ ****************************************************************************
+    BUILD SPOUSES
+    *****************************************************************************"""
+
+    # BUILD SPOUSE MASTER
+    print("Build spouse master file...")
+    sr_file = "X000_SPOUSE"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        ppei.PERSON_EXTRA_INFO_ID As person_extra_info_id,
+        ppei.PERSON_ID As person_id,
+        ppei.PEI_INFORMATION10 As spouse_number,
+        ppei.PEI_INFORMATION5 As spouse_title,
+        ppei.PEI_INFORMATION4 As spouse_initials,
+        ppei.PEI_INFORMATION3 As spouse_name_last,
+        Date(ppei.PEI_INFORMATION9) As spouse_date_of_birth,
+        ppei.PEI_INFORMATION6 As spouse_national_identifier,
+        ppei.PEI_INFORMATION7 As spouse_passport,
+        Date(ppei.PEI_INFORMATION1) As spouse_start_date,
+        Date(ppei.PEI_INFORMATION2) As spouse_end_date,
+        Datetime(ppei.CREATION_DATE) As spouse_create_date,
+        ppei.CREATED_BY As spouse_created_by,
+        Datetime(ppei.LAST_UPDATE_DATE) As spouse_update_date,
+        ppei.LAST_UPDATED_BY As spouse_updated_by,
+        ppei.LAST_UPDATE_LOGIN As spouse_update_login
+    From
+        PER_PEOPLE_EXTRA_INFO ppei
+    Where
+        ppei.INFORMATION_TYPE = "NWU_SPOUSE"
+    ;"""
+    s_sql = s_sql.replace("%DATE%", funcdate.today())
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # Close the connection *********************************************************
     so_conn.close()
