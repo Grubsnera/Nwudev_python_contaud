@@ -85,6 +85,16 @@ def people_detail_list(
     if l_debug:
         print(i_records)
 
+    # BUILD GROUP INSURANCE INFORMATION SPOUSE
+    i_records = funcpayroll.payroll_element_screen_value(
+        so_conn,
+        'X000_GROUPINSURANCE_SPOUSE',
+        'nwu group insurance information',
+        'spouse',
+        s_date)
+    if l_debug:
+        print(i_records)
+
     # BUILD CURRENT PEOPLE
     if l_debug:
         print("Build people list...")
