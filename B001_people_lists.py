@@ -2032,7 +2032,7 @@ def people_lists():
         ppei.spouse_title,
         ppei.spouse_initials,
         ppei.spouse_name_last,
-        ppei.spouse_title || " " || ppei.spouse_initials || " " || ppei.spouse_name_last As spouse_address,
+        Trim(ppei.spouse_title || " " || ppei.spouse_initials || " " || ppei.spouse_name_last) As spouse_address,
         ppei.spouse_date_of_birth,
         ppei.spouse_national_identifier,
         ppei.spouse_passport,
