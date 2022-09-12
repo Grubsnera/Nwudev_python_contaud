@@ -1996,11 +1996,14 @@ def people_lists():
         ppei.PEI_INFORMATION5 As spouse_title,
         ppei.PEI_INFORMATION4 As spouse_initials,
         ppei.PEI_INFORMATION3 As spouse_name_last,
-        Date(ppei.PEI_INFORMATION9) As spouse_date_of_birth,
+        Trim(Replace(Substr(ppei.PEI_INFORMATION9,1,10),'/','-')) As spouse_date_of_birth,
         ppei.PEI_INFORMATION6 As spouse_national_identifier,
         ppei.PEI_INFORMATION7 As spouse_passport,
-        Date(ppei.PEI_INFORMATION1) As spouse_start_date,
-        Date(ppei.PEI_INFORMATION2) As spouse_end_date,
+        Trim(Replace(Substr(ppei.PEI_INFORMATION1,1,10),'/','-')) As spouse_start_date,
+        Case
+            When Trim(Replace(Substr(ppei.PEI_INFORMATION2,1,10),'/','-')) <> '' Then Trim(Replace(Substr(ppei.PEI_INFORMATION2,1,10),'/','-'))  
+            Else '4712-12-31'
+        End As spouse_end_date,    
         Datetime(ppei.CREATION_DATE) As spouse_create_date,
         ppei.CREATED_BY As spouse_created_by,
         Datetime(ppei.LAST_UPDATE_DATE) As spouse_update_date,
@@ -2045,10 +2048,11 @@ def people_lists():
         X000_SPOUSE ppei Inner Join
         X000_PEOPLE papf On papf.person_id = ppei.person_id
     Where
-        StrfTime('%Y-%m-%d', 'now') Between ppei.spouse_start_date And IfNull(ppei.spouse_end_date, '4712-12-31')
+        StrfTime('%Y-%m-%d', 'now') Between ppei.spouse_start_date And ppei.spouse_end_date
     Group By
         papf.employee_number
     ;"""
+
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
