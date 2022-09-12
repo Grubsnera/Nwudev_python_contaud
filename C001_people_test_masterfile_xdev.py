@@ -47,9 +47,9 @@ def people_test_masterfile_xdev():
     so_file = "People_test_masterfile.sqlite"  # Source database
     s_sql = ""  # SQL statements
     l_debug: bool = True  # Display statements on screen
-    l_export: bool = True  # Export findings to text file
+    l_export: bool = False  # Export findings to text file
     l_mail: bool = funcconf.l_mail_project
-    l_mail: bool = False  # Send email messages
+    l_mail: bool = True  # Send email messages
     l_mess: bool = funcconf.l_mess_project
     l_mess: bool = False  # Send communicator messages
     l_record: bool = False  # Record findings for future use
@@ -89,21 +89,6 @@ def people_test_masterfile_xdev():
     *****************************************************************************"""
 
     # TODO Delete after first run
-    s_file_prefix: str = "X003e"
-    sr_file: str = s_file_prefix + "a_permit_expire"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    sr_file: str = s_file_prefix + "a_work_permit_expire"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    sr_file: str = s_file_prefix + "b_detail"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    sr_file: str = s_file_prefix + "f_officer"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    sr_file: str = s_file_prefix + "g_supervisor"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    sr_file: str = s_file_prefix + "h_contact"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    sr_file: str = s_file_prefix + "x_work_permit_expire"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 
     """ ****************************************************************************
     BEGIN OF SCRIPT
@@ -116,8 +101,98 @@ def people_test_masterfile_xdev():
     MASTER FILE LISTS
     *****************************************************************************"""
 
+    """ ****************************************************************************
+    SPOUSE INSURANCE MASTER FILES
+    *****************************************************************************"""
+
+    # IMPORT SPOUSE BENCHMARK
+    sr_file = "X009_spouse_matrix"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if l_debug:
+        print("Import spouse matrix...")
+    so_curs.execute(
+        "CREATE TABLE " + sr_file + "(PERSON_TYPE, MARITAL_STATUS, TEST1)")
+    s_cols = ""
+    co = open(ed_path + "001_employee_marital_status.csv", "r")
+    co_reader = csv.reader(co)
+    # Read the COLUMN database data
+    for row in co_reader:
+        # Populate the column variables
+        if row[0] == "PERSON_TYPE":
+            continue
+        else:
+            s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "')"
+            so_curs.execute(s_cols)
+    so_conn.commit()
+    # Close the impoted data file
+    co.close()
+    funcfile.writelog("%t IMPORT TABLE: " + ed_path + "001_employee_marital_status.csv (" + sr_file + ")")
+
+    # OBTAIN MASTER DATA
+    # if test <> '1' then employee does not form part of the test
+    # if married = '1' then married for all married person types
+    if l_debug:
+        print("Obtain employee and spouse data...")
+    sr_file: str = 'X009_people_spouse_all'
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "Create Table " + sr_file + " As " + """
+    Select
+        p.employee_number,
+        p.person_id,
+        p.name_address,
+        p.user_person_type,
+        cast(t.TEST1 As Int) As test,
+        p.marital_status,
+        cast(m.TEST1 As Int) As married,
+        p.date_started,
+        cast(i.ELEMENT_VALUE As Int) As spouse_insurance_status,
+        cast(s.spouse_age As Int) As spouse_age,
+        s.person_extra_info_id,
+        s.spouse_number,
+        s.spouse_address,
+        s.spouse_date_of_birth,
+        s.spouse_national_identifier,
+        s.spouse_passport,
+        s.spouse_start_date,
+        s.spouse_end_date,
+        s.spouse_create_date,
+        s.spouse_created_by,
+        s.spouse_update_date,
+        s.spouse_updated_by,
+        s.spouse_update_login
+    From
+        PEOPLE.X000_PEOPLE p Left Join
+        PEOPLE.X000_GROUPINSURANCE_SPOUSE i On i.EMPLOYEE_NUMBER = p.employee_number Left Join
+        PEOPLE.X002_SPOUSE_CURR s On s.employee_number = p.employee_number Left Join
+        X009_spouse_matrix t On t.PERSON_TYPE = p.user_person_type Left Join
+        X009_spouse_matrix m On m.MARITAL_STATUS = p.marital_status
+    Group By
+        p.employee_number    
+    ;"""
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    if l_debug:
+        so_conn.commit()
+
+    # Notes: Tests that can be performed on spouse insurance
+    # 1a. SPOUSE INSURANCE AFTER 65
+    #     test = 1 and married = 1 and insurance status is 1 or 2 and age > 65
+    #     Spouse insurance must be stopped in December in the year they turn 65.
+    # 1b. NO ACTIVE SPOUSE ON RECORD
+    #     test = 1 and married = 1 and insurance status is 1 or 2 and person_extra_info_id is null (no spouse)
+    #     Employee must provide spouse details.
+    # 1c. COMPULSORY SPOUSE INSURANCE IF EMPLOYED AFTER 1 JAN 2022
+    #     test = 1 and married = 1 and date_started >= 2022-01-01 and insurance status = 0 or null (must have)
+    #     Must have spouse insurance. Transfers etc should be excluded.
+    # 2a. NOT MARRIED BUT ACTIVE SPOUSE INSURANCE
+    #     married is null and insurance status is 1 or 2
+    #     Cancel insurance.
+    # 2b. NOT MARRIED BUT ACTIVE SPOUSE RECORD
+    #     married is null and person_extra_info_id is not null
+    #     End date spouse record.
+
     """*****************************************************************************
-    TEST EMPLOYEE LEAVE CODE INVALID
+    TEST SPOUSE INSURANCE AFTER 65
     *****************************************************************************"""
 
     # DEFAULT TRANSACTION OWNER PEOPLE
@@ -129,10 +204,10 @@ def people_test_masterfile_xdev():
     # DECLARE TEST VARIABLES
     i_finding_before = 0
     i_finding_after = 0
-    s_description = "Employee leave code invalid"
-    s_file_prefix: str = "X007d"
-    s_file_name: str = "employee_leave_code_invalid"
-    s_finding: str = "EMPLOYEE LEAVE CODE INVALID"
+    s_description = "Spouse insurance after 65"
+    s_file_prefix: str = "X009a"
+    s_file_name: str = "spouse_insurance_after_65"
+    s_finding: str = "SPOUSE INSURANCE AFTER 65"
     s_report_file: str = "001_reported.txt"
 
     # OBTAIN TEST RUN FLAG
@@ -149,55 +224,103 @@ def people_test_masterfile_xdev():
         if l_debug:
             print("TEST " + s_finding)
 
-        # IMPORT LEAVE BENCHMARK
-        sr_file = "X007_leave_master"
-        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        if l_debug:
-            print("Import leave benchmark...")
-        so_curs.execute(
-            "CREATE TABLE " + sr_file + "(CATEGORY TEXT,ACADSUPP TEXT,PERIOD TEXT,WORKDAYS TEXT, GRADE TEXT, LEAVE TEXT)")
-        s_cols = ""
-        co = open(ed_path + "001_employee_leave.csv", "r")
-        co_reader = csv.reader(co)
-        # Read the COLUMN database data
-        for row in co_reader:
-            # Populate the column variables
-            if row[0] == "CATEGORY":
-                continue
-            else:
-                s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "','" + row[
-                    3] + "','" + row[4] + "','" + row[5] + "')"
-                so_curs.execute(s_cols)
-        so_conn.commit()
-        # Close the impoted data file
-        co.close()
-        funcfile.writelog("%t IMPORT TABLE: " + ed_path + "001_employee_leave.csv (" + sr_file + ")")
+    """*****************************************************************************
+    TEST NO ACTIVE SPOUSE ON RECORD
+    *****************************************************************************"""
 
-        # OBTAIN MASTER DATA
-        if l_debug:
-            print("Obtain long service date...")
-        sr_file: str = 'X007_long_service_date'
-        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = "Create Table " + sr_file + " As " + """
-        Select
-            p.employee_number As EMPLOYEE_NUMBER,
-            p.date_started As DATE_STARTED,
-            Case
-                When p.assignment_category = 'TEMPORARY' Then 'TEMP'
-                When p.date_started Is null Then '2017-' 
-                When p.date_started = '' Then '2017-' 
-                When p.date_started < Date('2017-05-01') Then '1976-'
-                Else '2017-'
-            End As PERIOD
-        From
-            X000_PEOPLE p
-        ;"""
-        so_curs.execute(s_sql)
-        funcfile.writelog("%t BUILD TABLE: " + sr_file)
-        if l_debug:
-            so_conn.commit()
+    # DEFAULT TRANSACTION OWNER PEOPLE
+    # 21022402 MS AC COERTZEN for permanent employees
+    # 20742010 MRS N BOTHA for temporary employees
+    # Exclude 12795631 MR R VAN DEN BERG
+    # Exclude 13277294 MRS MC STRYDOM
 
-        # OBTAIN MASTER DATA
+    # DECLARE TEST VARIABLES
+    i_finding_before = 0
+    i_finding_after = 0
+    s_description = "No active spouse on record"
+    s_file_prefix: str = "X009b"
+    s_file_name: str = "no_active_spouse_on_record"
+    s_finding: str = "NO ACTIVE SPOUSE ON RECORD"
+    s_report_file: str = "001_reported.txt"
+
+    # OBTAIN TEST RUN FLAG
+    if functest.get_test_flag(so_curs, "HR", "TEST " + s_finding, "RUN") == "FALSE":
+
+        if l_debug:
+            print('TEST DISABLED')
+        funcfile.writelog("TEST " + s_finding + " DISABLED")
+
+    else:
+
+        # LOG
+        funcfile.writelog("TEST " + s_finding)
+        if l_debug:
+            print("TEST " + s_finding)
+
+    """*****************************************************************************
+    TEST COMPULSORY SPOUSE INSURANCE
+    *****************************************************************************"""
+
+    # DEFAULT TRANSACTION OWNER PEOPLE
+    # 21022402 MS AC COERTZEN for permanent employees
+    # 20742010 MRS N BOTHA for temporary employees
+    # Exclude 12795631 MR R VAN DEN BERG
+    # Exclude 13277294 MRS MC STRYDOM
+
+    # DECLARE TEST VARIABLES
+    i_finding_before = 0
+    i_finding_after = 0
+    s_description = "Compulsory spouse insurance"
+    s_file_prefix: str = "X009c"
+    s_file_name: str = "compulsory_spouse_insurance"
+    s_finding: str = "COMPULSORY SPOUSE INSURANCE"
+    s_report_file: str = "001_reported.txt"
+
+    # OBTAIN TEST RUN FLAG
+    if functest.get_test_flag(so_curs, "HR", "TEST " + s_finding, "RUN") == "FALSE":
+
+        if l_debug:
+            print('TEST DISABLED')
+        funcfile.writelog("TEST " + s_finding + " DISABLED")
+
+    else:
+
+        # LOG
+        funcfile.writelog("TEST " + s_finding)
+        if l_debug:
+            print("TEST " + s_finding)
+
+    """*****************************************************************************
+    TEST NOT MARRIED ACTIVE SPOUSE INSURANCE
+    *****************************************************************************"""
+
+    # DEFAULT TRANSACTION OWNER PEOPLE
+    # 21022402 MS AC COERTZEN for all
+
+    # DECLARE TEST VARIABLES
+    i_finding_before = 0
+    i_finding_after = 0
+    s_description = "Not married active spouse insurance"
+    s_file_prefix: str = "X009d"
+    s_file_name: str = "not_married_active_spouse_insurance"
+    s_finding: str = "NOT MARRIED ACTIVE SPOUSE INSURANCE"
+    s_report_file: str = "001_reported.txt"
+
+    # OBTAIN TEST RUN FLAG
+    if functest.get_test_flag(so_curs, "HR", "TEST " + s_finding, "RUN") == "FALSE":
+
+        if l_debug:
+            print('TEST DISABLED')
+        funcfile.writelog("TEST " + s_finding + " DISABLED")
+
+    else:
+
+        # LOG
+        funcfile.writelog("TEST " + s_finding)
+        if l_debug:
+            print("TEST " + s_finding)
+
+        # OBTAIN MASTER DATA 1
         if l_debug:
             print("Obtain master data...")
         sr_file: str = s_file_prefix + "aa_" + s_file_name
@@ -206,92 +329,18 @@ def people_test_masterfile_xdev():
         Select
             'NWU' As ORG,
             Substr(p.location,1,3) As LOC,
-            p.employee_number As EMPLOYEE_NUMBER,
-            p.assignment_category As ASSIGNMENT_CATEGORY,
-            Case
-                When p.assignment_category = 'TEMPORARY' Then 'ALL'
-                Else  p.employee_category
-            End As EMPLOYEE_CATEGORY,
-            p.date_started AS LONG_SERVICE_DATE,
-            Case
-                When p.assignment_category = 'TEMPORARY' Then 'TEMP'
-                Else 'ALL'
-            End As PERIOD,
-            Case
-                When p.assignment_category = 'TEMPORARY' Then 'ALL'
-                Else p.type_of_shift
-            End As WORKDAYS,
-            p.user_person_type As PERSON_TYPE,
-            Case
-                When p.assignment_category = 'TEMPORARY' Then p.user_person_type 
-                Else p.grade
-            End As GRADE,
-            Case
-                When f.ASSIGNMENT_CATEGORY = 'PERMANENT' Then True
-                Else False 
-            End As GRADE_INVALID,
-            p.leave_code As LEAVE_CODE,
-            Case
-                When au.EMPLOYEE_NUMBER Is Not Null And
-                 au.EMPLOYEE_NUMBER Not In ('12795631','13277294') And
-                 au.ORG_NAME Like('NWU P&C REMUNERATION%') Then au.EMPLOYEE_NUMBER
-                When p.assignment_category = 'PERMANENT' Then '21022402'
-                Else '20742010'
-            End As TRAN_OWNER,
-            p.assign_start_date As ASSIGN_START_DATE,
-            p.assignment_update_by As ASSIGN_USER_ID,
-            au.EMPLOYEE_NUMBER As ASSIGN_UPDATE,
-            au.NAME_ADDR As ASSIGN_UPDATE_NAME,
-            p.people_update_by As PEOPLE_USER_ID,
-            pu.EMPLOYEE_NUMBER As PEOPLE_UPDATE,
-            pu.NAME_ADDR As PEOPLE_UPDATE_NAME
+            s.employee_number As EMPLOYEE_NUMBER,
+            s.name_address As EMPLOYEE,
+            s.user_person_type As PERSON_TYPE,
+            s.marital_status As MARITAL_STATUS,
+            s.spouse_insurance_status As INSURANCE_STATUS,
+            s.spouse_address As SPOUSE
         From
-            X000_PEOPLE p Left Join
-            X000_USER_CURR au On au.USER_ID = p.assignment_update_by Left join
-            X000_USER_CURR pu On pu.USER_ID = p.people_update_by Left Join
-            X007_long_service_date d On d.employee_number = p.employee_number Left Join
-            X007cb_finding f On f.EMPLOYEE_NUMBER = p.EMPLOYEE_NUMBER
-        ;"""
-        so_curs.execute(s_sql)
-        funcfile.writelog("%t BUILD TABLE: " + sr_file)
-        if l_debug:
-            so_conn.commit()
-
-        # OBTAIN MASTER DATA
-        if l_debug:
-            print("Obtain master data...")
-        sr_file: str = s_file_prefix + "ab_" + s_file_name
-        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = "Create Table " + sr_file + " As " + """
-        Select
-            p.ORG,
-            p.LOC,
-            p.EMPLOYEE_NUMBER,
-            p.ASSIGNMENT_CATEGORY,
-            p.EMPLOYEE_CATEGORY,
-            p.LONG_SERVICE_DATE,
-            p.PERIOD,
-            p.WORKDAYS,
-            p.PERSON_TYPE,
-            p.GRADE,
-            p.GRADE_INVALID,
-            p.LEAVE_CODE,
-            m.LEAVE As LEAVE_EXPECTED,
-            p.TRAN_OWNER,
-            p.ASSIGN_START_DATE,
-            p.ASSIGN_USER_ID,
-            p.ASSIGN_UPDATE,
-            p.ASSIGN_UPDATE_NAME,
-            p.PEOPLE_USER_ID,
-            p.PEOPLE_UPDATE,
-            p.PEOPLE_UPDATE_NAME
-        From
-            X007daa_employee_leave_code_invalid p Left Join
-            X007_leave_master m On p.ASSIGNMENT_CATEGORY = m.CATEGORY
-                    And p.EMPLOYEE_CATEGORY = m.ACADSUPP
-                    And p.WORKDAYS = m.WORKDAYS
-                    And p.PERIOD = m.PERIOD
-                    And Instr(m.GRADE, '.'||p.GRADE||'~')
+            X009_people_spouse_all s Left Join
+            PEOPLE.X000_people p On p.employee_number = s.employee_number
+        Where
+            s.married Is Null And
+            s.spouse_insurance_status > 0
         ;"""
         so_curs.execute(s_sql)
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -308,38 +357,18 @@ def people_test_masterfile_xdev():
             FIND.ORG,
             FIND.LOC,
             FIND.EMPLOYEE_NUMBER,
-            FIND.ASSIGNMENT_CATEGORY,
-            FIND.EMPLOYEE_CATEGORY,
-            FIND.LONG_SERVICE_DATE,
-            FIND.PERIOD,
-            FIND.WORKDAYS,
+            FIND.EMPLOYEE,
             FIND.PERSON_TYPE,
-            FIND.GRADE,
-            FIND.LEAVE_CODE,
-            FIND.LEAVE_EXPECTED,
-            FIND.TRAN_OWNER,
-            FIND.ASSIGN_START_DATE,
-            FIND.ASSIGN_USER_ID,
-            FIND.ASSIGN_UPDATE,
-            FIND.ASSIGN_UPDATE_NAME,
-            FIND.PEOPLE_USER_ID,
-            FIND.PEOPLE_UPDATE,
-            FIND.PEOPLE_UPDATE_NAME
+            FIND.MARITAL_STATUS,
+            FIND.INSURANCE_STATUS,
+            FIND.SPOUSE
         From
             %FILEP%%FILEN% FIND
-        Where
-            FIND.ASSIGNMENT_CATEGORY = 'PERMANENT'
-                And FIND.LEAVE_EXPECTED Is Not Null
-                And Instr(FIND.LEAVE_EXPECTED,'.'||FIND.LEAVE_CODE||'~') = 0
-                And FIND.GRADE_INVALID Is False
         Order By
-            FIND.ASSIGNMENT_CATEGORY,
-            FIND.EMPLOYEE_CATEGORY,
-            FIND.PERIOD,
-            FIND.LONG_SERVICE_DATE            
+            FIND.EMPLOYEE_NUMBER
         ;"""
         s_sql = s_sql.replace("%FILEP%", s_file_prefix)
-        s_sql = s_sql.replace("%FILEN%", "ab_" + s_file_name)
+        s_sql = s_sql.replace("%FILEN%", "aa_" + s_file_name)
         so_curs.execute(s_sql)
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
         if l_debug:
@@ -384,7 +413,6 @@ def people_test_masterfile_xdev():
             From
                 %FILEP%b_finding FIND Left Join
                 Z001ab_setprev PREV ON PREV.FIELD1 = FIND.EMPLOYEE_NUMBER
-                    And PREV.FIELD2 = FIND.LEAVE_CODE
             ;"""
             s_sql = s_sql.replace("%FINDING%", s_finding)
             s_sql = s_sql.replace("%FILEP%", s_file_prefix)
@@ -405,7 +433,7 @@ def people_test_masterfile_xdev():
             Select
                 PREV.PROCESS,
                 PREV.EMPLOYEE_NUMBER AS FIELD1,
-                PREV.LEAVE_CODE AS FIELD2,
+                '' AS FIELD2,
                 '' AS FIELD3,
                 '' AS FIELD4,
                 '' AS FIELD5,
@@ -466,23 +494,11 @@ def people_test_masterfile_xdev():
                 PREV.ORG,
                 PREV.LOC,
                 PREV.EMPLOYEE_NUMBER,
-                PEOP.name_address As NAME_ADDRESS,
-                PREV.ASSIGNMENT_CATEGORY,
-                PREV.EMPLOYEE_CATEGORY,
+                PREV.EMPLOYEE,
                 PREV.PERSON_TYPE,
-                PREV.LONG_SERVICE_DATE,
-                PREV.PERIOD,
-                PREV.WORKDAYS,
-                PREV.GRADE,
-                PREV.LEAVE_CODE,
-                PREV.LEAVE_EXPECTED,
-                OWNR.EMPLOYEE_NUMBER AS TRAN_OWNER_NUMB,
-                OWNR.name_address AS TRAN_OWNER_NAME,
-                OWNR.EMAIL_ADDRESS AS TRAN_OWNER_MAIL1,        
-                CASE
-                    WHEN  OWNR.EMPLOYEE_NUMBER != '' THEN OWNR.EMPLOYEE_NUMBER||'@nwu.ac.za'
-                    ELSE OWNR.EMAIL_ADDRESS
-                END AS TRAN_OWNER_MAIL2,
+                PREV.MARITAL_STATUS,
+                PREV.INSURANCE_STATUS,
+                PREV.SPOUSE,
                 CAMP_OFF.EMPLOYEE_NUMBER AS CAMP_OFF_NUMB,
                 CAMP_OFF.NAME_ADDR AS CAMP_OFF_NAME,
                 CAMP_OFF.EMAIL_ADDRESS AS CAMP_OFF_MAIL1,        
@@ -519,12 +535,10 @@ def people_test_masterfile_xdev():
                 AUD_SUP.EMAIL_ADDRESS As AUD_SUP_MAIL
             From
                 %FILEP%d_addprev PREV Left Join
-                PEOPLE.X000_PEOPLE PEOP ON PEOP.EMPLOYEE_NUMBER = PREV.EMPLOYEE_NUMBER Left Join
-                PEOPLE.X000_PEOPLE OWNR ON OWNR.EMPLOYEE_NUMBER = PREV.TRAN_OWNER Left Join
-                Z001af_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.ASSIGNMENT_CATEGORY Left Join
+                Z001af_officer CAMP_OFF On CAMP_OFF.CAMPUS = 'ALL' Left Join
                 Z001af_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG Left Join
                 Z001af_officer AUD_OFF On AUD_OFF.CAMPUS = 'AUD' Left Join
-                Z001ag_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.LOC Left Join
+                Z001ag_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = 'ALL' Left Join
                 Z001ag_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG Left Join
                 Z001ag_supervisor AUD_SUP On AUD_SUP.CAMPUS = 'AUD'                    
             Where
@@ -547,22 +561,11 @@ def people_test_masterfile_xdev():
             Select
                 '%FIND%' As Audit_finding,
                 FIND.EMPLOYEE_NUMBER As Employee,
-                FIND.NAME_ADDRESS As Name,
-                FIND.ASSIGNMENT_CATEGORY As Assignment_category,
-                FIND.EMPLOYEE_CATEGORY As Employee_category,
+                FIND.EMPLOYEE As Name,
                 FIND.PERSON_TYPE As Type,
-                FIND.GRADE As Grade,
-                FIND.LONG_SERVICE_DATE As Date_started,
-                FIND.PERIOD As Period,
-                FIND.WORKDAYS As Workdays,
-                FIND.LEAVE_CODE As Leave_code,
-                FIND.LEAVE_EXPECTED As Leave_expected,
-                FIND.ORG As Organization,
+                FIND.MARITAL_STATUS As Marital_status,
+                FIND.INSURANCE_STATUS As Insurance_status,
                 FIND.LOC As Campus,
-                FIND.TRAN_OWNER_NAME AS Responsible_Officer,
-                FIND.TRAN_OWNER_NUMB AS Responsible_Officer_Numb,
-                FIND.TRAN_OWNER_MAIL1 AS Responsible_Officer_Mail,
-                FIND.TRAN_OWNER_MAIL2 AS Responsible_Officer_Mail_Alternate,
                 FIND.CAMP_OFF_NAME AS Officer,
                 FIND.CAMP_OFF_NUMB AS Officer_Numb,
                 FIND.CAMP_OFF_MAIL1 AS Officer_Mail,
@@ -609,6 +612,38 @@ def people_test_masterfile_xdev():
             so_conn.commit()
             funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
+    """*****************************************************************************
+    TEST NOT MARRIED ACTIVE SPOUSE RECORD
+    *****************************************************************************"""
+
+    # DEFAULT TRANSACTION OWNER PEOPLE
+    # 21022402 MS AC COERTZEN for permanent employees
+    # 20742010 MRS N BOTHA for temporary employees
+    # Exclude 12795631 MR R VAN DEN BERG
+    # Exclude 13277294 MRS MC STRYDOM
+
+    # DECLARE TEST VARIABLES
+    i_finding_before = 0
+    i_finding_after = 0
+    s_description = "Not married active spouse record"
+    s_file_prefix: str = "X009e"
+    s_file_name: str = "not_married_active_spouse_record"
+    s_finding: str = "NOT MARRIED ACTIVE SPOUSE RECORD"
+    s_report_file: str = "001_reported.txt"
+
+    # OBTAIN TEST RUN FLAG
+    if functest.get_test_flag(so_curs, "HR", "TEST " + s_finding, "RUN") == "FALSE":
+
+        if l_debug:
+            print('TEST DISABLED')
+        funcfile.writelog("TEST " + s_finding + " DISABLED")
+
+    else:
+
+        # LOG
+        funcfile.writelog("TEST " + s_finding)
+        if l_debug:
+            print("TEST " + s_finding)
 
     """ ****************************************************************************
     END OF SCRIPT
