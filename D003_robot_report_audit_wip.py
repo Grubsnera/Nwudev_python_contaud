@@ -97,13 +97,14 @@ def robot_report_audit_wip(s_year: str = "", s_type: str = "", s_name: str = "",
     s_line: str = ""
     s_line = "AUDITOR,"
     s_line += "YEAR,"
-    s_line += "ASSIGNMENT,"
+    s_line += "CATEGORY,"
     s_line += "TYPE,"
+    s_line += "ASSIGNMENT,"
     s_line += "PRIORITY,"
     s_line += "STATUS,"
     s_line += "START_DATE,"
     s_line += "DUE_DATE,"
-    s_line += "COMPLETE_DATE,"
+    s_line += "CLOSE_DATE,"
     s_line += "NOTES_OFFICIAL,"
     s_line += "NOTES_OWN"
     funcfile.writelog(s_line, re_path, s_file)
@@ -124,10 +125,20 @@ def robot_report_audit_wip(s_year: str = "", s_type: str = "", s_name: str = "",
     SELECT
     us.ia_user_name,
     ia.ia_assi_year,
+    Case
+        When ca.ia_assicate_name <> '' Then ca.ia_assicate_name
+        Else ''
+    End As ia_assicate_name,
+    Case
+        When at.ia_assitype_name <> '' Then at.ia_assitype_name
+        Else ''
+    End As ia_assitype_name,
     ia.ia_assi_name,
-    at.ia_assitype_name, 
     ia.ia_assi_priority,
-    st.ia_assistat_name,
+    Case
+        When st.ia_assistat_name <> '' Then st.ia_assistat_name
+        Else ''
+    End As ia_assistat_name,
     ia.ia_assi_startdate,
     ia.ia_assi_completedate,
     ia.ia_assi_finishdate,
@@ -138,7 +149,8 @@ def robot_report_audit_wip(s_year: str = "", s_type: str = "", s_name: str = "",
     ia_assignment ia Left Join
     ia_user us On us.ia_user_sysid = ia.ia_user_sysid Left Join
     ia_assignment_type at On at.ia_assitype_auto = ia.ia_assitype_auto Left Join
-    ia_assignment_status st On st.ia_assistat_auto = ia.ia_assistat_auto
+    ia_assignment_status st On st.ia_assistat_auto = ia.ia_assistat_auto Left Join
+    ia_assignment_category ca On ca.ia_assicate_auto = ia.ia_assicate_auto
     WHERE %WHERE%
     ORDER BY
     ia_user_name,
@@ -167,49 +179,48 @@ def robot_report_audit_wip(s_year: str = "", s_type: str = "", s_name: str = "",
             print(row[1])
         s_line += str(row[1]) + ","
 
-        # NAME
+        # CATEGORY
         if l_debug:
-            print(row[2])
-            print(row[11])
-        s_line += '"' + row[2].replace(",", "") + ' (' + str(row[11]) + ')",'
+            print('rowcontents: ', row[2])
+            print('rowtype: ', type(row[2]))
+        s_line += '"' + row[2] + '",'
 
         # TYPE
         if l_debug:
-            print(row[3])
+            print('rowcontents: ', row[3])
+            print('rowtype: ', type(row[3]))
         s_line += '"' + row[3] + '",'
+
+        # NAME
+        if l_debug:
+            print(row[4])
+            print(row[12])
+        s_line += '"' + row[4].replace(",", "") + ' (' + str(row[12]) + ')",'
 
         # PRIORITY
         if l_debug:
-            print(row[4])
+            print(row[5])
         s_priority: str = '"Inactive"'
-        if row[4] == "9":
+        if row[5] == "9":
             s_priority = '"Closed"'
-        elif row[4] == "8":
+        elif row[5] == "8":
             s_priority = '"Continuous"'
-        elif row[4] == "4":
+        elif row[5] == "4":
             s_priority = '"Follow-up"'
-        elif row[4] == "3":
+        elif row[5] == "3":
             s_priority = '"High"'
-        elif row[4] == "2":
+        elif row[5] == "2":
             s_priority = '"Medium"'
-        elif row[4] == "1":
+        elif row[5] == "1":
             s_priority = '"Low"'
         s_line += s_priority + ","
 
         # STATUS
         if l_debug:
-            print(row[5])
-        s_line += '"' + row[5] + '",'
+            print(row[6])
+        s_line += '"' + row[6] + '",'
 
         # START DATE
-        if l_debug:
-            print(row[6])
-        if row[6]:
-            s_line += datetime.strftime(row[6], "%Y-%m-%d") + ","
-        else:
-            s_line += ","
-
-        # DUE DATE
         if l_debug:
             print(row[7])
         if row[7]:
@@ -217,7 +228,7 @@ def robot_report_audit_wip(s_year: str = "", s_type: str = "", s_name: str = "",
         else:
             s_line += ","
 
-        # FINISH DATE
+        # DUE DATE
         if l_debug:
             print(row[8])
         if row[8]:
@@ -225,18 +236,26 @@ def robot_report_audit_wip(s_year: str = "", s_type: str = "", s_name: str = "",
         else:
             s_line += ","
 
-        # NOTES_OFFICIAL
+        # FINISH DATE
         if l_debug:
             print(row[9])
-        s_data = row[9].replace(",", "")
+        if row[9]:
+            s_line += datetime.strftime(row[9], "%Y-%m-%d") + ","
+        else:
+            s_line += ","
+
+        # NOTES_OFFICIAL
+        if l_debug:
+            print(row[10])
+        s_data = row[10].replace(",", "")
         s_data = s_data.replace("'", "")
         s_data = s_data.replace('"', "")
         s_line += '"' + s_data + '",'
 
         # NOTES_OWN
         if l_debug:
-            print(row[10])
-        s_data = row[10].replace(",", "")
+            print(row[11])
+        s_data = row[11].replace(",", "")
         s_data = s_data.replace("'", "")
         s_data = s_data.replace('"', "")
         s_line += '"' + s_data + '"'
