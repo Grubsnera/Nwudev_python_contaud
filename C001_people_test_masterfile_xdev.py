@@ -149,6 +149,7 @@ def people_test_masterfile_xdev():
         cast(s.spouse_age As Int) As spouse_age,
         s.person_extra_info_id,
         s.spouse_number,
+        s.spouse_active,
         s.spouse_address,
         s.spouse_date_of_birth,
         s.spouse_national_identifier,
@@ -192,22 +193,21 @@ def people_test_masterfile_xdev():
     #     End date spouse record.
 
     """*****************************************************************************
-    TEST SPOUSE INSURANCE AFTER 65
+    TEST COMPULSORY SPOUSE INSURANCE
     *****************************************************************************"""
 
     # DEFAULT TRANSACTION OWNER PEOPLE
-    # 21022402 MS AC COERTZEN for permanent employees
-    # 20742010 MRS N BOTHA for temporary employees
+    # 21022402 MS AC COERTZEN for all employees
     # Exclude 12795631 MR R VAN DEN BERG
     # Exclude 13277294 MRS MC STRYDOM
 
     # DECLARE TEST VARIABLES
     i_finding_before = 0
     i_finding_after = 0
-    s_description = "Spouse insurance after 65"
-    s_file_prefix: str = "X009a"
-    s_file_name: str = "spouse_insurance_after_65"
-    s_finding: str = "SPOUSE INSURANCE AFTER 65"
+    s_description = "Compulsory spouse insurance"
+    s_file_prefix: str = "X009c"
+    s_file_name: str = "compulsory_spouse_insurance"
+    s_finding: str = "COMPULSORY SPOUSE INSURANCE"
     s_report_file: str = "001_reported.txt"
 
     # OBTAIN TEST RUN FLAG
@@ -238,17 +238,25 @@ def people_test_masterfile_xdev():
             s.user_person_type As PERSON_TYPE,
             s.marital_status As MARITAL_STATUS,
             s.spouse_insurance_status As INSURANCE_STATUS,
-            s.spouse_address As SPOUSE,
-            s.spouse_national_identifier As SPOUSE_ID,
-            s.spouse_age As SPOUSE_AGE
+            s.date_started As DATE_APPOINT,
+            s.spouse_start_date As DATE_START
         From
             X009_people_spouse_all s Left Join
             PEOPLE.X000_people p On p.employee_number = s.employee_number
         Where
             s.test = 1 And
             s.married = 1 And
-            s.spouse_insurance_status > 0
+            s.date_started >= '2022-01-01' And
+            s.spouse_start_date >= '2022-01-01'
         ;"""
+        # Where
+        #     s.test = 1 And
+        #     s.married = 1 And
+        #     s.date_started >= '2022-01-01' Or
+        #     s.test = 1 And
+        #     s.married = 1 And
+        #     s.spouse_start_date >= '2022-01-01'
+
         so_curs.execute(s_sql)
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
         if l_debug:
@@ -267,15 +275,12 @@ def people_test_masterfile_xdev():
             FIND.EMPLOYEE,
             FIND.PERSON_TYPE,
             FIND.MARITAL_STATUS,
-            FIND.INSURANCE_STATUS,
-            FIND.SPOUSE,
-            FIND.SPOUSE_ID,
-            FIND.SPOUSE_AGE
+            FIND.DATE_APPOINT,
+            FIND.DATE_START
         From
             %FILEP%%FILEN% FIND
         Where
-            FIND.SPOUSE Is Not Null And
-            FIND.SPOUSE_AGE > 65            
+            FIND.INSURANCE_STATUS < 1
         Order By
             FIND.EMPLOYEE_NUMBER
         ;"""
@@ -409,10 +414,8 @@ def people_test_masterfile_xdev():
                 PREV.EMPLOYEE,
                 PREV.PERSON_TYPE,
                 PREV.MARITAL_STATUS,
-                PREV.INSURANCE_STATUS,
-                PREV.SPOUSE,
-                PREV.SPOUSE_ID,
-                PREV.SPOUSE_AGE,
+                PREV.DATE_APPOINT,
+                PREV.DATE_START,
                 CAMP_OFF.EMPLOYEE_NUMBER AS CAMP_OFF_NUMB,
                 CAMP_OFF.NAME_ADDR AS CAMP_OFF_NAME,
                 CAMP_OFF.EMAIL_ADDRESS AS CAMP_OFF_MAIL1,        
@@ -478,10 +481,8 @@ def people_test_masterfile_xdev():
                 FIND.EMPLOYEE As Name,
                 FIND.PERSON_TYPE As Type,
                 FIND.MARITAL_STATUS As Marital_status,
-                FIND.INSURANCE_STATUS As Insurance_status,
-                FIND.SPOUSE As Spouse,
-                FIND.SPOUSE_ID As Spouse_id,
-                FIND.SPOUSE_AGE As Spouse_age,
+                FIND.DATE_APPOINT As Appointed_on,
+                FIND.DATE_START As Married_on,
                 FIND.LOC As Campus,
                 FIND.CAMP_OFF_NAME AS Responsible_Officer,
                 FIND.CAMP_OFF_NUMB AS Officer_Numb,
@@ -530,45 +531,11 @@ def people_test_masterfile_xdev():
             funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """*****************************************************************************
-    TEST COMPULSORY SPOUSE INSURANCE
-    *****************************************************************************"""
-
-    # DEFAULT TRANSACTION OWNER PEOPLE
-    # 21022402 MS AC COERTZEN for permanent employees
-    # 20742010 MRS N BOTHA for temporary employees
-    # Exclude 12795631 MR R VAN DEN BERG
-    # Exclude 13277294 MRS MC STRYDOM
-
-    # DECLARE TEST VARIABLES
-    i_finding_before = 0
-    i_finding_after = 0
-    s_description = "Compulsory spouse insurance"
-    s_file_prefix: str = "X009c"
-    s_file_name: str = "compulsory_spouse_insurance"
-    s_finding: str = "COMPULSORY SPOUSE INSURANCE"
-    s_report_file: str = "001_reported.txt"
-
-    # OBTAIN TEST RUN FLAG
-    if functest.get_test_flag(so_curs, "HR", "TEST " + s_finding, "RUN") == "FALSE":
-
-        if l_debug:
-            print('TEST DISABLED')
-        funcfile.writelog("TEST " + s_finding + " DISABLED")
-
-    else:
-
-        # LOG
-        funcfile.writelog("TEST " + s_finding)
-        if l_debug:
-            print("TEST " + s_finding)
-
-    """*****************************************************************************
     TEST NOT MARRIED ACTIVE SPOUSE RECORD
     *****************************************************************************"""
 
     # DEFAULT TRANSACTION OWNER PEOPLE
-    # 21022402 MS AC COERTZEN for permanent employees
-    # 20742010 MRS N BOTHA for temporary employees
+    # 21022402 MS AC COERTZEN for all employees
     # Exclude 12795631 MR R VAN DEN BERG
     # Exclude 13277294 MRS MC STRYDOM
 
