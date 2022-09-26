@@ -7699,6 +7699,7 @@ def people_test_masterfile():
         cast(s.spouse_age As Int) As spouse_age,
         s.person_extra_info_id,
         s.spouse_number,
+        s.spouse_active,        
         s.spouse_address,
         s.spouse_date_of_birth,
         s.spouse_national_identifier,
@@ -7746,8 +7747,7 @@ def people_test_masterfile():
     *****************************************************************************"""
 
     # DEFAULT TRANSACTION OWNER PEOPLE
-    # 21022402 MS AC COERTZEN for permanent employees
-    # 20742010 MRS N BOTHA for temporary employees
+    # 21022402 MS AC COERTZEN for all employees
     # Exclude 12795631 MR R VAN DEN BERG
     # Exclude 13277294 MRS MC STRYDOM
 
