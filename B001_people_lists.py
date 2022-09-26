@@ -2029,6 +2029,10 @@ def people_lists():
         ppei.person_extra_info_id,
         ppei.person_id,
         ppei.spouse_number,
+        Case
+            When spon.employee_number is not null Then 1
+            Else 0
+        End As spouse_active,
         ppei.spouse_title,
         ppei.spouse_initials,
         ppei.spouse_name_last,
@@ -2036,6 +2040,8 @@ def people_lists():
         ppei.spouse_date_of_birth,
         ppei.spouse_national_identifier,
         ppei.spouse_passport,
+        spon.user_person_type As spouse_person_type,
+        spon.marital_status As spouse_marital_status,        
         ppei.spouse_start_date,
         ppei.spouse_end_date,
         ppei.spouse_create_date,
@@ -2046,7 +2052,8 @@ def people_lists():
         StrfTime('%Y', 'now') - StrfTime('%Y', ppei.spouse_date_of_birth) As spouse_age
     From
         X000_SPOUSE ppei Inner Join
-        X000_PEOPLE papf On papf.person_id = ppei.person_id
+        X000_PEOPLE papf On papf.person_id = ppei.person_id Left Join
+        X000_PEOPLE spon On spon.employee_number = ppei.spouse_number
     Where
         StrfTime('%Y-%m-%d', 'now') Between ppei.spouse_start_date And ppei.spouse_end_date
     Group By
