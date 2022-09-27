@@ -1,16 +1,7 @@
 ﻿Select
-    x000g.ACCOUNT_NBR,
-    x000g.ORG_NM,
-    x000g.ACCOUNT_NM,
-    x000g.FIN_OBJECT_CD,
-    x000g.FIN_OBJ_CD_NM,
-    Total(x000g.CALC_AMOUNT) As TOTAL_AMOUNT,
-    Count(x000g.UNIV_FISCAL_YR) As TRAN_COUNT
+    X000_Vendor.VNDR_TYP_CD,
+    Count(X000_Vendor.VENDOR_ID) As Count_VENDOR_ID
 From
-    X000_GL_trans x000g
+    X000_Vendor
 Group By
-    x000g.ACCOUNT_NBR,
-    x000g.ORG_NM,
-    x000g.ACCOUNT_NM,
-    x000g.FIN_OBJECT_CD,
-    x000g.FIN_OBJ_CD_NM
+    X000_Vendor.VNDR_TYP_CD

@@ -1,11 +1,7 @@
 ﻿Select
-    x001d.EMPLOYEE,
-    x001d.EMP_NAME,
-    x001d.DECLARATION_DATE,
-    x001d.STATUS,
-    x001d.LINE_MANAGER,
-    x001d.MAN_NAME,
-    x001d.SUPERVISOR,
-    x001d.SUP_NAME
+    X000_interests_all.INTEREST_TYPE,
+    Count(X000_interests_all.INTEREST_ID) As Count_INTEREST_ID
 From
-    X001_declarations_curr x001d
+    X000_interests_all
+Group By
+    X000_interests_all.INTEREST_TYPE
