@@ -888,6 +888,7 @@ def creditor_test_payments():
     Where
         a.PAYEE_TYPE = 'V' And
         a.DOC_TYPE in ('DV', 'PDV', 'PREQ') And
+        a.VENDOR_TYPE_CALC = 'DV' And
         Cast(Substr(a.ACC_COST_STRING, -4) As Int) Between 2051 and 4213 And
         oe.LOOKUP_CODE Is Null And
         ve.LOOKUP_CODE Is Null
