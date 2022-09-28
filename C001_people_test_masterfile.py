@@ -8783,6 +8783,7 @@ def people_test_masterfile():
             Substr(p.location,1,3) As LOC,
             s.employee_number As EMPLOYEE_NUMBER,
             s.name_address As EMPLOYEE,
+            p.assignment_category As ASSIGNMENT_CATEGORY,
             s.user_person_type As PERSON_TYPE,
             s.marital_status As MARITAL_STATUS,
             s.spouse_insurance_status As INSURANCE_STATUS,
@@ -8791,6 +8792,7 @@ def people_test_masterfile():
             X009_people_spouse_all s Left Join
             PEOPLE.X000_people p On p.employee_number = s.employee_number
         Where
+            s.test = 1 And
             s.married Is Null And
             s.spouse_insurance_status > 0
         ;"""
@@ -8810,6 +8812,7 @@ def people_test_masterfile():
             FIND.LOC,
             FIND.EMPLOYEE_NUMBER,
             FIND.EMPLOYEE,
+            FIND.ASSIGNMENT_CATEGORY,
             FIND.PERSON_TYPE,
             FIND.MARITAL_STATUS,
             FIND.INSURANCE_STATUS,
@@ -8987,7 +8990,7 @@ def people_test_masterfile():
                 AUD_SUP.EMAIL_ADDRESS As AUD_SUP_MAIL
             From
                 %FILEP%d_addprev PREV Left Join
-                Z001af_officer CAMP_OFF On CAMP_OFF.CAMPUS = 'ALL' Left Join
+                Z001af_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.ASSIGNMENT_CATEGORY Left Join
                 Z001af_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG Left Join
                 Z001af_officer AUD_OFF On AUD_OFF.CAMPUS = 'AUD' Left Join
                 Z001ag_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = 'ALL' Left Join
@@ -9107,6 +9110,7 @@ def people_test_masterfile():
             Substr(p.location,1,3) As LOC,
             s.employee_number As EMPLOYEE_NUMBER,
             s.name_address As EMPLOYEE,
+            p.assignment_category As ASSIGNMENT_CATEGORY,
             s.user_person_type As PERSON_TYPE,
             s.marital_status As MARITAL_STATUS,
             s.spouse_address As SPOUSE
@@ -9114,6 +9118,7 @@ def people_test_masterfile():
             X009_people_spouse_all s Left Join
             PEOPLE.X000_people p On p.employee_number = s.employee_number
         Where
+            s.test = 1 And
             s.married Is Null
         ;"""
         so_curs.execute(s_sql)
@@ -9132,6 +9137,7 @@ def people_test_masterfile():
             FIND.LOC,
             FIND.EMPLOYEE_NUMBER,
             FIND.EMPLOYEE,
+            FIND.ASSIGNMENT_CATEGORY,
             FIND.PERSON_TYPE,
             FIND.MARITAL_STATUS,
             FIND.SPOUSE
@@ -9309,7 +9315,7 @@ def people_test_masterfile():
                 AUD_SUP.EMAIL_ADDRESS As AUD_SUP_MAIL
             From
                 %FILEP%d_addprev PREV Left Join
-                Z001af_officer CAMP_OFF On CAMP_OFF.CAMPUS = 'ALL' Left Join
+                Z001af_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.ASSIGNMENT_CATEGORY Left Join
                 Z001af_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG Left Join
                 Z001af_officer AUD_OFF On AUD_OFF.CAMPUS = 'AUD' Left Join
                 Z001ag_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = 'ALL' Left Join
