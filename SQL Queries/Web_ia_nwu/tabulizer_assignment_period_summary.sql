@@ -12,9 +12,11 @@ Where
     (iaas.ia_user_sysid = 855 And
         iaas.ia_assi_year = Year(Now())) Or
     (iaas.ia_user_sysid = 855 And
+        iaas.ia_assi_year < Year(Now()) And
         iaas.ia_assi_priority < 9) Or
     (iaas.ia_user_sysid = 855 And
-        Date(iaas.ia_assi_finishdate) > Date_Sub(Concat(Year(Now()), '-10-01'), Interval 1 Year))
+        Date(iaas.ia_assi_finishdate) >= Date_Sub(Concat(Year(Now()), '-10-01'), Interval 1 Year) And
+        Date(iaas.ia_assi_finishdate) <= Date_Sub(Concat(Year(Now()), '-10-01'), Interval 1 Day))
 Group By
     iaac.ia_assicate_name,
     iaat.ia_assitype_name,

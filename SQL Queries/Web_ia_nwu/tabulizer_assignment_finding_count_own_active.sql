@@ -56,11 +56,12 @@ From
     ia_assignment_status stat On stat.ia_assistat_auto = assi.ia_assistat_auto Left Join
     ia_user On ia_user.ia_user_sysid = assi.ia_user_sysid
 Where
-    (assi.ia_user_sysid = 881 And
+    (assi.ia_user_sysid = 855 And
         assi.ia_assi_priority < 9) Or
     (assi.ia_assi_priority < 9 And
-        assi.ia_assi_permission = 881) Or
-    (assi.ia_user_sysid = 881 And
-        assi.ia_assi_finishdate >= Date('2021-10-01'))
+        assi.ia_assi_permission = 855)
 Group By
+    cate.ia_assicate_name,
+    type.ia_assitype_name,
+    assi.ia_assi_name,
     assi.ia_assi_auto

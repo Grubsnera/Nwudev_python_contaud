@@ -4,7 +4,10 @@
     assi.ia_assi_year As Year,
     ia_assignment_category.ia_assicate_name As Category,
     ia_assignment_type.ia_assitype_name As Type,
-    Concat('<a href = "index.php?option=com_rsform&view=rsform&formId=',assi.ia_assi_formedit,'&aid=',assi.ia_assi_auto,'&hash=',assi.ia_assi_token,'&category=',assi.ia_assicate_auto,'" target="_blank" rel="noopener noreferrer">',Concat(assi.ia_assi_name,' (',assi.ia_assi_auto,')'),'</a>') As Assignment,
+    Concat('<a href = "index.php?option=com_rsform&view=rsform&formId=', assi.ia_assi_formedit, '&aid=',
+    assi.ia_assi_auto, '&hash=', assi.ia_assi_token, '&category=', assi.ia_assicate_auto,
+    '" target="_blank" rel="noopener noreferrer">', Concat(assi.ia_assi_name, ' (', assi.ia_assi_auto, ')'),
+    '</a>') As Assignment,
     Case
         When assi.ia_assi_priority = 1
         Then 'Low'
@@ -27,9 +30,13 @@
     assi.ia_assi_offi As Official,
     Case
         When Count(find.ia_find_auto) > 1
-        Then Concat('<a href = "https://www.ia-nwu.co.za/index.php?option=com_content&view=article&id=26&rid=', to_base64(Concat('1:', assi.ia_assi_auto)), '" target="_blank" rel="noopener noreferrer">', Concat(Cast(Count(find.ia_find_auto) As Character), 'Findings'), '</a>')
+        Then Concat('<a href = "https://www.ia-nwu.co.za/index.php?option=com_content&view=article&id=26&rid=',
+            to_base64(Concat('1:', assi.ia_assi_auto)), '" target="_blank" rel="noopener noreferrer">',
+            Concat(Cast(Count(find.ia_find_auto) As Character), 'Findings'), '</a>')
         When Count(find.ia_find_auto) > 0
-        Then Concat('<a href = "https://www.ia-nwu.co.za/index.php?option=com_content&view=article&id=26&rid=', to_base64(Concat('1:', assi.ia_assi_auto)), '" target="_blank" rel="noopener noreferrer">', Concat(Cast(Count(find.ia_find_auto) As Character), 'Finding'), '</a>')
+        Then Concat('<a href = "https://www.ia-nwu.co.za/index.php?option=com_content&view=article&id=26&rid=',
+            to_base64(Concat('1:', assi.ia_assi_auto)), '" target="_blank" rel="noopener noreferrer">',
+            Concat(Cast(Count(find.ia_find_auto) As Character), 'Finding'), '</a>')
     End As Findings
 From
     ia_assignment assi Left Join
@@ -39,8 +46,14 @@ From
     ia_user On ia_user.ia_user_sysid = assi.ia_user_sysid Left Join
     ia_finding find On find.ia_assi_auto = assi.ia_assi_auto
 Where
-    (assi.ia_assi_priority < 9) Or
+    (assi.ia_assi_priority < 9 And
+    assi.ia_assi_year < Year(Now())) Or
     (assi.ia_assi_year = Year(Now())) Or
-    (Date(assi.ia_assi_finishdate) > Date_Sub(Concat(Year(Now()), '-10-01'), Interval 1 Year))
+    (Date(assi.ia_assi_finishdate) >= Date_Sub(Concat(Year(Now()), '-10-01'), Interval 1 Year) And
+    Date(assi.ia_assi_finishdate) <= Date_Sub(Concat(Year(Now()), '-10-01'), Interval 1 Day))
 Group By
+    ia_user.ia_user_name,
+    ia_assignment_category.ia_assicate_name,
+    ia_assignment_type.ia_assitype_name,
+    assi.ia_assi_name,
     assi.ia_assi_auto

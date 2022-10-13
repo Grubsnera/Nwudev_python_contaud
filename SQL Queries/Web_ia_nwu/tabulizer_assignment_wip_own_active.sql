@@ -32,6 +32,8 @@ From
 Where
     assi.ia_assi_priority < 9 And
     assi.ia_user_sysid = 855
-Order By
-    Type,
-    Assignment
+Group By
+    cate.ia_assicate_name,
+    type.ia_assitype_name,
+    assi.ia_assi_name,
+    assi.ia_assi_auto

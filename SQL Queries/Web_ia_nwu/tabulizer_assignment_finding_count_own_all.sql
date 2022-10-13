@@ -57,7 +57,7 @@ From
 Where
     assi.ia_user_sysid = 855
 Group By
-    Date(assi.ia_assi_editdate),
+    cate.ia_assicate_name,
+    type.ia_assitype_name,
+    assi.ia_assi_name,
     assi.ia_assi_auto
-Order By
-    Type

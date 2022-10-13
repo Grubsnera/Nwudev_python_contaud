@@ -46,14 +46,15 @@ From
     ia_finding find On find.ia_assi_auto = assi.ia_assi_auto
 Where
     (assi.ia_assi_priority < 9 And
+        assi.ia_assi_year < Year(Now()) And
+        assi.ia_user_sysid = 855) Or
+    (assi.ia_assi_year = Year(Now()) And
         assi.ia_user_sysid = 855) Or
     (assi.ia_user_sysid = 855 And
-        assi.ia_assi_year = Year(Now())) Or
-    (assi.ia_user_sysid = 855 And
-        Date(assi.ia_assi_finishdate) > Date_Sub(Concat(Year(Now()), '-10-01'), Interval 1 Year))
+        Date(assi.ia_assi_finishdate) >= Date_Sub(Concat(Year(Now()), '-10-01'), Interval 1 Year) And
+        Date(assi.ia_assi_finishdate) <= Date_Sub(Concat(Year(Now()), '-10-01'), Interval 1 Day))
 Group By
+    cate.ia_assicate_name,
+    type.ia_assitype_name,
+    assi.ia_assi_name,
     assi.ia_assi_auto
-Order By
-    Year,
-    Type,
-    Assignment
