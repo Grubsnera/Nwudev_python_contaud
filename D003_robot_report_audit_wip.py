@@ -43,7 +43,7 @@ def robot_report_audit_wip(s_year: str = "", s_type: str = "", s_name: str = "",
     from datetime import datetime
 
     # DECLARE VARIABLES
-    l_debug: bool = False
+    l_debug: bool = True
 
     """*************************************************************************
     ENVIRONMENT
@@ -114,11 +114,19 @@ def robot_report_audit_wip(s_year: str = "", s_type: str = "", s_name: str = "",
     if s_year != "":
         s_where = "ia_assi_year = " + s_year
         s_where += " or "
-        s_where += "ia_assi_year < " + s_year + " and ia_assi_priority < 8"
+        s_where += "ia_assi_year < " + s_year + " and ia_assi_priority < 9"
+        s_where += " or "
+        s_where += "ia_assi_finishdate >= '" + str(int(s_year)-1) + "-10-01'"
+        s_where += " and "
+        s_where += "ia_assi_finishdate <= '" + s_year + "-09-30'"
     else:
         s_where = "ia_assi_year = " + funcdate.cur_year()
         s_where += " or "
-        s_where += "ia_assi_year < " + funcdate.cur_year() + " and ia_assi_priority < 8"
+        s_where += "ia_assi_year < " + funcdate.cur_year() + " and ia_assi_priority < 9"
+        s_where += " or "
+        s_where += "ia_assi_finishdate >= '" + funcdate.prev_year() + "-10-01'"
+        s_where += " and "
+        s_where += "ia_assi_finishdate <= '" + funcdate.cur_year() + "-09-30'"
 
     # BUILD THE SQL QUERY
     s_sql = """
