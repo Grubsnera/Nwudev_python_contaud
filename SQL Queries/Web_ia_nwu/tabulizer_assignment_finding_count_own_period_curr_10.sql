@@ -1,9 +1,8 @@
 ﻿Select
-    assi.ia_assi_auto As FileNo,
-    ia_user.ia_user_name As Auditor,
+    user.ia_user_name As Auditor,
     assi.ia_assi_year As Year,
-    ia_assignment_category.ia_assicate_name As Category,
-    ia_assignment_type.ia_assitype_name As Type,
+    cate.ia_assicate_name As Category,
+    type.ia_assitype_name As Type,
     Concat('<a href = "index.php?option=com_rsform&view=rsform&formId=', assi.ia_assi_formedit, '&aid=',
     assi.ia_assi_auto, '&hash=', assi.ia_assi_token, '&category=', assi.ia_assicate_auto,
     '" target="_blank" rel="noopener noreferrer">', Concat(assi.ia_assi_name, ' (', assi.ia_assi_auto, ')'),
@@ -23,7 +22,7 @@
         Then 'Closed'
         Else 'Inactive'
     End As Priority,
-    ia_assignment_status.ia_assistat_name As Status,
+    stat.ia_assistat_name As Status,
     Date(assi.ia_assi_startdate) As StartDate,
     Date(assi.ia_assi_completedate) As DueDate,
     Date(assi.ia_assi_finishdate) As CloseDate,
@@ -40,20 +39,22 @@
     End As Findings
 From
     ia_assignment assi Left Join
-    ia_assignment_category On ia_assignment_category.ia_assicate_auto = assi.ia_assicate_auto Left Join
-    ia_assignment_type On ia_assignment_type.ia_assitype_auto = assi.ia_assitype_auto Left Join
-    ia_assignment_status On ia_assignment_status.ia_assistat_auto = assi.ia_assistat_auto Left Join
-    ia_user On ia_user.ia_user_sysid = assi.ia_user_sysid Left Join
+    ia_assignment_category cate On cate.ia_assicate_auto = assi.ia_assicate_auto Left Join
+    ia_assignment_type type On type.ia_assitype_auto = assi.ia_assitype_auto Left Join
+    ia_assignment_status stat On stat.ia_assistat_auto = assi.ia_assistat_auto Left Join
+    ia_user user On user.ia_user_sysid = assi.ia_user_sysid Left Join
     ia_finding find On find.ia_assi_auto = assi.ia_assi_auto
 Where
-    (assi.ia_assi_priority < 9 And
-    assi.ia_assi_year < Year(Now())) Or
-    (assi.ia_assi_year = Year(Now())) Or
-    (Date(assi.ia_assi_finishdate) >= Date_Sub(Concat(Year(Now()), '-10-01'), Interval 1 Year) And
-    Date(assi.ia_assi_finishdate) <= Date_Sub(Concat(Year(Now()), '-10-01'), Interval 1 Day))
+    (assi.ia_user_sysid = 855 And
+        assi.ia_assi_year > Year(Now())) Or
+    (assi.ia_user_sysid = 855 And
+        assi.ia_assi_year = Year(Now()) And
+        assi.ia_assi_priority < 9) Or
+    (assi.ia_user_sysid = 855 And
+        Date(assi.ia_assi_finishdate) >= Date_Sub(Concat(Year(Now()), '-09-30'), Interval -1 day) And
+        Date(assi.ia_assi_finishdate) <= Date_Sub(Concat(Year(Now()), '-09-30'), Interval -1 Year))
 Group By
-    ia_user.ia_user_name,
-    ia_assignment_category.ia_assicate_name,
-    ia_assignment_type.ia_assitype_name,
+    cate.ia_assicate_name,
+    type.ia_assitype_name,
     assi.ia_assi_name,
     assi.ia_assi_auto

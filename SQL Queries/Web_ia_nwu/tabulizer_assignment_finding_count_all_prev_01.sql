@@ -1,4 +1,5 @@
 ﻿Select
+    assi.ia_assi_auto As FileNo,
     user.ia_user_name As Auditor,
     assi.ia_assi_year As Year,
     cate.ia_assicate_name As Category,
@@ -45,15 +46,19 @@ From
     ia_user user On user.ia_user_sysid = assi.ia_user_sysid Left Join
     ia_finding find On find.ia_assi_auto = assi.ia_assi_auto
 Where
-    (assi.ia_assi_priority < 9 And
-        assi.ia_assi_year < Year(Now()) And
-        assi.ia_user_sysid = 855) Or
-    (assi.ia_assi_year = Year(Now()) And
-        assi.ia_user_sysid = 855) Or
-    (assi.ia_user_sysid = 855 And
-        Date(assi.ia_assi_finishdate) >= Date_Sub(Concat(Year(Now()), '-10-01'), Interval 1 Year) And
-        Date(assi.ia_assi_finishdate) <= Date_Sub(Concat(Year(Now()), '-10-01'), Interval 1 Day))
+    (assi.ia_assi_year = Year(Date_Sub(Now(),Interval 1 Year)) And
+        user.ia_user_active = '1' And
+        cate.ia_assicate_private = '0') Or
+    (assi.ia_assi_year < Year(Date_Sub(Now(),Interval 1 Year)) And
+        assi.ia_assi_priority < 9 And
+        user.ia_user_active = '1' And
+        cate.ia_assicate_private = '0') Or
+    (Date(assi.ia_assi_finishdate) >= Date_Sub(Concat(Year(Date_Sub(Now(),Interval 1 Year)), '-10-01'), Interval 1 Year) And
+        Date(assi.ia_assi_finishdate) <= Date_Sub(Concat(Year(Date_Sub(Now(),Interval 1 Year)), '-10-01'), Interval 1 Day) And
+        user.ia_user_active = '1' And
+        cate.ia_assicate_private = '0')
 Group By
+    user.ia_user_name,
     cate.ia_assicate_name,
     type.ia_assitype_name,
     assi.ia_assi_name,
