@@ -2,7 +2,7 @@
     Concat(assi.ia_assi_year, '.', assi.ia_assi_file) As FileRef,
     cate.ia_assicate_name As Category,
     type.ia_assitype_name As Type,
-    Date(assi.ia_assi_editdate) As Edited,
+    ia_user.ia_user_name As Owner,
     Concat('<a href = "index.php?option=com_rsform&view=rsform&formId=', assi.ia_assi_formedit, '&aid=',
     assi.ia_assi_auto, '&hash=', assi.ia_assi_token, '&category=', assi.ia_assicate_auto,
     '" target="_blank" rel="noopener noreferrer">', Concat(assi.ia_assi_name, ' (', assi.ia_assi_auto, ')'),
@@ -23,13 +23,13 @@
         Else 'Inactive'
     End As Priority,
     stat.ia_assistat_name As Status,
-    Concat(Date(assi.ia_assi_completedate), ' ', Substr(MonthName(assi.ia_assi_completedate), 1, 3)) As Due,
+    assi.ia_assi_editdate As EditDate,
     Case
         When assi.ia_assi_permission = 855
         Then
-            Concat('<a href = "index.php?option=com_rsform&view=rsform&formId=14" target="_blank" rel="noopener noreferrer">', 'Add', '</a>', ' | ', '<a href = "index.php?option=com_rsform&view=rsform&formId=', assi.ia_assi_formedit, '&aid=', assi.ia_assi_auto, '&hash=', assi.ia_assi_token, '&category=', assi.ia_assicate_auto, '" target="_blank" rel="noopener noreferrer">', 'Edit', '</a>', ' | ', '<a href = "index.php?option=com_content&view=article&id=', assi.ia_assi_formview, '&hash=', assi.ia_assi_token, '" target="_blank" rel="noopener noreferrer">', 'Report', '</a>')
+            Concat('<a href = "index.php?option=com_rsform&view=rsform&formId=', assi.ia_assi_formedit, '&aid=', assi.ia_assi_auto, '&hash=', assi.ia_assi_token, '&category=', assi.ia_assicate_auto, '" target="_blank" rel="noopener noreferrer">', 'Edit', '</a>', ' | ', '<a href = "index.php?option=com_content&view=article&id=', assi.ia_assi_formview, '&hash=', assi.ia_assi_token, '" target="_blankh" rel="noopener noreferrer">', 'Report', '</a>')
         Else
-            Concat('<a href = "index.php?option=com_rsform&view=rsform&formId=14" target="_blank" rel="noopener noreferrer">', 'Add', '</a>', ' | ', '<a href = "index.php?option=com_rsform&view=rsform&formId=', assi.ia_assi_formedit, '&aid=', assi.ia_assi_auto, '&hash=', assi.ia_assi_token, '&category=', assi.ia_assicate_auto, '" target="_blank" rel="noopener noreferrer">', 'Edit', '</a>', ' | ', '<a href = "index.php?option=com_rsform&view=rsform&formId=', assi.ia_assi_formdelete, '&aid=', assi.ia_assi_auto, '&hash=', assi.ia_assi_token, '" target="_blank" rel="noopener noreferrer">', 'Delete', '</a>', ' | ', '<a href = "index.php?option=com_content&view=article&id=', assi.ia_assi_formview, '&hash=', assi.ia_assi_token, '" target="_blank" rel="noopener noreferrer">', 'Report', '</a>')
+            Concat('<a href = "index.php?option=com_rsform&view=rsform&formId=', assi.ia_assi_formedit, '&aid=', assi.ia_assi_auto, '&hash=', assi.ia_assi_token, '&category=', assi.ia_assicate_auto, '" target="_blank" rel="noopener noreferrer">', 'Edit', '</a>', ' | ', '<a href = "index.php?option=com_rsform&view=rsform&formId=', assi.ia_assi_formdelete, '&aid=', assi.ia_assi_auto, '&hash=', assi.ia_assi_token, '" target="_blank" rel="noopener noreferrer">', 'Delete', '</a>', ' | ', '<a href = "https://www.ia-nwu.co.za/index.php?option=com_rsform&view=rsform&formId=11&rid=', assi.ia_assi_auto, '&hash=', assi.ia_assi_token, '&category=', assi.ia_assicate_auto, '" target="_blank" rel="noopener noreferrer">', 'WIP</a>', ' | ', '<a href = "index.php?option=com_content&view=article&id=', assi.ia_assi_formview, '&hash=', assi.ia_assi_token, '" target="_blank" rel="noopener noreferrer">', 'Report', '</a>')
     End As Actions,
     Case
         When Count(find.ia_find_auto) > 1

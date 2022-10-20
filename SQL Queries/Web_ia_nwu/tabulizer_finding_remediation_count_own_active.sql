@@ -1,12 +1,8 @@
 ﻿Select
-    find.ia_find_auto As id,
     cate.ia_assicate_name As category,
     type.ia_assitype_name As type,
     user.ia_user_name As owner,
-    Concat('<a href = "index.php?option=com_rsform&view=rsform&formId=', assi.ia_assi_formedit, '&aid=',
-    assi.ia_assi_auto, '&hash=', assi.ia_assi_token, '&category=', assi.ia_assicate_auto,
-    '" target="_blank" rel="noopener noreferrer">', Concat(assi.ia_assi_name, ' (', assi.ia_assi_auto, ')'),
-    '</a>') As assignment,
+    Concat(assi.ia_assi_name, ' (', assi.ia_assi_auto, ')') As assignment,
     Concat('<a href = "index.php?option=com_rsform&view=rsform&formId=', find.ia_find_formedit, '&fid=',
     find.ia_find_auto, '&hash=', find.ia_find_token, '" target="_blank" rel="noopener noreferrer">', find.ia_find_name,
     '</a>') As finding,
@@ -44,7 +40,8 @@ Where
         assi.ia_assi_priority < 9 And
         assi.ia_assi_permission = 855)
 Group By
-    find.ia_find_auto
-Order By
+    find.ia_find_auto,
+    cate.ia_assicate_name,
+    type.ia_assitype_name,
     assi.ia_assi_name,
-    finding
+    find.ia_find_name
