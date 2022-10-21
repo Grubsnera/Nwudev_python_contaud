@@ -4,9 +4,11 @@
     assi.ia_assi_priority As Priority,
     ia_assignment_status.ia_assistat_name As Assignment_status,
     assi.ia_assi_proofdate As Report_date,
-    Now() - assi.ia_assi_proofdate As Days_since_report,
+    Cast((StrfTime("%s", "now") - StrfTime("%s", assi.ia_assi_proofdate)) / 86400.0 As Integer) As Days_since_report,
     find.ia_find_name As Finding,
-    reme.ia_findreme_name As Client
+    reme.ia_findreme_name As Client,
+    reme.ia_findreme_date_send As Send_date,
+    Max(reme.ia_findreme_date_schedule) As Scedule_date
 From
     ia_assignment assi Left Join
     ia_finding find On assi.ia_assi_auto = find.ia_assi_auto Left Join
@@ -15,6 +17,16 @@ From
     ia_assignment_status On ia_assignment_status.ia_assistat_auto = assi.ia_assistat_auto
 Where
     assi.ia_assi_priority = 4
+Group By
+    user.ia_user_name,
+    assi.ia_assi_name,
+    assi.ia_assi_priority,
+    ia_assignment_status.ia_assistat_name,
+    assi.ia_assi_proofdate,
+    Cast((StrfTime("%s", "now") - StrfTime("%s", assi.ia_assi_proofdate)) / 86400.0 As Integer),
+    find.ia_find_name,
+    reme.ia_findreme_name,
+    reme.ia_findreme_date_send
 Order By
     Auditor,
     Report_date
