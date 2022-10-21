@@ -1,22 +1,25 @@
 ﻿Select
-    reme.ia_findreme_auto,
-    Concat('<a href = "https://www.ia-nwu.co.za/index.php/menu-finding/form/3/', assi.ia_assi_auto, '">',
-    Concat(assi.ia_assi_name, " (", assi.ia_assi_auto, ")"), '</a>') As ia_assi_name,
-    Concat('<a href = "https://www.ia-nwu.co.za/index.php/menu-finding/form/41/', reme.ia_find_auto, '">',
-    find.ia_find_name, '</a>') As ia_find_name,
-    reme.ia_findreme_name,
-    reme.ia_findreme_date_schedule,
-    reme.ia_findreme_date_send,
-    reme.ia_findreme_date_submit,
-    iafr.ia_findresp_name,
+    Concat(assi.ia_assi_name, '(', assi.ia_assi_auto, ') - ', find.ia_find_name, '(', find.ia_find_auto, ')') As assignment_finding,
+    Concat('<a href = "index.php?option=com_rsform&view=rsform&formId=', assi.ia_assi_formedit, '&aid=', assi.ia_assi_auto, '&hash=', assi.ia_assi_token, '&category=', assi.ia_assicate_auto, '" target="_blank" rel="noopener noreferrer">', 'Edit', '</a>') As assignment_edit,
+    Concat('<a href = "index.php?option=com_rsform&view=rsform&formId=', find.ia_find_formedit, '&fid=', find.ia_find_auto, '&hash=', find.ia_find_token, '" target="_blank" rel="noopener noreferrer">', 'Edit', '</a>') As finding_edit,
+    reme.ia_findreme_name As client,
+    Case
+        When Cast(reme.ia_findreme_mail_trigger As Int) = 2
+        Then "withClient"
+        Else "atAudit"
+    End As status,
+    Date(reme.ia_findreme_date_send) As send,
+    Date(reme.ia_findreme_date_submit) As submit,
+    iafr.ia_findresp_name As response,
+    date(reme.ia_findreme_date_schedule) As schedule,
     Concat('<a href = "https://www.ia-nwu.co.za/index.php?option=com_rsform&formId=', reme.ia_findreme_formedit, '&id=',
-    reme.ia_findreme_auto, '">Edit</a>', " | ",
+    reme.ia_findreme_auto, '" target="_blank" rel="noopener noreferrer">Edit</a>', " | ",
     '<a href = "https://www.ia-nwu.co.za/index.php?option=com_rsform&formId=', reme.ia_findreme_formdelete, '&id=',
-    reme.ia_findreme_auto, '">Delete</a>', " | ",
+    reme.ia_findreme_auto, '" target="_blank" rel="noopener noreferrer">Delete</a>', " | ",
     '<a href = "https://www.ia-nwu.co.za/index.php?option=com_content&view=article&id=', reme.ia_findreme_formview,
-    '&hash=', reme.ia_findreme_token, '">View</a>', " | ",
+    '&hash=', reme.ia_findreme_token, '" target="_blank" rel="noopener noreferrer">View</a>', " | ",
     '<a href = "https://www.ia-nwu.co.za/index.php?option=com_rsform&formId=', reme.ia_findreme_formtransfer, '&id=',
-    reme.ia_findreme_auto, '">Update</a>') As ia_findreme_actions
+    reme.ia_findreme_auto, '" target="_blank" rel="noopener noreferrer">Update</a>') As actions
 From
     ia_finding_remediation reme Inner Join
     ia_finding find On find.ia_find_auto = reme.ia_find_auto Inner Join
@@ -25,10 +28,11 @@ From
 Where
     assi.ia_user_sysid = 855 And
     reme.ia_findreme_mail_trigger > 0 And
-    reme.ia_findreme_schedule > 0 And
-    reme.ia_findreme_date_schedule <= Now()
-Order By
-    ia_assi_name,
-    ia_find_name,
-    reme.ia_findreme_name,
-    reme.ia_findreme_date_schedule
+    reme.ia_findreme_date_schedule > 0 And
+    reme.ia_findreme_date_schedule <= now()
+Group By
+    assi.ia_assi_name,
+    find.ia_find_name,
+    reme.ia_findreme_employee,
+    reme.ia_findreme_date_send,
+    reme.ia_findreme_auto

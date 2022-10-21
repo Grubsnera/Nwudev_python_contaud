@@ -1,8 +1,7 @@
 ﻿Select
-    cate.ia_assicate_name As category,
-    type.ia_assitype_name As type,
     user.ia_user_name As owner,
-    Concat(assi.ia_assi_name, ' (', assi.ia_assi_auto, ')') As assignment,
+    Concat(cate.ia_assicate_name, '(', type.ia_assitype_name, ') ', assi.ia_assi_name, ' (', assi.ia_assi_auto,
+    ')') As assignment,
     Concat('<a href = "index.php?option=com_rsform&view=rsform&formId=', find.ia_find_formedit, '&fid=',
     find.ia_find_auto, '&hash=', find.ia_find_token, '" target="_blank" rel="noopener noreferrer">', find.ia_find_name,
     '</a>') As finding,
@@ -10,10 +9,16 @@
     fist.ia_findstat_name As status,
     Case
         When assi.ia_assi_permission = 855
-        Then
-            Concat('<a href = "index.php?option=com_rsform&view=rsform&formId=9" target="_blank" rel="noopener noreferrer">Add</a>', ' | ', '<a href = "index.php?option=com_rsform&view=rsform&formId=', find.ia_find_formedit, '&fid=', find.ia_find_auto, '&hash=', find.ia_find_token, '" target="_blank" rel="noopener noreferrer">Edit</a>', ' | ', '<a href = "index.php?option=com_content&view=article&id=', find.ia_find_formview, '&rid=', find.ia_find_auto, '" target="_blank" rel="noopener noreferrer">View</a>')
-        Else
-            Concat('<a href = "index.php?option=com_rsform&view=rsform&formId=9" target="_blank" rel="noopener noreferrer">Add</a>', ' | ', '<a href = "index.php?option=com_rsform&view=rsform&formId=', find.ia_find_formedit, '&fid=', find.ia_find_auto, '&hash=', find.ia_find_token, '" target="_blank" rel="noopener noreferrer">Edit</a>', ' | ', '<a href = "index.php?option=com_rsform&view=rsform&formId=', find.ia_find_formdelete, '&fid=', find.ia_find_auto, '&hash=', find.ia_find_token, '" target="_blank" rel="noopener noreferrer">Delete</a>', ' | ', '<a href = "index.php?option=com_content&view=article&id=', find.ia_find_formview, '&rid=', find.ia_find_auto, '" target="_blank" rel="noopener noreferrer">View</a>')
+        Then Concat('<a href = "index.php?option=com_rsform&view=rsform&formId=', find.ia_find_formedit, '&fid=',
+            find.ia_find_auto, '&hash=', find.ia_find_token, '" target="_blank" rel="noopener noreferrer">Edit</a>',
+            ' | ', '<a href = "index.php?option=com_content&view=article&id=', find.ia_find_formview, '&rid=',
+            find.ia_find_auto, '" target="_blank" rel="noopener noreferrer">View</a>')
+        Else Concat('<a href = "index.php?option=com_rsform&view=rsform&formId=', find.ia_find_formedit, '&fid=',
+            find.ia_find_auto, '&hash=', find.ia_find_token, '" target="_blank" rel="noopener noreferrer">Edit</a>',
+            ' | ', '<a href = "index.php?option=com_rsform&view=rsform&formId=', find.ia_find_formdelete, '&fid=',
+            find.ia_find_auto, '&hash=', find.ia_find_token, '" target="_blank" rel="noopener noreferrer">Delete</a>',
+            ' | ', '<a href = "index.php?option=com_content&view=article&id=', find.ia_find_formview, '&rid=',
+            find.ia_find_auto, '" target="_blank" rel="noopener noreferrer">View</a>')
     End As actions,
     Case
         When Count(reme.ia_findreme_auto) > 1
@@ -40,8 +45,8 @@ Where
         assi.ia_assi_priority < 9 And
         assi.ia_assi_permission = 855)
 Group By
-    find.ia_find_auto,
     cate.ia_assicate_name,
     type.ia_assitype_name,
     assi.ia_assi_name,
-    find.ia_find_name
+    find.ia_find_name,
+    find.ia_find_auto
