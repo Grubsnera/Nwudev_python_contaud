@@ -86,7 +86,7 @@ def mysql_backup(s_source_database: str = "Web_ia_nwu", s_target_database: str =
         ms_from_cursor = ms_from_connection.cursor()
         funcfile.writelog("%t OPEN MYSQL DATABASE: " + s_source_database)
 
-        # OPEN THE SOURCE FILE
+        # OPEN THE TARGET
         ms_to_connection = funcmysql.mysql_open(s_target_database)
         ms_to_cursor = ms_to_connection.cursor()
         funcfile.writelog("%t OPEN MYSQL DATABASE: " + s_target_database)
