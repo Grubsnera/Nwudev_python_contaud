@@ -47,10 +47,18 @@ def ia_lists(s_period: str = "curr"):
     *****************************************************************************"""
 
     # FUNCTION WIDE VARIABLES
-    if s_period == "prev":
-        s_year = funcdate.prev_year()
+    if s_period == "prev" and funcdate.cur_month() >= "10":
+        s_year: str = str(int(funcdate.prev_year()) + 1)
+    elif s_period == "prev":
+        s_year: str = funcdate.prev_year()
+    elif s_period == "curr" and funcdate.cur_month() >= "10":
+        s_year: str = str(int(funcdate.cur_year())+1)
+    elif s_period == "curr":
+        s_year: str = funcdate.cur_year()
     else:
-        s_year = funcdate.cur_year()
+        s_year: str = s_period
+    s_from: str = str(int(s_year) - 1) + '-10-01'
+    s_to: str = s_year + '-09-30'
     ed_path: str = "S:/_external_data/"  # External data path
     re_path: str = "R:/Internal_audit/" + s_year
     so_path: str = "W:/Internal_audit/"  # Source database path
@@ -59,7 +67,7 @@ def ia_lists(s_period: str = "curr"):
     l_mail: bool = funcconf.l_mail_project
     l_mail: bool = True
     l_mess: bool = funcconf.l_mess_project
-    l_mess: bool = False
+    l_mess: bool = True
     l_record: bool = False
     l_export: bool = False
 
@@ -135,7 +143,7 @@ def ia_lists(s_period: str = "curr"):
         user.ia_user_name As Auditor,
         assi.ia_assi_year As Year,
         Case
-            When assi.ia_assi_year = 2023
+            When assi.ia_assi_year = %year%
             Then 1
             When assi.ia_assi_priority < 9
             Then 2
@@ -198,11 +206,11 @@ def ia_lists(s_period: str = "curr"):
         assi.ia_assi_name || ' (' || assi.ia_assi_auto || ')' As Assignment,
         assi.ia_assi_startdate As Date_opened,
         Case
-            When Date(assi.ia_assi_startdate) < '2022-10-01'
+            When Date(assi.ia_assi_startdate) < '%from%'
             Then StrfTime('%Y', assi.ia_assi_startdate) || '-00'
-            When Date(assi.ia_assi_startdate) < '2023-10-01'
+            When Date(assi.ia_assi_startdate) < '%to%'
             Then StrfTime('%Y-%m', assi.ia_assi_startdate)
-            When Date(assi.ia_assi_startdate) >= '2022-10-01'
+            When Date(assi.ia_assi_startdate) >= '%from%'
             Then StrfTime('%Y', assi.ia_assi_startdate) || '-00'
             Else StrfTime('%Y-%m', 'now')
         End As Date_opened_month,
@@ -226,7 +234,7 @@ def ia_lists(s_period: str = "curr"):
             Then StrfTime('%Y-%m', assi.ia_assi_proofdate)
             When assi.ia_assi_priority = 8
             Then StrfTime('%Y-%m', 'now')
-            When Date(assi.ia_assi_finishdate) >= '2022-10-01' And Date(assi.ia_assi_finishdate) < '2023-10-01'
+            When Date(assi.ia_assi_finishdate) >= '%from%' And Date(assi.ia_assi_finishdate) <= '%to%'
             Then StrfTime('%Y-%m', assi.ia_assi_finishdate)
             Else '00'
         End As Date_closed_month,
@@ -249,25 +257,32 @@ def ia_lists(s_period: str = "curr"):
         ia_assignment_category cate On cate.ia_assicate_auto = assi.ia_assicate_auto Inner Join
         ia_assignment_type type On type.ia_assitype_auto = assi.ia_assitype_auto
     Where
-        (assi.ia_assi_year = 2023 And
+        (assi.ia_assi_year = %year% And
             user.ia_user_active = '1' And
             cate.ia_assicate_private = '0') Or
-        (assi.ia_assi_year < 2023 And
+        (assi.ia_assi_year < %year% And
             assi.ia_assi_priority < 9 And
             user.ia_user_active = '1' And
             cate.ia_assicate_private = '0') Or
-        (assi.ia_assi_finishdate >= '2022-10-01' And
-            assi.ia_assi_finishdate <= '2023-09-30' And
+        (assi.ia_assi_finishdate >= '%from%' And
+            assi.ia_assi_finishdate <= '%to%' And
             user.ia_user_active = '1' And
             cate.ia_assicate_private = '0')
     ;"""
-    if s_period == "prev":
-        s_sql = s_sql.replace("%VSS%", "VSSPREV")
-    else:
-        s_sql = s_sql.replace("%VSS%", "VSSCURR")
+    s_sql = s_sql.replace("%year%", s_year)
+    s_sql = s_sql.replace("%from%", s_from)
+    s_sql = s_sql.replace("%to%", s_to)
+    if l_debug:
+        print(s_sql)
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
+    ri_count = so_curs.execute("SELECT COUNT(*) FROM" + sr_file)
+    print(ri_count)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # MESSAGE
+    if l_mess:
+        funcsms.send_telegram('', 'administrator', '<b>IA Assignments</b> '+ s_year +' list prepared.')
 
     """************************************************************************
     END OF SCRIPT
