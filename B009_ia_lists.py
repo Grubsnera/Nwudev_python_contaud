@@ -1,31 +1,44 @@
 """
-SCRIPT TO IMPORT IA WEB DATA FROM MYSQL TO SQLITE
-Script: B009_ia_lists.py
-Author: Albert B Janse van Rensburg (NWU:21162395)
-Created: 21 October 2022
+Script to build internal audit lists
+Created on 24 Oct 2022
+Author: Albert J v Rensburg (NWU:21162395)
 """
 
 # IMPORT PYTHON MODULES
 import sqlite3
+import csv
 
 # IMPORT OWN MODULES
-from _my_modules import funcdate
-from _my_modules import funcsys
 from _my_modules import funcconf
+# from _my_modules import funccsv
+from _my_modules import funcdate
 from _my_modules import funcfile
-from _my_modules import funcmysql
+from _my_modules import funcstat
+from _my_modules import funcsys
 from _my_modules import funcsms
+# from _my_modules import functest
 
-# INDEX OF FUNCTIONS
+# INDEX
 """
-ia_mysql_import = Function to import the mysql data
+ENVIRONMENT
+OPEN THE DATABASES
+TEMPORARY AREA
+BEGIN OF SCRIPT
+
+OBTAIN STUDENTS
+OBTAIN STUDENT TRANSACTIONS
+
+END OF SCRIPT
 """
 
+# SCRIPT WIDE VARIABLES
+s_function: str = "B009_ia_lists"
 
-def ia_mysql_import(s_source_database: str = "Web_ia_nwu"):
+
+def ia_lists(s_period: str = "curr"):
     """
-    Script to import ia web data from mysql to sqlite
-    :param s_source_database: str: The MySQL database to import data from
+    Script to build INTERNAL AUDIT lists
+    :param s_period: str: The audit season
     :return: Nothing
     """
 
@@ -34,174 +47,248 @@ def ia_mysql_import(s_source_database: str = "Web_ia_nwu"):
     *****************************************************************************"""
 
     # FUNCTION WIDE VARIABLES
-    l_return: bool = True
-    l_debug: bool = False  # Display debug messages
-    # l_mess: bool = funcconf.l_mess_project  # Send messages
-    l_mess: bool = True  # Send messages
-    # l_mail: bool = funcconf.l_mail_project
-    l_mail: bool = False
-    so_path: str = "W:/Internal_audit/"
-    so_file: str = "Web_ia_nwu.sqlite"
-
-    # IF SOURCE OR TARGET EMPTY RETURN FALSE AND DO NOTHING
-    s_source_schema: str = ""
-    if s_source_database == "Web_ia_nwu":
-        s_source_schema = "Ia_nwu"
-    elif s_source_database == "Web_ia_joomla":
-        s_source_schema = "Ia_joomla"
-    elif s_source_database == "Mysql_ia_server":
-        s_source_schema = "nwuiaca"
+    if s_period == "prev":
+        s_year = funcdate.prev_year()
     else:
-        l_return = False
+        s_year = funcdate.cur_year()
+    ed_path: str = "S:/_external_data/"  # External data path
+    re_path: str = "R:/Internal_audit/" + s_year
+    so_path: str = "W:/Internal_audit/"  # Source database path
+    so_file: str = "Web_ia_nwu.sqlite"
+    l_debug: bool = True
+    l_mail: bool = funcconf.l_mail_project
+    l_mail: bool = True
+    l_mess: bool = funcconf.l_mess_project
+    l_mess: bool = False
+    l_record: bool = False
+    l_export: bool = False
 
-    # RUN THE IMPORT
-    if l_return:
+    # LOG
+    funcfile.writelog("Now")
+    funcfile.writelog("SCRIPT: " + s_function.upper())
+    funcfile.writelog("-" * len("script: "+s_function))
+    if l_debug:
+        print(s_function.upper())
 
-        """****************************************************************************
-        BEGIN OF SCRIPT
-        ****************************************************************************"""
+    # MESSAGE
+    if l_mess:
+        funcsms.send_telegram("", "administrator", "<b>" + s_function + "</b>")
 
-        # SCRIPT LOG
-        funcfile.writelog("Now")
-        funcfile.writelog("SCRIPT: B009_IA_IMPORT")
-        funcfile.writelog("----------------------")
-        if l_debug:
-            print("--------------")
-            print("B009_IA_IMPORT")
-            print("--------------")
+    """************************************************************************
+    OPEN THE DATABASES
+    ************************************************************************"""
+    funcfile.writelog("OPEN THE DATABASES")
+    if l_debug:
+        print("OPEN THE DATABASES")
 
-        # MESSAGE
-        if l_mess:
-            funcsms.send_telegram("", "administrator", "<b>B009 IA Import</b>")
+    # OPEN SQLITE SOURCE table
+    if l_debug:
+        print("Open sqlite database...")
+    with sqlite3.connect(so_path + so_file) as so_conn:
+        so_curs = so_conn.cursor()
+    funcfile.writelog("OPEN DATABASE: " + so_file)
 
-        # SET A TABLE AND RECORD COUNTER
-        i_table_counter: int = 0
-        i_record_counter: int = 0
+    """
+    # ATTACH VSS DATABASE
+    if l_debug:
+        print("Attach vss database...")
+    so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss.sqlite' AS 'VSS'")
+    funcfile.writelog("%t ATTACH DATABASE: Vss.sqlite")
+    so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss_curr.sqlite' AS 'VSSCURR'")
+    funcfile.writelog("%t ATTACH DATABASE: Vss_curr.sqlite")
+    so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss_prev.sqlite' AS 'VSSPREV'")
+    funcfile.writelog("%t ATTACH DATABASE: Vss_prev.sqlite")
+    so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
+    funcfile.writelog("%t ATTACH DATABASE: People.sqlite")
+    """
 
-        """****************************************************************************
-        OPEN THE DATABASES
-        ****************************************************************************"""
+    """************************************************************************
+    TEMPORARY AREA
+    ************************************************************************"""
+    funcfile.writelog("TEMPORARY AREA")
+    if l_debug:
+        print("TEMPORARY AREA")
 
-        if l_debug:
-            print("OPEN THE SOURCE AND TARGET DATABASES")
+    """************************************************************************
+    BEGIN OF SCRIPT
+    ************************************************************************"""
+    funcfile.writelog("BEGIN OF SCRIPT")
+    if l_debug:
+        print("BEGIN OF SCRIPT")
 
-        # OPEN SQLITE TARGET DATABASE
-        if l_debug:
-            print("Open sqlite target database...")
-        with sqlite3.connect(so_path + so_file) as so_conn:
-            so_curs = so_conn.cursor()
-        funcfile.writelog("%t OPEN SQLITE TARGET DATABASE: " + so_file)
+    """************************************************************************
+    OBTAIN LIST OF ASSIGNMENTS
+    ************************************************************************"""
+    funcfile.writelog("OBTAIN ASSIGNMENTS")
+    if l_debug:
+        print("OBTAIN ASSIGNMENTS")
 
-        # OPEN THE MYSQL SOURCE DATABASE
-        if l_debug:
-            print("Open mysql source database...")
-        ms_from_connection = funcmysql.mysql_open(s_source_database)
-        ms_from_cursor = ms_from_connection.cursor()
-        funcfile.writelog("%t OPEN MYSQL SOURCE DATABASE: " + s_source_database)
+    # OBTAIN THE LIST
+    if l_debug:
+        print("Obtain the list of assignments...")
+    sr_file = "X000_Assignment" + s_period
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sr_file = "X000_Assignment_" + s_period
+    s_sql = "CREATE TABLE " + sr_file + " AS" + """
+    Select
+        assi.ia_assi_auto As File,
+        user.ia_user_name As Auditor,
+        assi.ia_assi_year As Year,
+        Case
+            When assi.ia_assi_year = 2023
+            Then 1
+            When assi.ia_assi_priority < 9
+            Then 2
+            Else 3
+        End As Year_indicator,
+        cate.ia_assicate_name As Category,
+        type.ia_assitype_name As Type,
+        Case
+            When cate.ia_assicate_name = 'Election'
+            Then cate.ia_assicate_name
+            When cate.ia_assicate_name = 'Continuous audit'
+            Then cate.ia_assicate_name
+            When cate.ia_assicate_name = 'Special investigation'
+            Then cate.ia_assicate_name
+            Else type.ia_assitype_name
+        End As Type_calc,
+        assi.ia_assi_priority As Priority_number,
+        Case
+            When assi.ia_assi_priority = 9
+            Then 'Closed'
+            When assi.ia_assi_priority = 8
+            Then 'Continuous'
+            When assi.ia_assi_priority = 4
+            Then 'Follow-up'
+            When assi.ia_assi_priority = 3
+            Then 'High'
+            When assi.ia_assi_priority = 2
+            Then 'Medium'
+            When assi.ia_assi_priority = 1
+            Then 'Low'
+            Else 'Inactive'
+        End As Priority_word,
+        asta.ia_assistat_name As Assignment_status,
+        Case
+            When SubStr(asta.ia_assistat_name, 1, 2) = '00'
+            Then '1-NotStarted'
+            When assi.ia_assi_priority = 8
+            Then '8-Continuous'
+            When assi.ia_assi_priority = 4
+            Then '7-Follow-up'
+            When Upper(SubStr(asta.ia_assistat_name, 1, 2)) = 'CO'
+            Then '9-Completed'
+            When Cast(SubStr(asta.ia_assistat_name, 1, 2) As Integer) >= 1 And Cast(SubStr(asta.ia_assistat_name, 1,
+                2) As Integer) <= 10
+            Then '2-Planning'
+            When Cast(SubStr(asta.ia_assistat_name, 1, 2) As Integer) >= 11 And Cast(SubStr(asta.ia_assistat_name,
+                1, 2) As Integer) <= 50
+            Then '3-FieldworkInitial'
+            When Cast(SubStr(asta.ia_assistat_name, 1, 2) As Integer) >= 51 And Cast(SubStr(asta.ia_assistat_name,
+                1, 2) As Integer) <= 79
+            Then '4-FieldworkFinal'
+            When Cast(SubStr(asta.ia_assistat_name, 1, 2) As Integer) >= 80 And Cast(SubStr(asta.ia_assistat_name,
+                1, 2) As Integer) <= 89
+            Then '5-DraftReport'
+            When Cast(SubStr(asta.ia_assistat_name, 1, 2) As Integer) >= 90 And Cast(SubStr(asta.ia_assistat_name,
+                1, 2) As Integer) <= 99
+            Then '6-FinalReport'
+            Else 'Unknown'
+        End As Assignment_status_calc,
+        assi.ia_assi_name || ' (' || assi.ia_assi_auto || ')' As Assignment,
+        assi.ia_assi_startdate As Date_opened,
+        Case
+            When Date(assi.ia_assi_startdate) < '2022-10-01'
+            Then StrfTime('%Y', assi.ia_assi_startdate) || '-00'
+            When Date(assi.ia_assi_startdate) < '2023-10-01'
+            Then StrfTime('%Y-%m', assi.ia_assi_startdate)
+            When Date(assi.ia_assi_startdate) >= '2022-10-01'
+            Then StrfTime('%Y', assi.ia_assi_startdate) || '-00'
+            Else StrfTime('%Y-%m', 'now')
+        End As Date_opened_month,
+        Case
+            When Cast((StrfTime("%s", 'now') - StrfTime("%s", assi.ia_assi_startdate)) / 86400.0 As Integer) > 0
+            Then Cast((StrfTime("%s", 'now') - StrfTime("%s", assi.ia_assi_startdate)) / 86400.0 As Integer)
+            Else 0
+        End As Date_opened_days,
+        assi.ia_assi_completedate As Date_due,
+        assi.ia_assi_proofdate As Date_reported,
+        assi.ia_assi_finishdate As Date_closed,
+        Case
+            When assi.ia_assi_priority = 4
+            Then assi.ia_assi_proofdate
+            When assi.ia_assi_priority = 8
+            Then Date('now')
+            Else assi.ia_assi_finishdate
+        End As Date_closed_calc,
+        Case
+            When assi.ia_assi_priority = 4
+            Then StrfTime('%Y-%m', assi.ia_assi_proofdate)
+            When assi.ia_assi_priority = 8
+            Then StrfTime('%Y-%m', 'now')
+            When Date(assi.ia_assi_finishdate) >= '2022-10-01' And Date(assi.ia_assi_finishdate) < '2023-10-01'
+            Then StrfTime('%Y-%m', assi.ia_assi_finishdate)
+            Else '00'
+        End As Date_closed_month,
+        Case
+            When Cast((StrfTime("%s", assi.ia_assi_finishdate) - StrfTime("%s", assi.ia_assi_startdate)) / 86400.0
+                As Integer) > 0
+            Then Cast((StrfTime("%s", assi.ia_assi_finishdate) - StrfTime("%s", assi.ia_assi_startdate)) / 86400.0
+                As Integer)
+            Else 0
+        End As Days_to_close,
+        Case
+            When Cast((StrfTime("%s", 'now') - StrfTime("%s", assi.ia_assi_proofdate)) / 86400.0 As Integer) > 0
+            Then Cast((StrfTime("%s", 'now') - StrfTime("%s", assi.ia_assi_proofdate)) / 86400.0 As Integer)
+            Else 0
+        End As Days_due
+    From
+        ia_assignment assi Inner Join
+        ia_user user On user.ia_user_sysid = assi.ia_user_sysid Inner Join
+        ia_assignment_status asta On asta.ia_assistat_auto = assi.ia_assistat_auto Inner Join
+        ia_assignment_category cate On cate.ia_assicate_auto = assi.ia_assicate_auto Inner Join
+        ia_assignment_type type On type.ia_assitype_auto = assi.ia_assitype_auto
+    Where
+        (assi.ia_assi_year = 2023 And
+            user.ia_user_active = '1' And
+            cate.ia_assicate_private = '0') Or
+        (assi.ia_assi_year < 2023 And
+            assi.ia_assi_priority < 9 And
+            user.ia_user_active = '1' And
+            cate.ia_assicate_private = '0') Or
+        (assi.ia_assi_finishdate >= '2022-10-01' And
+            assi.ia_assi_finishdate <= '2023-09-30' And
+            user.ia_user_active = '1' And
+            cate.ia_assicate_private = '0')
+    ;"""
+    if s_period == "prev":
+        s_sql = s_sql.replace("%VSS%", "VSSPREV")
+    else:
+        s_sql = s_sql.replace("%VSS%", "VSSCURR")
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
-        # OBTAIN THE TABLE NAMES FROM THE SCHEMA
-        if l_debug:
-            print("OBTAIN TABLE NAMES")
+    """************************************************************************
+    END OF SCRIPT
+    ************************************************************************"""
+    funcfile.writelog("END OF SCRIPT")
+    if l_debug:
+        print("END OF SCRIPT")
 
-        """****************************************************************************
-        DO FOR EACH TABLE
-        ****************************************************************************"""
+    # CLOSE THE DATABASE CONNECTION
+    so_conn.commit()
+    so_conn.close()
 
-        for row in ms_from_cursor.execute(
-                "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '" + s_source_schema + "';"
-        ).fetchall():
+    # CLOSE THE LOG WRITER
+    funcfile.writelog("-" * len("completed: "+s_function))
+    funcfile.writelog("COMPLETED: " + s_function.upper())
 
-            if l_debug:
-                print(row[0])
-
-            s_table = row[0]
-
-            # SKIP CERTAIN TABLES
-            if s_table == "ia_finding_5":
-                continue
-            if s_table == "ia_finding_6":
-                continue
-            if s_table == "ia_people":
-                continue
-            if s_table == "ia_people_struct":
-                continue
-
-            # UPDATE THE TABLE COUNTER
-            i_table_counter = i_table_counter + 1
-
-            if l_debug:
-                print("IMPORT " + s_table.upper())
-            funcfile.writelog("%t IMPORT " + s_table.upper())
-
-            # OBTAIN THE SOURCE MYSQL TABLE STRUCTURE
-            if l_debug:
-                print("Build source mysql table structure for " + s_table + "...")
-            s_source_struct = funcmysql.get_struct_mysql_text(ms_from_cursor, s_source_schema, s_table)
-
-            # OBTAIN THE MYSQL TABLE COLUMN NAMES IN TUPLE FORMAT
-            """if l_debug:
-                print("Build source mysql table column name tuple for " + s_table + "...")
-            s_from_names = funcmysql.get_colnames_mysql_text(ms_from_cursor, s_source_schema, s_table)
-            """
-
-            # OBTAIN THE MYSQL TABLE COLUMN TYPES IN LIST FORMAT
-            if l_debug:
-                print("Build source mysql table column type list for " + s_table + "...")
-            a_from_types = funcmysql.get_coltypes_mysql_list(ms_from_cursor, s_source_schema, s_table)
-
-            # BUILD THE TARGET TABLE AFTER DELETING THE OLD TABLE
-            if l_debug:
-                print("Build the target table...")
-            sr_file = s_table
-            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-            so_curs.execute(
-                "CREATE TABLE IF NOT EXISTS `" +
-                s_table + "` " +
-                s_source_struct +
-                ";"
-            )
-
-            # LOOP THE DATA SOURCE PER ROW
-            if l_debug:
-                print("Insert target " + s_table)
-            ms_from_cursor.execute("SELECT * FROM " + s_table)
-            rows = ms_from_cursor.fetchall()
-            i_total = 0
-            i_counter = 0
-            for o_records in rows:
-
-                # UPDATE THE TABLE COUNTER
-                i_record_counter = i_record_counter + 1
-
-                s_data = funcmysql.convert_mysql_sqlite(o_records, a_from_types)
-                # print(s_data)
-                s_sql = "INSERT INTO " + s_table + " VALUES" + s_data + ";"
-                so_curs.execute(s_sql)
-                # print(s_sql)
-                # break
-                i_total = i_total + 1
-                i_counter = i_counter + 1
-                if i_counter == 10:
-                    so_conn.commit()
-                    i_counter = 0
-
-        # MESSAGE
-        if l_mess:
-            funcsms.send_telegram("", "administrator", "<b>" + str(i_table_counter) + "</b> tables imported")
-            funcsms.send_telegram("", "administrator", "<b>" + str(i_record_counter) + "</b> records imported")
-
-        """************************************************************************
-        END OF SCRIPT
-        ************************************************************************"""
-        funcfile.writelog("END OF SCRIPT")
-        if l_debug:
-            print("END OF SCRIPT")
-
-    return l_return
+    return
 
 
 if __name__ == '__main__':
     try:
-        ia_mysql_import()
+        ia_lists("curr")
     except Exception as e:
         funcsys.ErrMessage(e)
