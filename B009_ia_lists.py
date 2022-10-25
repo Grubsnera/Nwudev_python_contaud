@@ -10,13 +10,11 @@ import csv
 
 # IMPORT OWN MODULES
 from _my_modules import funcconf
-# from _my_modules import funccsv
 from _my_modules import funcdate
 from _my_modules import funcfile
 from _my_modules import funcstat
 from _my_modules import funcsys
 from _my_modules import funcsms
-# from _my_modules import functest
 
 # INDEX
 """
@@ -24,10 +22,7 @@ ENVIRONMENT
 OPEN THE DATABASES
 TEMPORARY AREA
 BEGIN OF SCRIPT
-
-OBTAIN STUDENTS
-OBTAIN STUDENT TRANSACTIONS
-
+OBTAIN LIST OF ASSIGNMENTS
 END OF SCRIPT
 """
 
@@ -59,17 +54,17 @@ def ia_lists(s_period: str = "curr"):
         s_year: str = s_period
     s_from: str = str(int(s_year) - 1) + '-10-01'
     s_to: str = s_year + '-09-30'
-    ed_path: str = "S:/_external_data/"  # External data path
-    re_path: str = "R:/Internal_audit/" + s_year
+    # ed_path: str = "S:/_external_data/"  # External data path
+    # re_path: str = "R:/Internal_audit/" + s_year
     so_path: str = "W:/Internal_audit/"  # Source database path
     so_file: str = "Web_ia_nwu.sqlite"
-    l_debug: bool = True
-    l_mail: bool = funcconf.l_mail_project
-    l_mail: bool = True
+    l_debug: bool = False
+    # l_mail: bool = funcconf.l_mail_project
+    # l_mail: bool = True
     l_mess: bool = funcconf.l_mess_project
-    l_mess: bool = True
-    l_record: bool = False
-    l_export: bool = False
+    # l_mess: bool = True
+    # l_record: bool = False
+    # l_export: bool = False
 
     # LOG
     funcfile.writelog("Now")
@@ -276,13 +271,13 @@ def ia_lists(s_period: str = "curr"):
         print(s_sql)
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
-    ri_count = so_curs.execute("SELECT COUNT(*) FROM" + sr_file)
-    print(ri_count)
+    so_curs.execute("SELECT File FROM " + sr_file)
+    ri_count: int = len(so_curs.fetchall())
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # MESSAGE
     if l_mess:
-        funcsms.send_telegram('', 'administrator', '<b>IA Assignments</b> '+ s_year +' list prepared.')
+        funcsms.send_telegram('', 'administrator', '<b>IA Assignments</b> ' + s_year + ' records ' + str(ri_count))
 
     """************************************************************************
     END OF SCRIPT
