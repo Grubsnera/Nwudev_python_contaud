@@ -65,6 +65,9 @@ def ia_lists(s_period: str = "curr"):
     # l_mess: bool = True
     # l_record: bool = False
     # l_export: bool = False
+    s_madelein: str = "11987774@nwu.ac.za"
+    s_shahed: str = "10933107@nwu.ac.za"
+    s_nicolene: str = "12119180@nwu.ac.za"
 
     # LOG
     funcfile.writelog("Now")
@@ -244,7 +247,16 @@ def ia_lists(s_period: str = "curr"):
             When Cast((StrfTime("%s", 'now') - StrfTime("%s", assi.ia_assi_proofdate)) / 86400.0 As Integer) > 0
             Then Cast((StrfTime("%s", 'now') - StrfTime("%s", assi.ia_assi_proofdate)) / 86400.0 As Integer)
             Else 0
-        End As Days_due
+        End As Days_due,
+        user.ia_user_mail,
+        Case
+            When cate.ia_assicate_name = 'Assignment'
+            Then '%nicolene%'
+            When cate.ia_assicate_name = 'Special investigation'
+            Then '%shahed%'
+            Else user.ia_user_mail
+        End As Email_manager1,
+        '%madelein%' As Email_manager2
     From
         ia_assignment assi Inner Join
         ia_user user On user.ia_user_sysid = assi.ia_user_sysid Inner Join
@@ -267,6 +279,9 @@ def ia_lists(s_period: str = "curr"):
     s_sql = s_sql.replace("%year%", s_year)
     s_sql = s_sql.replace("%from%", s_from)
     s_sql = s_sql.replace("%to%", s_to)
+    s_sql = s_sql.replace("%madelein%", s_madelein)
+    s_sql = s_sql.replace("%nicolene%", s_nicolene)
+    s_sql = s_sql.replace("%shahed%", s_shahed)
     if l_debug:
         print(s_sql)
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -299,6 +314,6 @@ def ia_lists(s_period: str = "curr"):
 
 if __name__ == '__main__':
     try:
-        ia_lists("curr")
+        ia_lists("2021")
     except Exception as e:
         funcsys.ErrMessage(e)
