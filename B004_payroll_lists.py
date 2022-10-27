@@ -31,9 +31,10 @@ def payroll_lists():
     # Declare variables
     so_path: str = "W:/People_payroll/"  # Source database path
     so_file: str = "People_payroll.sqlite"  # Source database
-    re_path = "R:/People/" #Results
+    re_path = "R:/People/"  # Results
     ed_path = "S:/_external_data/"
-    s_sql = "" #SQL statements
+    s_sql = ""  # SQL statements
+    l_export: bool = False
 
     funcfile.writelog("Now")
     funcfile.writelog("SCRIPT: B004_PAYROLL_LISTS")
@@ -124,7 +125,7 @@ def payroll_lists():
       X000aa_element_list_curr.EFFECTIVE_END_DATE >= Date('%TODAY%')
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = s_sql.replace("%TODAY%",funcdate.today())
+    s_sql = s_sql.replace("%TODAY%", funcdate.today())
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -146,16 +147,17 @@ def payroll_lists():
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
-    # Export the data
-    print("Export packages...")
-    sr_filet = sr_file
-    sx_path = re_path + funcdate.cur_year() + "/"
-    sx_file = "Payroll_001ax_package_"
-    sx_filet = sx_file + funcdate.cur_monthendfile()
-    s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
-    funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
+    if l_export:
+        # Export the data
+        print("Export packages...")
+        sr_filet = sr_file
+        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_file = "Payroll_001ax_package_"
+        sx_filet = sx_file + funcdate.cur_monthendfile()
+        s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
+        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
+        funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 
     """*************************************************************************
     ELEMENTS PREVIOUS
@@ -217,7 +219,7 @@ def payroll_lists():
       X000aa_element_list_prev.EFFECTIVE_END_DATE >= Date('%PYEARE%')
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = s_sql.replace("%PYEARE%",funcdate.prev_yearend())
+    s_sql = s_sql.replace("%PYEARE%", funcdate.prev_yearend())
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -239,16 +241,17 @@ def payroll_lists():
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
-    # Export the data
-    print("Export previous packages...")
-    sr_filet = sr_file
-    sx_path = re_path + funcdate.prev_year() + "/"
-    sx_file = "Payroll_001ax_package_"
-    # sx_filet = sx_file + funcdate.prev_monthendfile()
-    s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-    # funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
-    funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
+    if l_export:
+        # Export the data
+        print("Export previous packages...")
+        sr_filet = sr_file
+        sx_path = re_path + funcdate.prev_year() + "/"
+        sx_file = "Payroll_001ax_package_"
+        # sx_filet = sx_file + funcdate.prev_monthendfile()
+        s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
+        # funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
+        funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 
     """*************************************************************************
     BALANCES CURRENT
@@ -305,7 +308,7 @@ def payroll_lists():
       X000aa_balance_list_curr.EFFECTIVE_DATE = Date('%PMONTHEND%')
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = s_sql.replace("%PMONTHEND%",funcdate.prev_monthend())
+    s_sql = s_sql.replace("%PMONTHEND%", funcdate.prev_monthend())
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -327,16 +330,17 @@ def payroll_lists():
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
-    # Export the data
-    print("Export incomes...")
-    sr_filet = sr_file
-    sx_path = re_path + funcdate.cur_year() + "/"
-    sx_file = "Payroll_002ax_income_total_"
-    sx_filet = sx_file + funcdate.prev_monthendfile()
-    s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
-    funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
+    if l_export:
+        # Export the data
+        print("Export incomes...")
+        sr_filet = sr_file
+        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_file = "Payroll_002ax_income_total_"
+        sx_filet = sx_file + funcdate.prev_monthendfile()
+        s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
+        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
+        funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 
     """*************************************************************************
     BALANCES PREVIOUS
@@ -390,7 +394,7 @@ def payroll_lists():
       X000aa_balance_list_prev.EFFECTIVE_DATE = Date('%PYEARE%')
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = s_sql.replace("%PYEARE%",funcdate.prev_yearend())
+    s_sql = s_sql.replace("%PYEARE%", funcdate.prev_yearend())
     # print(s_sql)
     so_curs.execute(s_sql)
     so_conn.commit()
@@ -413,16 +417,17 @@ def payroll_lists():
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
-    # Export the data
-    print("Export previous incomes...")
-    sr_filet = sr_file
-    sx_path = re_path + funcdate.prev_year() + "/"
-    sx_file = "Payroll_002ax_income_total_"
-    # sx_filet = sx_file + funcdate.prev_monthendfile()
-    s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-    funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-    # funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
-    funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
+    if l_export:
+        # Export the data
+        print("Export previous incomes...")
+        sr_filet = sr_file
+        sx_path = re_path + funcdate.prev_year() + "/"
+        sx_file = "Payroll_002ax_income_total_"
+        # sx_filet = sx_file + funcdate.prev_monthendfile()
+        s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
+        # funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
+        funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 
     """*************************************************************************
     SECONDARY ASSIGNMENTS
@@ -479,7 +484,7 @@ def payroll_lists():
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute("DROP TABLE IF EXISTS X000aa_sec_assignment_prev")
-    s_sql = s_sql.replace("%PYEARE%",funcdate.prev_yearend())
+    s_sql = s_sql.replace("%PYEARE%", funcdate.prev_yearend())
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
