@@ -12,7 +12,7 @@
         Then 'Medium'
         When assi.ia_assi_priority = 3
         Then 'High'
-        When assi.ia_assi_priority = 4
+        When assi.ia_assi_priority = 7
         Then 'Follow-up'
         When assi.ia_assi_priority = 8
         Then 'Continuous'
