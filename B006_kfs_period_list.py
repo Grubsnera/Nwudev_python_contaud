@@ -1032,7 +1032,7 @@ def kfs_period_list(s_period="curr"):
 
 if __name__ == '__main__':
     try:
-        kfs_period_list("curr")
+        Kfs_period_list("curr")
         # kfs_period_list("prev")
         # kfs_period_list("2018")
     except Exception as e:
