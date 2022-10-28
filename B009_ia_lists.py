@@ -161,18 +161,18 @@ def ia_lists(s_period: str = "curr"):
         assi.ia_assi_priority As Priority_number,
         Case
             When assi.ia_assi_priority = 9
-            Then 'Closed'
+            Then '9-Closed'
             When assi.ia_assi_priority = 8
-            Then 'Continuous'
-            When assi.ia_assi_priority = 4
-            Then 'Follow-up'
+            Then '8-Continuous'
+            When assi.ia_assi_priority = 7
+            Then '7-Follow-up'
             When assi.ia_assi_priority = 3
-            Then 'High'
+            Then '3-High'
             When assi.ia_assi_priority = 2
-            Then 'Medium'
+            Then '2-Medium'
             When assi.ia_assi_priority = 1
-            Then 'Low'
-            Else 'Inactive'
+            Then '1-Low'
+            Else '0-Inactive'
         End As Priority_word,
         asta.ia_assistat_name As Assignment_status,
         Case
@@ -180,7 +180,7 @@ def ia_lists(s_period: str = "curr"):
             Then '1-NotStarted'
             When assi.ia_assi_priority = 8
             Then '8-Continuous'
-            When assi.ia_assi_priority = 4
+            When assi.ia_assi_priority = 7
             Then '7-Follow-up'
             When Upper(SubStr(asta.ia_assistat_name, 1, 2)) = 'CO'
             Then '9-Completed'
@@ -221,14 +221,14 @@ def ia_lists(s_period: str = "curr"):
         assi.ia_assi_proofdate As Date_reported,
         assi.ia_assi_finishdate As Date_closed,
         Case
-            When assi.ia_assi_priority = 4
+            When assi.ia_assi_priority = 7
             Then assi.ia_assi_proofdate
             When assi.ia_assi_priority = 8
             Then Date('now')
             Else assi.ia_assi_finishdate
         End As Date_closed_calc,
         Case
-            When assi.ia_assi_priority = 4
+            When assi.ia_assi_priority = 7
             Then StrfTime('%Y-%m', assi.ia_assi_proofdate)
             When assi.ia_assi_priority = 8
             Then StrfTime('%Y-%m', 'now')
@@ -314,6 +314,6 @@ def ia_lists(s_period: str = "curr"):
 
 if __name__ == '__main__':
     try:
-        ia_lists("2021")
+        ia_lists("curr")
     except Exception as e:
         funcsys.ErrMessage(e)
