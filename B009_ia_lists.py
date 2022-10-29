@@ -140,17 +140,30 @@ def ia_lists(s_period: str = "curr"):
         assi.ia_assi_auto As File,
         user.ia_user_name As Auditor,
         assi.ia_assi_year As Year,
+        Cast(Case
+            When Date(assi.ia_assi_startdate) >= '%from%' And Date(assi.ia_assi_startdate) <= '%to%' 
+            Then %year%
+            Else '0' 
+        End As Integer) As Year_calc,     
         Case
             When assi.ia_assi_year = %year%
-            Then 1
+            Then 'Current'
             When assi.ia_assi_priority < 9
-            Then 2
-            Else 3
+            Then 'Previous'
+            Else 'Period'
         End As Year_indicator,
         cate.ia_assicate_name As Category,
         type.ia_assitype_name As Type,
         Case
+            When cate.ia_assicate_name = 'Development'
+            Then 'Administration (audit)'     
+            When cate.ia_assicate_name = 'Administration (university process)'
+            Then 'Administration (process)'        
             When cate.ia_assicate_name = 'Election'
+            Then 'Verification audit'
+            When cate.ia_assicate_name = 'Reporting'
+            Then cate.ia_assicate_name
+            When cate.ia_assicate_name = 'Consultation'
             Then cate.ia_assicate_name
             When cate.ia_assicate_name = 'Continuous audit'
             Then cate.ia_assicate_name
@@ -228,12 +241,12 @@ def ia_lists(s_period: str = "curr"):
             Else assi.ia_assi_finishdate
         End As Date_closed_calc,
         Case
-            When assi.ia_assi_priority = 7
-            Then StrfTime('%Y-%m', assi.ia_assi_proofdate)
             When assi.ia_assi_priority = 8
             Then StrfTime('%Y-%m', 'now')
             When Date(assi.ia_assi_finishdate) >= '%from%' And Date(assi.ia_assi_finishdate) <= '%to%'
             Then StrfTime('%Y-%m', assi.ia_assi_finishdate)
+            When assi.ia_assi_priority = 7
+            Then StrfTime('%Y', assi.ia_assi_proofdate) || '-00'
             Else '00'
         End As Date_closed_month,
         Case
@@ -314,6 +327,6 @@ def ia_lists(s_period: str = "curr"):
 
 if __name__ == '__main__':
     try:
-        ia_lists("curr")
+        ia_lists()
     except Exception as e:
         funcsys.ErrMessage(e)
