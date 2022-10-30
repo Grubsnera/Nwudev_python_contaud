@@ -23,7 +23,7 @@ OPEN THE DATABASES
 TEMPORARY AREA
 BEGIN OF SCRIPT
 OBTAIN LIST OF ASSIGNMENTS
-IDENTIFY PRIORITY INCONSISTENCIES
+IDENTIFY PRIORITY INCONSISTENCY
 END OF SCRIPT
 """
 
@@ -307,18 +307,19 @@ def ia_lists(s_period: str = "curr"):
         funcsms.send_telegram('', 'administrator', '<b>IA Assignments</b> ' + s_year + ' records ' + str(ri_count))
 
     """************************************************************************
-    IDENTIFY PRIORITY INCONSISTENCIES
+    IDENTIFY PRIORITY INCONSISTENCY
     ************************************************************************"""
-    funcfile.writelog("IDENTIFY PRIORITY INCONSISTENCIES")
+    funcfile.writelog("IDENTIFY PRIORITY INCONSISTENCY")
     if l_debug:
-        print("IDENTIFY PRIORITY INCONSISTENCIES")
+        print("IDENTIFY PRIORITY INCONSISTENCY")
 
     # OBTAIN THE LIST
     if l_debug:
-        print("Identify priority inconsistencies...")
+        print("Identify priority inconsistency...")
     sr_file = "X001_Test_priority_inconsistent_" + s_period
     s_sql = "CREATE TABLE " + sr_file + " AS" + """
     Select
+        'Assignment priority inconsistent' As Test,
         assc.File,
         assc.Auditor,
         assc.Year,
