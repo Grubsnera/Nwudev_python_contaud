@@ -1,4 +1,5 @@
 ﻿Select
+    'Assignment priority inconsistent' As Test,
     assc.File,
     assc.Auditor,
     assc.Year,
