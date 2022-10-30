@@ -4,8 +4,8 @@
     assc.Year,
     assc.Category,
     assc.Type,
-    assc.Priority_word As Priority,
-    assc.Assignment_status_calc As Status,
+    assc.Priority_word As AssPriority,
+    assc.Assignment_status_calc As AssStatus,
     assc.Date_closed_calc As Date_closed,
     assc.Assignment,
     assc.ia_user_mail,
@@ -16,3 +16,9 @@ From
 Where
     assc.Priority_word Not Like ('9%') And
     assc.Assignment_status_calc Like ('9%')
+Order By
+    assc.Auditor,
+    assc.Category,
+    assc.Type,
+    assc.Year,
+    assc.Assignment
