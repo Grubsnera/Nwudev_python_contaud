@@ -23,6 +23,7 @@ OPEN THE DATABASES
 TEMPORARY AREA
 BEGIN OF SCRIPT
 OBTAIN LIST OF ASSIGNMENTS
+IDENTIFY PRIORITY INCONSISTENCIES
 END OF SCRIPT
 """
 
@@ -132,8 +133,6 @@ def ia_lists(s_period: str = "curr"):
     # OBTAIN THE LIST
     if l_debug:
         print("Obtain the list of assignments...")
-    sr_file = "X000_Assignment" + s_period
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     sr_file = "X000_Assignment_" + s_period
     s_sql = "CREATE TABLE " + sr_file + " AS" + """
     Select
@@ -308,6 +307,56 @@ def ia_lists(s_period: str = "curr"):
         funcsms.send_telegram('', 'administrator', '<b>IA Assignments</b> ' + s_year + ' records ' + str(ri_count))
 
     """************************************************************************
+    IDENTIFY PRIORITY INCONSISTENCIES
+    ************************************************************************"""
+    funcfile.writelog("IDENTIFY PRIORITY INCONSISTENCIES")
+    if l_debug:
+        print("IDENTIFY PRIORITY INCONSISTENCIES")
+
+    # OBTAIN THE LIST
+    if l_debug:
+        print("Identify priority inconsistencies...")
+    sr_file = "X001_Test_priority_inconsistent_" + s_period
+    s_sql = "CREATE TABLE " + sr_file + " AS" + """
+    Select
+        assc.File,
+        assc.Auditor,
+        assc.Year,
+        assc.Category,
+        assc.Type,
+        assc.Priority_word As AssPriority,
+        assc.Assignment_status_calc As AssStatus,
+        assc.Date_closed_calc As Date_closed,
+        assc.Assignment,
+        assc.ia_user_mail,
+        assc.Email_manager1,
+        assc.Email_manager2
+    From
+        X000_Assignment_%period% assc
+    Where
+        assc.Priority_word Not Like ('9%') And
+        assc.Assignment_status_calc Like ('9%')
+    Order By
+        assc.Auditor,
+        assc.Category,
+        assc.Type,
+        assc.Year,
+        assc.Assignment
+    ;"""
+    s_sql = s_sql.replace("%period%", s_period)
+    if l_debug:
+        print(s_sql)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_curs.execute("SELECT File FROM " + sr_file)
+    ri_count: int = len(so_curs.fetchall())
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # MESSAGE
+    if l_mess:
+        funcsms.send_telegram('', 'administrator', '<b>Priority inconsistencies</b> ' + str(ri_count))
+
+    """************************************************************************
     END OF SCRIPT
     ************************************************************************"""
     funcfile.writelog("END OF SCRIPT")
@@ -327,6 +376,6 @@ def ia_lists(s_period: str = "curr"):
 
 if __name__ == '__main__':
     try:
-        ia_lists()
+        ia_lists('curr')
     except Exception as e:
         funcsys.ErrMessage(e)
