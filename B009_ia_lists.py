@@ -217,11 +217,11 @@ def ia_lists(s_period: str = "curr"):
         assi.ia_assi_startdate As Date_opened,
         Case
             When Date(assi.ia_assi_startdate) < '%from%'
-            Then StrfTime('%Y', assi.ia_assi_startdate) || '-00'
+            Then StrfTime('%Y', assi.ia_assi_startdate)
             When Date(assi.ia_assi_startdate) < '%to%'
             Then StrfTime('%Y-%m', assi.ia_assi_startdate)
             When Date(assi.ia_assi_startdate) >= '%from%'
-            Then StrfTime('%Y', assi.ia_assi_startdate) || '-00'
+            Then StrfTime('%Y', assi.ia_assi_startdate)
             Else StrfTime('%Y-%m', 'now')
         End As Date_opened_month,
         Case
@@ -240,13 +240,13 @@ def ia_lists(s_period: str = "curr"):
             Else assi.ia_assi_finishdate
         End As Date_closed_calc,
         Case
-            When assi.ia_assi_priority = 8
-            Then StrfTime('%Y-%m', 'now')
+            When assi.ia_assi_priority = 7 And Date(assi.ia_assi_proofdate) >= '%from%' And Date(assi.ia_assi_proofdate) <= '%to%'
+            Then StrfTime('%Y-%m', assi.ia_assi_proofdate)
+            When assi.ia_assi_priority = 7
+            Then StrfTime('%Y', assi.ia_assi_proofdate)
             When Date(assi.ia_assi_finishdate) >= '%from%' And Date(assi.ia_assi_finishdate) <= '%to%'
             Then StrfTime('%Y-%m', assi.ia_assi_finishdate)
-            When assi.ia_assi_priority = 7
-            Then StrfTime('%Y', assi.ia_assi_proofdate) || '-00'
-            Else '00'
+            Else '00 Unclosed'
         End As Date_closed_month,
         Case
             When Cast((StrfTime("%s", assi.ia_assi_finishdate) - StrfTime("%s", assi.ia_assi_startdate)) / 86400.0
@@ -354,8 +354,59 @@ def ia_lists(s_period: str = "curr"):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # MESSAGE
-    if l_mess:
+    if l_mess and ri_count > 0:
         funcsms.send_telegram('', 'administrator', '<b>Priority inconsistencies</b> ' + str(ri_count))
+
+    """************************************************************************
+    IDENTIFY STATUS INCONSISTENCY
+    ************************************************************************"""
+    funcfile.writelog("IDENTIFY STATUS INCONSISTENCY")
+    if l_debug:
+        print("IDENTIFY STATUS INCONSISTENCY")
+
+    # OBTAIN THE LIST
+    if l_debug:
+        print("Identify status inconsistency...")
+    sr_file = "X001_Test_status_inconsistent_" + s_period
+    s_sql = "CREATE TABLE " + sr_file + " AS" + """
+    Select
+        'Assignment status inconsistent' As Test,
+        assc.File,
+        assc.Auditor,
+        assc.Year,
+        assc.Category,
+        assc.Type,
+        assc.Priority_word As AssPriority,
+        assc.Assignment_status_calc As AssStatus,
+        assc.Date_closed_calc As Date_closed,
+        assc.Assignment,
+        assc.ia_user_mail,
+        assc.Email_manager1,
+        assc.Email_manager2
+    From
+        X000_Assignment_prev assc
+    Where
+        assc.Priority_word Like ('9%') And
+        assc.Assignment_status_calc Not Like ('9%')
+    Order By
+        assc.Auditor,
+        assc.Category,
+        assc.Type,
+        assc.Year,
+        assc.Assignment
+    ;"""
+    s_sql = s_sql.replace("%period%", s_period)
+    if l_debug:
+        print(s_sql)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_curs.execute("SELECT File FROM " + sr_file)
+    ri_count: int = len(so_curs.fetchall())
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # MESSAGE
+    if l_mess and ri_count > 0:
+        funcsms.send_telegram('', 'administrator', '<b>Status inconsistencies</b> ' + str(ri_count))
 
     """************************************************************************
     END OF SCRIPT
