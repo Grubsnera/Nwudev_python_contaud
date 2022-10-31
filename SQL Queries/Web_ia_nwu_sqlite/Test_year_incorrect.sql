@@ -1,4 +1,5 @@
 ﻿Select
+    'Assignment year inconsistent' As Test,
     assc.File,
     assc.Auditor,
     assc.Year,
@@ -13,3 +14,7 @@ From
 Where
     assc.Year != assc.Year_calc And
     assc.Year_calc > 0
+Order By
+    assc.Auditor,
+    assc.Year,
+    assc.Assignment
