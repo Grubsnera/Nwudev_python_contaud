@@ -262,13 +262,23 @@ def ia_lists(s_period: str = "curr"):
         End As Days_due,
         user.ia_user_mail,
         Case
+            When user.ia_user_mail == '%madelein%'
+            Then ''
+            When user.ia_user_mail == '%shahed%'
+            Then ''
+            When user.ia_user_mail == '%nicolene%'
+            Then ''
             When cate.ia_assicate_name = 'Assignment'
             Then '%nicolene%'
             When cate.ia_assicate_name = 'Special investigation'
             Then '%shahed%'
-            Else user.ia_user_mail
+            Else ''
         End As Email_manager1,
-        '%madelein%' As Email_manager2
+        Case
+            When user.ia_user_mail == '%madelein%'
+            Then ''
+            Else '%madelein%'  
+        End As Email_manager2
     From
         ia_assignment assi Inner Join
         ia_user user On user.ia_user_sysid = assi.ia_user_sysid Inner Join
