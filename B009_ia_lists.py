@@ -217,6 +217,7 @@ def ia_lists(s_period: str = "curr"):
         End As Assignment_status_calc,
         assi.ia_assi_name || ' (' || assi.ia_assi_auto || ')' As Assignment,
         assi.ia_assi_startdate As Date_opened,
+        assi.ia_assi_si_reportdate As Date_case_reported,
         Case
             When Date(assi.ia_assi_startdate) < '%from%'
             Then StrfTime('%Y', assi.ia_assi_startdate)
@@ -232,6 +233,7 @@ def ia_lists(s_period: str = "curr"):
             Else 0
         End As Date_opened_days,
         assi.ia_assi_completedate As Date_due,
+        assi.ia_assi_si_report2date As Date_due_si,
         assi.ia_assi_proofdate As Date_reported,
         assi.ia_assi_finishdate As Date_closed,
         Case
@@ -258,10 +260,15 @@ def ia_lists(s_period: str = "curr"):
             Else 0
         End As Days_to_close,
         Case
-            When Cast((StrfTime("%s", 'now') - StrfTime("%s", assi.ia_assi_proofdate)) / 86400.0 As Integer) > 0
-            Then Cast((StrfTime("%s", 'now') - StrfTime("%s", assi.ia_assi_proofdate)) / 86400.0 As Integer)
+            When assi.ia_assi_priority < 7 And StrfTime("%s", 'now') > StrfTime("%s", assi.ia_assi_completedate)
+            Then Cast((StrfTime("%s", 'now') - StrfTime("%s", assi.ia_assi_completedate)) / 86400.0 As Integer)
             Else 0
         End As Days_due,
+        Case
+            When assi.ia_assi_priority < 7 And StrfTime("%s", 'now') > StrfTime("%s", assi.ia_assi_si_report2date)
+            Then Cast((StrfTime("%s", 'now') - StrfTime("%s", assi.ia_assi_si_report2date)) / 86400.0 As Integer)
+            Else 0
+        End As Days_due_si,
         user.ia_user_mail,
         Case
             When user.ia_user_mail == '%madelein%'
@@ -465,6 +472,76 @@ def ia_lists(s_period: str = "curr"):
     # MESSAGE
     if l_mess and ri_count > 0:
         funcsms.send_telegram('', 'administrator', '<b>Year inconsistencies</b> ' + str(ri_count))
+
+    """************************************************************************
+    ASSIGNMENT OVERDUE
+    ************************************************************************"""
+    funcfile.writelog("ASSIGNMENT OVERDUE")
+    if l_debug:
+        print("ASSIGNMENT OVERDUE")
+
+    # OBTAIN THE LIST
+    if l_debug:
+        print("Assignment overdue...")
+    sr_file = "X001_Assignment_overdue_" + s_period
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sr_file = "X001_Test_assignment_overdue_" + s_period
+    s_sql = "CREATE TABLE " + sr_file + " AS" + """
+    Select
+        'Assignment overdue' As Test,
+        assc.File,
+        assc.Auditor,
+        assc.Year,
+        assc.Category,
+        assc.Type,
+        assc.Priority_word As AssPriority,
+        assc.Assignment_status_calc As AssStatus,
+        Case
+            When assc.Date_case_reported <> ''
+            Then assc.Date_case_reported
+            Else assc.Date_opened
+        End As Date_opened,
+        Case
+            When assc.Date_due_si <> ''
+            Then assc.Date_due_si
+            Else assc.Date_due
+        End As Date_due,
+        Case
+            When assc.Days_due_si > 0
+            Then assc.Days_due_si
+            Else assc.Days_due
+        End As Days_overdue,
+        assc.Assignment,
+        assc.ia_user_mail,
+        assc.Email_manager1,
+        assc.Email_manager2
+    From
+        X000_Assignment_%period% assc
+    Where
+        Case
+            When assc.Days_due_si > 0
+            Then assc.Days_due_si
+            When assc.Days_due > 0 And assc.Date_due_si = ''
+            Then assc.Days_due
+            Else 0
+        End > 0
+    Order By
+        assc.Auditor,
+        Days_overdue Desc,
+        assc.Assignment
+    ;"""
+    s_sql = s_sql.replace("%period%", s_period)
+    if l_debug:
+        print(s_sql)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_curs.execute("SELECT File FROM " + sr_file)
+    ri_count: int = len(so_curs.fetchall())
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # MESSAGE
+    if l_mess and ri_count > 0:
+        funcsms.send_telegram('', 'administrator', '<b>Assignment overdue</b> ' + str(ri_count))
 
     """************************************************************************
     END OF SCRIPT
