@@ -1,15 +1,9 @@
 ﻿Select
-    X001ad_Report_payments_accroute.PAYEE_TYPE,
-    X001ad_Report_payments_accroute.PAYEE_TYP_DESC,
-    X001ad_Report_payments_accroute.VENDOR_TYPE,
-    X001ad_Report_payments_accroute.VENDOR_TYPE_CALC,
-    X001ad_Report_payments_accroute.DOC_TYPE,
-    Count(X001ad_Report_payments_accroute.EDOC) As Count_EDOC
+    X001aa_Report_payments.VENDOR_TYPE_CALC,
+    Total(X001aa_Report_payments.NET_PMT_AMT) As Total_NET_PMT_AMT
 From
-    X001ad_Report_payments_accroute
+    X001aa_Report_payments
+Where
+    X001aa_Report_payments.NET_PMT_AMT <= 5000
 Group By
-    X001ad_Report_payments_accroute.PAYEE_TYPE,
-    X001ad_Report_payments_accroute.PAYEE_TYP_DESC,
-    X001ad_Report_payments_accroute.VENDOR_TYPE,
-    X001ad_Report_payments_accroute.VENDOR_TYPE_CALC,
-    X001ad_Report_payments_accroute.DOC_TYPE
+    X001aa_Report_payments.VENDOR_TYPE_CALC
