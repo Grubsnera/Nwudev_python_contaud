@@ -184,6 +184,7 @@ def ia_mysql_import(s_source_database: str = "Web_ia_nwu"):
                 if i_counter == 10:
                     so_conn.commit()
                     i_counter = 0
+            so_conn.commit()
 
         # MESSAGE
         if l_mess:
