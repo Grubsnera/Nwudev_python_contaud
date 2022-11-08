@@ -26,6 +26,9 @@ OBTAIN LIST OF ASSIGNMENTS
 IDENTIFY PRIORITY INCONSISTENCY
 IDENTIFY STATUS INCONSISTENCY
 IDENTIFY YEAR INCONSISTENCY
+ASSIGNMENT OVERDUE
+FOLLOW-UP NO FINDING
+FOLLOW-UP NO REMINDER
 END OF SCRIPT
 """
 
@@ -306,6 +309,11 @@ def ia_lists(s_period: str = "curr"):
             assi.ia_assi_finishdate <= '%to%' And
             user.ia_user_active = '1' And
             cate.ia_assicate_private = '0')
+    Order By
+        user.ia_user_name,
+        cate.ia_assicate_name,
+        type.ia_assitype_name,
+        assi.ia_assi_name
     ;"""
     s_sql = s_sql.replace("%year%", s_year)
     s_sql = s_sql.replace("%from%", s_from)
@@ -483,8 +491,6 @@ def ia_lists(s_period: str = "curr"):
     # OBTAIN THE LIST
     if l_debug:
         print("Assignment overdue...")
-    sr_file = "X001_Assignment_overdue_" + s_period
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     sr_file = "X001_Test_assignment_overdue_" + s_period
     s_sql = "CREATE TABLE " + sr_file + " AS" + """
     Select
@@ -542,6 +548,118 @@ def ia_lists(s_period: str = "curr"):
     # MESSAGE
     if l_mess and ri_count > 0:
         funcsms.send_telegram('', 'administrator', '<b>Assignment overdue</b> ' + str(ri_count))
+
+    """************************************************************************
+    FOLLOW-UP NO FINDING
+    ************************************************************************"""
+    funcfile.writelog("FOLLOW-UP NO FINDING")
+    if l_debug:
+        print("FOLLOW-UP NO FINDING")
+
+    # OBTAIN THE LIST
+    if l_debug:
+        print("Follow-up no finding...")
+    sr_file = "X001_Test_followup_nofinding_" + s_period
+    s_sql = "CREATE TABLE " + sr_file + " AS" + """
+    Select
+        'Follow-up no finding' As Test,
+        assc.File,
+        assc.Auditor,
+        assc.Year,
+        assc.Category,
+        assc.Type,
+        assc.Priority_word As AssPriority,
+        assc.Assignment_status_calc As AssStatus,
+        fins.ia_findstat_name As FinStatus,
+        assc.Date_reported As Report_final,
+        assc.Assignment,
+        find.ia_find_name || ' (' || find.ia_find_auto || ')' As Finding,
+        assc.ia_user_mail As Mail_user,
+        assc.Email_manager1 As Mail_manager1,
+        assc.Email_manager2 As Mail_manager2
+    From
+        X000_Assignment_%period% assc Left Join
+        ia_finding find On find.ia_assi_auto = assc.File Inner Join
+        ia_finding_status fins On fins.ia_findstat_auto = find.ia_findstat_auto
+    Where
+        assc.Priority_word Like ('7%') And
+        fins.ia_findstat_name <> 'Request remediation'
+    Order By
+        assc.Auditor,
+        assc.Date_reported,
+        assc.Assignment,
+        find.ia_find_name
+    ;"""
+    s_sql = s_sql.replace("%period%", s_period)
+    if l_debug:
+        print(s_sql)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_curs.execute("SELECT File FROM " + sr_file)
+    ri_count: int = len(so_curs.fetchall())
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # MESSAGE
+    if l_mess and ri_count > 0:
+        funcsms.send_telegram('', 'administrator', '<b>Follow-up no finding</b> ' + str(ri_count))
+
+    """************************************************************************
+    FOLLOW-UP NO REMINDER
+    ************************************************************************"""
+    funcfile.writelog("FOLLOW-UP NO REMINDER")
+    if l_debug:
+        print("FOLLOW-UP NO REMINDER")
+
+    # OBTAIN THE LIST
+    if l_debug:
+        print("Follow-up no reminder...")
+    sr_file = "X001_Test_followup_noreminder_" + s_period
+    s_sql = "CREATE TABLE " + sr_file + " AS" + """
+    Select
+        'Follow-up no reminder' As Test,
+        assc.File,
+        assc.Auditor,
+        assc.Year,
+        assc.Category,
+        assc.Type,
+        assc.Priority_word As AssPriority,
+        assc.Assignment_status_calc As AssStatus,
+        fins.ia_findstat_name As FinStatus,
+        assc.Date_reported As Report_final,
+        reme.ia_findreme_name As Reminder_to,
+        reme.ia_findreme_date_schedule As Remind_date,
+        assc.Assignment,
+        find.ia_find_name || ' (' || find.ia_find_auto || ')' As Finding,
+        assc.ia_user_mail As Mail_user,
+        assc.Email_manager1 As Mail_manager1,
+        assc.Email_manager2 As Mail_manager2
+    From
+        X000_Assignment_curr assc Left Join
+        ia_finding find On find.ia_assi_auto = assc.File Inner Join
+        ia_finding_status fins On fins.ia_findstat_auto = find.ia_findstat_auto Left Join
+        ia_finding_remediation reme On reme.ia_find_auto = find.ia_find_auto
+                And reme.ia_findreme_mail_trigger > 0
+    Where
+        assc.Priority_word Like ('7%') And
+        fins.ia_findstat_name = 'Request remediation'
+    Order By
+        assc.Auditor,
+        assc.Date_reported,
+        assc.Assignment,
+        find.ia_find_name
+    ;"""
+    s_sql = s_sql.replace("%period%", s_period)
+    if l_debug:
+        print(s_sql)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_curs.execute("SELECT File FROM " + sr_file)
+    ri_count: int = len(so_curs.fetchall())
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # MESSAGE
+    if l_mess and ri_count > 0:
+        funcsms.send_telegram('', 'administrator', '<b>Follow-up no reminder</b> ' + str(ri_count))
 
     """************************************************************************
     END OF SCRIPT
