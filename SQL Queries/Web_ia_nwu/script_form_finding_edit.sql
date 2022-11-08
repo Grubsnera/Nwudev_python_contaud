@@ -5,6 +5,7 @@
     find.ia_find_token,
     find.ia_find_name,
     find.ia_find_note,
+    find.ia_find_private,
     find.ia_find_desc_toggle,
     find.ia_find_desc,
     find.ia_findstat_auto,
@@ -41,7 +42,11 @@
     find.ia_findlike_auto_client,
     clli.ia_findlike_desc As ia_findlike_desc_client,
     find.ia_findcont_auto_client,
-    clco.ia_findcont_desc As ia_findcont_desc_client
+    clco.ia_findcont_desc As ia_findcont_desc_client,
+    faud.ia_findaud_auto,
+    faud.ia_findaud_desc,
+    adeq.ia_findadeq_auto,
+    adeq.ia_findadeq_desc
 From
     ia_finding find Left Join
     ia_finding_rate rate On rate.ia_findrate_auto = find.ia_findrate_auto Left Join
@@ -50,4 +55,6 @@ From
     ia_finding_rate clra On clra.ia_findrate_auto = find.ia_findrate_auto_client Left Join
     ia_finding_likelihood clli On clli.ia_findlike_auto = find.ia_findlike_auto_client Left Join
     ia_finding_control clco On clco.ia_findcont_auto = find.ia_findcont_auto_client Inner Join
-    ia_assignment assi On assi.ia_assi_auto = find.ia_assi_auto
+    ia_assignment assi On assi.ia_assi_auto = find.ia_assi_auto Left Join
+    ia_finding_audit faud On faud.ia_findaud_auto = find.ia_findaud_auto Left Join
+    ia_finding_adequacy adeq On adeq.ia_findadeq_auto = find.ia_findadeq_auto
