@@ -55,6 +55,8 @@ def robot_report_audit_assignment(s_number: str = "", s_name: str = "", s_mail: 
     s_file: str = "Report_assignment_" + s_number + ".html"
     s_report: str = ""
     s_message: str = "Audit assignment report (" + s_number + ") "
+    s_report_footer: str = ""
+    s_report_signature: str = ""
 
     # LOG
     funcfile.writelog("Now")
@@ -91,13 +93,30 @@ def robot_report_audit_assignment(s_number: str = "", s_name: str = "", s_mail: 
         print("BUILD THE REPORT")
 
     # BUILD THE ASSIGNMENT RECORD
-    for row in ms_from_cursor.execute(
-            "SELECT "
-            "ia_assi_name, "
-            "ia_assi_report "
-            "FROM ia_assignment "
-            "WHERE ia_assi_auto = " +
-            s_number + ";").fetchall():
+    s_sql: str = """
+    Select
+        assi.ia_assi_name,
+        assi.ia_assi_header_text,
+        assi.ia_assi_header,
+        assi.ia_assi_report,
+        assi.ia_assi_report_text1,
+        assi.ia_assi_report_text2,
+        assi.ia_assi_footer,
+        assi.ia_assi_signature
+    From
+        ia_assignment assi
+    Where
+        assi.ia_assi_auto = %idn%    
+    ;"""
+    s_sql = s_sql.replace("%idn%", s_number)
+    for row in ms_from_cursor.execute(s_sql).fetchall():
+
+        # Previous select statement for reference
+        # "SELECT "
+        # "ia_assi_name, "
+        # "ia_assi_report "
+        # "FROM ia_assignment "
+        # "WHERE ia_assi_auto = " +
 
         if l_debug:
             print(row[0])
@@ -105,28 +124,59 @@ def robot_report_audit_assignment(s_number: str = "", s_name: str = "", s_mail: 
         s_report = row[0]
         s_message += s_report + " was mailed to " + s_mail
 
-        if row[1] != "":
+        # EXPORT THE ASSIGNMENT RECORD
+        # REPORT HEADER LINE
+        if not row[1]:
+            funcfile.writelog("<h1>Audit report</h1>", re_path, s_file)
+        else:
             funcfile.writelog(row[1], re_path, s_file)
 
+        # REPORT HEADER
+        if row[2]:
+            funcfile.writelog(row[2], re_path, s_file)
+
+        # REPORT BODY
+        if row[3]:
+            funcfile.writelog(row[3], re_path, s_file)
+
+        # REPORT FINDINGS HEADER
+        if not row[5]:
+            funcfile.writelog("<h1>Audit finding(s)</h1>", re_path, s_file)
+        else:
+            funcfile.writelog(row[5], re_path, s_file)
+
+        # SAVE THE REPORT FOOTER FOR LATER USE
+        if row[6]:
+            s_report_footer = row[6]
+        if row[7]:
+            s_report_signature = row[7]
+
     # BUILD THE FINDING RECORD
-    for row in ms_from_cursor.execute(
-            "SELECT "
-            "ia_find_name, "
-            "ia_find_desc, "
-            "ia_find_criteria, "            
-            "ia_find_procedure, "            
-            "ia_find_condition, "            
-            "ia_find_effect, "            
-            "ia_find_cause, "            
-            "ia_find_risk, "            
-            "ia_find_recommend, "            
-            "ia_find_comment, "            
-            "ia_find_frequency, "            
-            "ia_find_definition, "            
-            "ia_find_reference "            
-            "FROM ia_finding "
-            "WHERE ia_assi_auto = " +
-            s_number + ";").fetchall():
+    s_sql = """
+    Select
+        find.ia_find_name,
+        find.ia_find_desc,
+        find.ia_find_criteria,
+        find.ia_find_procedure,
+        find.ia_find_condition,
+        find.ia_find_effect,
+        find.ia_find_cause,
+        find.ia_find_risk,
+        find.ia_find_recommend,
+        find.ia_find_comment,
+        find.ia_find_frequency,
+        find.ia_find_definition,
+        find.ia_find_reference
+    From
+        ia_finding find
+    Where
+        find.ia_assi_auto = %idn% And
+        find.ia_find_private = 0
+    Order By
+        find.ia_find_name    
+    ;"""
+    s_sql = s_sql.replace("%idn%", s_number)
+    for row in ms_from_cursor.execute(s_sql).fetchall():
 
         if l_debug:
             print(row[0])
@@ -135,52 +185,58 @@ def robot_report_audit_assignment(s_number: str = "", s_name: str = "", s_mail: 
         #     funcfile.writelog(row[0], re_path, s_file)
 
         # DESCRIPTION
-        if row[1] != "":
+        if row[1]:
             funcfile.writelog(row[1], re_path, s_file)
 
         # CRITERIA
-        if row[2] != "":
+        if row[2]:
             funcfile.writelog(row[2], re_path, s_file)
 
         # PROCEDURE
-        if row[3] != "":
+        if row[3]:
             funcfile.writelog(row[3], re_path, s_file)
 
         # CONDITION
-        if row[4] != "":
+        if row[4]:
             funcfile.writelog(row[4], re_path, s_file)
 
         # EFFECT
-        if row[5] != "":
+        if row[5]:
             funcfile.writelog(row[5], re_path, s_file)
 
         # CAUSE
-        if row[6] != "":
+        if row[6]:
             funcfile.writelog(row[6], re_path, s_file)
 
         # RISK
-        if row[7] != "":
+        if row[7]:
             funcfile.writelog(row[7], re_path, s_file)
 
         # RECOMMEND
-        if row[8] != "":
+        if row[8]:
             funcfile.writelog(row[8], re_path, s_file)
 
         # COMMENT
-        if row[9] != "":
+        if row[9]:
             funcfile.writelog(row[9], re_path, s_file)
 
         # FREQUENCY
-        if row[10] != "":
+        if row[10]:
             funcfile.writelog(row[10], re_path, s_file)
 
         # DEFINITION
-        if row[11] != "":
+        if row[11]:
             funcfile.writelog(row[11], re_path, s_file)
 
         # REFERENCE
-        if row[12] != "":
+        if row[12]:
             funcfile.writelog(row[12], re_path, s_file)
+
+    # ADD THE REPORT FOOTER AND SIGNATURE
+    if s_report_footer != "":
+        funcfile.writelog(s_report_footer, re_path, s_file)
+    if s_report_signature != "":
+        funcfile.writelog(s_report_signature, re_path, s_file)
 
     # MAIL THE AUDIT REPORT
     if s_name != "" and s_mail != "":
@@ -223,7 +279,7 @@ def robot_report_audit_assignment(s_number: str = "", s_name: str = "", s_mail: 
 
 if __name__ == '__main__':
     try:
-        s_return = robot_report_audit_assignment("37", "Albert", "21162395@nwu.ac.za")
+        s_return = robot_report_audit_assignment("397", "Albert", "21162395@nwu.ac.za")
         if funcconf.l_mess_project:
             print("RETURN: " + s_return)
             print("LENGTH: " + str(len(s_return)))
