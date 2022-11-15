@@ -21,6 +21,9 @@ from _my_modules import funcsms
 ia_mysql_import = Function to import the mysql data
 """
 
+# SCRIPT WIDE VARIABLES
+s_function: str = "A004 IMPORT IA"
+
 
 def ia_mysql_import(s_source_database: str = "Web_ia_nwu"):
     """
@@ -63,16 +66,16 @@ def ia_mysql_import(s_source_database: str = "Web_ia_nwu"):
 
         # SCRIPT LOG
         funcfile.writelog("Now")
-        funcfile.writelog("SCRIPT: B009_IA_IMPORT")
+        funcfile.writelog("SCRIPT: " + s_function.upper())
         funcfile.writelog("----------------------")
         if l_debug:
             print("--------------")
-            print("B009_IA_IMPORT")
+            print(s_function.upper())
             print("--------------")
 
         # MESSAGE
         if l_mess:
-            funcsms.send_telegram("", "administrator", "<b>B009 IA Import</b>")
+            funcsms.send_telegram("", "administrator", "<b>" + s_function + "</b>")
 
         # SET A TABLE AND RECORD COUNTER
         i_table_counter: int = 0
