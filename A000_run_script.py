@@ -406,13 +406,21 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
             if s_script != "c200":
                 s_parameter1 = "curr"
                 # No open balances
-                # r_maf = 0
-                # r_pot = 0
-                # r_vaa = 0
+                r_maf = 0
+                r_pot = 0
+                r_vaa = 0
+                # 2022 balances
+                # r_maf = 40960505.33
+                # r_pot = 6573550.30
+                # r_vaa = 29005168.76
+                # 2021 balances
+                # r_maf = 65676774.13
+                # r_pot = 61655697.80
+                # r_vaa = 41648563.00
                 # 2020 balances
-                r_maf = 48501952.09
-                r_pot = -12454680.98
-                r_vaa = 49976048.39
+                # r_maf = 48501952.09
+                # r_pot = -12454680.98
+                # r_vaa = 49976048.39
                 # 2019 balances
                 # r_maf = 66561452.48
                 # r_pot = -18340951.06
