@@ -32,7 +32,7 @@ END OF SCRIPT
 """
 
 # SCRIPT WIDE VARIABLES
-s_function: str = "C303_test_student_bursary"
+s_function: str = "C303 Student bursary tests"
 
 
 def student_bursary(s_period: str = "curr"):
