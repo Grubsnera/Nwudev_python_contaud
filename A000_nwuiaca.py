@@ -35,8 +35,6 @@ START BOT AND CREATE UPDATER (main)
 
 THREAD TO RUN VACUUM SCRIPT (RunVacuum)
 VACUUM TEST FINDING TABLES (A003_table_vacuum)(24/7)
-
-THREAD TO RUN LARGE SCRIPT (RunLarge)
 BACKUP MYSQL (B008_mysql_backup(web->server))(MonTueWedThuFri)
 IMPORT INTERNAL AUDIT (A004_import_ia)(MonTueWedThuFri)
 INTERNAL AUDIT LISTS (B009_ia_lists)(MonTueWedThuFri)
@@ -47,6 +45,8 @@ PEOPLE PAYROLL LISTS (B004_payroll_lists)(MonTueWedThuFri)
 IMPORT VSS (A001_oracle_to_sqlite(vss))(MonTueWedThuFri)
 VSS LISTS (B003_vss_lists)(MonTueWedThuFri)
 VSS PERIOD LIST (B007_vss_period_list)(MonTueWedThuFri)
+
+THREAD TO RUN LARGE SCRIPT (RunLarge)
 VSS STUDENT DEFERMENT MASTER FILE (C301_report_student_deferment)(MonTueWedThuFri)
 
 THREAD TO RUN SMALL SCRIPT (RunSmall)
@@ -487,7 +487,7 @@ class RunVacuum(Thread):
                                 "%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
 
                     # VSS PERIOD LIST CURR *****************************************
-                    s_project: str = "B007_vss_periof_list(curr)"
+                    s_project: str = "B007_vss_period_list(curr)"
                     if funcconf.l_run_vss_test:
                         if funcdate.today_dayname() in "MonTueWedThuFri":
                             try:
@@ -544,6 +544,7 @@ class RunLarge(Thread):
         # import B003_vss_lists
         # import B007_vss_period_list
         import C301_report_student_deferment
+        import C303_test_student_bursary
 
         # DECLARE VARIABLES
         l_run_large: bool = True  # Run large thread
@@ -609,8 +610,30 @@ class RunLarge(Thread):
                                                   'NWUIACA:Success:' + s_project,
                                                   'NWUIACA: Success: ' + s_project)
                             except Exception as err:
+                                # ERROR MESSAGE
+                                funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                                   "NWUIACA:Fail:" + s_project,
+                                                   "NWUIACA: Fail: " + s_project)
+                        else:
+                            print("ORACLE to SQLITE " + s_project + " do not run on Saturdays and Sundays")
+                            if funcconf.l_mess_project:
+                                funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
+                            funcfile.writelog(
+                                "%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
+
+                    # VSS STUDENT BURSARY TESTS *******************************
+                    s_project: str = "C303_test_student_bursary(curr)"
+                    if funcconf.l_run_vss_test:
+                        if funcdate.today_dayname() in "MonTueWedThuFri":
+                            try:
+                                C303_test_student_bursary.student_bursary("curr")
+                                if funcconf.l_mail_project:
+                                    funcmail.Mail('std_success_gmail',
+                                                  'NWUIACA:Success:' + s_project,
+                                                  'NWUIACA: Success: ' + s_project)
+                            except Exception as err:
                                 # DISABLE VSS TESTS
-                                # funcconf.l_run_vss_test = False
+                                funcconf.l_run_vss_test = False
                                 # ERROR MESSAGE
                                 funcsys.ErrMessage(err, funcconf.l_mail_project,
                                                    "NWUIACA:Fail:" + s_project,
