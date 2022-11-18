@@ -23,7 +23,6 @@ from _my_modules import funcsys
 ENVIRONMENT
 OPEN THE DATABASES
 BEGIN OF SCRIPT
-BUILD LOOKUPS
 BUILD GRADES
 BUILD POSITIONS
 BUILD JOBS
@@ -97,31 +96,6 @@ def people_lists():
     *****************************************************************************"""
     print("BEGIN OF SCRIPT")
     funcfile.writelog("BEGIN OF SCRIPT")
-
-    """ ****************************************************************************
-    BUILD LOOKUPS
-    *****************************************************************************"""
-    print("BUILD LOOKUPS")
-    funcfile.writelog("BUILD LOOKUPS")
-
-    # IMPORT LOOKUPS
-    print("Import own lookups...")
-    ed_path = "S:/_external_data/"
-    tb_name = "X000_OWN_HR_LOOKUPS"
-    so_curs.execute("DROP TABLE IF EXISTS " + tb_name)
-    so_curs.execute("CREATE TABLE " + tb_name + "(LOOKUP TEXT,LOOKUP_CODE TEXT,LOOKUP_DESCRIPTION TEXT)")
-    co = open(ed_path + "001_own_hr_lookups.csv", newline=None)
-    co_reader = csv.reader(co)
-    for row in co_reader:
-        if row[0] == "LOOKUP":
-            continue
-        else:
-            s_cols = "INSERT INTO " + tb_name + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "')"
-            so_curs.execute(s_cols)
-    so_conn.commit()
-    # Close the imported data file
-    co.close()
-    funcfile.writelog("%t IMPORT TABLE: " + tb_name)
 
     """ ****************************************************************************
     BUILD GRADES
