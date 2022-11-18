@@ -63,24 +63,6 @@ TEMPORARY AREA
 print("TEMPORARY AREA")
 funcfile.writelog("TEMPORARY AREA")
 
-# IMPORT OWN LOOKUPS
-print("Import own lookups...")
-sr_file = "X000_Own_lookups"
-so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-so_curs.execute("CREATE TABLE " + sr_file + "(LOOKUP TEXT,LOOKUP_CODE TEXT,LOOKUP_DESCRIPTION TEXT)")
-s_cols = ""
-co = open(ed_path + "001_own_vss_lookups.csv", newline=None)
-co_reader = csv.reader(co)
-for row in co_reader:
-    if row[0] == "LOOKUP":
-        continue
-    else:
-        s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "')"
-        so_curs.execute(s_cols)
-so_conn.commit()
-co.close()
-funcfile.writelog("%t IMPORT TABLE: " + sr_file)
-
 """*****************************************************************************
 BEGIN OF SCRIPT
 *****************************************************************************"""
