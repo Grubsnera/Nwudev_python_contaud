@@ -10,6 +10,7 @@
     staf.TRAN_VALUE As staff_discount,
     stud.ACTIVE_IND As active,
     stud.LEVY_CATEGORY As levy_category,
+    stud.ENROL_CAT As enrol_category,
     stud.QUALIFICATION_NAME As qualification,
     stud.QUAL_TYPE As qualification_type,
     stud.DISCONTINUEDATE As discontinue_date,

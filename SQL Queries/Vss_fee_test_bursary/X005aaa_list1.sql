@@ -10,6 +10,7 @@
     burs.staff_discount,
     burs.active,
     burs.levy_category,
+    burs.enrol_category,
     burs.qualification,
     burs.qualification_type,
     burs.discontinue_date,
@@ -19,6 +20,10 @@ From
     X001_Bursary_summary_student burs
 Where
     (burs.total_burs <> 0 And
-        burs.active = 'INACTIVE') Or
+        burs.active = 'INACTIVE' And
+        burs.total_loan = 0 And
+        burs.enrol_category Not In ('POST DOC')) Or
     (burs.total_burs <> 0 And
-        burs.discontinue_date Is Not Null)
+        burs.discontinue_date Is Not Null And
+        burs.total_loan = 0 And
+        burs.enrol_category Not In ('POST DOC'))
