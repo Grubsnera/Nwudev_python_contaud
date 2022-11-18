@@ -65,31 +65,6 @@ so_curs.execute("ATTACH DATABASE 'W:/People_payroll/People_payroll.sqlite' AS 'P
 funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
 
 """*****************************************************************************
-DO NOT DELETE
-IMPORT OWN LOOKUPS
-DO NOT DELETE
-*****************************************************************************"""
-# Import the X000_OWN_HR_LOOKUPS table
-print("Import own lookups...")
-ed_path = "S:/_external_data/"
-tb_name = "X000_OWN_HR_LOOKUPS"
-so_curs.execute("DROP TABLE IF EXISTS " + tb_name)
-so_curs.execute("CREATE TABLE " + tb_name + "(LOOKUP TEXT,LOOKUP_CODE TEXT,LOOKUP_DESCRIPTION TEXT)")
-s_cols = ""
-co = open(ed_path + "001_own_hr_lookups.csv", newline=None)
-co_reader = csv.reader(co)
-for row in co_reader:
-    if row[0] == "LOOKUP":
-        continue
-    else:
-        s_cols = "INSERT INTO " + tb_name + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "')"
-        so_curs.execute(s_cols)
-so_conn.commit()
-# Close the imported data file
-co.close()
-funcfile.writelog("%t IMPORT TABLE: " + tb_name)
-
-"""*****************************************************************************
 BEGIN OF SCRIPT
 *****************************************************************************"""
 if l_debug:
