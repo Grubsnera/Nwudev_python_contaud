@@ -38,6 +38,7 @@ VACUUM TEST FINDING TABLES (A003_table_vacuum)(24/7)
 BACKUP MYSQL (B008_mysql_backup(web->server))(MonTueWedThuFri)
 IMPORT INTERNAL AUDIT (A004_import_ia)(MonTueWedThuFri)
 INTERNAL AUDIT LISTS (B009_ia_lists)(MonTueWedThuFri)
+IMPORT LOOKUP TABLES (A005_import_lookup_tables)(MonTueWedThuFri)
 IMPORT PEOPLE (A001_oracle_to_sqlite(people))(MonTueWedThuFri)
 PEOPLE LISTS (B001_people_lists)(MonTueWedThuFri)
 PEOPLE LIST MASTER FILE (C003_people_list_masterfile)(MonTueWedThuFri)
@@ -48,6 +49,7 @@ VSS PERIOD LIST (B007_vss_period_list)(MonTueWedThuFri)
 
 THREAD TO RUN LARGE SCRIPT (RunLarge)
 VSS STUDENT DEFERMENT MASTER FILE (C301_report_student_deferment)(MonTueWedThuFri)
+VSS STUDENT BURSARY TESTS (C303_test_student_bursary(curr))(MonTueWedThuFri)
 
 THREAD TO RUN SMALL SCRIPT (RunSmall)
 IMPORT KFS (A001_oracle_to_sqlite(kfs))(TueWedThuFriSat)
@@ -137,6 +139,7 @@ class RunVacuum(Thread):
         import A003_table_vacuum
         import A004_import_ia
         import B009_ia_lists
+        import A005_import_lookup_tables
         import A001_oracle_to_sqlite
         import B001_people_lists
         import C003_people_list_masterfile
@@ -271,76 +274,98 @@ class RunVacuum(Thread):
 
                     # IMPORT INTERNAL AUDIT ***********************************
                     s_project: str = "A004_import_ia"
-                    if funcconf.l_run_people_test:
-                        if funcdate.today_dayname() in "MonTueWedThuFri":
-                            try:
-                                A004_import_ia.ia_mysql_import()
-                                if funcconf.l_mail_project:
-                                    funcmail.Mail('std_success_gmail',
-                                                  'NWUIACA:Success:' + s_project,
-                                                  'NWUIACA: Success: ' + s_project)
-                            except Exception as err:
-                                # DISABLE VSS TESTS
-                                funcconf.l_run_vss_test = False
-                                # ERROR MESSAGE
-                                funcsys.ErrMessage(err, funcconf.l_mail_project,
-                                                   "NWUIACA:Fail:" + s_project,
-                                                   "NWUIACA: Fail: " + s_project)
-                        else:
-                            print("IMPORT FROM WEB to SQLITE " + s_project + " do not run on Saturdays and Sundays")
-                            if funcconf.l_mess_project:
-                                funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
-                            funcfile.writelog(
-                                "%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
+                    if funcdate.today_dayname() in "MonTueWedThuFri":
+                        try:
+                            A004_import_ia.ia_mysql_import()
+                            if funcconf.l_mail_project:
+                                funcmail.Mail('std_success_gmail',
+                                              'NWUIACA:Success:' + s_project,
+                                              'NWUIACA: Success: ' + s_project)
+                        except Exception as err:
+                            # DISABLE VSS TESTS
+                            funcconf.l_run_vss_test = False
+                            # ERROR MESSAGE
+                            funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                               "NWUIACA:Fail:" + s_project,
+                                               "NWUIACA: Fail: " + s_project)
+                    else:
+                        print("IMPORT FROM WEB to SQLITE " + s_project + " do not run on Saturdays and Sundays")
+                        if funcconf.l_mess_project:
+                            funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
+                        funcfile.writelog(
+                            "%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
 
                     # INTERNAL AUDIT LISTS ************************************
                     # CURRENT YEAR
                     s_project: str = "B009_ia_lists"
-                    if funcconf.l_run_people_test:
-                        if funcdate.today_dayname() in "MonTueWedThuFri":
-                            try:
-                                B009_ia_lists.ia_lists("curr")
-                                if funcconf.l_mail_project:
-                                    funcmail.Mail('std_success_gmail',
-                                                  'NWUIACA:Success:' + s_project,
-                                                  'NWUIACA: Success: ' + s_project)
-                            except Exception as err:
-                                # DISABLE VSS TESTS
-                                funcconf.l_run_vss_test = False
-                                # ERROR MESSAGE
-                                funcsys.ErrMessage(err, funcconf.l_mail_project,
-                                                   "NWUIACA:Fail:" + s_project,
-                                                   "NWUIACA: Fail: " + s_project)
-                        else:
-                            print("INTERNAL AUDIT LISTS " + s_project + " do not run on Saturdays and Sundays")
-                            if funcconf.l_mess_project:
-                                funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
-                            funcfile.writelog(
-                                "%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
+                    if funcdate.today_dayname() in "MonTueWedThuFri":
+                        try:
+                            B009_ia_lists.ia_lists("curr")
+                            if funcconf.l_mail_project:
+                                funcmail.Mail('std_success_gmail',
+                                              'NWUIACA:Success:' + s_project,
+                                              'NWUIACA: Success: ' + s_project)
+                        except Exception as err:
+                            # DISABLE VSS TESTS
+                            funcconf.l_run_vss_test = False
+                            # ERROR MESSAGE
+                            funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                               "NWUIACA:Fail:" + s_project,
+                                               "NWUIACA: Fail: " + s_project)
+                    else:
+                        print("INTERNAL AUDIT LISTS " + s_project + " do not run on Saturdays and Sundays")
+                        if funcconf.l_mess_project:
+                            funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
+                        funcfile.writelog(
+                            "%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
 
                     # PREVIOUS YEAR
                     s_project: str = "B009_ia_lists"
-                    if funcconf.l_run_people_test:
-                        if funcdate.today_dayname() in "MonTueWedThuFri":
-                            try:
-                                B009_ia_lists.ia_lists("prev")
-                                if funcconf.l_mail_project:
-                                    funcmail.Mail('std_success_gmail',
-                                                  'NWUIACA:Success:' + s_project,
-                                                  'NWUIACA: Success: ' + s_project)
-                            except Exception as err:
-                                # DISABLE VSS TESTS
-                                funcconf.l_run_vss_test = False
-                                # ERROR MESSAGE
-                                funcsys.ErrMessage(err, funcconf.l_mail_project,
-                                                   "NWUIACA:Fail:" + s_project,
-                                                   "NWUIACA: Fail: " + s_project)
-                        else:
-                            print("INTERNAL AUDIT LISTS " + s_project + " do not run on Saturdays and Sundays")
-                            if funcconf.l_mess_project:
-                                funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
-                            funcfile.writelog(
-                                "%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
+                    if funcdate.today_dayname() in "MonTueWedThuFri":
+                        try:
+                            B009_ia_lists.ia_lists("prev")
+                            if funcconf.l_mail_project:
+                                funcmail.Mail('std_success_gmail',
+                                              'NWUIACA:Success:' + s_project,
+                                              'NWUIACA: Success: ' + s_project)
+                        except Exception as err:
+                            # DISABLE VSS TESTS
+                            funcconf.l_run_vss_test = False
+                            # ERROR MESSAGE
+                            funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                               "NWUIACA:Fail:" + s_project,
+                                               "NWUIACA: Fail: " + s_project)
+                    else:
+                        print("INTERNAL AUDIT LISTS " + s_project + " do not run on Saturdays and Sundays")
+                        if funcconf.l_mess_project:
+                            funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
+                        funcfile.writelog(
+                            "%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
+
+                    # IMPORT LOOKUP TABLES ************************************
+                    s_project: str = "A005_import_lookup_tables"
+                    if funcdate.today_dayname() in "MonTueWedThuFri":
+                        try:
+                            A005_import_lookup_tables()
+                            if funcconf.l_mail_project:
+                                funcmail.Mail('std_success_gmail',
+                                              'NWUIACA:Success:' + s_project,
+                                              'NWUIACA: Success: ' + s_project)
+                        except Exception as err:
+                            # DISABLE TESTS
+                            funcconf.l_run_people_test = False
+                            funcconf.l_run_kfs_test = False
+                            funcconf.l_run_vss_test = False
+                            # ERROR MESSAGE
+                            funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                               "NWUIACA:Fail:" + s_project,
+                                               "NWUIACA: Fail: " + s_project)
+                    else:
+                        print("IMPORT FROM WEB to SQLITE " + s_project + " do not run on Saturdays and Sundays")
+                        if funcconf.l_mess_project:
+                            funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
+                        funcfile.writelog(
+                            "%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
 
                     # IMPORT PEOPLE ************************************************
                     s_project: str = "A001_oracle_to_sqlite(people)"
