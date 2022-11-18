@@ -78,28 +78,6 @@ def kfs_lists():
     print("BEGIN OF SCRIPT")
     funcfile.writelog("BEGIN OF SCRIPT")
 
-    """*****************************************************************************
-    IMPORT OWN LOOKUPS
-    *****************************************************************************"""
-    funcfile.writelog("Import own lookups...")
-    if l_debug:
-        print("Import own lookups...")
-    tb_name = "X000_Own_kfs_lookups"
-    so_curs.execute("DROP TABLE IF EXISTS " + tb_name)
-    so_curs.execute("CREATE TABLE " + tb_name + "(LOOKUP TEXT,LOOKUP_CODE TEXT,LOOKUP_DESCRIPTION TEXT)")
-    co = open(ed_path + "001_own_kfs_lookups.csv", newline=None)
-    co_reader = csv.reader(co)
-    for row in co_reader:
-        if row[0] == "LOOKUP":
-            continue
-        else:
-            s_cols = "INSERT INTO " + tb_name + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "')"
-            so_curs.execute(s_cols)
-    so_conn.commit()
-    # CLOSE THE TEXT FILE
-    co.close()
-    funcfile.writelog("%t IMPORT TABLE: " + tb_name)
-
     """ ****************************************************************************
     ORGANIZATION MASTER LIST
     *****************************************************************************"""
