@@ -10,13 +10,13 @@ import csv
 
 # IMPORT OWN MODULES
 from _my_modules import funcconf
-# from _my_modules import funccsv
+from _my_modules import funccsv
 from _my_modules import funcdate
 from _my_modules import funcfile
 from _my_modules import funcstat
 from _my_modules import funcsys
 from _my_modules import funcsms
-# from _my_modules import functest
+from _my_modules import functest
 
 # INDEX
 """
@@ -108,28 +108,6 @@ def student_bursary(s_period: str = "curr"):
     funcfile.writelog("TEMPORARY AREA")
     if l_debug:
         print("TEMPORARY AREA")
-
-    # TODO - Delete after first run
-    sr_file = "X000_Student_relationship"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    sr_file = "X001_Bursary_student_value_staffdisc"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    sr_file = "X001_Bursary_student_value"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    sr_file = "X001_Bursary_student_value_total"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    sr_file = "X002_Bursary_student_employee_type"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    sr_file = "X002_Bursary_student_parent_type"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    sr_file = "X001_Student_employee"
-    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
-    sr_file = "X001_Student_parent"
-    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
-    sr_file = "X002_Bursary_student_employee_type_count"
-    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
-    sr_file = "X002_Bursary_student_parent_type_count"
-    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
 
     """************************************************************************
     BEGIN OF SCRIPT
@@ -315,6 +293,37 @@ def student_bursary(s_period: str = "curr"):
     funcfile.writelog("BUILD BURSARY TEST DATA")
     if l_debug:
         print("BUILD BURSARY TEST DATA")
+
+    # BUILD BURSARY VALUE PER STUDENT, BURSARY AND QUALIFICATION TYPE
+    if l_debug:
+        print("Build bursary value summary per student...")
+    sr_file = "X001_Bursary_value_student"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "CREATE TABLE " + sr_file + " AS" + """
+    Select
+        x000t.STUDENT,
+        x000t.FFINAIDSITEID,
+        x000t.FINAIDCODE,
+        x000t.FINAIDNAME,
+        x000s.LEVY_CATEGORY,
+        x000b.SOURCE,
+        Cast(Round(Total(x000t.AMOUNT),2) As Real) As AMOUNT_TOTAL,
+        Cast(Count(x000t.CAMPUS) As Int) As TRAN_COUNT
+    From
+        X000_Transaction x000t Left Join
+        X000_Student x000s On x000s.KSTUDBUSENTID = x000t.STUDENT Left Join
+        X000_Bursary_master x000b ON x000b.FINAIDCODE = x000t.FINAIDCODE
+    Group By
+        x000t.STUDENT,
+        x000t.FINAIDCODE,
+        x000s.LEVY_CATEGORY
+    """
+    if s_period == "prev":
+        s_sql = s_sql.replace("%VSS%", "VSSPREV")
+    else:
+        s_sql = s_sql.replace("%VSS%", "VSSCURR")
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BURSARY SUMMARY PER STUDENT
     if l_debug:
