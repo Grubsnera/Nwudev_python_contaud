@@ -18,7 +18,8 @@ INDEX
 GENERAL
 UPDATE LOG (A002_log)
 VACUUM TEST FINDING TABLES (A003_table_vacuum)
-BACKUP MYSQL (B008_mysql_backup)
+BACKUP MYSQL (B008_mysql_backup) DISCONTINUED 20221118
+IMPORT LOOKUP TABLES (A005_import_lookup_tables)
 IMPORT TEMP (A001_oracle_to_sqlite(temp))
 
 PEOPLE
@@ -116,7 +117,26 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                                'NWUIACA:Fail:' + s_project,
                                'NWUIACA: Fail: ' + s_project)
 
-    # BACKUP MYSQL
+    # IMPORT LOOKUP TABLES
+    s_project: str = "A005_import_lookup_tables"
+    if s_script in "a005|all|general":
+        if s_parameter1 in "all|hr|kfs|vss":
+            import A005_import_lookup_tables
+            try:
+                A005_import_lookup_tables.lookup_import(s_parameter1)
+                l_return = True
+                if funcconf.l_mail_project:
+                    funcmail.Mail('std_success_gmail',
+                                  'NWUIACA:Success:' + s_project,
+                                  'NWUIACA: Success: ' + s_project)
+            except Exception as err:
+                l_return = False
+                funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                   'NWUIACA:Fail:' + s_project,
+                                   'NWUIACA: Fail: ' + s_project)
+
+    # BACKUP MYSQL - DISCONTINUED 20221118
+    """
     s_project: str = "B008_mysql_backup"
     if s_script in "b008|all|general":
         import B008_mysql_backup
@@ -137,6 +157,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
             funcsys.ErrMessage(err, funcconf.l_mail_project,
                                'NWUIACA:Fail:' + s_project,
                                'NWUIACA: Fail: ' + s_project)
+    """
 
     # IMPORT TEMP
     s_project: str = "A001_oracle_to_sqlite(temp)"
@@ -181,6 +202,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
     s_project: str = "B001_people_lists"
     if funcconf.l_run_people_test:
         if s_script in "b001|all|people":
+            # IMPORT THE PEOPLE MASTER TABLE
             import B001_people_lists
             try:
                 B001_people_lists.people_lists()
@@ -219,6 +241,21 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
     s_project: str = "C001_people_test_masterfile"
     if funcconf.l_run_people_test:
         if s_script in "c001|all|people":
+            # IMPORT THE LOOKUP TABLE
+            import A005_import_lookup_tables
+            try:
+                A005_import_lookup_tables.lookup_import('hr')
+                l_return = True
+                if funcconf.l_mail_project:
+                    funcmail.Mail('std_success_gmail',
+                                  'NWUIACA:Success:' + s_project,
+                                  'NWUIACA: Success: ' + s_project)
+            except Exception as err:
+                l_return = False
+                funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                   'NWUIACA:Fail:' + s_project,
+                                   'NWUIACA: Fail: ' + s_project)
+            # DO THE MASTER FILE TESTS
             import C001_people_test_masterfile
             try:
                 C001_people_test_masterfile.people_test_masterfile()
@@ -238,6 +275,21 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
     s_project: str = "C002_people_test_conflict"
     if funcconf.l_run_people_test:
         if s_script in "c002|all|people":
+            # IMPORT THE LOOKUP TABLE
+            import A005_import_lookup_tables
+            try:
+                A005_import_lookup_tables.lookup_import('hr')
+                l_return = True
+                if funcconf.l_mail_project:
+                    funcmail.Mail('std_success_gmail',
+                                  'NWUIACA:Success:' + s_project,
+                                  'NWUIACA: Success: ' + s_project)
+            except Exception as err:
+                l_return = False
+                funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                   'NWUIACA:Fail:' + s_project,
+                                   'NWUIACA: Fail: ' + s_project)
+            # DO THE CONFLICT TESTS
             import C002_people_test_conflict
             try:
                 C002_people_test_conflict.people_test_conflict()
@@ -430,6 +482,21 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                 r_pot = 0
                 r_vaa = 0
             if s_parameter1 in "curr|prev":
+                # IMPORT THE LOOKUP TABLE
+                import A005_import_lookup_tables
+                try:
+                    A005_import_lookup_tables.lookup_import('vss')
+                    l_return = True
+                    if funcconf.l_mail_project:
+                        funcmail.Mail('std_success_gmail',
+                                      'NWUIACA:Success:' + s_project,
+                                      'NWUIACA: Success: ' + s_project)
+                except Exception as err:
+                    l_return = False
+                    funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                       'NWUIACA:Fail:' + s_project,
+                                       'NWUIACA: Fail: ' + s_project)
+                # DO THE RECON
                 import C200_report_studdeb_recon
                 try:
                     C200_report_studdeb_recon.report_studdeb_recon(r_maf, r_pot, r_vaa, s_parameter1)
@@ -449,6 +516,21 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
     s_project: str = "C300_test_student_general"
     if funcconf.l_run_vss_test:
         if s_script in "c300|all|vss":
+            # IMPORT THE LOOKUP TABLE
+            import A005_import_lookup_tables
+            try:
+                A005_import_lookup_tables.lookup_import('vss')
+                l_return = True
+                if funcconf.l_mail_project:
+                    funcmail.Mail('std_success_gmail',
+                                  'NWUIACA:Success:' + s_project,
+                                  'NWUIACA: Success: ' + s_project)
+            except Exception as err:
+                l_return = False
+                funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                   'NWUIACA:Fail:' + s_project,
+                                   'NWUIACA: Fail: ' + s_project)
+            # DO THE MASTER FILE TESTS
             import C300_test_student_general
             try:
                 C300_test_student_general.test_student_general()
@@ -471,6 +553,21 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
             if s_script != "c302":
                 s_parameter1 = "curr"
             if s_parameter1 in "curr|prev":
+                # IMPORT THE LOOKUP TABLE
+                import A005_import_lookup_tables
+                try:
+                    A005_import_lookup_tables.lookup_import('vss')
+                    l_return = True
+                    if funcconf.l_mail_project:
+                        funcmail.Mail('std_success_gmail',
+                                      'NWUIACA:Success:' + s_project,
+                                      'NWUIACA: Success: ' + s_project)
+                except Exception as err:
+                    l_return = False
+                    funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                       'NWUIACA:Fail:' + s_project,
+                                       'NWUIACA: Fail: ' + s_project)
+                # DO THE TESTS
                 import C302_test_student_fee
                 try:
                     C302_test_student_fee.student_fee(s_parameter1)
