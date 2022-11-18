@@ -17,7 +17,6 @@ from _my_modules import funcsys
 
 """ INDEX **********************************************************************
 ENVIRONMENT
-BUILD STANDARD LOOKUP TABLES
 BUILD QUALIFICATION MASTER LIST
 BUILD MODULES
 BUILD PROGRAMS
@@ -63,31 +62,6 @@ def vss_lists():
     with sqlite3.connect(so_path+so_file) as so_conn:
         so_curs = so_conn.cursor()
     funcfile.writelog("OPEN DATABASE: " + so_file)
-
-    """*************************************************************************
-    BUILD STANDARD LOOKUP TABLES
-    *************************************************************************"""
-    print("BUILD STANDARD LOOKUP TABLES")
-    funcfile.writelog("BUILD STANDARD LOOKUP TABLES")
-
-    # IMPORT OWN LOOKUPS
-    print("Import own lookups...")
-    tb_name = "X000_Own_lookups"
-    so_curs.execute("DROP TABLE IF EXISTS " + tb_name)
-    so_curs.execute("CREATE TABLE " + tb_name + "(LOOKUP TEXT,LOOKUP_CODE TEXT,LOOKUP_DESCRIPTION TEXT)")
-    s_cols = ""
-    co = open(ed_path + "001_own_vss_lookups.csv", newline=None)
-    co_reader = csv.reader(co)
-    for row in co_reader:
-        if row[0] == "LOOKUP":
-            continue
-        else:
-            s_cols = "INSERT INTO " + tb_name + " VALUES('" + row[0] + "','" + row[1] + "','" + row[2] + "')"
-            so_curs.execute(s_cols)
-    so_conn.commit()
-    # Close the impoted data file
-    co.close()
-    funcfile.writelog("%t IMPORT TABLE: " + tb_name)
 
     # BUILD CODE DESCRIPTIONS
     print("Build code descriptions...")
