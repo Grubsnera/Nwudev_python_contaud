@@ -149,7 +149,7 @@ def lookup_import(s_table: str = 'all'):
             if l_debug:
                 print("Import VSS own lookups...")
             # DECLARE VARIABLES
-            so_path = "W:/Kfs/"  # Source database path
+            so_path = "W:/Vss/"  # Source database path
             so_file = "Vss.sqlite"  # Source database
             tb_name = "X000_Own_lookups"
             funcfile.writelog("%t IMPORT TABLE: " + tb_name)
