@@ -346,7 +346,7 @@ class RunVacuum(Thread):
                     s_project: str = "A005_import_lookup_tables"
                     if funcdate.today_dayname() in "MonTueWedThuFri":
                         try:
-                            A005_import_lookup_tables()
+                            A005_import_lookup_tables.lookup_import()
                             if funcconf.l_mail_project:
                                 funcmail.Mail('std_success_gmail',
                                               'NWUIACA:Success:' + s_project,
