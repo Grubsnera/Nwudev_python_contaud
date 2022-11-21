@@ -26,6 +26,7 @@ TEMPORARY AREA
 BEGIN OF SCRIPT
 IMPORT BURSARY MASTER LIST
 OBTAIN STUDENTS
+BUILD STUDENT RELATIONSHIPS
 OBTAIN STUDENT TRANSACTIONS
 OBTAIN STAFF DISCOUNT STUDENTS
 END OF SCRIPT
@@ -136,6 +137,8 @@ def student_bursary(s_period: str = "curr"):
                                                 "APPLICATION_PROCESS TEXT,"
                                                 "SBL_EVALUATION TEXT,"
                                                 "BURSARY_OFFICE_PROCESS TEXT,"
+                                                "EMPLOYEE1 TEXT,"
+                                                "EMPLOYEE2 TEXT,"
                                                 "NOTE TEXT)")
 
     co = open(ed_path + "303_bursary_master.csv", newline=None)
@@ -154,7 +157,9 @@ def student_bursary(s_period: str = "curr"):
                                                 row[6] + "','" +\
                                                 row[7] + "','" +\
                                                 row[8] + "','" +\
-                                                row[9] + "')"
+                                                row[9] + "','" +\
+                                                row[10] + "','" +\
+                                                row[11] + "')"
             so_curs.execute(s_cols)
     so_conn.commit()
     # Close the imported data file
@@ -195,6 +200,46 @@ def student_bursary(s_period: str = "curr"):
     else:
         s_sql = s_sql.replace("%VSS%", "VSSCURR")
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD STUDENT RELATIONSHIPS
+    if l_debug:
+        print("Build student relationships...")
+    sr_file = "X000_Student_relationship"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "CREATE TABLE " + sr_file + " AS" + """
+    Select
+        s.KSTUDBUSENTID,
+        e.name_full As EMP_NAME_FULL,
+        e.user_person_type As EMP_PERSON_TYPE,
+        r.KBUSENTRELID,
+        r.KRELATIONSHIPTYPECODEID,
+        Upper(c.CODELONGDESCRIPTION) As REL_TYPE,
+        r.KRELATEDBUSINESSENTITYID,
+        p.name_full As REL_NAME_FULL,
+        p.user_person_type As REL_PERSON_TYPE,
+        Max(r.STARTDATE) As STARTDATE,
+        r.ENDDATE,
+        r.LOCKSTAMP,
+        r.AUDITDATETIME,
+        r.FAUDITSYSTEMFUNCTIONID,
+        r.FAUDITUSERCODE        
+    From
+        X000_Student s Left Join
+        VSS.BUSINESSENTITYRELATIONSHIP r On r.KBUSINESSENTITYID = s.KSTUDBUSENTID And
+            r.KRELATEDBUSINESSENTITYID >= 10000000 And
+            r.KRELATIONSHIPTYPECODEID in (6713, 6712, 9719, 6573, 6574, 9714) And
+            strftime('%Y-%m-%d', '%DATE%') between r.STARTDATE and ifnull(r.ENDDATE, '4712-12-31') Left Join
+        VSS.CODEDESCRIPTION c On c.KCODEDESCID = r.KRELATIONSHIPTYPECODEID And
+            c.KSYSTEMLANGUAGECODEID = 3 Left Join
+        PEOPLE.X000_PEOPLE e On e.employee_number = Cast(s.KSTUDBUSENTID As TEXT) Left Join
+        PEOPLE.X000_PEOPLE p On p.employee_number = Cast(r.KRELATEDBUSINESSENTITYID As TEXT)
+    Group By
+        s.KSTUDBUSENTID,
+        r.KRELATIONSHIPTYPECODEID            
+    ;"""
+    s_sql = s_sql.replace("%DATE%", funcdate.today())
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
