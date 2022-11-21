@@ -121,127 +121,6 @@ def student_bursary(s_period: str = "curr"):
     if l_debug:
         print("BUILD MASTER TABLES")
 
-    # BUILD BURSARY VALUE PER STUDENT
-    if l_debug:
-        print("Build bursary value summary per student...")
-    sr_file = "X001_Bursary_student_value_total"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = "CREATE TABLE " + sr_file + " AS" + """
-    Select
-        x000t.STUDENT,
-        x000s.LEVY_CATEGORY,
-        Cast(Round(Total(x000t.AMOUNT),2) As Real) As AMOUNT_TOTAL,
-        Cast(Count(x000t.CAMPUS) As Int) As TRAN_COUNT
-    From
-        X000_Transaction x000t Left Join
-        X000_Student x000s On x000s.KSTUDBUSENTID = x000t.STUDENT
-    Group By
-        x000t.STUDENT
-    """
-    if s_period == "prev":
-        s_sql = s_sql.replace("%VSS%", "VSSPREV")
-    else:
-        s_sql = s_sql.replace("%VSS%", "VSSCURR")
-    so_curs.execute(s_sql)
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
-    # BUILD BURSARY VALUE PER STUDENT, BURSARY AND QUALIFICATION TYPE
-    if l_debug:
-        print("Build bursary value summary per student...")
-    sr_file = "X001_Bursary_student_value"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = "CREATE TABLE " + sr_file + " AS" + """
-    Select
-        x000t.STUDENT,
-        x000t.FFINAIDSITEID,
-        x000t.FINAIDCODE,
-        x000t.FINAIDNAME,
-        x000s.LEVY_CATEGORY,
-        x000b.SOURCE,
-        Cast(Round(Total(x000t.AMOUNT),2) As Real) As AMOUNT_TOTAL,
-        Cast(Count(x000t.CAMPUS) As Int) As TRAN_COUNT
-    From
-        X000_Transaction x000t Left Join
-        X000_Student x000s On x000s.KSTUDBUSENTID = x000t.STUDENT Left Join
-        X000_Bursary_master x000b ON x000b.FINAIDCODE = x000t.FINAIDCODE
-    Group By
-        x000t.STUDENT,
-        x000t.FINAIDCODE,
-        x000s.LEVY_CATEGORY
-    """
-    if s_period == "prev":
-        s_sql = s_sql.replace("%VSS%", "VSSPREV")
-    else:
-        s_sql = s_sql.replace("%VSS%", "VSSCURR")
-    so_curs.execute(s_sql)
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
-    # OBTAIN STAFF DISCOUNT STUDENTS
-    if l_debug:
-        print("Import staff discount students...")
-    sr_file = "X001_Bursary_student_value_staffdisc"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = "CREATE TABLE " + sr_file + " AS" + """
-    Select
-        s.FBUSENTID As STUDENT,
-        Count(s.FSERVICESITE) As TRAN_COUNT,
-        Total(s.AMOUNT) As TRAN_VALUE
-    From
-        %VSS%.X010_Studytrans s
-    Where
-        s.TRANSCODE In %STAFF%
-    Group By
-        s.FBUSENTID
-    ;"""
-    s_sql = s_sql.replace("%STAFF%", s_staff_code)
-    if s_period == "prev":
-        s_sql = s_sql.replace("%VSS%", "VSSPREV")
-    else:
-        s_sql = s_sql.replace("%VSS%", "VSSCURR")
-    print(s_sql)
-    so_curs.execute(s_sql)
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
-    # BUILD STUDENT RELATIONSHIPS
-    if l_debug:
-        print("Build student relationships...")
-    sr_file = "X000_Student_relationship"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = "CREATE TABLE " + sr_file + " AS" + """
-    Select
-        s.KSTUDBUSENTID,
-        e.name_full As EMP_NAME_FULL,
-        e.user_person_type As EMP_PERSON_TYPE,
-        r.KBUSENTRELID,
-        r.KRELATIONSHIPTYPECODEID,
-        Upper(c.CODELONGDESCRIPTION) As REL_TYPE,
-        r.KRELATEDBUSINESSENTITYID,
-        p.name_full As REL_NAME_FULL,
-        p.user_person_type As REL_PERSON_TYPE,
-        Max(r.STARTDATE) As STARTDATE,
-        r.ENDDATE,
-        r.LOCKSTAMP,
-        r.AUDITDATETIME,
-        r.FAUDITSYSTEMFUNCTIONID,
-        r.FAUDITUSERCODE        
-    From
-        X000_Student s Inner Join
-        VSS.BUSINESSENTITYRELATIONSHIP r On r.KBUSINESSENTITYID = s.KSTUDBUSENTID And
-            r.KRELATEDBUSINESSENTITYID >= 10000000 And
-            r.KRELATIONSHIPTYPECODEID in (6713, 6712, 9719, 6573, 6574) And
-            strftime('%Y-%m-%d', '%DATE%') between r.STARTDATE and ifnull(r.ENDDATE, '4712-12-31') Left Join
-        VSS.CODEDESCRIPTION c On c.KCODEDESCID = r.KRELATIONSHIPTYPECODEID And
-            c.KSYSTEMLANGUAGECODEID = 3 Left Join
-        PEOPLE.X000_PEOPLE e On e.employee_number = Cast(s.KSTUDBUSENTID As TEXT) Left Join
-        PEOPLE.X000_PEOPLE p On p.employee_number = Cast(r.KRELATEDBUSINESSENTITYID As TEXT)
-    Group By
-        s.KSTUDBUSENTID,
-        r.KRELATIONSHIPTYPECODEID            
-    ;"""
-    s_sql = s_sql.replace("%DATE%", funcdate.today())
-    so_curs.execute(s_sql)
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
     # BUILD STUDENT EMPLOYEES
     if l_debug:
         print("Build student employees...")
@@ -278,9 +157,9 @@ def student_bursary(s_period: str = "curr"):
         BU.AMOUNT_TOTAL,
         Cast(SD.TRAN_VALUE As REAL) AS STAFF_DISC
     From
-        X001_Bursary_student_value BU Inner Join
+        X001_Bursary_value_student BU Inner Join
         X001_Student_employee ST On ST.KSTUDBUSENTID = BU.STUDENT Left Join
-        X001_Bursary_student_value_staffdisc SD On SD.STUDENT = BU.STUDENT        
+        X000_Transaction_staffdisc_student SD On SD.STUDENT = BU.STUDENT        
     ;"""
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -358,9 +237,9 @@ def student_bursary(s_period: str = "curr"):
         BU.AMOUNT_TOTAL,
         Cast(SD.TRAN_VALUE As REAL) AS STAFF_DISC
     From
-        X001_Bursary_student_value BU Inner Join
+        X001_Bursary_value_student BU Inner Join
         X001_Student_parent ST On ST.KSTUDBUSENTID = BU.STUDENT Left Join
-        X001_Bursary_student_value_staffdisc SD On SD.STUDENT = BU.STUDENT 
+        X000_Transaction_staffdisc_student SD On SD.STUDENT = BU.STUDENT 
     ;"""
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
