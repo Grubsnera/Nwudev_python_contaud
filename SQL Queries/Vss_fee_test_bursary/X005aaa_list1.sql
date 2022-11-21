@@ -26,4 +26,5 @@ Where
     (burs.total_burs <> 0 And
         burs.discontinue_date Is Not Null And
         burs.total_loan = 0 And
-        burs.enrol_category Not In ('POST DOC'))
+        burs.enrol_category Not In ('POST DOC') and
+        burs.discontinue_result Not In ('COURSE CONVERTED', 'PASS CERTIFICATE', 'PASS CERTIFICATE POSTHUMOUSLY', 'PASS CERTIFICATE WITH DISTINCTION', 'PASS DEGREE', 'PASS DEGREE POSTHUMOUSLY', 'PASS DEGREE WITH DISTINCTION', 'PASS DEGREE WITH DISTINCTION POSTHUMOUSLY', 'PASS DIPLOMA', 'PASS DIPLOMA WITH DISTINCTION'))
