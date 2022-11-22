@@ -118,14 +118,10 @@ def student_bursary(s_period: str = "curr"):
         print("BEGIN OF SCRIPT")
 
     """*****************************************************************************
-    DO NOT DELETE
     IMPORT BURSARY MASTER LIST
-    DO NOT DELETE
     *****************************************************************************"""
     if l_debug:
         print("Import bursary master list...")
-    sr_file = "X000_OWN_HR_LOOKUPS"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     sr_file = "X000_Bursary_master"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute("CREATE TABLE " + sr_file + "(ACTIVE TEXT,"
