@@ -128,5 +128,7 @@ _external_data/
 _external_data_history/
 History/
 Logs/
+SQL Queries/*.fsqlayout
+SQL Queries/*.history
 Testing/
 Yolandie/
