@@ -21,4 +21,5 @@ From
     X001_Bursary_summary_student burs Left Join
     X000_Student_relationship rela On rela.KSTUDBUSENTID = burs.student
 Where
-    burs.staff_discount <> 0
+    burs.staff_discount <> 0 And
+    burs.total_loan <> 0
