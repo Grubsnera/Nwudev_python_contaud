@@ -87,7 +87,7 @@ def writelog(s_entry="\n",
 
     try:
 
-        with open(s_path + s_file, s_mode, encoding="utf-8") as fl:
+        with open(s_path + s_file, s_mode, newline='', encoding="utf-8") as fl:
             # file opened for writing. write to it here
             # Write the log
             if s_entry == "Now":
