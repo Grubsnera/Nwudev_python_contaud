@@ -535,6 +535,9 @@ class RunVacuum(Thread):
                             funcfile.writelog(
                                 "%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
 
+                    # SET THE LARGE SCHEDULE TWO MINUTES AFTER COMPLETING
+                    funcconf.d_run_large = datetime.datetime.now() + datetime.timedelta(minutes=2)
+
                     # MESSAGE TO ADMIN
                     if funcconf.l_mess_project:
                         funcsms.send_telegram('', 'administrator', 'Vacuum schedule end.')
