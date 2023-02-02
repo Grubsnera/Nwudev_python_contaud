@@ -28,6 +28,7 @@ so_path = "W:/People_payroll/"  # Source database path
 so_file = "People_payroll.sqlite"  # Source database
 re_path = "R:/People/People/"  # Results
 ed_path = "S:/_external_data/"
+l_debug = True
 
 # OPEN THE SOURCE FILE
 with sqlite3.connect(so_path + so_file) as so_conn:
@@ -119,8 +120,58 @@ Where
     Upper(pivf.name) = 'AMOUNT'
 """
 
+# Extract the NWU TOTAL PACKAGE element for export *********************
+print("Extract the nwu total package element...")
+sr_file = "X001aa_element_package_curr"
+s_sql = "CREATE TABLE " + sr_file + " AS " + """
+SELECT
+  X000aa_element_list_curr.ASSIGNMENT_ID,
+  X000aa_element_list_curr.EFFECTIVE_START_DATE,
+  X000aa_element_list_curr.INPUT_VALUE_ID,
+  X000aa_element_list_curr.SCREEN_ENTRY_VALUE,
+  X000aa_element_list_curr.ELEMENT_NAME,
+  SUBSTR(PEOPLE.PER_ALL_ASSIGNMENTS_F.ASSIGNMENT_NUMBER,1,8) AS EMPL_NUMB
+FROM
+  X000aa_element_list_curr
+  LEFT JOIN PEOPLE.PER_ALL_ASSIGNMENTS_F ON PEOPLE.PER_ALL_ASSIGNMENTS_F.ASSIGNMENT_ID = X000aa_element_list_curr.ASSIGNMENT_ID AND
+    PEOPLE.PER_ALL_ASSIGNMENTS_F.EFFECTIVE_START_DATE <= Date('%TODAY%') AND
+    PEOPLE.PER_ALL_ASSIGNMENTS_F.EFFECTIVE_END_DATE >= Date('%TODAY%')
+WHERE
+  X000aa_element_list_curr.INPUT_VALUE_ID = 6881 AND
+  X000aa_element_list_curr.EFFECTIVE_START_DATE <= Date('%TODAY%') AND
+  X000aa_element_list_curr.EFFECTIVE_END_DATE >= Date('%TODAY%')
+;"""
+so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+s_sql = s_sql.replace("%TODAY%", funcdate.today())
+so_curs.execute(s_sql)
+so_conn.commit()
+funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
+"""
+# BUILD GROUP INSURANCE INFORMATION SPOUSE
+s_date = funcdate.today()
+i_records = funcpayroll.payroll_element_screen_value(
+    so_conn,
+    'X000_NWU_ALLOWANCE_FUNCTIONAL',
+    'nwu allowance functional',
+    'amount',
+    s_date)
+if l_debug:
+    print(i_records)
+"""
 
+"""
+# BUILD GROUP INSURANCE INFORMATION SPOUSE
+s_date = funcdate.today()
+i_records = funcpayroll.payroll_element_screen_value(
+    so_conn,
+    'X000_NWU_ALLOWANCE_FUNCTIONAL_TYPE',
+    'nwu allowance functional',
+    'allowance type',
+    s_date)
+if l_debug:
+    print(i_records)
+"""
 
 """*************************************************************************
 END
