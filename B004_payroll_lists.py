@@ -253,30 +253,67 @@ def payroll_lists():
         # funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
         funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 
-    """*************************************************************************
+    """************************************************************************
     BALANCES CURRENT
-    *************************************************************************"""
+    ************************************************************************"""
     print("---------- BALANCES CURRENT ----------")
+
+    # BUILD THE PAY DEFINED BALANCES LIST
+    print("Build defined balances list...")
+    sr_file = "X000_PAY_DEFINED_BALANCES"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        db.DEFINED_BALANCE_ID,
+        db.LEGISLATION_CODE,
+        db.BALANCE_TYPE_ID,
+        db.BALANCE_DIMENSION_ID,
+        Max(db.OBJECT_VERSION_NUMBER) As Max_OBJECT_VERSION_NUMBER
+    From
+        PAY_DEFINED_BALANCES db
+    Group By
+        db.DEFINED_BALANCE_ID
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD THE PAY BALANCE TYPE LIST
+    print("Build balance type list list...")
+    sr_file = "X000_PAY_BALANCE_TYPE"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        bt.BALANCE_TYPE_ID,
+        bt.BALANCE_NAME,
+        bt.REPORTING_NAME,
+        bt.BALANCE_CATEGORY_ID,
+        bt.BALANCE_UOM,
+        Max(bt.OBJECT_VERSION_NUMBER) As Max_OBJECT_VERSION_NUMBER
+    From
+        PAY_BALANCE_TYPES bt
+    Group By
+        bt.BALANCE_TYPE_ID
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # Build the balances list ******************************************************
     print("Build the balances list...")
     sr_file = "X000aa_balance_list_curr"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
-    SELECT
-      PAY_RUN_BALANCES_CURR.ASSIGNMENT_ID,
-      PAY_RUN_BALANCES_CURR.EFFECTIVE_DATE,
-      PAY_RUN_BALANCES_CURR.BALANCE_VALUE,
-      PAY_RUN_BALANCES_CURR.RUN_BALANCE_ID,
-      PAY_RUN_BALANCES_CURR.DEFINED_BALANCE_ID,
-      PAY_DEFINED_BALANCES.BALANCE_TYPE_ID,
-      PAY_BALANCE_TYPES.BALANCE_NAME,
-      PAY_BALANCE_TYPES.REPORTING_NAME,
-      PAY_BALANCE_TYPES.BALANCE_UOM,
-      PAY_BALANCE_TYPES.BALANCE_CATEGORY_ID
-    FROM
-      PAY_RUN_BALANCES_CURR
-      LEFT JOIN PAY_DEFINED_BALANCES ON PAY_DEFINED_BALANCES.DEFINED_BALANCE_ID = PAY_RUN_BALANCES_CURR.DEFINED_BALANCE_ID
-      LEFT JOIN PAY_BALANCE_TYPES ON PAY_BALANCE_TYPES.BALANCE_TYPE_ID = PAY_DEFINED_BALANCES.BALANCE_TYPE_ID
+    Select
+        rb.RUN_BALANCE_ID,
+        rb.ASSIGNMENT_ID,
+        rb.EFFECTIVE_DATE,
+        Upper(bt.BALANCE_NAME) As BALANCE_NAME,
+        Upper(bt.REPORTING_NAME) As REPORTING_NAME,
+        rb.BALANCE_VALUE,
+        db.DEFINED_BALANCE_ID,
+        bt.BALANCE_TYPE_ID
+    From
+        PAY_RUN_BALANCES_CURR rb Left Join
+        X000_PAY_DEFINED_BALANCES db On db.DEFINED_BALANCE_ID = rb.DEFINED_BALANCE_ID Left Join
+        X000_PAY_BALANCE_TYPE bt On bt.BALANCE_TYPE_ID = db.BALANCE_TYPE_ID    
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
@@ -351,21 +388,19 @@ def payroll_lists():
     print("Build the previous balances list...")
     sr_file = "X000aa_balance_list_prev"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
-    SELECT
-      PAY_RUN_BALANCES_PREV.ASSIGNMENT_ID,
-      PAY_RUN_BALANCES_PREV.EFFECTIVE_DATE,
-      PAY_RUN_BALANCES_PREV.BALANCE_VALUE,
-      PAY_RUN_BALANCES_PREV.RUN_BALANCE_ID,
-      PAY_RUN_BALANCES_PREV.DEFINED_BALANCE_ID,
-      PAY_DEFINED_BALANCES.BALANCE_TYPE_ID,
-      PAY_BALANCE_TYPES.BALANCE_NAME,
-      PAY_BALANCE_TYPES.REPORTING_NAME,
-      PAY_BALANCE_TYPES.BALANCE_UOM,
-      PAY_BALANCE_TYPES.BALANCE_CATEGORY_ID
-    FROM
-      PAY_RUN_BALANCES_PREV
-      LEFT JOIN PAY_DEFINED_BALANCES ON PAY_DEFINED_BALANCES.DEFINED_BALANCE_ID = PAY_RUN_BALANCES_PREV.DEFINED_BALANCE_ID
-      LEFT JOIN PAY_BALANCE_TYPES ON PAY_BALANCE_TYPES.BALANCE_TYPE_ID = PAY_DEFINED_BALANCES.BALANCE_TYPE_ID
+    Select
+        rb.RUN_BALANCE_ID,
+        rb.ASSIGNMENT_ID,
+        rb.EFFECTIVE_DATE,
+        Upper(bt.BALANCE_NAME) As BALANCE_NAME,
+        Upper(bt.REPORTING_NAME) As REPORTING_NAME,
+        rb.BALANCE_VALUE,
+        db.DEFINED_BALANCE_ID,
+        bt.BALANCE_TYPE_ID
+    From
+        PAY_RUN_BALANCES_PREV rb Left Join
+        X000_PAY_DEFINED_BALANCES db On db.DEFINED_BALANCE_ID = rb.DEFINED_BALANCE_ID Left Join
+        X000_PAY_BALANCE_TYPE bt On bt.BALANCE_TYPE_ID = db.BALANCE_TYPE_ID    
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
