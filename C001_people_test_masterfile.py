@@ -2463,7 +2463,8 @@ def people_test_masterfile():
 
     # DEFAULT TRANSACTION OWNER PEOPLE
     # 21022402 MS AC COERTZEN for permanent employees
-    # 20742010 MRS N BOTHA for temporary employees
+    # 27306690 MS RL JAFTA for temporary employees
+    # 20742010 MRS N BOTHA for temporary employees. Replace with MS RL Jafta as from 2023-02-04
     # Exclude 12795631 MR R VAN DEN BERG
     # Exclude 13277294 MRS MC STRYDOM
 
@@ -2525,7 +2526,7 @@ def people_test_masterfile():
                  pu.ORG_NAME Like('NWU P&C REMUNERATION%') Then
                  pu.EMPLOYEE_NUMBER
                 When p.assignment_category = 'PERMANENT' Then '21022402'
-                Else '20742010'
+                Else '27306690'
             End As TRAN_OWNER,
             p.assignment_update_by As ASSIGN_USER_ID,
             au.EMPLOYEE_NUMBER As ASSIGN_UPDATE,
