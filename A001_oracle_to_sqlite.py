@@ -1,5 +1,5 @@
 """ ORACLE_TO_SQLITE ***********************************************************
-Script to extract raw data from an ODBC data source
+Script to extract raw data from an ODBC data source using lookup tables
 Copyright (c) AB Janse van Rensburg 10 Feb 2018
 """
 
