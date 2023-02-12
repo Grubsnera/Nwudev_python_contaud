@@ -124,15 +124,31 @@ def robot_report_audit_sir(s_year: str = "", s_type: str = "", s_name: str = "",
 
     # BUILD THE WHERE CLAUSE
     if s_year != "":
-        s_where = "ia_assi_year = " + s_year + " and ia.ia_assicate_auto = 9"
+        s_where = "(ia_assi_year = " + s_year + " and ia.ia_assicate_auto = 9)"
         s_where += " or "
-        s_where += "ia_assi_year < " + s_year + " and ia.ia_assicate_auto = 9 and ia_assi_priority < 8"
+        s_where += "(ia_assi_year < " + s_year + " and ia.ia_assicate_auto = 9 and ia_assi_priority < 8)"
+        s_where += " or "
+        s_where += "(" \
+                   "Date(ia_assi_finishdate) >= Date_Sub(Concat(Year(Now()), '-10-01'), Interval 1 Year)" \
+                   " And " \
+                   "Date(ia_assi_finishdate) <= Date_Sub(Concat(Year(Now()), '-10-01'), Interval 1 Day)" \
+                   " And " \
+                   "ia.ia_assicate_auto = 9" \
+                   ")"
     else:
-        s_where = "ia_assi_year = " + funcdate.cur_year() + " and ia.ia_assicate_auto = 9"
+        s_where = "(ia_assi_year = " + funcdate.cur_year() + " and ia.ia_assicate_auto = 9)"
         s_where += " or "
-        s_where += "ia_assi_year < " + funcdate.cur_year() + " and ia.ia_assicate_auto = 9 and ia_assi_priority < 8"
+        s_where += "(ia_assi_year < " + funcdate.cur_year() + " and ia.ia_assicate_auto = 9 and ia_assi_priority < 8)"
+        s_where += " or "
+        s_where += "(ia_assi_finishdate >= '" + funcdate.prev_year() + "-10-01'"
+        s_where += " and "
+        s_where += "ia_assi_finishdate <= '" + funcdate.cur_year() + "-09-30'"
+        s_where += " and "
+        s_where += "us.ia_user_active = '1' and ca.ia_assicate_private = '0'"
+        s_where += " And "
+        s_where += "ia.ia_assicate_auto = 9)"
 
-    # BUILD THE SQL QUERY
+        # BUILD THE SQL QUERY
     s_sql = """
     SELECT
     us.ia_user_name,
@@ -401,7 +417,7 @@ def robot_report_audit_sir(s_year: str = "", s_type: str = "", s_name: str = "",
 
 if __name__ == '__main__':
     try:
-        s_return = robot_report_audit_sir("2022", "0", "Albert", "21162395@nwu.ac.za")
+        s_return = robot_report_audit_sir("2023", "0", "Albert", "21162395@nwu.ac.za")
         if funcconf.l_mess_project:
             print("RETURN: " + s_return)
             print("LENGTH: " + str(len(s_return)))
