@@ -10,10 +10,14 @@ import datetime
 import sqlite3
 
 # IMPORT OWN MODULES
+from _my_modules import funcconf
 from _my_modules import funcdate
 from _my_modules import funccsv
 from _my_modules import funcfile
 from _my_modules import funcpayroll
+from _my_modules import funcsms
+from _my_modules import funcsys
+from _my_modules import funcoracle
 
 # OPEN THE LOG FILE
 funcfile.writelog("Now")
@@ -42,6 +46,135 @@ funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
 """*****************************************************************************
 BEGIN
 *****************************************************************************"""
+
+# BUILD PAYROLL RUN RESULTS
+
+# For which year
+s_year: str = 'prev'
+if s_year == 'curr':
+    year_start: str = funcdate.cur_yearbegin()
+    year_end: str = funcdate.cur_yearend()
+    s_table_name: str = 'Payroll history curr'
+elif s_year == 'prev':
+    year_start: str = funcdate.prev_yearbegin()
+    year_end: str = funcdate.prev_yearend()
+    s_table_name: str = 'Payroll history prev'
+else:
+    year_start: str = s_year + '-01-01'
+    year_end: str = s_year + '-12-31'
+    s_table_name: str = 'Payroll history ' + s_year
+
+# Build the Oracle sql statement
+s_sql: str = """
+Select Distinct
+    prr.RUN_RESULT_ID,
+    pect.CLASSIFICATION_NAME,
+    petf.ELEMENT_NAME,
+    petf.REPORTING_NAME,
+    ppa.EFFECTIVE_DATE,
+    Cast(prrv.RESULT_VALUE As Decimal(13,2)) As RESULT_VALUE,
+    paaf.LOCATION_ID,
+    paaf.ORGANIZATION_ID,
+    paaf.EMPLOYMENT_CATEGORY,
+    paaf.POSITION_ID,
+    paaf.EMPLOYEE_CATEGORY,
+    paa.ASSIGNMENT_ID,
+    papf.PERSON_ID,
+    papf.EMPLOYEE_NUMBER
+    --papf.EMPLOYEE_NUMBER,
+    --papf.FULL_NAME    
+    --piv.UOM,
+    --piv.NAME,
+    --petf.ELEMENT_TYPE_ID,
+    --petf.EFFECTIVE_START_DATE,
+    --petf.EFFECTIVE_END_DATE,
+    --petf.DESCRIPTION As ELEMENT_DESCRIPTION,
+    --pect.DESCRIPTION As CLASSIFICATION_DESCRIPTION,
+    --paa.ASSIGNMENT_ACTION_ID,
+    --paa.PAYROLL_ACTION_ID,
+    --paa.PAYROLL_ACTION_ID#1,
+    --paa.ACTION_STATUS,
+    --ppa.PAYROLL_ACTION_ID As PAYROLL_ACTION_PPA,
+    --ppa.ACTION_TYPE,
+    --ppa.ACTION_SEQUENCE,
+    --paaf.ASSIGNMENT_ID As ASSIGNMENT_PAAF,
+    --paaf.EFFECTIVE_START_DATE As EFFECTIVE_START_PAAF,
+    --paaf.EFFECTIVE_END_DATE As EFFECTIVE_END_PAAF,
+    --papf.EFFECTIVE_START_DATE As EFFECTIVE_START_PAPF,
+    --papf.EFFECTIVE_END_DATE As EFFECTIVE_END_PAPF,
+From
+    HR.PAY_RUN_RESULTS prr,
+    HR.PAY_RUN_RESULT_VALUES prrv,
+    HR.PAY_INPUT_VALUES_F piv,
+    HR.PAY_ELEMENT_TYPES_F petf,
+    HR.PAY_ELEMENT_CLASSIFICATIONS_TL pect,
+    HR.PAY_ASSIGNMENT_ACTIONS paa,
+    APPS.PAY_PAYROLL_ACTIONS ppa,
+    APPS.PER_ALL_ASSIGNMENTS_F paaf,
+    HR.PER_ALL_PEOPLE_F papf  
+Where
+    prr.RUN_RESULT_ID = prrv.RUN_RESULT_ID And
+    piv.INPUT_VALUE_ID = prrv.INPUT_VALUE_ID And
+    prrv.RESULT_VALUE != '0' And
+    piv.UOM = 'M' And
+    piv.NAME = 'Pay Value' And
+    petf.ELEMENT_TYPE_ID = prr.ELEMENT_TYPE_ID And
+    pect.CLASSIFICATION_ID = petf.CLASSIFICATION_ID And
+    --pect.CLASSIFICATION_NAME In ('Normal Income', 'Allowances') And
+    prr.ASSIGNMENT_ACTION_ID = paa.ASSIGNMENT_ACTION_ID And    
+    paa.ASSIGNMENT_ID = paaf.ASSIGNMENT_ID And
+    papf.PERSON_ID = paaf.PERSON_ID And
+    paa.PAYROLL_ACTION_ID#1 = ppa.ACTION_SEQUENCE - 1 And
+    paa.ACTION_STATUS = 'C' And
+    ppa.ACTION_TYPE In ('R') And
+    ppa.EFFECTIVE_DATE >= To_Date('%BEGIN%', 'YYYY-MM-DD') And
+    ppa.EFFECTIVE_DATE <= To_Date('%END%', 'YYYY-MM-DD') And
+    ppa.EFFECTIVE_DATE >= Trunc(paaf.EFFECTIVE_START_DATE) And
+    ppa.EFFECTIVE_DATE <= Trunc(paaf.EFFECTIVE_END_DATE) And
+    Trunc(paaf.EFFECTIVE_END_DATE) >= papf.EFFECTIVE_START_DATE And
+    Trunc(paaf.EFFECTIVE_END_DATE) <= papf.EFFECTIVE_END_DATE
+    --papf.EMPLOYEE_NUMBER = '21162395'
+Order by
+    EMPLOYEE_NUMBER,
+    EFFECTIVE_DATE,
+    CLASSIFICATION_NAME,
+    ELEMENT_NAME    
+"""
+s_sql = s_sql.replace("%BEGIN%", year_start)
+s_sql = s_sql.replace("%END%", year_end)
+print(s_sql)
+
+# Execute the query
+try:
+    funcoracle.oracle_sql_to_sqlite('People payroll', '000b_Table - oracle.csv', s_table_name, s_sql)
+except Exception as e:
+    funcsys.ErrMessage(e)
+
+# Build the current element list *******************************************
+print("Build the current element list...")
+sr_file = "X000aa_element_type_list"
+s_sql = "CREATE TABLE " + sr_file + " AS " + """
+Select
+    petf.ELEMENT_TYPE_ID,
+    petf.EFFECTIVE_START_DATE,
+    petf.EFFECTIVE_END_DATE,
+    petf.ELEMENT_NAME,
+    petf.REPORTING_NAME,
+    petf.DESCRIPTION As ELEMENT_DESCRIPTION,
+    petf.CLASSIFICATION_ID,
+    pect.CLASSIFICATION_NAME,
+    pect.DESCRIPTION As CLASSIFICATION_DESCRIPTION
+From
+    PAY_ELEMENT_TYPES_F petf Left Join
+    PAY_ELEMENT_CLASSIFICATIONS_TL pect On pect.CLASSIFICATION_ID = petf.CLASSIFICATION_ID
+;"""
+so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+so_curs.execute(s_sql)
+so_conn.commit()
+funcfile.writelog("%t BUILD TABLE: " + sr_file)
+if funcconf.l_mess_project:
+    i = funcsys.tablerowcount(so_curs, sr_file)
+    funcsms.send_telegram("", "administrator", "<b>" + str(i) + "</b> Elements")
 
 # NOTE TO SELF
 # The following code used in people test leave code invalid
@@ -147,6 +280,7 @@ so_curs.execute(s_sql)
 so_conn.commit()
 funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
+
 """
 # BUILD GROUP INSURANCE INFORMATION SPOUSE
 s_date = funcdate.today()
@@ -171,6 +305,42 @@ i_records = funcpayroll.payroll_element_screen_value(
     s_date)
 if l_debug:
     print(i_records)
+"""
+
+"""
+SQL Query to get payslip of an employee
+  SELECT ppa.date_earned,
+         per.full_name,
+         per.employee_number,
+         NVL (pet.reporting_name, pet.element_name),
+         piv.NAME,
+         prrv.result_value,
+         ptp.period_name
+    FROM pay_payroll_actions ppa,
+         pay_assignment_actions pac,
+         per_all_assignments_f ass,
+         per_all_people_f per,
+         pay_run_results prr,
+         pay_element_types_f pet,
+         pay_input_values_f piv,
+         pay_run_result_values prrv,
+         per_time_periods_v ptp
+   WHERE     ppa.payroll_action_id = pac.payroll_action_id
+         AND pac.assignment_id = ass.assignment_id
+         AND ass.effective_end_date = TO_DATE ('12/31/4712', 'MM/DD/RRRR')
+         AND ass.person_id = per.person_id
+         AND per.effective_end_date = TO_DATE ('12/31/4712', 'MM/DD/RRRR')
+         AND pac.assignment_action_id = prr.assignment_action_id
+         AND prr.element_type_id = pet.element_type_id
+         AND prr.run_result_id = prrv.run_result_id
+         AND pet.element_type_id = piv.element_type_id
+         AND piv.input_value_id = prrv.input_value_id
+         AND ppa.time_period_id = ptp.time_period_id
+         AND pet.element_name = 'Basic Salary'
+         --     AND piv.NAME = 'Pay Value'
+         AND per.employee_number = '91314'
+         AND ptp.period_name LIKE '6 2008 Calendar Month'
+ORDER BY 1;
 """
 
 """*************************************************************************
