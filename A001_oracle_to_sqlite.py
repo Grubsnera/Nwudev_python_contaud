@@ -171,7 +171,6 @@ def oracle_to_sqlite(s_table="000b_Table - temp.csv", s_tables="TEMP"):
                         i_mess += 1
                         if funcconf.l_mess_project:
                             funcsms.send_telegram('', 'administrator', de_fil.lower())
-
                 else:
                     continue
 
