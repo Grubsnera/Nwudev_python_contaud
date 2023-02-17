@@ -120,6 +120,7 @@ _my_modules/funcbott.py
 _my_modules/funcconf.py
 _my_modules/funcmail.py
 _my_modules/funcmysql.py
+_my_modules/funcoracle.py
 _my_modules/funcsms.py
 .idea/
 docs/
