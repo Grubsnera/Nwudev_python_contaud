@@ -3535,6 +3535,8 @@ def student_fee(s_period="curr"):
         funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
         # funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
         funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
+    if l_mail:
+        funcmail.Mail('vss_list_020bx_studentlist')
 
     # LIST OF STUDENTS REGISTERED FOR MARK ONLY AND THEIR MODULES
     print("Build list of student module marks...")
