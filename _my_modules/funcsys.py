@@ -58,7 +58,7 @@ def ErrMessage(e, l_mail=False, s_subject='', s_body=''):
     if l_mail and s_subject != '' and s_body != '':
         # s_body1 = s_body + '\n' + type(e).__name__ + '\n' + "".join(e.args)
         s_body1 = s_body + '\n' + s_mess
-        funcmail.Mail('std_fail_gmail', s_subject, s_body1)
+        funcmail.Mail('std_fail_nwu', s_subject, s_body1)
 
     # SEND MESSAGE
     if funcconf.l_mess_project:
