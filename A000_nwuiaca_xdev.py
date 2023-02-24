@@ -203,7 +203,7 @@ class RunVacuum(Thread):
                         funcconf.l_run_vss_test = True
                         # SEND MAIL AFTER SUCCESSFUL VACUUMING
                         if funcconf.l_mail_project:
-                            funcmail.Mail('std_success_gmail',
+                            funcmail.Mail('std_success_nwu',
                                           'NWUIACA:Success:A003_table_vacuum',
                                           'NWUIACA: Success: A003_table_vacuum')
 
@@ -295,7 +295,7 @@ class RunLarge(Thread):
                         try:
                             B008_mysql_backup.mysql_backup()
                             if funcconf.l_mail_project:
-                                funcmail.Mail('std_success_gmail',
+                                funcmail.Mail('std_success_nwu',
                                               'NWUIACA:Success:' + s_project,
                                               'NWUIACA: Success: ' + s_project)
                         except Exception as err:
@@ -317,7 +317,7 @@ class RunLarge(Thread):
                             try:
                                 A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - people.csv", "PEOPLE")
                                 if funcconf.l_mail_project:
-                                    funcmail.Mail('std_success_gmail',
+                                    funcmail.Mail('std_success_nwu',
                                                   'NWUIACA:Success:' + s_project,
                                                   'NWUIACA: Success: ' + s_project)
                             except Exception as err:
@@ -341,7 +341,7 @@ class RunLarge(Thread):
                             try:
                                 B001_people_lists.people_lists()
                                 if funcconf.l_mail_project:
-                                    funcmail.Mail('std_success_gmail',
+                                    funcmail.Mail('std_success_nwu',
                                                   'NWUIACA:Success:' + s_project,
                                                   'NWUIACA: Success: ' + s_project)
                             except Exception as err:
@@ -365,7 +365,7 @@ class RunLarge(Thread):
                             try:
                                 C003_people_list_masterfile.people_list_masterfile()
                                 if funcconf.l_mail_project:
-                                    funcmail.Mail('std_success_gmail',
+                                    funcmail.Mail('std_success_nwu',
                                                   'NWUIACA:Success:' + s_project,
                                                   'NWUIACA: Success: ' + s_project)
                             except Exception as err:
@@ -389,7 +389,7 @@ class RunLarge(Thread):
                             try:
                                 B004_payroll_lists.payroll_lists()
                                 if funcconf.l_mail_project:
-                                    funcmail.Mail('std_success_gmail',
+                                    funcmail.Mail('std_success_nwu',
                                                   'NWUIACA:Success:' + s_project,
                                                   'NWUIACA: Success: ' + s_project)
                             except Exception as err:
@@ -413,7 +413,7 @@ class RunLarge(Thread):
                             try:
                                 A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - vss.csv", "VSS")
                                 if funcconf.l_mail_project:
-                                    funcmail.Mail('std_success_gmail',
+                                    funcmail.Mail('std_success_nwu',
                                                   'NWUIACA:Success:' + s_project,
                                                   'NWUIACA: Success: ' + s_project)
                             except Exception as err:
@@ -437,7 +437,7 @@ class RunLarge(Thread):
                             try:
                                 B003_vss_lists.vss_lists()
                                 if funcconf.l_mail_project:
-                                    funcmail.Mail('std_success_gmail',
+                                    funcmail.Mail('std_success_nwu',
                                                   'NWUIACA:Success:' + s_project,
                                                   'NWUIACA: Success: ' + s_project)
                             except Exception as err:
@@ -461,7 +461,7 @@ class RunLarge(Thread):
                             try:
                                 B007_vss_period_list.vss_period_list("curr")
                                 if funcconf.l_mail_project:
-                                    funcmail.Mail('std_success_gmail',
+                                    funcmail.Mail('std_success_nwu',
                                                   'NWUIACA:Success:' + s_project,
                                                   'NWUIACA: Success: ' + s_project)
                             except Exception as err:
@@ -485,7 +485,7 @@ class RunLarge(Thread):
                             try:
                                 C301_report_student_deferment.studdeb_deferments()
                                 if funcconf.l_mail_project:
-                                    funcmail.Mail('std_success_gmail',
+                                    funcmail.Mail('std_success_nwu',
                                                   'NWUIACA:Success:' + s_project,
                                                   'NWUIACA: Success: ' + s_project)
                             except Exception as err:
@@ -513,7 +513,7 @@ class RunLarge(Thread):
 
                     # SEND MAIL TO INDICATE THE SUCCESSFUL COMPLETION OF LARGE SCHEDULE
                     if funcconf.l_mail_project:
-                        funcmail.Mail('std_success_gmail', 'Python:Success:Finished:LargeSchedule',
+                        funcmail.Mail('std_success_nwu', 'Python:Success:Finished:LargeSchedule',
                                       'NWUIAPython: Success: Finished : Large schedule')
                         funcmail.Mail("python_log")
 
@@ -591,7 +591,7 @@ class RunSmall(Thread):
                             try:
                                 A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - kfs.csv", "KFS")
                                 if funcconf.l_mail_project:
-                                    funcmail.Mail('std_success_gmail',
+                                    funcmail.Mail('std_success_nwu',
                                                   'NWUIACA:Success:' + s_project,
                                                   'NWUIACA: Success: ' + s_project)
                             except Exception as err:
@@ -613,7 +613,7 @@ class RunSmall(Thread):
                             try:
                                 B002_kfs_lists.kfs_lists()
                                 if funcconf.l_mail_project:
-                                    funcmail.Mail('std_success_gmail',
+                                    funcmail.Mail('std_success_nwu',
                                                   'NWUIACA:Success:' + s_project,
                                                   'NWUIACA: Success: ' + s_project)
                             except Exception as err:
@@ -636,7 +636,7 @@ class RunSmall(Thread):
                             try:
                                 B006_kfs_period_list.kfs_period_list("curr")
                                 if funcconf.l_mail_project:
-                                    funcmail.Mail('std_success_gmail',
+                                    funcmail.Mail('std_success_nwu',
                                                   'NWUIACA:Success:' + s_project,
                                                   'NWUIACA: Success: ' + s_project)
                             except Exception as err:
@@ -659,7 +659,7 @@ class RunSmall(Thread):
                             try:
                                 B006_kfs_period_list.kfs_period_list("prev")
                                 if funcconf.l_mail_project:
-                                    funcmail.Mail('std_success_gmail',
+                                    funcmail.Mail('std_success_nwu',
                                                   'NWUIACA:Success:' + s_project,
                                                   'NWUIACA: Success: ' + s_project)
                             except Exception as err:
@@ -682,7 +682,7 @@ class RunSmall(Thread):
                             try:
                                 B005_mysql_lists.mysql_lists("Web_ia_nwu")
                                 if funcconf.l_mail_project:
-                                    funcmail.Mail('std_success_gmail',
+                                    funcmail.Mail('std_success_nwu',
                                                   'NWUIACA:Success:' + s_project,
                                                   'NWUIACA: Success: ' + s_project)
                             except Exception as err:
@@ -710,7 +710,7 @@ class RunSmall(Thread):
 
                     # SEND MAIL TO INDICATE THE SUCCESSFUL COMPLETION OF SMALL SCHEDULE
                     if funcconf.l_mail_project:
-                        funcmail.Mail('std_success_gmail', 'Python:Success:Finished:SmallSchedule',
+                        funcmail.Mail('std_success_nwu', 'Python:Success:Finished:SmallSchedule',
                                       'NWUIAPython: Success: Finished : Small schedule')
 
             # STOP PROJECT
@@ -784,7 +784,7 @@ class RunTest(Thread):
                         try:
                             A002_log.log_capture(funcdate.yesterday(), True)
                             if funcconf.l_mail_project:
-                                funcmail.Mail('std_success_gmail',
+                                funcmail.Mail('std_success_nwu',
                                               'NWUIACA:Success:' + s_project,
                                               'NWUIACA: Success: ' + s_project)
                         except Exception as err:
@@ -804,7 +804,7 @@ class RunTest(Thread):
                             try:
                                 C001_people_test_masterfile.people_test_masterfile()
                                 if funcconf.l_mail_project:
-                                    funcmail.Mail('std_success_gmail',
+                                    funcmail.Mail('std_success_nwu',
                                                   'NWUIACA:Success:' + s_project,
                                                   'NWUIACA: Success: ' + s_project)
                             except Exception as err:
@@ -828,7 +828,7 @@ class RunTest(Thread):
                             try:
                                 C002_people_test_conflict.people_test_conflict()
                                 if funcconf.l_mail_project:
-                                    funcmail.Mail('std_success_gmail',
+                                    funcmail.Mail('std_success_nwu',
                                                   'NWUIACA:Success:' + s_project,
                                                   'NWUIACA: Success: ' + s_project)
                             except Exception as err:
@@ -857,7 +857,7 @@ class RunTest(Thread):
                                 # C200_report_studdeb_recon.report_studdeb_recon(48501952.09, -12454680.98, 49976048.39, "curr")
                                 # 2019 balances C200_report_studdeb_recon.report_studdeb_recon(66561452.48, -18340951.06, 39482933.18, "prev")
                                 if funcconf.l_mail_project:
-                                    funcmail.Mail('std_success_gmail',
+                                    funcmail.Mail('std_success_nwu',
                                                   'NWUIACA:Success:' + s_project,
                                                   'NWUIACA: Success: ' + s_project)
                             except Exception as err:
@@ -881,7 +881,7 @@ class RunTest(Thread):
                             try:
                                 C300_test_student_general.test_student_general()
                                 if funcconf.l_mail_project:
-                                    funcmail.Mail('std_success_gmail',
+                                    funcmail.Mail('std_success_nwu',
                                                   'NWUIACA:Success:' + s_project,
                                                   'NWUIACA: Success: ' + s_project)
                             except Exception as err:
@@ -905,7 +905,7 @@ class RunTest(Thread):
                             try:
                                 C302_test_student_fee.student_fee()
                                 if funcconf.l_mail_project:
-                                    funcmail.Mail('std_success_gmail',
+                                    funcmail.Mail('std_success_nwu',
                                                   'NWUIACA:Success:' + s_project,
                                                   'NWUIACA: Success: ' + s_project)
                             except Exception as err:
@@ -929,7 +929,7 @@ class RunTest(Thread):
                             try:
                                 C201_creditor_test_payments.creditor_test_payments()
                                 if funcconf.l_mail_project:
-                                    funcmail.Mail('std_success_gmail',
+                                    funcmail.Mail('std_success_nwu',
                                                   'NWUIACA:Success:' + s_project,
                                                   'NWUIACA: Success: ' + s_project)
                             except Exception as err:
@@ -953,7 +953,7 @@ class RunTest(Thread):
                             try:
                                 C202_gl_test_transactions.gl_test_transactions()
                                 if funcconf.l_mail_project:
-                                    funcmail.Mail('std_success_gmail',
+                                    funcmail.Mail('std_success_nwu',
                                                   'NWUIACA:Success:' + s_project,
                                                   'NWUIACA: Success: ' + s_project)
                             except Exception as err:
@@ -981,7 +981,7 @@ class RunTest(Thread):
 
                     # SEND MAIL TO INDICATE THE SUCCESSFUL COMPLETION OF TEST SCHEDULE
                     if funcconf.l_mail_project:
-                        funcmail.Mail('std_success_gmail', 'Python:Success:Finished:TestSchedule',
+                        funcmail.Mail('std_success_nwu', 'Python:Success:Finished:TestSchedule',
                                       'NWUIAPython: Success: Finished : Test schedule')
                         funcmail.Mail("python_log")
 
