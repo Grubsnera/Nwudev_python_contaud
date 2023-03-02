@@ -14,6 +14,7 @@ from _my_modules import funccsv
 from _my_modules import funcfile
 from _my_modules import funcsms
 from _my_modules import funcsys
+from _my_modules import funcoracle
 
 
 def payroll_lists():
