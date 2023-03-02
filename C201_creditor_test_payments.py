@@ -53,7 +53,7 @@ def creditor_test_payments():
     re_path = "R:/Kfs/" # Results path
     ed_path = "S:/_external_data/" #external data path
     so_file = "Kfs_test_creditor.sqlite" # Source database
-    l_export = True
+    l_export = False
     l_mess: bool = funcconf.l_mess_project
     # l_mess: bool = True
     l_record = True
@@ -1275,7 +1275,7 @@ def creditor_test_payments():
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             if l_debug:
                 print("Export findings...")
-            sx_path = re_path
+            sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
             sx_file_dated = sx_file + funcdate.today_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -1318,7 +1318,7 @@ def creditor_test_payments():
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
         print("Export findings...")
-        sx_path = re_path + "/"
+        sx_path = re_path + funcdate.cur_year() + "/"
         sx_file = "Creditor_test_001ca_paym_same_init_fiscal_"
         sx_file_dated = sx_file + funcdate.today_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -1607,7 +1607,7 @@ def creditor_test_payments():
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
-            sx_path = re_path + "/"
+            sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = "Student_fee_test_021dx_qual_fee_negative_transaction_"
             sx_file_dated = sx_file + funcdate.today_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -2010,7 +2010,7 @@ def creditor_test_payments():
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             if l_debug:
                 print("Export findings...")
-            sx_path = re_path
+            sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
             sx_file_dated = sx_file + funcdate.today_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -2464,7 +2464,7 @@ def creditor_test_payments():
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             if l_debug:
                 print("Export findings...")
-            sx_path = re_path
+            sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
             sx_file_dated = sx_file + funcdate.today_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
