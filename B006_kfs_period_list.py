@@ -64,7 +64,7 @@ def kfs_period_list(s_period="curr"):
 
     # DECLARE VARIABLES
     l_debug: bool = True
-    l_export: bool = True
+    l_export: bool = False
     so_path = "W:/Kfs/"  # Source database path
     re_path = "R:/Kfs/"  # Results path
     # ed_path = "S:/_external_data/"  # external data path
