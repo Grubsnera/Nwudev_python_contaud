@@ -46,6 +46,7 @@ VENDOR PAYMENT ANNUAL TOTALS
 PAYEE TYPE PER MONTH
 PAYMENT TYPE ANNUAL SUMMARY TOTALS
 PREVIOUS MONTH PAYMENT DOCUMENT TYPE SUMMARY
+IDENTIFY CHILD SUPPORT VENDORS
 
 END OF SCRIPT
 *****************************************************************************"""
@@ -1012,6 +1013,36 @@ def kfs_period_list(s_period="curr"):
         funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
         funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
         funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file_dated)
+
+    # IDENTIFY CHILD SUPPORT VENDORS
+    # Exclusions
+    # NW.3G00111.9641 = Child support
+    # NW.3G00111.7702 = Employee advance
+    s_exclude = """(
+    'NW.3G00111.9641',
+    'NW.3G00111.7702'
+    )"""
+    print("Identify child support vendors...")
+    sr_file = "X002ae_Report_vendor_child_support"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sr_file = "X002ae_Report_vendor_exclude_email_conflict"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        acc.VENDOR_ID,
+        acc.VENDOR_NAME,
+        Count(acc.EDOC) As COUNT_TRANSACT
+    From
+        X001ad_Report_payments_accroute acc
+    Where
+        acc.ACC_COST_STRING In %EXCLUDE%
+    Group By
+        acc.VENDOR_ID
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = s_sql.replace("%EXCLUDE%", s_exclude)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """ ****************************************************************************
     END OF SCRIPT
