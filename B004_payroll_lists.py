@@ -34,12 +34,11 @@ def payroll_lists(s_year: str = 'curr'):
 
     # Declare variables
     l_debug: bool = False
+    l_export: bool = False
     so_path: str = "W:/People_payroll/"  # Source database path
     so_file: str = "People_payroll.sqlite"  # Source database
     re_path = "R:/People/"  # Results
     # ed_path = "S:/_external_data/"
-    s_sql: str = ""  # SQL statements
-    l_export: bool = False
 
     funcfile.writelog("Now")
     funcfile.writelog("SCRIPT: B004_PAYROLL_LISTS")
