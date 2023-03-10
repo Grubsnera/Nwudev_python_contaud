@@ -17,9 +17,10 @@ from _my_modules import funcsys
 from _my_modules import funcoracle
 
 
-def payroll_lists():
+def payroll_lists(s_year: str = 'curr'):
     """
     Script to build payroll lists
+    :param s_year: str: The financial period
     :return: Nothing
     """
 
@@ -31,19 +32,21 @@ def payroll_lists():
     *************************************************************************"""
 
     # Declare variables
+    l_debug: bool = False
     so_path: str = "W:/People_payroll/"  # Source database path
     so_file: str = "People_payroll.sqlite"  # Source database
     re_path = "R:/People/"  # Results
-    ed_path = "S:/_external_data/"
-    s_sql = ""  # SQL statements
+    # ed_path = "S:/_external_data/"
+    s_sql: str = ""  # SQL statements
     l_export: bool = False
 
     funcfile.writelog("Now")
     funcfile.writelog("SCRIPT: B004_PAYROLL_LISTS")
     funcfile.writelog("--------------------------")
-    print("------------------")
-    print("B004_PAYROLL_LISTS")
-    print("------------------")
+    if l_debug:
+        print("------------------")
+        print("B004_PAYROLL_LISTS")
+        print("------------------")
 
     # MESSAGE
     if funcconf.l_mess_project:
@@ -67,22 +70,27 @@ def payroll_lists():
     *************************************************************************"""
 
     # For which year
-    s_year: str = 'curr'
     if s_year == 'curr':
         year_start: str = funcdate.cur_yearbegin()
         year_end: str = funcdate.cur_yearend()
+        calc_today = funcdate.today()
+        calc_monthend = funcdate.prev_monthend()
         s_table_name: str = 'Payroll history curr'
     elif s_year == 'prev':
         year_start: str = funcdate.prev_yearbegin()
         year_end: str = funcdate.prev_yearend()
+        calc_today = year_end
+        calc_monthend = year_end
         s_table_name: str = 'Payroll history prev'
     else:
         year_start: str = s_year + '-01-01'
         year_end: str = s_year + '-12-31'
+        calc_today = year_end
+        calc_monthend = year_end
         s_table_name: str = 'Payroll history ' + s_year
 
     # Build the Oracle sql statement
-    s_sql: str = """
+    s_sql = """
     Select Distinct
         prr.RUN_RESULT_ID,
         pect.CLASSIFICATION_NAME,
@@ -159,22 +167,82 @@ def payroll_lists():
     """
     s_sql = s_sql.replace("%BEGIN%", year_start)
     s_sql = s_sql.replace("%END%", year_end)
-    print(s_sql)
+    if l_debug:
+        print('Run result SQL script')
+        print(s_sql)
 
     # Execute the query
     try:
         funcoracle.oracle_sql_to_sqlite('People payroll', '000b_Table - oracle.csv', s_table_name, s_sql)
-    except Exception as e:
-        funcsys.ErrMessage(e)
+    except Exception as er:
+        funcsys.ErrMessage(er)
+
+    # BUILD PAYROLL HISTORY
+    if l_debug:
+        print("Build the payroll history with more people data...")
+    sr_file = "X000aa_payroll_history_" + s_year
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        ph.RUN_RESULT_ID,
+        ph.CLASSIFICATION_NAME,
+        ph.ELEMENT_NAME,
+        ph.REPORTING_NAME As PAYROLL_NAME,
+        ph.EFFECTIVE_DATE,
+        lo.DESCRIPTION As CAMPUS,
+        og.DIVISION,
+        og.FACULTY,
+        og.ORG1_TYPE_DESC As ORGANIZATION_TYPE,
+        og.ORG1_NAME As ORGANIZATION_NAME,
+        lu.MEANING As ASS_CATEGORY,
+        ph.POSITION_ID,
+        po.POSITION,
+        po.POSITION_NAME,
+        ph.EMPLOYEE_CATEGORY As EMPLOYEE_CATEGORY_ASS,
+        Case
+            When ph.POSITION_ID = 0
+            Then ph.EMPLOYEE_CATEGORY
+            Else po.ACAD_SUPP
+        End As EMPLOYEE_CATEGORY,
+        ph.ASSIGNMENT_ID,
+        ph.PERSON_ID,
+        ph.EMPLOYEE_NUMBER,
+        ph.RESULT_VALUE As PAYROLL_VALUE
+        --ph.RUN_RESULT_ID,
+        --ph.CLASSIFICATION_NAME,
+        --ph.ELEMENT_NAME,
+        --ph.REPORTING_NAME,
+        --ph.EFFECTIVE_DATE,
+        --ph.RESULT_VALUE,
+        --ph.LOCATION_ID,
+        --ph.ORGANIZATION_ID,
+        --ph.EMPLOYMENT_CATEGORY,
+        --ph.POSITION_ID,
+        --ph.EMPLOYEE_CATEGORY,
+        --ph.ASSIGNMENT_ID,
+        --ph.PERSON_ID,
+        --ph.EMPLOYEE_NUMBER
+    From
+        PAYROLL_HISTORY_%YEAR% ph Left Join
+        PEOPLE.HR_LOCATIONS_ALL lo On lo.LOCATION_ID = ph.LOCATION_ID Left Join
+        PEOPLE.X000_ORGANIZATION_STRUCT og On og.ORG1 = ph.ORGANIZATION_ID Left Join
+        PEOPLE.X000_POSITIONS po On po.POSITION_ID = ph.POSITION_ID And
+            ph.EFFECTIVE_DATE Between po.EFFECTIVE_START_DATE And EFFECTIVE_END_DATE Left Join
+        HR_LOOKUPS lu On lu.LOOKUP_TYPE = 'EMP_CAT' And lu.LOOKUP_CODE = ph.EMPLOYMENT_CATEGORY
+    ;"""
+    s_sql = s_sql.replace("%YEAR%", s_year)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """*************************************************************************
-    ELEMENTS CURRENT
+    ELEMENTS
     *************************************************************************"""
-    print("---------- ELEMENTS CURRENT ----------")
 
-    # Build the current element list *******************************************
-    print("Build the current element list...")
-    sr_file = "X000aa_element_list_curr"
+    # Build the element list *******************************************
+    if l_debug:
+        print("Build the element list...")
+    sr_file = "X000aa_element_list_" + s_year
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     SELECT
         PEE.ASSIGNMENT_ID,
@@ -192,8 +260,8 @@ def payroll_lists():
         PET.REPORTING_NAME,
         PET.DESCRIPTION
     FROM
-        PAY_ELEMENT_ENTRIES_F_CURR PEE LEFT JOIN
-        PAY_ELEMENT_ENTRY_VALUES_F_CURR PEV ON PEV.ELEMENT_ENTRY_ID = PEE.ELEMENT_ENTRY_ID AND
+        PAY_ELEMENT_ENTRIES_F_%YEAR% PEE LEFT JOIN
+        PAY_ELEMENT_ENTRY_VALUES_F_%YEAR% PEV ON PEV.ELEMENT_ENTRY_ID = PEE.ELEMENT_ENTRY_ID AND
             PEV.EFFECTIVE_START_DATE <= PEE.EFFECTIVE_START_DATE AND
             PEV.EFFECTIVE_END_DATE >= PEE.EFFECTIVE_START_DATE LEFT JOIN
         PAY_ELEMENT_TYPES_F PET ON PET.ELEMENT_TYPE_ID = PEE.ELEMENT_TYPE_ID AND
@@ -202,7 +270,9 @@ def payroll_lists():
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS X000aa_element_list")
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    # s_sql = s_sql.replace("%PMONTH%",funcdate.prev_month())
+    s_sql = s_sql.replace("%YEAR%", s_year)
+    if l_debug:
+        print(s_sql)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -211,54 +281,59 @@ def payroll_lists():
         funcsms.send_telegram("", "administrator", "<b>" + str(i) + "</b> Elements")
 
     # Extract the NWU TOTAL PACKAGE element for export *********************
-    print("Extract the nwu total package element...")
-    sr_file = "X001aa_element_package_curr"
+    if l_debug:
+        print("Extract the nwu total package element...")
+    sr_file = "X001aa_element_package_" + s_year
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     SELECT
-      X000aa_element_list_curr.ASSIGNMENT_ID,
-      X000aa_element_list_curr.EFFECTIVE_START_DATE,
-      X000aa_element_list_curr.INPUT_VALUE_ID,
-      X000aa_element_list_curr.SCREEN_ENTRY_VALUE,
-      X000aa_element_list_curr.ELEMENT_NAME,
-      SUBSTR(PEOPLE.PER_ALL_ASSIGNMENTS_F.ASSIGNMENT_NUMBER,1,8) AS EMPL_NUMB
+      el.ASSIGNMENT_ID,
+      el.EFFECTIVE_START_DATE,
+      el.INPUT_VALUE_ID,
+      el.SCREEN_ENTRY_VALUE,
+      el.ELEMENT_NAME,
+      SUBSTR(ass.ASSIGNMENT_NUMBER,1,8) AS EMPL_NUMB
     FROM
-      X000aa_element_list_curr
-      LEFT JOIN PEOPLE.PER_ALL_ASSIGNMENTS_F ON PEOPLE.PER_ALL_ASSIGNMENTS_F.ASSIGNMENT_ID = X000aa_element_list_curr.ASSIGNMENT_ID AND
-        PEOPLE.PER_ALL_ASSIGNMENTS_F.EFFECTIVE_START_DATE <= Date('%TODAY%') AND
-        PEOPLE.PER_ALL_ASSIGNMENTS_F.EFFECTIVE_END_DATE >= Date('%TODAY%')
+      X000aa_element_list_%YEAR% el
+      LEFT JOIN PEOPLE.PER_ALL_ASSIGNMENTS_F ass ON ass.ASSIGNMENT_ID = el.ASSIGNMENT_ID AND
+        ass.EFFECTIVE_START_DATE <= Date('%TODAY%') AND
+        ass.EFFECTIVE_END_DATE >= Date('%TODAY%')
     WHERE
-      X000aa_element_list_curr.INPUT_VALUE_ID = 691 AND
-      X000aa_element_list_curr.EFFECTIVE_START_DATE <= Date('%TODAY%') AND
-      X000aa_element_list_curr.EFFECTIVE_END_DATE >= Date('%TODAY%')
+      el.INPUT_VALUE_ID = 691 AND
+      el.EFFECTIVE_START_DATE <= Date('%TODAY%') AND
+      el.EFFECTIVE_END_DATE >= Date('%TODAY%')
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = s_sql.replace("%TODAY%", funcdate.today())
+    s_sql = s_sql.replace("%TODAY%", calc_today)
+    s_sql = s_sql.replace("%YEAR%", s_year)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # Build the NWU TOTAL PACKAGE export file **************************************
-    print("Build the nwu total package element export file...")
-    sr_file = "X001ax_element_package_curr"
+    if l_debug:
+        print("Build the nwu total package element export file...")
+    sr_file = "X001ax_element_package_" + s_year
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     SELECT
-      X001aa_element_package_curr.EMPL_NUMB,
-      X001aa_element_package_curr.EFFECTIVE_START_DATE AS DATE,
-      CAST(X001aa_element_package_curr.SCREEN_ENTRY_VALUE AS REAL) AS PACKAGE
+      ep.EMPL_NUMB,
+      ep.EFFECTIVE_START_DATE AS DATE,
+      CAST(ep.SCREEN_ENTRY_VALUE AS REAL) AS PACKAGE
     FROM
-      X001aa_element_package_curr
+      X001aa_element_package_%YEAR% ep
     ORDER BY
-      X001aa_element_package_curr.EMPL_NUMB
+      EMPL_NUMB
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = s_sql.replace("%YEAR%", s_year)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     if l_export:
         # Export the data
-        print("Export packages...")
+        if l_debug:
+            print("Export packages...")
         sr_filet = sr_file
-        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_path = re_path + s_year + "/"
         sx_file = "Payroll_001ax_package_"
         sx_filet = sx_file + funcdate.cur_monthendfile()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -266,107 +341,13 @@ def payroll_lists():
         funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
         funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 
-    """*************************************************************************
-    ELEMENTS PREVIOUS
-    *************************************************************************"""
-    print("---------- ELEMENTS PREVIOUS ----------")
-
-    # Build the previous element list *******************************************
-    print("Build the previous element list...")
-    sr_file = "X000aa_element_list_prev"
-    s_sql = "CREATE TABLE " + sr_file + " AS " + """
-    SELECT
-      PAY_ELEMENT_ENTRIES_F_PREV.ASSIGNMENT_ID,
-      PAY_ELEMENT_ENTRIES_F_PREV.ELEMENT_ENTRY_ID,
-      PAY_ELEMENT_ENTRIES_F_PREV.EFFECTIVE_START_DATE,
-      PAY_ELEMENT_ENTRIES_F_PREV.EFFECTIVE_END_DATE,
-      PAY_ELEMENT_ENTRIES_F_PREV.ELEMENT_LINK_ID,
-      PAY_ELEMENT_ENTRIES_F_PREV.CREATOR_TYPE,
-      PAY_ELEMENT_ENTRIES_F_PREV.ENTRY_TYPE,
-      PAY_ELEMENT_ENTRIES_F_PREV.ELEMENT_TYPE_ID,
-      PAY_ELEMENT_ENTRY_VALUES_F_PREV.ELEMENT_ENTRY_VALUE_ID,
-      PAY_ELEMENT_ENTRY_VALUES_F_PREV.INPUT_VALUE_ID,
-      PAY_ELEMENT_ENTRY_VALUES_F_PREV.SCREEN_ENTRY_VALUE,
-      PAY_ELEMENT_TYPES_F.ELEMENT_NAME,
-      PAY_ELEMENT_TYPES_F.REPORTING_NAME,
-      PAY_ELEMENT_TYPES_F.DESCRIPTION
-    FROM
-      PAY_ELEMENT_ENTRIES_F_PREV
-      LEFT JOIN PAY_ELEMENT_ENTRY_VALUES_F_PREV ON PAY_ELEMENT_ENTRY_VALUES_F_PREV.ELEMENT_ENTRY_ID =
-        PAY_ELEMENT_ENTRIES_F_PREV.ELEMENT_ENTRY_ID AND PAY_ELEMENT_ENTRY_VALUES_F_PREV.EFFECTIVE_START_DATE <=
-        PAY_ELEMENT_ENTRIES_F_PREV.EFFECTIVE_START_DATE AND PAY_ELEMENT_ENTRY_VALUES_F_PREV.EFFECTIVE_END_DATE >= PAY_ELEMENT_ENTRIES_F_PREV.EFFECTIVE_START_DATE
-      LEFT JOIN PAY_ELEMENT_TYPES_F ON PAY_ELEMENT_TYPES_F.ELEMENT_TYPE_ID = PAY_ELEMENT_ENTRIES_F_PREV.ELEMENT_TYPE_ID AND
-        PAY_ELEMENT_TYPES_F.EFFECTIVE_START_DATE <= PAY_ELEMENT_ENTRIES_F_PREV.EFFECTIVE_START_DATE AND PAY_ELEMENT_TYPES_F.EFFECTIVE_END_DATE >=
-        PAY_ELEMENT_ENTRIES_F_PREV.EFFECTIVE_START_DATE
-    ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
-    # Extract the previous NWU TOTAL PACKAGE element for export ****************
-    print("Extract the previous nwu total package element...")
-    sr_file = "X001aa_element_package_prev"
-    s_sql = "CREATE TABLE " + sr_file + " AS " + """
-    SELECT
-      X000aa_element_list_prev.ASSIGNMENT_ID,
-      X000aa_element_list_prev.EFFECTIVE_START_DATE,
-      X000aa_element_list_prev.INPUT_VALUE_ID,
-      X000aa_element_list_prev.SCREEN_ENTRY_VALUE,
-      X000aa_element_list_prev.ELEMENT_NAME,
-      SUBSTR(PEOPLE.PER_ALL_ASSIGNMENTS_F.ASSIGNMENT_NUMBER,1,8) AS EMPL_NUMB
-    FROM
-      X000aa_element_list_prev
-      LEFT JOIN PEOPLE.PER_ALL_ASSIGNMENTS_F ON PEOPLE.PER_ALL_ASSIGNMENTS_F.ASSIGNMENT_ID = X000aa_element_list_prev.ASSIGNMENT_ID AND
-        PEOPLE.PER_ALL_ASSIGNMENTS_F.EFFECTIVE_START_DATE <= Date('%PYEARE%') AND
-        PEOPLE.PER_ALL_ASSIGNMENTS_F.EFFECTIVE_END_DATE >= Date('%PYEARE%')
-    WHERE
-      X000aa_element_list_prev.INPUT_VALUE_ID = 691 AND
-      X000aa_element_list_prev.EFFECTIVE_START_DATE <= Date('%PYEARE%') AND
-      X000aa_element_list_prev.EFFECTIVE_END_DATE >= Date('%PYEARE%')
-    ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = s_sql.replace("%PYEARE%", funcdate.prev_yearend())
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
-    # Build the previous NWU TOTAL PACKAGE export file *************************
-    print("Build the previous nwu total package element export file...")
-    sr_file = "X001ax_element_package_prev"
-    s_sql = "CREATE TABLE " + sr_file + " AS " + """
-    SELECT
-      X001aa_element_package_prev.EMPL_NUMB,
-      X001aa_element_package_prev.EFFECTIVE_START_DATE AS DATE,
-      CAST(X001aa_element_package_prev.SCREEN_ENTRY_VALUE AS REAL) AS PACKAGE
-    FROM
-      X001aa_element_package_prev
-    ORDER BY
-      X001aa_element_package_prev.EMPL_NUMB
-    ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
-    if l_export:
-        # Export the data
-        print("Export previous packages...")
-        sr_filet = sr_file
-        sx_path = re_path + funcdate.prev_year() + "/"
-        sx_file = "Payroll_001ax_package_"
-        # sx_filet = sx_file + funcdate.prev_monthendfile()
-        s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-        # funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
-        funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
-
     """************************************************************************
-    BALANCES CURRENT
+    BALANCES
     ************************************************************************"""
-    print("---------- BALANCES CURRENT ----------")
 
     # BUILD THE PAY DEFINED BALANCES LIST
-    print("Build defined balances list...")
+    if l_debug:
+        print("Build defined balances list...")
     sr_file = "X000_PAY_DEFINED_BALANCES"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
@@ -385,7 +366,8 @@ def payroll_lists():
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD THE PAY BALANCE TYPE LIST
-    print("Build balance type list list...")
+    if l_debug:
+        print("Build balance type list list...")
     sr_file = "X000_PAY_BALANCE_TYPE"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
@@ -405,8 +387,9 @@ def payroll_lists():
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # Build the balances list ******************************************************
-    print("Build the balances list...")
-    sr_file = "X000aa_balance_list_curr"
+    if l_debug:
+        print("Build the balances list...")
+    sr_file = "X000aa_balance_list_" + s_year
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         rb.RUN_BALANCE_ID,
@@ -418,11 +401,12 @@ def payroll_lists():
         db.DEFINED_BALANCE_ID,
         bt.BALANCE_TYPE_ID
     From
-        PAY_RUN_BALANCES_CURR rb Left Join
+        PAY_RUN_BALANCES_%YEAR% rb Left Join
         X000_PAY_DEFINED_BALANCES db On db.DEFINED_BALANCE_ID = rb.DEFINED_BALANCE_ID Left Join
         X000_PAY_BALANCE_TYPE bt On bt.BALANCE_TYPE_ID = db.BALANCE_TYPE_ID    
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = s_sql.replace("%YEAR%", s_year)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -431,54 +415,59 @@ def payroll_lists():
         funcsms.send_telegram("", "administrator", "<b>" + str(i) + "</b> Balances")
 
     # Extract the NWU INCOME PER MONTH balance for export **************************
-    print("Extract the nwu total income balance...")
-    sr_file = "X002aa_balance_totalincome_curr"
+    if l_debug:
+        print("Extract the nwu total income balance...")
+    sr_file = "X002aa_balance_totalincome_" + s_year
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     SELECT
-      X000aa_balance_list_curr.ASSIGNMENT_ID,
-      X000aa_balance_list_curr.EFFECTIVE_DATE,
-      X000aa_balance_list_curr.DEFINED_BALANCE_ID,
-      X000aa_balance_list_curr.BALANCE_VALUE,
-      X000aa_balance_list_curr.BALANCE_NAME,
-      X000aa_balance_list_curr.REPORTING_NAME,
-      SUBSTR(PEOPLE.PER_ALL_ASSIGNMENTS_F.ASSIGNMENT_NUMBER,1,8) AS EMPL_NUMB
+      bl.ASSIGNMENT_ID,
+      bl.EFFECTIVE_DATE,
+      bl.DEFINED_BALANCE_ID,
+      bl.BALANCE_VALUE,
+      bl.BALANCE_NAME,
+      bl.REPORTING_NAME,
+      SUBSTR(ass.ASSIGNMENT_NUMBER,1,8) AS EMPL_NUMB
     FROM
-      X000aa_balance_list_curr
-      LEFT JOIN PEOPLE.PER_ALL_ASSIGNMENTS_F ON PEOPLE.PER_ALL_ASSIGNMENTS_F.ASSIGNMENT_ID = X000aa_balance_list_curr.ASSIGNMENT_ID AND
-        PEOPLE.PER_ALL_ASSIGNMENTS_F.EFFECTIVE_START_DATE <= Date('%PMONTHEND%') AND
-        PEOPLE.PER_ALL_ASSIGNMENTS_F.EFFECTIVE_END_DATE >= Date('%PMONTHEND%')
+      X000aa_balance_list_%YEAR% bl
+      LEFT JOIN PEOPLE.PER_ALL_ASSIGNMENTS_F ass ON ass.ASSIGNMENT_ID = bl.ASSIGNMENT_ID AND
+        ass.EFFECTIVE_START_DATE <= Date('%PMONTHEND%') AND
+        ass.EFFECTIVE_END_DATE >= Date('%PMONTHEND%')
     WHERE
-      X000aa_balance_list_curr.DEFINED_BALANCE_ID = 16264 AND
-      X000aa_balance_list_curr.EFFECTIVE_DATE = Date('%PMONTHEND%')
+      bl.DEFINED_BALANCE_ID = 16264 AND
+      bl.EFFECTIVE_DATE = Date('%PMONTHEND%')
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = s_sql.replace("%PMONTHEND%", funcdate.prev_monthend())
+    s_sql = s_sql.replace("%PMONTHEND%", calc_monthend)
+    s_sql = s_sql.replace("%YEAR%", s_year)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # Build the NWU TOTAL INCOME export file ***************************************
-    print("Build the nwu total income balance export file...")
-    sr_file = "X002ax_balance_totalincome_curr"
+    if l_debug:
+        print("Build the nwu total income balance export file...")
+    sr_file = "X002ax_balance_totalincome_" + s_year
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     SELECT
-      X002aa_balance_totalincome_curr.EMPL_NUMB,
-      X002aa_balance_totalincome_curr.EFFECTIVE_DATE AS DATE,
-      CAST(X002aa_balance_totalincome_curr.BALANCE_VALUE AS REAL) AS INCOME
+      bt.EMPL_NUMB,
+      bt.EFFECTIVE_DATE AS DATE,
+      CAST(bt.BALANCE_VALUE AS REAL) AS INCOME
     FROM
-      X002aa_balance_totalincome_curr
+      X002aa_balance_totalincome_%YEAR% bt
     ORDER BY
-      X002aa_balance_totalincome_curr.EMPL_NUMB
+      EMPL_NUMB
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = s_sql.replace("%YEAR%", s_year)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     if l_export:
         # Export the data
-        print("Export incomes...")
+        if l_debug:
+            print("Export incomes...")
         sr_filet = sr_file
-        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_path = re_path + s_year + "/"
         sx_file = "Payroll_002ax_income_total_"
         sx_filet = sx_file + funcdate.prev_monthendfile()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -487,139 +476,54 @@ def payroll_lists():
         funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 
     """*************************************************************************
-    BALANCES PREVIOUS
-    *************************************************************************"""
-    print("---------- BALANCES PREVIOUS ----------")
-
-    # Build the previous balances list *********************************************
-    print("Build the previous balances list...")
-    sr_file = "X000aa_balance_list_prev"
-    s_sql = "CREATE TABLE " + sr_file + " AS " + """
-    Select
-        rb.RUN_BALANCE_ID,
-        rb.ASSIGNMENT_ID,
-        rb.EFFECTIVE_DATE,
-        Upper(bt.BALANCE_NAME) As BALANCE_NAME,
-        Upper(bt.REPORTING_NAME) As REPORTING_NAME,
-        rb.BALANCE_VALUE,
-        db.DEFINED_BALANCE_ID,
-        bt.BALANCE_TYPE_ID
-    From
-        PAY_RUN_BALANCES_PREV rb Left Join
-        X000_PAY_DEFINED_BALANCES db On db.DEFINED_BALANCE_ID = rb.DEFINED_BALANCE_ID Left Join
-        X000_PAY_BALANCE_TYPE bt On bt.BALANCE_TYPE_ID = db.BALANCE_TYPE_ID    
-    ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
-    # Extract the previous NWU INCOME PER MONTH balance for export *****************
-    print("Extract the previous nwu total income balance...")
-    sr_file = "X002aa_balance_totalincome_prev"
-    s_sql = "CREATE TABLE " + sr_file + " AS " + """
-    SELECT
-      X000aa_balance_list_prev.ASSIGNMENT_ID,
-      X000aa_balance_list_prev.EFFECTIVE_DATE,
-      X000aa_balance_list_prev.DEFINED_BALANCE_ID,
-      X000aa_balance_list_prev.BALANCE_VALUE,
-      X000aa_balance_list_prev.BALANCE_NAME,
-      X000aa_balance_list_prev.REPORTING_NAME,
-      SUBSTR(PEOPLE.PER_ALL_ASSIGNMENTS_F.ASSIGNMENT_NUMBER,1,8) AS EMPL_NUMB
-    FROM
-      X000aa_balance_list_prev
-      LEFT JOIN PEOPLE.PER_ALL_ASSIGNMENTS_F ON PEOPLE.PER_ALL_ASSIGNMENTS_F.ASSIGNMENT_ID = X000aa_balance_list_prev.ASSIGNMENT_ID AND
-        PEOPLE.PER_ALL_ASSIGNMENTS_F.EFFECTIVE_START_DATE <= Date('%PYEARE%') AND
-        PEOPLE.PER_ALL_ASSIGNMENTS_F.EFFECTIVE_END_DATE >= Date('%PYEARE%')
-    WHERE
-      X000aa_balance_list_prev.DEFINED_BALANCE_ID = 16264 AND
-      X000aa_balance_list_prev.EFFECTIVE_DATE = Date('%PYEARE%')
-    ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = s_sql.replace("%PYEARE%", funcdate.prev_yearend())
-    # print(s_sql)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
-    # Build the previous NWU TOTAL INCOME export file ******************************
-    print("Build the previous nwu total income balance export file...")
-    sr_file = "X002ax_balance_totalincome_prev"
-    s_sql = "CREATE TABLE " + sr_file + " AS " + """
-    SELECT
-      X002aa_balance_totalincome_prev.EMPL_NUMB,
-      X002aa_balance_totalincome_prev.EFFECTIVE_DATE AS DATE,
-      CAST(X002aa_balance_totalincome_prev.BALANCE_VALUE AS REAL) AS INCOME
-    FROM
-      X002aa_balance_totalincome_prev
-    ORDER BY
-      X002aa_balance_totalincome_prev.EMPL_NUMB
-    ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
-    if l_export:
-        # Export the data
-        print("Export previous incomes...")
-        sr_filet = sr_file
-        sx_path = re_path + funcdate.prev_year() + "/"
-        sx_file = "Payroll_002ax_income_total_"
-        # sx_filet = sx_file + funcdate.prev_monthendfile()
-        s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-        # funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
-        funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
-
-    """*************************************************************************
     SECONDARY ASSIGNMENTS
     *************************************************************************"""
-    print("---------- SECONDARY ASSIGNMENTS ----------")
 
     # Build previous secondary assignments *************************************
-    print("Build previous secondary assignments...")
+    if l_debug:
+        print("Build previous secondary assignments...")
     sr_file = "X000aa_sec_assignment_prev"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     SELECT
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.ASSIGNMENT_EXTRA_INFO_ID,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.ASSIGNMENT_ID,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION1,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION2,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION3,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION4,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION5,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION6,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION7,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION8,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION9,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION10,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION11,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION12 AS DATE_FROM,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION13 AS DATE_TO,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION14,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION15,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION16,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION17,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION18,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION19,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION20,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION21,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION22,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION23,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION24,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION25,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION26,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION27,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION28,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION29,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.AEI_INFORMATION30,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.LAST_UPDATE_DATE,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.LAST_UPDATED_BY,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.LAST_UPDATE_LOGIN,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.CREATED_BY,
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC.CREATION_DATE
+      ae.ASSIGNMENT_EXTRA_INFO_ID,
+      ae.ASSIGNMENT_ID,
+      ae.AEI_INFORMATION1,
+      ae.AEI_INFORMATION2,
+      ae.AEI_INFORMATION3,
+      ae.AEI_INFORMATION4,
+      ae.AEI_INFORMATION5,
+      ae.AEI_INFORMATION6,
+      ae.AEI_INFORMATION7,
+      ae.AEI_INFORMATION8,
+      ae.AEI_INFORMATION9,
+      ae.AEI_INFORMATION10,
+      ae.AEI_INFORMATION11,
+      ae.AEI_INFORMATION12 AS DATE_FROM,
+      ae.AEI_INFORMATION13 AS DATE_TO,
+      ae.AEI_INFORMATION14,
+      ae.AEI_INFORMATION15,
+      ae.AEI_INFORMATION16,
+      ae.AEI_INFORMATION17,
+      ae.AEI_INFORMATION18,
+      ae.AEI_INFORMATION19,
+      ae.AEI_INFORMATION20,
+      ae.AEI_INFORMATION21,
+      ae.AEI_INFORMATION22,
+      ae.AEI_INFORMATION23,
+      ae.AEI_INFORMATION24,
+      ae.AEI_INFORMATION25,
+      ae.AEI_INFORMATION26,
+      ae.AEI_INFORMATION27,
+      ae.AEI_INFORMATION28,
+      ae.AEI_INFORMATION29,
+      ae.AEI_INFORMATION30,
+      ae.LAST_UPDATE_DATE,
+      ae.LAST_UPDATED_BY,
+      ae.LAST_UPDATE_LOGIN,
+      ae.CREATED_BY,
+      ae.CREATION_DATE
     FROM
-      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC
+      PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC ae
     WHERE
       DATE_FROM <= Date('2018-12-31') AND
       DATE_TO >= Date('2018-12-31')
@@ -634,7 +538,8 @@ def payroll_lists():
     """*****************************************************************************
     End OF SCRIPT
     *****************************************************************************"""
-    print("END OF SCRIPT")
+    if l_debug:
+        print("END OF SCRIPT")
     funcfile.writelog("END OF SCRIPT")
 
     # COMMIT DATA
@@ -652,6 +557,6 @@ def payroll_lists():
 
 if __name__ == '__main__':
     try:
-        payroll_lists()
+        payroll_lists('prev')
     except Exception as e:
         funcsys.ErrMessage(e, funcconf.l_mess_project, "B004_payroll_lists", "B004_payroll_lists")
