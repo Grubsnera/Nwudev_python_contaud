@@ -26,6 +26,7 @@ def payroll_lists(s_year: str = 'curr'):
 
     """ CONTENTS ***************************************************************
     PAYROLL RUN VALUES
+    BUILD PAYROLL HISTORY
     ELEMENTS
     BALANCES
     SECONDARY ASSIGNMENTS
@@ -482,7 +483,7 @@ def payroll_lists(s_year: str = 'curr'):
     # Build previous secondary assignments *************************************
     if l_debug:
         print("Build previous secondary assignments...")
-    sr_file = "X000aa_sec_assignment_prev"
+    sr_file = "X000aa_sec_assignment_" + s_year
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     SELECT
       ae.ASSIGNMENT_EXTRA_INFO_ID,
@@ -525,12 +526,12 @@ def payroll_lists(s_year: str = 'curr'):
     FROM
       PEOPLE.PER_ASSIGNMENT_EXTRA_INFO_SEC ae
     WHERE
-      DATE_FROM <= Date('2018-12-31') AND
-      DATE_TO >= Date('2018-12-31')
+      DATE_FROM >= Date('%YEARS%') AND
+      DATE_TO >= Date('%YEARE%')
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute("DROP TABLE IF EXISTS X000aa_sec_assignment_prev")
-    s_sql = s_sql.replace("%PYEARE%", funcdate.prev_yearend())
+    s_sql = s_sql.replace("%YEARS%", year_start)
+    s_sql = s_sql.replace("%YEARE%", year_end)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -557,6 +558,6 @@ def payroll_lists(s_year: str = 'curr'):
 
 if __name__ == '__main__':
     try:
-        payroll_lists('prev')
+        payroll_lists('curr')
     except Exception as e:
         funcsys.ErrMessage(e, funcconf.l_mess_project, "B004_payroll_lists", "B004_payroll_lists")
