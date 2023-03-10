@@ -43,84 +43,30 @@ funcfile.writelog("OPEN DATABASE: " + so_file)
 so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
 funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
 
-"""*****************************************************************************
-BEGIN
-*****************************************************************************"""
-
-# BUILD PAYROLL RUN RESULTS
-
 # For which year
 s_year: str = 'curr'
 if s_year == 'curr':
     year_start: str = funcdate.cur_yearbegin()
     year_end: str = funcdate.cur_yearend()
+    calc_today = funcdate.today()
+    calc_monthend = funcdate.prev_monthend()
     s_table_name: str = 'Payroll history curr'
 elif s_year == 'prev':
     year_start: str = funcdate.prev_yearbegin()
     year_end: str = funcdate.prev_yearend()
+    calc_today = year_end
+    calc_monthend = year_end
     s_table_name: str = 'Payroll history prev'
 else:
     year_start: str = s_year + '-01-01'
     year_end: str = s_year + '-12-31'
+    calc_today = year_end
+    calc_monthend = year_end
     s_table_name: str = 'Payroll history ' + s_year
 
-
-# BUILD PAYROLL HISTORY
-print("Build the payroll history with more people data...")
-sr_file = "X000aa_payroll_history_" + s_year
-s_sql = "CREATE TABLE " + sr_file + " AS " + """
-Select
-    ph.RUN_RESULT_ID,
-    ph.CLASSIFICATION_NAME,
-    ph.ELEMENT_NAME,
-    ph.REPORTING_NAME As PAYROLL_NAME,
-    ph.EFFECTIVE_DATE,
-    lo.DESCRIPTION As CAMPUS,
-    og.DIVISION,
-    og.FACULTY,
-    og.ORG1_TYPE_DESC As ORGANIZATION_TYPE,
-    og.ORG1_NAME As ORGANIZATION_NAME,
-    lu.MEANING As ASS_CATEGORY,
-    ph.POSITION_ID,
-    po.POSITION,
-    po.POSITION_NAME,
-    ph.EMPLOYEE_CATEGORY As EMPLOYEE_CATEGORY_ASS,
-    Case
-        When ph.POSITION_ID = 0
-        Then ph.EMPLOYEE_CATEGORY
-        Else po.ACAD_SUPP
-    End As EMPLOYEE_CATEGORY,
-    ph.ASSIGNMENT_ID,
-    ph.PERSON_ID,
-    ph.EMPLOYEE_NUMBER,
-    ph.RESULT_VALUE As PAYROLL_VALUE
-    --ph.RUN_RESULT_ID,
-    --ph.CLASSIFICATION_NAME,
-    --ph.ELEMENT_NAME,
-    --ph.REPORTING_NAME,
-    --ph.EFFECTIVE_DATE,
-    --ph.RESULT_VALUE,
-    --ph.LOCATION_ID,
-    --ph.ORGANIZATION_ID,
-    --ph.EMPLOYMENT_CATEGORY,
-    --ph.POSITION_ID,
-    --ph.EMPLOYEE_CATEGORY,
-    --ph.ASSIGNMENT_ID,
-    --ph.PERSON_ID,
-    --ph.EMPLOYEE_NUMBER
-From
-    PAYROLL_HISTORY_%YEAR% ph Left Join
-    PEOPLE.HR_LOCATIONS_ALL lo On lo.LOCATION_ID = ph.LOCATION_ID Left Join
-    PEOPLE.X000_ORGANIZATION_STRUCT og On og.ORG1 = ph.ORGANIZATION_ID Left Join
-    PEOPLE.X000_POSITIONS po On po.POSITION_ID = ph.POSITION_ID And
-        ph.EFFECTIVE_DATE Between po.EFFECTIVE_START_DATE And EFFECTIVE_END_DATE Left Join
-    HR_LOOKUPS lu On lu.LOOKUP_TYPE = 'EMP_CAT' And lu.LOOKUP_CODE = ph.EMPLOYMENT_CATEGORY
-;"""
-s_sql = s_sql.replace("%YEAR%", s_year)
-so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-so_curs.execute(s_sql)
-so_conn.commit()
-funcfile.writelog("%t BUILD TABLE: " + sr_file)
+"""*****************************************************************************
+BEGIN
+*****************************************************************************"""
 
 # Build the current element list *******************************************
 print("Build the current element list...")
@@ -251,7 +197,6 @@ s_sql = s_sql.replace("%TODAY%", funcdate.today())
 so_curs.execute(s_sql)
 so_conn.commit()
 funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
 
 """
 # BUILD GROUP INSURANCE INFORMATION SPOUSE
