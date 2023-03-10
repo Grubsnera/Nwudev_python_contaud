@@ -50,7 +50,7 @@ BEGIN
 # BUILD PAYROLL RUN RESULTS
 
 # For which year
-s_year: str = 'prev'
+s_year: str = 'curr'
 if s_year == 'curr':
     year_start: str = funcdate.cur_yearbegin()
     year_end: str = funcdate.cur_yearend()
@@ -64,91 +64,63 @@ else:
     year_end: str = s_year + '-12-31'
     s_table_name: str = 'Payroll history ' + s_year
 
-# Build the Oracle sql statement
-s_sql: str = """
-Select Distinct
-    prr.RUN_RESULT_ID,
-    pect.CLASSIFICATION_NAME,
-    petf.ELEMENT_NAME,
-    petf.REPORTING_NAME,
-    ppa.EFFECTIVE_DATE,
-    Cast(prrv.RESULT_VALUE As Decimal(13,2)) As RESULT_VALUE,
-    paaf.LOCATION_ID,
-    paaf.ORGANIZATION_ID,
-    paaf.EMPLOYMENT_CATEGORY,
-    paaf.POSITION_ID,
-    paaf.EMPLOYEE_CATEGORY,
-    paa.ASSIGNMENT_ID,
-    papf.PERSON_ID,
-    papf.EMPLOYEE_NUMBER
-    --papf.EMPLOYEE_NUMBER,
-    --papf.FULL_NAME    
-    --piv.UOM,
-    --piv.NAME,
-    --petf.ELEMENT_TYPE_ID,
-    --petf.EFFECTIVE_START_DATE,
-    --petf.EFFECTIVE_END_DATE,
-    --petf.DESCRIPTION As ELEMENT_DESCRIPTION,
-    --pect.DESCRIPTION As CLASSIFICATION_DESCRIPTION,
-    --paa.ASSIGNMENT_ACTION_ID,
-    --paa.PAYROLL_ACTION_ID,
-    --paa.PAYROLL_ACTION_ID#1,
-    --paa.ACTION_STATUS,
-    --ppa.PAYROLL_ACTION_ID As PAYROLL_ACTION_PPA,
-    --ppa.ACTION_TYPE,
-    --ppa.ACTION_SEQUENCE,
-    --paaf.ASSIGNMENT_ID As ASSIGNMENT_PAAF,
-    --paaf.EFFECTIVE_START_DATE As EFFECTIVE_START_PAAF,
-    --paaf.EFFECTIVE_END_DATE As EFFECTIVE_END_PAAF,
-    --papf.EFFECTIVE_START_DATE As EFFECTIVE_START_PAPF,
-    --papf.EFFECTIVE_END_DATE As EFFECTIVE_END_PAPF,
-From
-    HR.PAY_RUN_RESULTS prr,
-    HR.PAY_RUN_RESULT_VALUES prrv,
-    HR.PAY_INPUT_VALUES_F piv,
-    HR.PAY_ELEMENT_TYPES_F petf,
-    HR.PAY_ELEMENT_CLASSIFICATIONS_TL pect,
-    HR.PAY_ASSIGNMENT_ACTIONS paa,
-    APPS.PAY_PAYROLL_ACTIONS ppa,
-    APPS.PER_ALL_ASSIGNMENTS_F paaf,
-    HR.PER_ALL_PEOPLE_F papf  
-Where
-    prr.RUN_RESULT_ID = prrv.RUN_RESULT_ID And
-    piv.INPUT_VALUE_ID = prrv.INPUT_VALUE_ID And
-    prrv.RESULT_VALUE != '0' And
-    piv.UOM = 'M' And
-    piv.NAME = 'Pay Value' And
-    petf.ELEMENT_TYPE_ID = prr.ELEMENT_TYPE_ID And
-    pect.CLASSIFICATION_ID = petf.CLASSIFICATION_ID And
-    --pect.CLASSIFICATION_NAME In ('Normal Income', 'Allowances') And
-    prr.ASSIGNMENT_ACTION_ID = paa.ASSIGNMENT_ACTION_ID And    
-    paa.ASSIGNMENT_ID = paaf.ASSIGNMENT_ID And
-    papf.PERSON_ID = paaf.PERSON_ID And
-    paa.PAYROLL_ACTION_ID#1 = ppa.ACTION_SEQUENCE - 1 And
-    paa.ACTION_STATUS = 'C' And
-    ppa.ACTION_TYPE In ('R') And
-    ppa.EFFECTIVE_DATE >= To_Date('%BEGIN%', 'YYYY-MM-DD') And
-    ppa.EFFECTIVE_DATE <= To_Date('%END%', 'YYYY-MM-DD') And
-    ppa.EFFECTIVE_DATE >= Trunc(paaf.EFFECTIVE_START_DATE) And
-    ppa.EFFECTIVE_DATE <= Trunc(paaf.EFFECTIVE_END_DATE) And
-    Trunc(paaf.EFFECTIVE_END_DATE) >= papf.EFFECTIVE_START_DATE And
-    Trunc(paaf.EFFECTIVE_END_DATE) <= papf.EFFECTIVE_END_DATE
-    --papf.EMPLOYEE_NUMBER = '21162395'
-Order by
-    EMPLOYEE_NUMBER,
-    EFFECTIVE_DATE,
-    CLASSIFICATION_NAME,
-    ELEMENT_NAME    
-"""
-s_sql = s_sql.replace("%BEGIN%", year_start)
-s_sql = s_sql.replace("%END%", year_end)
-print(s_sql)
 
-# Execute the query
-try:
-    funcoracle.oracle_sql_to_sqlite('People payroll', '000b_Table - oracle.csv', s_table_name, s_sql)
-except Exception as e:
-    funcsys.ErrMessage(e)
+# BUILD PAYROLL HISTORY
+print("Build the payroll history with more people data...")
+sr_file = "X000aa_payroll_history_" + s_year
+s_sql = "CREATE TABLE " + sr_file + " AS " + """
+Select
+    ph.RUN_RESULT_ID,
+    ph.CLASSIFICATION_NAME,
+    ph.ELEMENT_NAME,
+    ph.REPORTING_NAME As PAYROLL_NAME,
+    ph.EFFECTIVE_DATE,
+    lo.DESCRIPTION As CAMPUS,
+    og.DIVISION,
+    og.FACULTY,
+    og.ORG1_TYPE_DESC As ORGANIZATION_TYPE,
+    og.ORG1_NAME As ORGANIZATION_NAME,
+    lu.MEANING As ASS_CATEGORY,
+    ph.POSITION_ID,
+    po.POSITION,
+    po.POSITION_NAME,
+    ph.EMPLOYEE_CATEGORY As EMPLOYEE_CATEGORY_ASS,
+    Case
+        When ph.POSITION_ID = 0
+        Then ph.EMPLOYEE_CATEGORY
+        Else po.ACAD_SUPP
+    End As EMPLOYEE_CATEGORY,
+    ph.ASSIGNMENT_ID,
+    ph.PERSON_ID,
+    ph.EMPLOYEE_NUMBER,
+    ph.RESULT_VALUE As PAYROLL_VALUE
+    --ph.RUN_RESULT_ID,
+    --ph.CLASSIFICATION_NAME,
+    --ph.ELEMENT_NAME,
+    --ph.REPORTING_NAME,
+    --ph.EFFECTIVE_DATE,
+    --ph.RESULT_VALUE,
+    --ph.LOCATION_ID,
+    --ph.ORGANIZATION_ID,
+    --ph.EMPLOYMENT_CATEGORY,
+    --ph.POSITION_ID,
+    --ph.EMPLOYEE_CATEGORY,
+    --ph.ASSIGNMENT_ID,
+    --ph.PERSON_ID,
+    --ph.EMPLOYEE_NUMBER
+From
+    PAYROLL_HISTORY_%YEAR% ph Left Join
+    PEOPLE.HR_LOCATIONS_ALL lo On lo.LOCATION_ID = ph.LOCATION_ID Left Join
+    PEOPLE.X000_ORGANIZATION_STRUCT og On og.ORG1 = ph.ORGANIZATION_ID Left Join
+    PEOPLE.X000_POSITIONS po On po.POSITION_ID = ph.POSITION_ID And
+        ph.EFFECTIVE_DATE Between po.EFFECTIVE_START_DATE And EFFECTIVE_END_DATE Left Join
+    HR_LOOKUPS lu On lu.LOOKUP_TYPE = 'EMP_CAT' And lu.LOOKUP_CODE = ph.EMPLOYMENT_CATEGORY
+;"""
+s_sql = s_sql.replace("%YEAR%", s_year)
+so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+so_curs.execute(s_sql)
+so_conn.commit()
+funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
 # Build the current element list *******************************************
 print("Build the current element list...")
