@@ -480,7 +480,6 @@ def payroll_lists(s_year: str = 'curr'):
     SECONDARY ASSIGNMENTS
     *************************************************************************"""
 
-    # Build previous secondary assignments *************************************
     if l_debug:
         print("Build previous secondary assignments...")
     sr_file = "X000aa_sec_assignment_" + s_year
