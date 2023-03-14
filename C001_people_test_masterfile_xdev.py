@@ -82,7 +82,7 @@ def people_test_masterfile_xdev():
     so_curs.execute("ATTACH DATABASE '" + so_path + "People.sqlite' AS 'PEOPLE'")
     funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
     so_curs.execute("ATTACH DATABASE 'W:/People_payroll/People_payroll.sqlite' AS 'PAYROLL'")
-    funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
+    funcfile.writelog("%t ATTACH DATABASE: PEOPLE_PAYROLL.SQLITE")
 
     """ ****************************************************************************
     TEMPORARY SCRIPT
@@ -96,6 +96,35 @@ def people_test_masterfile_xdev():
     if l_debug:
         print("BEGIN OF SCRIPT")
     funcfile.writelog("BEGIN OF SCRIPT")
+
+    # BUILD TABLE WITH PAYROLL FOREIGN PAYMENTS FOR THE PREVIOUS MONTH
+    print("Obtain master list of foreign employee payments...")
+    sr_file = "X003_foreign_payments"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    Select
+        pfp.EMPLOYEE_NUMBER,
+        Max(pfp.EFFECTIVE_DATE) As LAST_PAYMENT_DATE,
+        Count(pfp.RUN_RESULT_ID) As COUNT_PAYMENTS
+    From
+        PAYROLL.X000aa_payroll_history_%PERIOD% pfp
+    Where
+        pfp.ELEMENT_NAME Like 'NWU Foreign Payment%' And
+        pfp.EFFECTIVE_DATE Like '%PREVMONTH%%'
+    Group By
+        pfp.EMPLOYEE_NUMBER    
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    s_sql = s_sql.replace("%PREVMONTH%", funcdate.prev_monthend()[0:7])
+    if funcdate.prev_monthend()[0:4] == funcdate.prev_year:
+        s_sql = s_sql.replace("%PERIOD%", 'prev')
+    else:
+        s_sql = s_sql.replace("%PERIOD%", 'curr')
+    if l_debug:
+        print(s_sql)
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+    if l_debug:
+        so_conn.commit()
 
     """ ****************************************************************************
     END OF SCRIPT
