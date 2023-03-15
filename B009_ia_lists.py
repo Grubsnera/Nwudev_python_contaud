@@ -583,7 +583,7 @@ def ia_lists(s_period: str = "curr"):
         ia_finding_status fins On fins.ia_findstat_auto = find.ia_findstat_auto
     Where
         assc.Priority_word Like ('7%') And
-        fins.ia_findstat_name <> 'Request remediation'
+        fins.ia_findstat_name Not In ('Closed', 'Request remediation')
     Order By
         assc.Auditor,
         assc.Date_reported,
