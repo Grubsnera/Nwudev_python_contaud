@@ -68,7 +68,7 @@ def ia_lists(s_period: str = "curr"):
     # l_mail: bool = funcconf.l_mail_project
     # l_mail: bool = True
     l_mess: bool = funcconf.l_mess_project
-    # l_mess: bool = True
+    # l_mess: bool = False
     # l_record: bool = False
     # l_export: bool = False
     s_madelein: str = "11987774@nwu.ac.za"
@@ -641,7 +641,8 @@ def ia_lists(s_period: str = "curr"):
                 And reme.ia_findreme_mail_trigger > 0
     Where
         assc.Priority_word Like ('7%') And
-        fins.ia_findstat_name = 'Request remediation'
+        fins.ia_findstat_name = 'Request remediation' And
+        reme.ia_findreme_date_schedule < 1        
     Order By
         assc.Auditor,
         assc.Date_reported,
