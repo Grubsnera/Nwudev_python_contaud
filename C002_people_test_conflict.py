@@ -24,6 +24,7 @@ BUILD CONFLICT MASTER TABLES
 BUILD ANNUAL TABLES
 BUILD DASHBOARD TABLES
 BANK NUMBER MASTER FILES
+CHILD SUPPORT AND ADVANCES MASTER FILE
 TEST EMPLOYEE VENDOR SHARE BANK ACCOUNT (V1.1.2)
 TEST EMPLOYEE VENDOR SHARE EMAIL ADDRESS (V2.0.3)
 TEST EMPLOYEE NO DECLARATION (V2.0.5)
@@ -76,6 +77,8 @@ def people_test_conflict():
 
     # ATTACH DATA SOURCES
     so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
+    funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
+    so_curs.execute("ATTACH DATABASE 'W:/People_payroll/People_payroll.sqlite' AS 'PAYROLL'")
     funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
     so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs.sqlite' AS 'KFS'")
     funcfile.writelog("%t ATTACH DATABASE: KFS.SQLITE")
@@ -582,6 +585,75 @@ def people_test_conflict():
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
     """ ****************************************************************************
+    CHILD SUPPORT AND ADVANCES MASTER FILE
+    *****************************************************************************"""
+
+    # BUILD TABLE WITH CHILD SUPPORT AND ADVANCES FOR THE PREVIOUS MONTH
+    print("Obtain master list of child support payments...")
+
+    # TODO Delete after first run on 2023-03-23
+    sr_file = "X100_child_support"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+
+    sr_file = "X100_child_support_from_payroll"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        pfp.EMPLOYEE_NUMBER,
+        Max(pfp.EFFECTIVE_DATE) As LAST_PAYMENT_DATE,
+        Count(pfp.RUN_RESULT_ID) As COUNT_PAYMENTS
+    From
+        PAYROLL.X000aa_payroll_history_%PERIOD% pfp
+    Where
+        (pfp.ELEMENT_NAME Like 'NWU Child Maintenance%' And
+        pfp.EFFECTIVE_DATE Like '%PREVMONTH%%') Or
+        (pfp.ELEMENT_NAME Like 'NWU Advance%' And
+        pfp.EFFECTIVE_DATE Like '%PREVMONTH%%')
+    Group By
+        pfp.EMPLOYEE_NUMBER    
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = s_sql.replace("%PREVMONTH%", funcdate.prev_monthend()[0:7])
+    if funcdate.prev_monthend()[0:4] == funcdate.prev_year:
+        s_sql = s_sql.replace("%PERIOD%", 'prev')
+    else:
+        s_sql = s_sql.replace("%PERIOD%", 'curr')
+    if l_debug:
+        print(s_sql)
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    if l_debug:
+        so_conn.commit()
+
+    # IDENTIFY CHILD SUPPORT VENDORS
+    # Exclusions
+    # NW.3G00111.9641 = Child support
+    # NW.3G00111.7702 = Employee advance
+    s_exclude = """(
+    'NW.3G00111.9641',
+    'NW.3G00111.7702'
+    )"""
+    print("Identify child support vendors...")
+    sr_file = "X100_child_support_from_vendor"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        acc.VENDOR_ID,
+        acc.VENDOR_NAME,
+        Count(acc.EDOC) As COUNT_TRANSACT
+    From
+        KFSCURR.X001ad_Report_payments_accroute acc
+    Where
+        acc.ACC_COST_STRING In %EXCLUDE%
+    Group By
+        acc.VENDOR_ID
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = s_sql.replace("%EXCLUDE%", s_exclude)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    """ ****************************************************************************
     TEST EMPLOYEE VENDOR SHARE BANK ACCOUNT
     *****************************************************************************"""
     print("TEST EMPLOYEE VENDOR COMMON BANK")
@@ -1085,6 +1157,24 @@ def people_test_conflict():
 
     # SELECT TEST DATA
     print("Identify findings...")
+    sr_file: str = s_file_prefix + "af_" + s_file_name
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        VEND.*,
+        Cast(SUPP.COUNT_TRANSACT As Int) As CHILD_SUPPORT_TRAN
+    From
+        %FILEP%%FILEN% VEND Left Join
+        X100_child_support_from_vendor SUPP On SUPP.VENDOR_ID = VEND.VENDOR_ID
+    ;"""
+    s_sql = s_sql.replace("%FILEP%", s_file_prefix)
+    s_sql = s_sql.replace("%FILEN%", "ae_" + s_file_name)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # SELECT TEST DATA
+    print("Identify findings...")
     sr_file = s_file_prefix + "b_finding"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -1099,12 +1189,13 @@ def people_test_conflict():
     From
         %FILEP%%FILEN% FIND
     Where
-        FIND.VENDOR_CLASS Like('VENDOR%')        
+        FIND.VENDOR_CLASS Like('VENDOR%') And
+        FIND.CHILD_SUPPORT_TRAN Is null          
     Order by
         VENDOR_ID
     ;"""
     s_sql = s_sql.replace("%FILEP%", s_file_prefix)
-    s_sql = s_sql.replace("%FILEN%", "ae_" + s_file_name)
+    s_sql = s_sql.replace("%FILEN%", "af_" + s_file_name)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
