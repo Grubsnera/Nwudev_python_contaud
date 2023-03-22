@@ -69,6 +69,8 @@ funcfile.writelog("OPEN DATABASE: " + so_file)
 # ATTACH DATA SOURCES
 so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
 funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
+so_curs.execute("ATTACH DATABASE 'W:/People_payroll/People_payroll.sqlite' AS 'PAYROLL'")
+funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
 so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs.sqlite' AS 'KFS'")
 funcfile.writelog("%t ATTACH DATABASE: KFS.SQLITE")
 so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs_curr.sqlite' AS 'KFSCURR'")
