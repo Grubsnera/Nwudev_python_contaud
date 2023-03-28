@@ -7,6 +7,7 @@
 from datetime import date
 
 from _my_modules import funcfile
+from _my_modules import funcsms
 
 # LOGGING
 # s_path = "S:/LOGS/"
@@ -21,5 +22,8 @@ d0 = date(2020, 3, 27)
 d1 = date(2022, 4, 4)
 delta = d1 - d0
 print(delta. days)
-
 print()
+
+funcsms.send_telegram('Hi','administrator','Test',1111961873)
+
+
