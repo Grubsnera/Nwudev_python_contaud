@@ -591,10 +591,6 @@ def people_test_conflict():
     # BUILD TABLE WITH CHILD SUPPORT AND ADVANCES FOR THE PREVIOUS MONTH
     print("Obtain master list of child support payments...")
 
-    # TODO Delete after first run on 2023-03-23
-    sr_file = "X100_child_support"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-
     sr_file = "X100_child_support_from_payroll"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
