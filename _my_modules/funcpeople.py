@@ -199,6 +199,8 @@ def people_detail_list(
         cast(hrp.attribute3 as int) account_part,
         cast(pes.element_value As Real) pension_ratio,
         nrf.element_value nrf_rated,
+        --max(acc.personal_payment_method_id) As account_id,
+        acc.org_payment_method_name As account_pay_method,
         acc.acc_type account_type,
         acc.acc_branch account_branch,
         acc.acc_number account_number,
@@ -254,7 +256,7 @@ def people_detail_list(
         x000_long_service_date lsd on lsd.employee_number = papf.employee_number left join
         x000_pensionable_salary pes on pes.employee_number = papf.employee_number left join
         x000_pay_accounts acc on acc.assignment_id = paaf.assignment_id and
-            acc.org_payment_method_id = 61 and
+            acc.org_payment_method_id = 61 and        
             paaf.effective_end_date between acc.effective_start_date and acc.effective_end_date left join
         x000_address_sars sars on sars.person_id = papf.person_id and
             paaf.effective_end_date between sars.date_from and sars.date_to left join
