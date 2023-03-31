@@ -135,7 +135,9 @@ def people_detail_list(
         end as corr_language,
         upper(mar.meaning) marital_status,
         upper(dis.meaning) disabled,
+        papf.per_information9 is_foreign,        
         upper(nat.meaning) nationality,
+        upper(pan.meaning) nationality_passport,        
         papf.national_identifier national_identifier,
         upper(papf.per_information2) passport,
         upper(papf.per_information3) permit,
@@ -235,6 +237,7 @@ def people_detail_list(
         hr_lookups titl on titl.lookup_type = 'TITLE' and titl.lookup_code = papf.title left join
         hr_lookups sex on sex.lookup_type = 'SEX' and sex.lookup_code = papf.sex and sex.enabled_flag = 'Y' left join
         hr_lookups nat on nat.lookup_type = 'NATIONALITY' and nat.lookup_code = papf.nationality left join
+        hr_lookups pan on pan.lookup_type = 'NATIONALITY' and pan.lookup_code = papf.per_information10 left join        
         hr_lookups race on race.lookup_type = 'ZA_RACE' and race.lookup_code = papf.per_information4 and
          race.enabled_flag = 'Y' left join
         hr_lookups mar on mar.lookup_type = 'MAR_STATUS' and mar.lookup_code = papf.marital_status and
