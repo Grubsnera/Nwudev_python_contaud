@@ -27,6 +27,7 @@ def oracle_to_sqlite(s_table="000b_Table - temp.csv", s_tables="TEMP"):
 
     # DECLARE VARIABLES
 
+    # l_mess: bool = False
     l_mess: bool = funcconf.l_mess_project
     i_mess: int = 0
 
@@ -65,7 +66,7 @@ def oracle_to_sqlite(s_table="000b_Table - temp.csv", s_tables="TEMP"):
     funcfile.writelog("TABLESET: " + s_table.upper())
 
     # MESSAGE TO ADMIN
-    if funcconf.l_mess_project:
+    if l_mess:
         funcsms.send_telegram('', 'administrator', '<b>A001 ' + s_tables + ' Oracle import</b>')
 
     # DATABASE from text ***********************************************************
@@ -169,7 +170,7 @@ def oracle_to_sqlite(s_table="000b_Table - temp.csv", s_tables="TEMP"):
                     tb_sch = row[7]  # Table schedule
                     if l_mess and i_mess == 0:
                         i_mess += 1
-                        if funcconf.l_mess_project:
+                        if l_mess:
                             funcsms.send_telegram('', 'administrator', de_fil.lower())
                 else:
                     continue
