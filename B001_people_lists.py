@@ -56,13 +56,16 @@ def people_lists():
     *****************************************************************************"""
 
     # DECLARE VARIABLES
+    # l_mail: bool = False
+    # l_mail: bool = funcconf.l_mail_project
+    # l_mess: bool = False
+    l_mess: bool = funcconf.l_mess_project
     so_path = "W:/People/"  # Source database path
     so_file = "People.sqlite"  # Source database
     # sr_file: str = ""  # Current sqlite table
     re_path = "R:/People/"  # Results path
     l_debug: bool = False
     l_export: bool = True
-    l_mail: bool = True
 
     # SCRIPT LOG
     funcfile.writelog("Now")
@@ -73,7 +76,7 @@ def people_lists():
     print("-----------------")
 
     # MESSAGE
-    if funcconf.l_mess_project:
+    if l_mess:
         funcsms.send_telegram("", "administrator", "<b>B001 People master files</b>")
 
     """*****************************************************************************
@@ -1655,7 +1658,7 @@ def people_lists():
         sr_file = "X000_PEOPLE"
         sx_path = re_path + funcdate.cur_year() + "/"
         sx_file = "People_000_all_"
-        sx_file_dated = sx_file + funcdate.cur_year()
+        # sx_file_dated = sx_file + funcdate.cur_year()
         if l_debug:
             print("Export current people..." + sx_path + sx_file)
         # Read the header data
@@ -1668,7 +1671,7 @@ def people_lists():
         # funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file_dated)
 
     # MESSAGE TO ADMIN
-    if funcconf.l_mess_project:
+    if l_mess:
         # ACTIVE EMPLOYEES
         funcsms.send_telegram("", "administrator", "<b>" + str(i_count) + "</b> Active employees method 1")
 
@@ -1695,7 +1698,7 @@ def people_lists():
                                   "Y")
 
     # MESSAGE TO ADMIN
-    if funcconf.l_mess_project:
+    if l_mess:
         # ACTIVE EMPLOYEES
         funcsms.send_telegram("", "administrator", "<b>" + str(i_count) + "</b> Active employees method 2")
 
@@ -2199,4 +2202,4 @@ if __name__ == '__main__':
     try:
         people_lists()
     except Exception as e:
-        funcsys.ErrMessage(e, funcconf.l_mess_project, "B001_people_lists", "B001_people_lists")
+        funcsys.ErrMessage(e, False, "B001_people_lists", "B001_people_lists")
