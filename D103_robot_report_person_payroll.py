@@ -193,11 +193,12 @@ def robot_report_person_payroll(s_nwu: str = "", s_name: str = "", s_mail: str =
     sr_file = "X000aa_payroll_history_report"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
-        ph.RUN_RESULT_ID,
+        ph.EMPLOYEE_NUMBER,
         ph.CLASSIFICATION_NAME,
         ph.ELEMENT_NAME,
         ph.REPORTING_NAME As PAYROLL_NAME,
         ph.EFFECTIVE_DATE,
+        ph.RESULT_VALUE As PAYROLL_VALUE,
         lo.DESCRIPTION As CAMPUS,
         og.DIVISION,
         og.FACULTY,
@@ -213,10 +214,9 @@ def robot_report_person_payroll(s_nwu: str = "", s_name: str = "", s_mail: str =
             Then ph.EMPLOYEE_CATEGORY
             Else po.ACAD_SUPP
         End As EMPLOYEE_CATEGORY,
+        ph.RUN_RESULT_ID,
         ph.ASSIGNMENT_ID,
-        ph.PERSON_ID,
-        ph.EMPLOYEE_NUMBER,
-        ph.RESULT_VALUE As PAYROLL_VALUE
+        ph.PERSON_ID
     From
         PAYROLL_HISTORY_REPORT ph Left Join
         PEOPLE.HR_LOCATIONS_ALL lo On lo.LOCATION_ID = ph.LOCATION_ID Left Join
