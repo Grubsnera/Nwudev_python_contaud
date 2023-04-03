@@ -39,6 +39,7 @@ def get_field_value(o_cursor, s_table='', s_field='', s_where=''):
     # SET PREVIOUS FINDINGS
     if l_debug:
         print("Field value lookup...")
+
     s_sql = """
         Select
             t.%FIELD%
@@ -50,10 +51,15 @@ def get_field_value(o_cursor, s_table='', s_field='', s_where=''):
     s_sql = s_sql.replace("%TABLE%", s_table)
     s_sql = s_sql.replace("%FIELD%", s_field)
     s_sql = s_sql.replace("%WHERE%", s_where)
+
     if l_debug:
         print(s_sql)
+
     t_return = o_cursor.execute(s_sql).fetchone()
-    print(t_return)
+
+    if l_debug:
+        print(t_return)
+
     if t_return is not None:
         s_return = str(t_return[0])
     else:
@@ -126,7 +132,12 @@ def file_delete(s_path: str = "", s_file: str = ""):
 
     import os
 
+    # DECLARE VARIABLES
+    l_debug: bool = False
     l_return: bool = False
+
+    if l_debug:
+        print('File to delete: ' + s_path + s_file)
 
     if os.path.exists(s_path + s_file):
         os.remove(s_path + s_file)
