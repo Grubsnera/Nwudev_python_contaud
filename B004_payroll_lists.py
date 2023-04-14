@@ -57,6 +57,33 @@ def payroll_lists(s_year: str = 'curr'):
         so_curs = so_conn.cursor()
     funcfile.writelog("OPEN DATABASE: " + so_file)
 
+    """"
+    # Create the connection
+    so_conn = sqlite3.connect(so_path+so_file)
+    
+    # Create the cursor
+    so_curs = con.cursor()
+    
+    # Provide the username and password
+    username = input('Username: ')
+    password = input('Password: ')
+    
+    # Execute the SQL query
+    cursor.execute("SELECT username, password FROM users WHERE username=? AND password=?", (username, password))
+    
+    # Fetch the result
+    result = cursor.fetchone()
+    
+    if result is None:
+        print('Invalid username or password!')
+    else:
+        print('Login successful!')
+    
+    # Close the connection
+    con.close()    
+    """
+
+
     # Attach data sources
     so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
     funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
