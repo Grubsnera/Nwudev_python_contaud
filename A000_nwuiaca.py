@@ -25,7 +25,7 @@ from _my_modules import funcsms
 from _my_modules import funcsys
 
 # SET TO TRUE FOR ACTIVE NWU USE OR COMMENT OUT
-funcconf.l_tel_use_nwu = True
+# funcconf.l_tel_use_nwu = True
 s_path: str = "S:/Logs/"
 
 """
@@ -99,6 +99,7 @@ def main():
     dp.add_handler(CommandHandler("hi", funcbott.hi))
     dp.add_handler(CommandHandler("helping", funcbott.helping))
     dp.add_handler(CommandHandler("report", funcbott.report, pass_args=True))
+    dp.add_handler(CommandHandler("ai", funcbott.ai, pass_args=True))
     dp.add_handler(CommandHandler("run", funcbott.run, pass_args=True))
     dp.add_handler(CommandHandler("set", funcbott.set_schedule, pass_args=True))
     dp.add_handler(CommandHandler("switch", funcbott.switch, pass_args=True))
