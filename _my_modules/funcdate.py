@@ -1,7 +1,13 @@
-""" FUNCDATE.PY ****************************************************************
-Functions to return all kinds of date functions
-Copyright (c) AB Janse v Rensburg 20 Feb 2018
 """
+Functions to return all kinds of dates
+Created on: 20 Feb 2018
+Author: Albert v Rensburg (NWU:21162395)
+"""
+
+# Import the system objects
+import datetime
+from datetime import timedelta
+import calendar
 
 """ Notes **********************************************************************
 01. All these functions result in STRING returns.
@@ -32,29 +38,34 @@ today_file		Todays date in YYYYMMDD format for filing ex 20180220
 today_filemonth		Todays date in YYYYMM for filing without "-" ex 201801
 """
 
-#Import the system objects
-import datetime
-from datetime import timedelta
-import calendar
 
-#Function This day in DD format ex 01
+# Function This day in DD format ex 01
 def cur_day():
-    return str(datetime.date.today().strftime("%d")) #Current day
+    """Return today's day in DD format. Example 01"""
+    return str(datetime.date.today().strftime("%d"))  # Current day
 
-#Function This day in D format ex 1
+
+# Function This day in D format ex 1
 def cur_daystrip():
+    """Return today's day in D stripped format. Example 1"""
     return str(datetime.date.today().strftime("%e")).strip() #Current day
 
-#Function This month in MM format ex 01
+
+# Function This month in MM format ex 01
 def cur_month():
-    return str(datetime.date.today().strftime("%m")) #Current month
-	
-#Function This month begin date in YYYY-MM-DD format ex 2018-01-01
+    """Return today's month in MM format. Example 01"""
+    return str(datetime.date.today().strftime("%m"))  # Current month
+
+
+# Function This month begin date in YYYY-MM-DD format ex 2018-01-01
 def cur_monthbegin():
-    return cur_year() + "-" + cur_month() + "-" + "01" #Current month begin 
-	
-#Function This month end date in YYYY-MM-DD format ex 2018-01-31
+    """Return the first day of the current month in YYYY-MM-DD format. Example 2023-04-01"""
+    return cur_year() + "-" + cur_month() + "-" + "01"  # Current month begin
+
+
+# Function This month end date in YYYY-MM-DD format ex 2018-01-31
 def cur_monthend():
+    """Return the last day of the current month in YYYY-MM-DD format. Example 2023-04-30"""
     s_retu = cur_year() + "-" + cur_month() + "-"
     if cur_month() in "01z03z05z07z08z10z12":
         s_retu += "31"
@@ -65,9 +76,10 @@ def cur_monthend():
             s_retu += "29"
         else:
             s_retu += "28"
-    return s_retu #Current month end
+    return s_retu  # Current month end
 
-#Function This month end date in YYYYMMDD format ex 20180131
+
+# Function This month end date in YYYYMMDD format ex 20180131
 def cur_monthendfile():
     if cur_month() in "01z03z05z07z08z10z12":
         s_retu = "31"
@@ -86,8 +98,8 @@ def cur_monthendnext(i_days=7):
     """
     Function to return month end date. Return next month if i_days (default=7) before current month end.
     December will return next year January month end date.
-    :param i_days: Number of days before month end
-    :return: Month end date in YYYY-MM-DD format
+    @param i_days: Number of days before month end
+    @return: Month end date in YYYY-MM-DD format
     """
 
     # SET VARIABLES
@@ -235,18 +247,29 @@ def next_year():
     s_retu = "" + str(int(cur_year())+1)
     return s_retu #Next year
 
-#Function next year begin date YYYY-MM-DD format
+
+# Function next year begin date YYYY-MM-DD format
 def next_yearbegin():
-    return next_year() + "-01-01" #Previous year begin
-	
-#Function Todays date in YYYY-MM-DD format ex 2018-01-01
+    """
+    Return the first date of next year in YYYY-MM-DD format.
+    :returns: First date of next year in YYYY-MM-DD format.
+    """
+    return next_year() + "-01-01"  # Previous year begin
+
+
+# Function Today's date in YYYY-MM-DD format example 2018-01-01
 def today():
-    s_retu = datetime.date.today().strftime("%Y") #Current year
-    s_retu += "-" + datetime.date.today().strftime("%m") #Current month
-    s_retu += "-" + datetime.date.today().strftime("%d") #Current day
-    return s_retu
-	
-#Function to return today weekday name as in Mon, Tue
+    """
+    Return today's date in YYYY-MM-DD format.
+    :returns: Today's date in YYYY-MM-DD format
+    """
+    s_return = datetime.date.today().strftime("%Y")  # Current year
+    s_return += "-" + datetime.date.today().strftime("%m")  # Current month
+    s_return += "-" + datetime.date.today().strftime("%d")  # Current day
+    return s_return
+
+
+# Function to return today weekday name as in Mon, Tue
 def today_dayname():
     return datetime.date.today().strftime("%a") #Abbreviated weekday	
 
