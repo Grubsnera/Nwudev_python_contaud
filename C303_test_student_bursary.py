@@ -24,11 +24,13 @@ ENVIRONMENT
 OPEN THE DATABASES
 TEMPORARY AREA
 BEGIN OF SCRIPT
-IMPORT BURSARY MASTER LIST
-OBTAIN STUDENTS
-BUILD STUDENT RELATIONSHIPS
-OBTAIN STUDENT TRANSACTIONS
-OBTAIN STAFF DISCOUNT STUDENTS
+IMPORT BURSARY MASTER LIST "X000_Bursary_master"
+OBTAIN STUDENTS "X000_Student"
+BUILD STUDENT RELATIONSHIPS "X000_Student_relationship"
+OBTAIN STUDENT TRANSACTIONS "X000_Transaction"
+OBTAIN STAFF DISCOUNT STUDENTS "X000_Transaction_staffdisc_student"
+BUILD BURSARY VALUE PER STUDENT, BURSARY AND QUALIFICATION TYPE "X001_Bursary_value_student"
+BURSARY SUMMARY PER STUDENT "X001_Bursary_summary_student"
 END OF SCRIPT
 """
 
@@ -84,11 +86,11 @@ def student_bursary(s_period: str = "curr"):
     if l_debug:
         print("OPEN THE DATABASES")
 
-    # OPEN SQLITE SOURCE table
-    if l_debug:
-        print("Open sqlite database...")
-    with sqlite3.connect(so_path + so_file) as so_conn:
-        so_curs = so_conn.cursor()
+    # OPEN THE SQLITE DATABASE
+    # Create the connection
+    so_conn = sqlite3.connect(so_path + so_file)
+    # Create the cursor
+    so_curs = so_conn.cursor()
     funcfile.writelog("OPEN DATABASE: " + so_file)
 
     # ATTACH VSS DATABASE
@@ -374,6 +376,7 @@ def student_bursary(s_period: str = "curr"):
     s_sql = "CREATE TABLE " + sr_file + " AS" + """
     Select
         tran.STUDENT As student,
+        stud.CAMPUS as campus,
         Total(Distinct tran.AMOUNT) As total_burs,
         Total(Distinct loan.AMOUNT) As total_loan,
         Total(Distinct exte.AMOUNT) As total_external,
