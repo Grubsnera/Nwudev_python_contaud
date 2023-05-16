@@ -178,12 +178,13 @@ def student_fee(s_period="curr"):
     s_desc: str = ""
 
     # SCRIPT LOG FILE
+    if l_debug:
+        print("---------------------")
+        print("C302_TEST_STUDENT_FEE")
+        print("---------------------")
     funcfile.writelog("Now")
     funcfile.writelog("SCRIPT: C302_TEST_STUDENT_FEE")
     funcfile.writelog("-----------------------------")
-    print("---------------------")
-    print("C302_TEST_STUDENT_FEE")
-    print("---------------------")
 
     # MESSAGE
     if l_mess:
@@ -192,17 +193,20 @@ def student_fee(s_period="curr"):
     """*****************************************************************************
     OPEN THE DATABASES
     *****************************************************************************"""
-    print("OPEN THE DATABASES")
+    if l_debug:
+        print("OPEN THE DATABASES")
     funcfile.writelog("OPEN THE DATABASES")
 
     # OPEN SQLITE SOURCE table
-    print("Open sqlite database...")
+    if l_debug:
+        print("Open sqlite database...")
     with sqlite3.connect(so_path + so_file) as so_conn:
         so_curs = so_conn.cursor()
     funcfile.writelog("OPEN DATABASE: " + so_file)
 
     # ATTACH VSS DATABASE
-    print("Attach vss database...")
+    if l_debug:
+        print("Attach vss database...")
     so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss.sqlite' AS 'VSS'")
     funcfile.writelog("%t ATTACH DATABASE: Vss.sqlite")
     so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss_curr.sqlite' AS 'VSSCURR'")
@@ -215,24 +219,28 @@ def student_fee(s_period="curr"):
     """ ****************************************************************************
     TEMPORARY AREA
     *****************************************************************************"""
-    print("TEMPORARY AREA")
+    if l_debug:
+        print("TEMPORARY AREA")
     funcfile.writelog("TEMPORARY AREA")
 
     """ ****************************************************************************
     BEGIN OF SCRIPT
     *****************************************************************************"""
-    print("BEGIN OF SCRIPT")
+    if l_debug:
+        print("BEGIN OF SCRIPT")
     funcfile.writelog("BEGIN OF SCRIPT")
 
     """ ****************************************************************************
     OBTAIN STUDENTS
     *****************************************************************************"""
-    print("OBTAIN STUDENTS")
+    if l_debug:
+        print("OBTAIN STUDENTS")
     funcfile.writelog("OBTAIN STUDENTS")
 
     # OBTAIN THE LIST STUDENTS
     # EXCLUDE SHORT COURSE STUDENTS
-    print("Obtain the registered students...")
+    if l_debug:
+        print("Obtain the registered students...")
     sr_file = "X000_Student"
     s_sql = "CREATE TABLE " + sr_file + " AS" + """
     SELECT
@@ -262,11 +270,13 @@ def student_fee(s_period="curr"):
     """ ****************************************************************************
     OBTAIN STUDENT TRANSACTIONS
     *****************************************************************************"""
-    print("OBTAIN STUDENT TRANSACTIONS")
+    if l_debug:
+        print("OBTAIN STUDENT TRANSACTIONS")
     funcfile.writelog("OBTAIN STUDENT TRANSACTIONS")
 
     # OBTAIN STUDENT ACCOUNT TRANSACTIONS
-    print("Import student transactions...")
+    if l_debug:
+        print("Import student transactions...")
     sr_file = "X000_Transaction"
     s_sql = "CREATE TABLE " + sr_file + " AS" + """
     Select
@@ -371,14 +381,16 @@ def student_fee(s_period="curr"):
     """*****************************************************************************
     REGISTRATION FEE MASTER
     *****************************************************************************"""
-    print("REGISTRATION FEE MASTER")
+    if l_debug:
+        print("REGISTRATION FEE MASTER")
     funcfile.writelog("REGISTRATION FEE MASTER")
 
     # DECLARE LOCAL VARIABLES
     l_reg: bool = False
 
     # CALCULATE THE REGISTRATION FEES LEVIED PER STUDENT
-    print("Calculate the registration fee transactions...")
+    if l_debug:
+        print("Calculate the registration fee transactions...")
     sr_file = "X010_Trans_feereg"
     s_sql = "Create table " + sr_file + " AS" + """
     Select
@@ -405,14 +417,16 @@ def student_fee(s_period="curr"):
     # CALCULATE THE REGISTRATION FEE MODE
     i_calc = funcstat.stat_mode(so_curs, "X010_Trans_feereg", "FEE_REG")
     funcfile.writelog("%t STATISTIC MODE: Registration fee R" + str(i_calc))
-    print("Registration fee: R" + str(i_calc))
+    if l_debug:
+        print("Registration fee: R" + str(i_calc))
     if i_calc == f_reg_fee:
         l_reg = True
 
     # ADD REGISTRATION LEVIED FEES TO THE STUDENTS LIST
     # EXCLUDE ALL NON MAIN QUALIFICATION QUALIFICATIONS
     # EXCLUDE EMP 10000445 (Mari Prinsloo) as User
-    print("Join students and registration fees...")
+    if l_debug:
+        print("Join students and registration fees...")
     sr_file = "X010_Student_feereg"
     s_sql = "CREATE TABLE " + sr_file + " AS" + """
     Select
@@ -494,11 +508,13 @@ def student_fee(s_period="curr"):
     """*****************************************************************************
     REGISTRATION FEE REPORTS
     *****************************************************************************"""
-    print("REGISTRATION FEE REPORTS")
+    if l_debug:
+        print("REGISTRATION FEE REPORTS")
     funcfile.writelog("REGISTRATION FEE REPORTS")
 
     # ADD REGISTRATION LEVIED FEES TO THE STUDENTS LIST
-    print("Report presentation category...")
+    if l_debug:
+        print("Report presentation category...")
     sr_file = "X010_Report_feereg_present"
     s_sql = "CREATE TABLE " + sr_file + " AS" + """
     Select
@@ -520,7 +536,8 @@ def student_fee(s_period="curr"):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # ADD REGISTRATION LEVIED FEES TO THE STUDENTS LIST
-    print("Report enrolment category...")
+    if l_debug:
+        print("Report enrolment category...")
     sr_file = "X010_Report_feereg_enrol"
     s_sql = "CREATE TABLE " + sr_file + " AS" + """
     Select
@@ -546,7 +563,8 @@ def student_fee(s_period="curr"):
     """*****************************************************************************
     TEST REGISTRATION FEE CONTACT NULL
     *****************************************************************************"""
-    print("REGISTRATION FEE CONTACT NULL")
+    if l_debug:
+        print("REGISTRATION FEE CONTACT NULL")
     funcfile.writelog("REGISTRATION FEE CONTACT NULL")
 
     # EXCLUSIONS
@@ -559,7 +577,8 @@ def student_fee(s_period="curr"):
 
     # IDENTIFY REGISTRATION FEES CONTACT NOT LEVIED
     # EXCLUDE DISTANCE STUDENTS
-    print("Identify null registration fees...")
+    if l_debug:
+        print("Identify null registration fees...")
     sr_file = "X010aa_Regfee_null"
     s_sql = "CREATE TABLE " + sr_file + " AS" + """
     Select
@@ -580,7 +599,8 @@ def student_fee(s_period="curr"):
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-        print("Export findings...")
+        if l_debug:
+            print("Export findings...")
         sx_path = re_path + "/"
         sx_file = "Student_fee_test_010aa_reg_fee_contact_null_"
         sx_file_dated = sx_file + funcdate.today_file()
@@ -591,7 +611,8 @@ def student_fee(s_period="curr"):
 
     # IDENTIFY FINDINGS
     # EXCLUDE CONDITIONAL REGISTRATIONS
-    print("Identify findings...")
+    if l_debug:
+        print("Identify findings...")
     sr_file = "X010ab_findings"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
@@ -610,7 +631,8 @@ def student_fee(s_period="curr"):
 
     # COUNT THE NUMBER OF FINDINGS
     i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
-    print("*** Found " + str(i_finding_before) + " exceptions ***")
+    if l_debug:
+        print("*** Found " + str(i_finding_before) + " exceptions ***")
     funcfile.writelog("%t FINDING: " + str(i_finding_before) + " REGISTRATION FEE NULL finding(s)")
 
     # GET PREVIOUS FINDINGS
@@ -627,7 +649,8 @@ def student_fee(s_period="curr"):
     sr_file = "X010ad_add_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if l_reg and i_finding_before > 0:
-        print("Join previously reported to current findings...")
+        if l_debug:
+            print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         Select
             FIND.*,
@@ -677,7 +700,8 @@ def student_fee(s_period="curr"):
         # Export findings to previous reported file
         i_finding_after = funcsys.tablerowcount(so_curs, sr_file)
         if i_finding_after > 0:
-            print("*** " + str(i_finding_after) + " Finding(s) to report ***")
+            if l_debug:
+                print("*** " + str(i_finding_after) + " Finding(s) to report ***")
             sx_path = ed_path
             sx_file = "302_reported"
             # Read the header data
@@ -691,7 +715,8 @@ def student_fee(s_period="curr"):
                 funcsms.send_telegram('', 'administrator',
                                       '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
-            print("*** No new findings to report ***")
+            if l_debug:
+                print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
 
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
@@ -708,7 +733,8 @@ def student_fee(s_period="curr"):
     sr_file = "X010ah_detail"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if l_reg and i_finding_before > 0 and i_finding_after > 0:
-        print("Add contact details to findings...")
+        if l_debug:
+            print("Add contact details to findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             PREV.ORG,
@@ -786,7 +812,8 @@ def student_fee(s_period="curr"):
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
     sr_file = "X010ax_Regfee_null"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    print("Build the final report")
+    if l_debug:
+        print("Build the final report")
     if l_reg and i_finding_before > 0 and i_finding_after > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
@@ -829,7 +856,8 @@ def student_fee(s_period="curr"):
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-            print("Export findings...")
+            if l_debug:
+                print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Student_fee_test_010ex_reg_fee_contact_null_"
             sx_file_dated = sx_file + funcdate.today_file()
@@ -849,7 +877,8 @@ def student_fee(s_period="curr"):
     """*****************************************************************************
     TEST REGISTRATION FEE CONTACT NEGATIVE
     *****************************************************************************"""
-    print("REGISTRATION FEE CONTACT NEGATIVE")
+    if l_debug:
+        print("REGISTRATION FEE CONTACT NEGATIVE")
     funcfile.writelog("REGISTRATION FEE CONTACT NEGATIVE")
 
     # DECLARE VARIABLES
@@ -857,7 +886,8 @@ def student_fee(s_period="curr"):
     s_desc = "Registration fee is a credit or negative amount"
 
     # IDENTIFY REGISTRATION FEES CONTACT NEGATIVES
-    print("Identify negative registration fees...")
+    if l_debug:
+        print("Identify negative registration fees...")
     sr_file = "X010ba_Regfee_negative"
     s_sql = "CREATE TABLE " + sr_file + " AS" + """
     Select
@@ -878,7 +908,8 @@ def student_fee(s_period="curr"):
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-        print("Export findings...")
+        if l_debug:
+            print("Export findings...")
         sx_path = re_path + "/"
         sx_file = "Student_fee_test_010ba_reg_fee_contact_negative_"
         sx_file_dated = sx_file + funcdate.today_file()
@@ -888,7 +919,8 @@ def student_fee(s_period="curr"):
         funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
 
     # IDENTIFY FINDINGS
-    print("Identify findings...")
+    if l_debug:
+        print("Identify findings...")
     sr_file = "X010bb_findings"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
@@ -907,14 +939,16 @@ def student_fee(s_period="curr"):
 
     # COUNT THE NUMBER OF FINDINGS
     i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
-    print("*** Found " + str(i_finding_before) + " exceptions ***")
+    if l_debug:
+        print("*** Found " + str(i_finding_before) + " exceptions ***")
     funcfile.writelog("%t FINDING: " + str(i_finding_before) + " REGISTRATION FEE NEGATIVE finding(s)")
 
     # GET PREVIOUS FINDINGS
     sr_file = "X010bc_get_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if l_reg and i_finding_before > 0:
-        print("Import previously reported findings...")
+        if l_debug:
+            print("Import previously reported findings...")
         so_curs.execute(
             "CREATE TABLE " + sr_file + """
             (PROCESS TEXT,
@@ -951,7 +985,8 @@ def student_fee(s_period="curr"):
     sr_file = "X010bc_set_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if l_reg and i_finding_before > 0:
-        print("Obtain the latest previous finding...")
+        if l_debug:
+            print("Obtain the latest previous finding...")
         s_sql = "Create Table " + sr_file + " As" + """
         Select
             GET.PROCESS,
@@ -978,7 +1013,8 @@ def student_fee(s_period="curr"):
     sr_file = "X010bd_add_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if l_reg and i_finding_before > 0:
-        print("Join previously reported to current findings...")
+        if l_debug:
+            print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         Select
             FIND.*,
@@ -1029,7 +1065,8 @@ def student_fee(s_period="curr"):
         # Export findings to previous reported file
         i_finding_after = funcsys.tablerowcount(so_curs, sr_file)
         if i_finding_after > 0:
-            print("*** " + str(i_finding_after) + " Finding(s) to report ***")
+            if l_debug:
+                print("*** " + str(i_finding_after) + " Finding(s) to report ***")
             sx_path = ed_path
             sx_file = "302_reported"
             # Read the header data
@@ -1043,7 +1080,8 @@ def student_fee(s_period="curr"):
                 funcsms.send_telegram('', 'administrator',
                                       '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
-            print("*** No new findings to report ***")
+            if l_debug:
+                print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
 
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
@@ -1051,7 +1089,8 @@ def student_fee(s_period="curr"):
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if l_reg and i_finding_before > 0:
         if i_finding_after > 0:
-            print("Import reporting officers for mail purposes...")
+            if l_debug:
+                print("Import reporting officers for mail purposes...")
             s_sql = "CREATE TABLE " + sr_file + " AS " + """
             Select
                 OFFICER.LOOKUP,
@@ -1074,7 +1113,8 @@ def student_fee(s_period="curr"):
     sr_file = "X010bg_supervisor"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if l_reg and i_finding_before > 0 and i_finding_after > 0:
-        print("Import reporting supervisors for mail purposes...")
+        if l_debug:
+            print("Import reporting supervisors for mail purposes...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             SUPERVISOR.LOOKUP,
@@ -1097,7 +1137,8 @@ def student_fee(s_period="curr"):
     sr_file = "X010bh_detail"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if l_reg and i_finding_before > 0 and i_finding_after > 0:
-        print("Add contact details to findings...")
+        if l_debug:
+            print("Add contact details to findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             PREV.ORG,
@@ -1174,7 +1215,8 @@ def student_fee(s_period="curr"):
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
     sr_file = "X010bx_Regfee_negative"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    print("Build the final report")
+    if l_debug:
+        print("Build the final report")
     if l_reg and i_finding_before > 0 and i_finding_after > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
@@ -1217,7 +1259,8 @@ def student_fee(s_period="curr"):
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-            print("Export findings...")
+            if l_debug:
+                print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Student_fee_test_010ex_reg_fee_contact_negative_"
             sx_file_dated = sx_file + funcdate.today_file()
@@ -1237,7 +1280,8 @@ def student_fee(s_period="curr"):
     """*****************************************************************************
     TEST REGISTRATION FEE CONTACT ZERO
     *****************************************************************************"""
-    print("REGISTRATION FEE CONTACT ZERO")
+    if l_debug:
+        print("REGISTRATION FEE CONTACT ZERO")
     funcfile.writelog("REGISTRATION FEE CONTACT ZERO")
 
     # FILES NEEDED
@@ -1253,7 +1297,8 @@ def student_fee(s_period="curr"):
     s_desc = "Registration fee transactions has no value"
 
     # OBTAIN TEST DATA
-    print("Obtain test data...")
+    if l_debug:
+        print("Obtain test data...")
     sr_file: str = s_fprefix + "a_" + s_fname
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -1274,7 +1319,8 @@ def student_fee(s_period="curr"):
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-        print("Export findings...")
+        if l_debug:
+            print("Export findings...")
         sx_path = re_path + "/"
         sx_file = "Student_fee_test_" + s_fprefix + "_" + s_finding + "_studentlist_"
         sx_file_dated = sx_file + funcdate.today_file()
@@ -1284,7 +1330,8 @@ def student_fee(s_period="curr"):
         funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
 
     # SELECT TEST DATA
-    print("Identify findings...")
+    if l_debug:
+        print("Identify findings...")
     sr_file = s_fprefix + "b_finding"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -1308,7 +1355,8 @@ def student_fee(s_period="curr"):
 
     # COUNT THE NUMBER OF FINDINGS
     i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
-    print("*** Found " + str(i_finding_before) + " exceptions ***")
+    if l_debug:
+        print("*** Found " + str(i_finding_before) + " exceptions ***")
     funcfile.writelog("%t FINDING: " + str(i_finding_before) + " " + s_finding + " finding(s)")
 
     # GET PREVIOUS FINDINGS
@@ -1325,7 +1373,8 @@ def student_fee(s_period="curr"):
     sr_file = s_fprefix + "d_addprev"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
-        print("Join previously reported to current findings...")
+        if l_debug:
+            print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         Select
             FIND.*,
@@ -1377,7 +1426,8 @@ def student_fee(s_period="curr"):
         # Export findings to previous reported file
         i_finding_after = funcsys.tablerowcount(so_curs, sr_file)
         if i_finding_after > 0:
-            print("*** " + str(i_finding_after) + " Finding(s) to report ***")
+            if l_debug:
+                print("*** " + str(i_finding_after) + " Finding(s) to report ***")
             sx_path = ed_path
             sx_file = s_xfile[:-4]
             # Read the header data
@@ -1393,7 +1443,8 @@ def student_fee(s_period="curr"):
                                       '<b>' + str(i_finding_before) + '/' +
                                       str(i_finding_after) + '</b> ' + s_desc)
         else:
-            print("*** No new findings to report ***")
+            if l_debug:
+                print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
 
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
@@ -1410,7 +1461,8 @@ def student_fee(s_period="curr"):
     sr_file = s_fprefix + "h_detail"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0 and i_finding_after > 0:
-        print("Add contact details to findings...")
+        if l_debug:
+            print("Add contact details to findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             PREV.ORG,
@@ -1490,7 +1542,8 @@ def student_fee(s_period="curr"):
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
     sr_file = s_fprefix + "x_" + s_fname
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    print("Build the final report")
+    if l_debug:
+        print("Build the final report")
     if i_finding_before > 0 and i_finding_after > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
@@ -1530,7 +1583,8 @@ def student_fee(s_period="curr"):
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-            print("Export findings...")
+            if l_debug:
+                print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Registration_test_" + s_fprefix + "_" + s_finding.lower() + "_"
             sx_file_dated = sx_file + funcdate.today_file()
@@ -1550,7 +1604,8 @@ def student_fee(s_period="curr"):
     """*****************************************************************************
     TEST REGISTRATION FEE CONTACT ABNORMAL
     *****************************************************************************"""
-    print("TEST REGISTRATION FEE CONTACT ABNORMAL")
+    if l_debug:
+        print("TEST REGISTRATION FEE CONTACT ABNORMAL")
     funcfile.writelog("TEST REGISTRATION FEE CONTACT ABNORMAL")
 
     # DECLARE VARIABLES
@@ -1558,7 +1613,8 @@ def student_fee(s_period="curr"):
     s_desc = "Registration fee abnormal"
 
     # IDENTIFY REGISTRATION FEE AMOUNTS NOT MODE
-    print("Identify abnormal registration fees...")
+    if l_debug:
+        print("Identify abnormal registration fees...")
     sr_file = "X010ea_Regfee_abnormal"
     s_sql = "CREATE TABLE " + sr_file + " AS" + """
     Select
@@ -1574,7 +1630,8 @@ def student_fee(s_period="curr"):
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-        print("Export findings...")
+        if l_debug:
+            print("Export findings...")
         sx_path = re_path + "/"
         sx_file = "Student_fee_test_010ea_reg_fee_contact_abnormal_"
         sx_file_dated = sx_file + funcdate.today_file()
@@ -1584,7 +1641,8 @@ def student_fee(s_period="curr"):
         funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
 
     # IDENTIFY FINDINGS
-    print("Identify findings...")
+    if l_debug:
+        print("Identify findings...")
     sr_file = "X010eb_findings"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
@@ -1603,14 +1661,16 @@ def student_fee(s_period="curr"):
 
     # COUNT THE NUMBER OF FINDINGS
     i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
-    print("*** Found " + str(i_finding_before) + " exceptions ***")
+    if l_debug:
+        print("*** Found " + str(i_finding_before) + " exceptions ***")
     funcfile.writelog("%t FINDING: " + str(i_finding_before) + " REGISTRATION FEE ABNORMAL finding(s)")
 
     # GET PREVIOUS FINDINGS
     sr_file = "X010ec_get_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if l_reg and i_finding_before > 0:
-        print("Import previously reported findings...")
+        if l_debug:
+            print("Import previously reported findings...")
         so_curs.execute(
             "CREATE TABLE " + sr_file + """
             (PROCESS TEXT,
@@ -1647,7 +1707,8 @@ def student_fee(s_period="curr"):
     sr_file = "X010ec_set_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if l_reg and i_finding_before > 0:
-        print("Obtain the latest previous finding...")
+        if l_debug:
+            print("Obtain the latest previous finding...")
         s_sql = "Create Table " + sr_file + " As" + """
         Select
             GET.PROCESS,
@@ -1674,7 +1735,8 @@ def student_fee(s_period="curr"):
     sr_file = "X010ed_add_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if l_reg and i_finding_before > 0:
-        print("Join previously reported to current findings...")
+        if l_debug:
+            print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         Select
             FIND.*,
@@ -1725,7 +1787,8 @@ def student_fee(s_period="curr"):
         # Export findings to previous reported file
         i_finding_after = funcsys.tablerowcount(so_curs, sr_file)
         if i_finding_after > 0:
-            print("*** " + str(i_finding_after) + " Finding(s) to report ***")
+            if l_debug:
+                print("*** " + str(i_finding_after) + " Finding(s) to report ***")
             sx_path = ed_path
             sx_file = "302_reported"
             # Read the header data
@@ -1739,7 +1802,8 @@ def student_fee(s_period="curr"):
                 funcsms.send_telegram('', 'administrator',
                                       '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
-            print("*** No new findings to report ***")
+            if l_debug:
+                print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
 
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
@@ -1747,7 +1811,8 @@ def student_fee(s_period="curr"):
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if l_reg and i_finding_before > 0:
         if i_finding_after > 0:
-            print("Import reporting officers for mail purposes...")
+            if l_debug:
+                print("Import reporting officers for mail purposes...")
             s_sql = "CREATE TABLE " + sr_file + " AS " + """
             Select
                 OFFICER.LOOKUP,
@@ -1770,7 +1835,8 @@ def student_fee(s_period="curr"):
     sr_file = "X010eg_supervisor"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if l_reg and i_finding_before > 0 and i_finding_after > 0:
-        print("Import reporting supervisors for mail purposes...")
+        if l_debug:
+            print("Import reporting supervisors for mail purposes...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             SUPERVISOR.LOOKUP,
@@ -1793,7 +1859,8 @@ def student_fee(s_period="curr"):
     sr_file = "X010eh_detail"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if l_reg and i_finding_before > 0 and i_finding_after > 0:
-        print("Add contact details to findings...")
+        if l_debug:
+            print("Add contact details to findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             PREV.ORG,
@@ -1870,7 +1937,8 @@ def student_fee(s_period="curr"):
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
     sr_file = "X010ex_Regfee_abnormal"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    print("Build the final report")
+    if l_debug:
+        print("Build the final report")
     if l_reg and i_finding_before > 0 and i_finding_after > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
@@ -1913,7 +1981,8 @@ def student_fee(s_period="curr"):
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-            print("Export findings...")
+            if l_debug:
+                print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Student_fee_test_010ex_reg_fee_contact_abnormal_"
             sx_file_dated = sx_file + funcdate.today_file()
@@ -1933,13 +2002,15 @@ def student_fee(s_period="curr"):
     """*****************************************************************************
     QUALIFICATION FEE MASTER 1
     *****************************************************************************"""
-    print("QUALIFICATION FEE MASTER")
+    if l_debug:
+        print("QUALIFICATION FEE MASTER")
     funcfile.writelog("QUALIFICATION FEE MASTER")
 
     # IMPORT QUALIFICATION LEVY LIST
     sr_file = "X020aa_Fiabd007"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    print("Import vss qualification fees...")
+    if l_debug:
+        print("Import vss qualification fees...")
     so_curs.execute(
         "Create Table " + sr_file + """
         (ACAD_PROG_FEE_TYPE INT,
@@ -1964,7 +2035,8 @@ def student_fee(s_period="curr"):
     # Read the COLUMN database data
     for row in co_reader:
         # Populate the column variables
-        # print(row[0])
+        # if l_debug:
+        #   print(row[0])
         if "Academic Program Fee Type" in row[0]:
             continue
         elif row[0] == "":
@@ -1987,7 +2059,8 @@ def student_fee(s_period="curr"):
                                                 "'" + row[13] + "'," \
                                                 "" + row[14] + "," \
                                                 "" + row[15] + ")"
-            # print(s_cols)
+            # if l_debug:
+            #   print(s_cols)
             so_curs.execute(s_cols)
     so_conn.commit()
     # Close the imported data file
@@ -1995,7 +2068,8 @@ def student_fee(s_period="curr"):
     funcfile.writelog("%t IMPORT TABLE: " + ed_path + "302_fiapd007_qual_period.csv (" + sr_file + ")")
 
     # SUMM FIAB LEVY LIST
-    print("Build summary of levy list...")
+    if l_debug:
+        print("Build summary of levy list...")
     sr_file = "X020aa_Fiabd007_summ"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -2026,7 +2100,8 @@ def student_fee(s_period="curr"):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD LIST OF QUALIFICATIONS PLUS STATS
-    print("Build summary of qualifications levied...")
+    if l_debug:
+        print("Build summary of qualifications levied...")
     sr_file = "X020aa_Trans_feequal"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "Create table " + sr_file + " AS" + """
@@ -2049,7 +2124,8 @@ def student_fee(s_period="curr"):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # CALCULATE THE QUALIFICATION FEES LEVIED PER STUDENT
-    print("Calculate the qualification fees levied per student...")
+    if l_debug:
+        print("Calculate the qualification fees levied per student...")
     sr_file = "X020ab_Trans_feequal_stud"
     s_sql = "Create table " + sr_file + " AS" + """
     Select
@@ -2074,7 +2150,8 @@ def student_fee(s_period="curr"):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # CALCULATE THE QUALIFICATION FEES LEVIED PER STUDENT
-    print("Calculate the qualification fees levied per student...")
+    if l_debug:
+        print("Calculate the qualification fees levied per student...")
     sr_file = "X020ab_Trans_feequal_stud_level"
     s_sql = "Create table " + sr_file + " AS" + """
     Select
@@ -2101,7 +2178,8 @@ def student_fee(s_period="curr"):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # CALCULATE THE STATISTIC MODE FOR EACH QUALIFICATION
-    print("Calculate the qualification statistic mode...")
+    if l_debug:
+        print("Calculate the qualification statistic mode...")
     i_value: int = 0
     sr_file = "X020ac_Trans_feequal_mode"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -2125,7 +2203,8 @@ def student_fee(s_period="curr"):
     so_conn.commit()
 
     # COMBINE MODE AND LEVY LIST
-    print("Combine mode and levy list...")
+    if l_debug:
+        print("Combine mode and levy list...")
     sr_file = "X020ac_Trans_feequal_mode_fiab"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
@@ -2155,7 +2234,8 @@ def student_fee(s_period="curr"):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # CALCULATE THE NUMBER OF MODULES
-    print("Calculate the number modules...")
+    if l_debug:
+        print("Calculate the number modules...")
     sr_file = "X020ad_Student_module_calc"
     s_sql = "Create table " + sr_file + " AS" + """
     Select
@@ -2229,7 +2309,8 @@ def student_fee(s_period="curr"):
     so_conn.commit()
 
     # CALCULATE THE NUMBER OF MODULES PER STUDENT
-    print("Calculate the number modules per student...")
+    if l_debug:
+        print("Calculate the number modules per student...")
     sr_file = "X020ad_Student_module_summ"
     s_sql = "Create table " + sr_file + " AS" + """
     Select
@@ -2258,7 +2339,8 @@ def student_fee(s_period="curr"):
 
     # IDENTIFY COURSE CONVERTERS
     # Student may appear multiple times
-    print("Identify course converters...")
+    if l_debug:
+        print("Identify course converters...")
     sr_file = "X020ae_Student_convert"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select Distinct
@@ -2281,7 +2363,8 @@ def student_fee(s_period="curr"):
 
     # IDENTIFY COURSE CONVERTERS
     # Only allow one conversion
-    print("Identify course converters...")
+    if l_debug:
+        print("Identify course converters...")
     sr_file = "X020ae_Student_convert_master"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
@@ -2306,7 +2389,8 @@ def student_fee(s_period="curr"):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # CALCULATE THE BURSARY FEES LEVIED PER STUDENT
-    print("Calculate the bursary fees levied per student...")
+    if l_debug:
+        print("Calculate the bursary fees levied per student...")
     sr_file = "X020af_Trans_feeburs_stud"
     s_sql = "Create table " + sr_file + " AS" + """
     Select
@@ -2327,14 +2411,16 @@ def student_fee(s_period="curr"):
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = s_sql.replace("%TRANCODE%", s_burs_trancode)
-    # print(s_sql)
+    # if l_debug:
+    #   print(s_sql)
     so_curs.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """*****************************************************************************
     QUALIFICATION FEE TEST NO FEE LOADED
     *****************************************************************************"""
-    print("QUALIFICATION FEE TEST NO FEE LOADED")
+    if l_debug:
+        print("QUALIFICATION FEE TEST NO FEE LOADED")
     funcfile.writelog("QUALIFICATION FEE TEST NO FEE LOADED")
 
     # FILES NEEDED
@@ -2351,7 +2437,8 @@ def student_fee(s_period="curr"):
     s_desc = "No qualification fee loaded"
 
     # ISOLATE QUALIFICATIONS WITH NO LINKED LEVIES
-    print("identify qualifications with no linked levies...")
+    if l_debug:
+        print("identify qualifications with no linked levies...")
     sr_file = "X021aa_Qual_nofee_loaded"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "Create table " + sr_file + " AS" + """
@@ -2393,7 +2480,8 @@ def student_fee(s_period="curr"):
     so_conn.commit()
 
     # BUILD SUMMARY OF QUALIFICATIONS NOT LINKED
-    print("Build summary of qualifications with no linked levies...")
+    if l_debug:
+        print("Build summary of qualifications with no linked levies...")
     sr_file = "X021aa_Qual_nofee_loaded_summ"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "Create table " + sr_file + " AS" + """
@@ -2421,7 +2509,8 @@ def student_fee(s_period="curr"):
     so_conn.commit()
 
     # BUILD STUDENTS LIST NOT LINKED TO LEVIES
-    print("Build student list not linked to levies...")
+    if l_debug:
+        print("Build student list not linked to levies...")
     sr_file = "X021aa_Qual_nofee_loaded_stud"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "Create table " + sr_file + " AS" + """
@@ -2439,7 +2528,8 @@ def student_fee(s_period="curr"):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     so_conn.commit()
     if funcsys.tablerowcount(so_curs, sr_file) > 0:  # Ignore l_export flag - should export every time
-        print("Export findings...")
+        if l_debug:
+            print("Export findings...")
         sx_path = re_path + "/"
         sx_file = "Student_fee_test_021ax_qual_fee_not_loaded_studentlist_"  # File X021_findings_list
         sx_file_dated = sx_file + funcdate.today_file()
@@ -2449,7 +2539,8 @@ def student_fee(s_period="curr"):
         funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
 
     # IDENTIFY FINDINGS
-    print("Identify findings...")
+    if l_debug:
+        print("Identify findings...")
     sr_file = "X021ab_findings"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
@@ -2471,7 +2562,8 @@ def student_fee(s_period="curr"):
 
     # COUNT THE NUMBER OF FINDINGS
     i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
-    print("*** Found " + str(i_finding_before) + " exceptions ***")
+    if l_debug:
+        print("*** Found " + str(i_finding_before) + " exceptions ***")
     funcfile.writelog("%t FINDING: " + str(i_finding_before) + " QUALIFICATION NO FEE LOADED finding(s)")
 
     # GET PREVIOUS FINDINGS
@@ -2488,7 +2580,8 @@ def student_fee(s_period="curr"):
     sr_file = "X021ad_add_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
-        print("Join previously reported to current findings...")
+        if l_debug:
+            print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         Select
             FIND.*,
@@ -2542,7 +2635,8 @@ def student_fee(s_period="curr"):
         # Export findings to previous reported file
         i_finding_after = funcsys.tablerowcount(so_curs, sr_file)
         if i_finding_after > 0:
-            print("*** " + str(i_finding_after) + " Finding(s) to report ***")
+            if l_debug:
+                print("*** " + str(i_finding_after) + " Finding(s) to report ***")
             sx_path = ed_path
             sx_file = "302_reported"
             # Read the header data
@@ -2556,7 +2650,8 @@ def student_fee(s_period="curr"):
                 funcsms.send_telegram('', 'administrator',
                                       '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
-            print("*** No new findings to report ***")
+            if l_debug:
+                print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
 
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
@@ -2577,7 +2672,8 @@ def student_fee(s_period="curr"):
     sr_file = "X021ah_detail"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0 and i_finding_after > 0:
-        print("Add contact details to findings...")
+        if l_debug:
+            print("Add contact details to findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             PREV.ORG,
@@ -2634,7 +2730,8 @@ def student_fee(s_period="curr"):
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
     sr_file = "X021ax_Qual_nofee_loaded"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    print("Build the final report")
+    if l_debug:
+        print("Build the final report")
     if i_finding_before > 0 and i_finding_after > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
@@ -2671,7 +2768,8 @@ def student_fee(s_period="curr"):
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-            print("Export findings...")
+            if l_debug:
+                print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Student_fee_test_021ax_qual_fee_not_loaded_"
             sx_file_dated = sx_file + funcdate.today_file()
@@ -2691,7 +2789,8 @@ def student_fee(s_period="curr"):
     """*****************************************************************************
     QUALIFICATION FEE MASTER 2 - JOIN QUALIFICATIONS PRESENTED AND FIAB LIST
     *****************************************************************************"""
-    print("QUALIFICATION FEE MASTER 2")
+    if l_debug:
+        print("QUALIFICATION FEE MASTER 2")
     funcfile.writelog("QUALIFICATION FEE MASTER 2")
 
     # NOTE - This code is place here because it rely on
@@ -2699,7 +2798,8 @@ def student_fee(s_period="curr"):
     #   QUALIFICATION FEE TEST NO FEE LOADED
 
     # BUILD SUMMARY OF QUALIFICATIONS PRESENTED
-    print("Build summary of qualifications with no linked levies...")
+    if l_debug:
+        print("Build summary of qualifications with no linked levies...")
     sr_file = "X022aa_Qual_present_summary"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "Create table " + sr_file + " AS" + """
@@ -2728,7 +2828,8 @@ def student_fee(s_period="curr"):
     so_conn.commit()
 
     # IDENTIFY FIAB ENTRIES WHICG IS PRESENTED
-    print("Identify FIAB entries which is presented...")
+    if l_debug:
+        print("Identify FIAB entries which is presented...")
     sr_file = "X022ab_Qual_present_fiablist"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "Create table " + sr_file + " AS" + """
@@ -2755,7 +2856,8 @@ def student_fee(s_period="curr"):
     so_conn.commit()
 
     # IDENTIFY FIAB ENTRIES WITH MORE THAN ONE CLASS FEE
-    print("Identify FIAB entries with more than one class fee...")
+    if l_debug:
+        print("Identify FIAB entries with more than one class fee...")
     sr_file = "X022ac_Qual_present_count"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "Create table " + sr_file + " AS" + """
@@ -2778,7 +2880,8 @@ def student_fee(s_period="curr"):
     so_conn.commit()
 
     # IDENTIFY FIAB ENTRIES WITH DIFFERENT AMOUNTS
-    print("Identify FIAB entries with different amounts...")
+    if l_debug:
+        print("Identify FIAB entries with different amounts...")
     sr_file = "X022ad_Qual_present_merge"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "Create table " + sr_file + " AS" + """
@@ -2808,7 +2911,8 @@ def student_fee(s_period="curr"):
     so_conn.commit()
 
     # IDENTIFY FIAB ENTRIES WITH DIFFERENT AMOUNTS
-    print("Identify FIAB entries with different amounts...")
+    if l_debug:
+        print("Identify FIAB entries with different amounts...")
     sr_file = "X022ae_Qual_present_final"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "Create table " + sr_file + " AS" + """
@@ -2833,7 +2937,8 @@ def student_fee(s_period="curr"):
     """*****************************************************************************
     QUALIFICATION FEE TEST FEE LOADED INCORRECTLY
     *****************************************************************************"""
-    print("QUALIFICATION FEE TEST FEE LOADED INCORRECTLY")
+    if l_debug:
+        print("QUALIFICATION FEE TEST FEE LOADED INCORRECTLY")
     funcfile.writelog("QUALIFICATION FEE TEST FEE LOADED INCORRECTLY")
 
     # FILES NEEDED
@@ -2848,7 +2953,8 @@ def student_fee(s_period="curr"):
     s_desc = "Qualification fee incorrectly loaded and differ between campuses"
 
     # OBTAIN TEST DATA
-    print("Obtain test data...")
+    if l_debug:
+        print("Obtain test data...")
     sr_file: str = s_fprefix + "a_fee_loaded_incorrectly"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -2872,7 +2978,8 @@ def student_fee(s_period="curr"):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # SELECT TEST DATA
-    print("Identify findings...")
+    if l_debug:
+        print("Identify findings...")
     sr_file = s_fprefix + "b_finding"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -2901,7 +3008,8 @@ def student_fee(s_period="curr"):
 
     # COUNT THE NUMBER OF FINDINGS
     i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
-    print("*** Found " + str(i_finding_before) + " exceptions ***")
+    if l_debug:
+        print("*** Found " + str(i_finding_before) + " exceptions ***")
     funcfile.writelog("%t FINDING: " + str(i_finding_before) + " " + s_finding + " finding(s)")
 
     # GET PREVIOUS FINDINGS
@@ -2918,7 +3026,8 @@ def student_fee(s_period="curr"):
     sr_file = s_fprefix + "d_addprev"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
-        print("Join previously reported to current findings...")
+        if l_debug:
+            print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         Select
             FIND.*,
@@ -2973,7 +3082,8 @@ def student_fee(s_period="curr"):
         # Export findings to previous reported file
         i_finding_after = funcsys.tablerowcount(so_curs, sr_file)
         if i_finding_after > 0:
-            print("*** " + str(i_finding_after) + " Finding(s) to report ***")
+            if l_debug:
+                print("*** " + str(i_finding_after) + " Finding(s) to report ***")
             sx_path = ed_path
             sx_file = s_xfile[:-4]
             # Read the header data
@@ -2987,7 +3097,8 @@ def student_fee(s_period="curr"):
                 funcsms.send_telegram('', 'administrator',
                                       '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
-            print("*** No new findings to report ***")
+            if l_debug:
+                print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
 
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
@@ -3004,7 +3115,8 @@ def student_fee(s_period="curr"):
     sr_file = s_fprefix + "h_detail"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0 and i_finding_after > 0:
-        print("Add contact details to findings...")
+        if l_debug:
+            print("Add contact details to findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             PREV.ORG,
@@ -3048,7 +3160,8 @@ def student_fee(s_period="curr"):
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
     sr_file = s_fprefix + "x_fee_loaded_incorrectly"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    print("Build the final report")
+    if l_debug:
+        print("Build the final report")
     if i_finding_before > 0 and i_finding_after > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
@@ -3084,7 +3197,8 @@ def student_fee(s_period="curr"):
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-            print("Export findings...")
+            if l_debug:
+                print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Qualification_test_" + s_fprefix + "_" + s_finding.lower() + "_"
             sx_file_dated = sx_file + funcdate.today_file()
@@ -3104,7 +3218,8 @@ def student_fee(s_period="curr"):
     """*****************************************************************************
     QUALIFICATION FEE MASTER 3 - JOIN STUDENT AND TRANSACTION AND NO FEE LOADED TEST
     *****************************************************************************"""
-    print("QUALIFICATION FEE MASTER 3")
+    if l_debug:
+        print("QUALIFICATION FEE MASTER 3")
     funcfile.writelog("QUALIFICATION FEE MASTER 3")
 
     # Short course students already removed in OBTAIN STUDENTS
@@ -3112,7 +3227,8 @@ def student_fee(s_period="curr"):
     # Remove students identified in QUALIFICATION FEE TEST NO FEE LOADED
 
     # JOIN STUDENTS AND TRANSACTIONS
-    print("Join students and transactions...")
+    if l_debug:
+        print("Join students and transactions...")
     sr_file = "X020ba_Student_master"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -3276,7 +3392,8 @@ def student_fee(s_period="curr"):
     """
     # UPDATE FEE TEST 53 AND 54 PERIOD COLUMN
     # DO TEST ONLY IF TODAY DATE WITHIN PERIOD
-    print("Update test 53_54_period_a_ind column...")
+    if l_debug:
+        print("Update test 53_54_period_a_ind column...")
     d1 = (int(d_test_overcharge[5:7]), int(d_test_overcharge[-2:]))  # Begin date
     d2 = (int(funcdate.cur_month()), int(funcdate.cur_day()))  # Now
     d3 = (12, 31)  # End date
@@ -3288,7 +3405,8 @@ def student_fee(s_period="curr"):
     """
 
     # UPDATE FEE SHOULD BE COLUMN
-    print("Update qualification fee should be column...")
+    if l_debug:
+        print("Update qualification fee should be column...")
     s_sql = "UPDATE " + sr_file + """
     SET FEE_SHOULD_BE = 
     CASE
@@ -3348,7 +3466,8 @@ def student_fee(s_period="curr"):
     funcfile.writelog("%t UPDATE COLUMN: Valid qualification fee")
 
     # UPDATE VALID COLUMN
-    print("Update qualification fee valid column...")
+    if l_debug:
+        print("Update qualification fee valid column...")
     so_curs.execute("UPDATE " + sr_file + """
                     SET VALID = 
                     CASE
@@ -3397,7 +3516,8 @@ def student_fee(s_period="curr"):
     funcfile.writelog("%t UPDATE COLUMN: Valid qualification fee")
 
     # IDENTIFY STUDENTS WITH TWO OR MORE HALF LEVY TRANSACTIONS
-    print("Identify multiple half levy students...")
+    if l_debug:
+        print("Identify multiple half levy students...")
     sr_file = "X020bb_Student_multiple_half"
     s_sql = "Create table " + sr_file + " AS" + """
     Select
@@ -3428,7 +3548,8 @@ def student_fee(s_period="curr"):
     """
 
     # JOIN STUDENTS AND TRANSACTIONS
-    print("Join students and transactions...")
+    if l_debug:
+        print("Join students and transactions...")
     sr_file = "X020bx_Student_master_sort"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
@@ -3527,7 +3648,8 @@ def student_fee(s_period="curr"):
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-        print("Export findings...")
+        if l_debug:
+            print("Export findings...")
         sx_path = re_path + "/"
         sx_file = "Student_fee_test_020bx_qual_fee_studentlist_"
         sx_file_dated = sx_file + funcdate.today_file()
@@ -3539,7 +3661,8 @@ def student_fee(s_period="curr"):
         funcmail.Mail('vss_list_020bx_studentlist')
 
     # LIST OF STUDENTS REGISTERED FOR MARK ONLY AND THEIR MODULES
-    print("Build list of student module marks...")
+    if l_debug:
+        print("Build list of student module marks...")
     sr_file = "X020bc_Student_module_mark"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
@@ -3568,7 +3691,8 @@ def student_fee(s_period="curr"):
 
     # EXPORT INVALID TRANSACTIONS
     # NOTE - Created for Corlia de Beer and she can modify outlay hereof
-    print("Build table of invalid qualification fees...")
+    if l_debug:
+        print("Build table of invalid qualification fees...")
     sr_file = "X020bx_Student_master_export"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
@@ -3583,7 +3707,8 @@ def student_fee(s_period="curr"):
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     if funcsys.tablerowcount(so_curs, sr_file) > 0:  # Ignore l_export flag - should export every time
-        print("Export findings...")
+        if l_debug:
+            print("Export findings...")
         sx_path = re_path + "/"
         sx_file = "Student_fee_test_020bx_qual_fee_invalid_studentlist_"
         sx_file_dated = sx_file + funcdate.today_file()
@@ -3654,11 +3779,13 @@ def student_fee(s_period="curr"):
     """*****************************************************************************
     QUALIFICATION FEE REPORTS
     *****************************************************************************"""
-    print("QUALIFICATION FEE REPORTS")
+    if l_debug:
+        print("QUALIFICATION FEE REPORTS")
     funcfile.writelog("QUALIFICATION FEE REPORTS")
 
     # SUMMARIZE QUALIFICATION FEE INCOME
-    print("Summarize qualification fee income...")
+    if l_debug:
+        print("Summarize qualification fee income...")
     sr_file = "X020ca_Report_qual_income_summ"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "Create Table " + sr_file + " As " + """
@@ -3686,7 +3813,8 @@ def student_fee(s_period="curr"):
     """*****************************************************************************
     QUALIFICATION FEE TEST NO TRANSACTION CONTACT
     *****************************************************************************"""
-    print("QUALIFICATION FEE TEST NO TRANSACTION CONTACT")
+    if l_debug:
+        print("QUALIFICATION FEE TEST NO TRANSACTION CONTACT")
     funcfile.writelog("QUALIFICATION FEE TEST NO TRANSACTION CONTACT")
 
     # FILES NEEDED
@@ -3697,7 +3825,8 @@ def student_fee(s_period="curr"):
     s_desc = "No qualification fee levied for contact students"
 
     # ISOLATE QUALIFICATIONS WITH NO TRANSACTIONS - CONTACT STUDENTS ONLY
-    print("Isolate qualifications with no transactions...")
+    if l_debug:
+        print("Isolate qualifications with no transactions...")
     sr_file = "X021ba_Qual_nofee_transaction"
     s_sql = "Create table " + sr_file + " AS" + """
     Select
@@ -3718,7 +3847,8 @@ def student_fee(s_period="curr"):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     so_conn.commit()
     if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-        print("Export findings...")
+        if l_debug:
+            print("Export findings...")
         sx_path = re_path + "/"
         sx_file = "Student_fee_test_021bx_qual_fee_no_transaction_studentlist_"
         sx_file_dated = sx_file + funcdate.today_file()
@@ -3728,7 +3858,8 @@ def student_fee(s_period="curr"):
         funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
 
     # IDENTIFY FINDINGS
-    print("Identify findings...")
+    if l_debug:
+        print("Identify findings...")
     sr_file = "X021bb_findings"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
@@ -3748,7 +3879,8 @@ def student_fee(s_period="curr"):
 
     # COUNT THE NUMBER OF FINDINGS
     i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
-    print("*** Found " + str(i_finding_before) + " exceptions ***")
+    if l_debug:
+        print("*** Found " + str(i_finding_before) + " exceptions ***")
     funcfile.writelog("%t FINDING: " + str(i_finding_before) + " QUALIFICATION NULL FEE NOTRAN finding(s)")
 
     # GET PREVIOUS FINDINGS
@@ -3765,7 +3897,8 @@ def student_fee(s_period="curr"):
     sr_file = "X021bd_add_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
-        print("Join previously reported to current findings...")
+        if l_debug:
+            print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         Select
             FIND.*,
@@ -3815,7 +3948,8 @@ def student_fee(s_period="curr"):
         # Export findings to previous reported file
         i_finding_after = funcsys.tablerowcount(so_curs, sr_file)
         if i_finding_after > 0:
-            print("*** " + str(i_finding_after) + " Finding(s) to report ***")
+            if l_debug:
+                print("*** " + str(i_finding_after) + " Finding(s) to report ***")
             sx_path = ed_path
             sx_file = "302_reported"
             # Read the header data
@@ -3829,7 +3963,8 @@ def student_fee(s_period="curr"):
                 funcsms.send_telegram('', 'administrator',
                                       '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
-            print("*** No new findings to report ***")
+            if l_debug:
+                print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
 
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
@@ -3846,7 +3981,8 @@ def student_fee(s_period="curr"):
     sr_file = "X021bh_detail"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0 and i_finding_after > 0:
-        print("Add contact details to findings...")
+        if l_debug:
+            print("Add contact details to findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             PREV.ORG,
@@ -3912,7 +4048,8 @@ def student_fee(s_period="curr"):
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
     sr_file = "X021bx_Qual_nofee_transaction"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    print("Build the final report")
+    if l_debug:
+        print("Build the final report")
     if i_finding_before > 0 and i_finding_after > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
@@ -3954,7 +4091,8 @@ def student_fee(s_period="curr"):
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-            print("Export findings...")
+            if l_debug:
+                print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Student_fee_test_021bx_qual_fee_no_transaction_"
             sx_file_dated = sx_file + funcdate.today_file()
@@ -3974,7 +4112,8 @@ def student_fee(s_period="curr"):
     """*****************************************************************************
     QUALIFICATION FEE TEST NEGATIVE TRANSACTION
     *****************************************************************************"""
-    print("QUALIFICATION FEE TEST NEGATIVE TRANSACTION")
+    if l_debug:
+        print("QUALIFICATION FEE TEST NEGATIVE TRANSACTION")
     funcfile.writelog("QUALIFICATION FEE TEST NEGATIVE TRANSACTION")
 
     # FILES NEEDED
@@ -3985,7 +4124,8 @@ def student_fee(s_period="curr"):
     s_desc = "Qualification fee a credit or negative amount for contact student"
 
     # ISOLATE QUALIFICATIONS WITH NO TRANSACTIONS - CONTACT STUDENTS ONLY
-    print("Isolate qualifications with negative value transactions...")
+    if l_debug:
+        print("Isolate qualifications with negative value transactions...")
     sr_file = "X021da_Qual_negativefee_transaction"
     s_sql = "Create table " + sr_file + " AS" + """
     Select
@@ -4005,7 +4145,8 @@ def student_fee(s_period="curr"):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     so_conn.commit()
     if funcsys.tablerowcount(so_curs, sr_file) > 0:  # Ignore l_export flag - should export every time
-        print("Export findings...")
+        if l_debug:
+            print("Export findings...")
         sx_path = re_path + "/"
         sx_file = "Student_fee_test_021dx_qual_fee_negative_transaction_studentlist_"
         sx_file_dated = sx_file + funcdate.today_file()
@@ -4015,7 +4156,8 @@ def student_fee(s_period="curr"):
         funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
 
     # IDENTIFY FINDINGS
-    print("Identify findings...")
+    if l_debug:
+        print("Identify findings...")
     sr_file = "X021db_findings"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
@@ -4035,14 +4177,16 @@ def student_fee(s_period="curr"):
 
     # COUNT THE NUMBER OF FINDINGS
     i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
-    print("*** Found " + str(i_finding_before) + " exceptions ***")
+    if l_debug:
+        print("*** Found " + str(i_finding_before) + " exceptions ***")
     funcfile.writelog("%t FINDING: " + str(i_finding_before) + " QUALIFICATION NEGATIVE FEE TRAN finding(s)")
 
     # GET PREVIOUS FINDINGS
     sr_file = "X021dc_get_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
-        print("Import previously reported findings...")
+        if l_debug:
+            print("Import previously reported findings...")
         so_curs.execute(
             "CREATE TABLE " + sr_file + """
             (PROCESS TEXT,
@@ -4079,7 +4223,8 @@ def student_fee(s_period="curr"):
     sr_file = "X021dc_set_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
-        print("Obtain the latest previous finding...")
+        if l_debug:
+            print("Obtain the latest previous finding...")
         s_sql = "Create Table " + sr_file + " As" + """
         Select
             GET.PROCESS,
@@ -4107,7 +4252,8 @@ def student_fee(s_period="curr"):
     sr_file = "X021dd_add_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
-        print("Join previously reported to current findings...")
+        if l_debug:
+            print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         Select
             FIND.*,
@@ -4159,7 +4305,8 @@ def student_fee(s_period="curr"):
         # Export findings to previous reported file
         i_finding_after = funcsys.tablerowcount(so_curs, sr_file)
         if i_finding_after > 0:
-            print("*** " + str(i_finding_after) + " Finding(s) to report ***")
+            if l_debug:
+                print("*** " + str(i_finding_after) + " Finding(s) to report ***")
             sx_path = ed_path
             sx_file = "302_reported"
             # Read the header data
@@ -4173,7 +4320,8 @@ def student_fee(s_period="curr"):
                 funcsms.send_telegram('', 'administrator',
                                       '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
-            print("*** No new findings to report ***")
+            if l_debug:
+                print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
 
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
@@ -4181,7 +4329,8 @@ def student_fee(s_period="curr"):
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
         if i_finding_after > 0:
-            print("Import reporting officers for mail purposes...")
+            if l_debug:
+                print("Import reporting officers for mail purposes...")
             s_sql = "CREATE TABLE " + sr_file + " AS " + """
             Select
                 OFFICER.LOOKUP,
@@ -4204,7 +4353,8 @@ def student_fee(s_period="curr"):
     sr_file = "X021dg_supervisor"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0 and i_finding_after > 0:
-        print("Import reporting supervisors for mail purposes...")
+        if l_debug:
+            print("Import reporting supervisors for mail purposes...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             SUPERVISOR.LOOKUP,
@@ -4227,7 +4377,8 @@ def student_fee(s_period="curr"):
     sr_file = "X021dh_detail"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0 and i_finding_after > 0:
-        print("Add contact details to findings...")
+        if l_debug:
+            print("Add contact details to findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             PREV.ORG,
@@ -4308,7 +4459,8 @@ def student_fee(s_period="curr"):
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
     sr_file = "X021dx_Qual_negativefee_transaction"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    print("Build the final report")
+    if l_debug:
+        print("Build the final report")
     if i_finding_before > 0 and i_finding_after > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
@@ -4353,7 +4505,8 @@ def student_fee(s_period="curr"):
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-            print("Export findings...")
+            if l_debug:
+                print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Student_fee_test_021dx_qual_fee_negative_transaction_"
             sx_file_dated = sx_file + funcdate.today_file()
@@ -4373,7 +4526,8 @@ def student_fee(s_period="curr"):
     """*****************************************************************************
     QUALIFICATION FEE TEST ZERO TRANSACTION CONTACT
     *****************************************************************************"""
-    print("QUALIFICATION FEE TEST ZERO TRANSACTION CONTACT")
+    if l_debug:
+        print("QUALIFICATION FEE TEST ZERO TRANSACTION CONTACT")
     funcfile.writelog("QUALIFICATION FEE TEST ZERO TRANSACTION CONTACT")
 
     # FILES NEEDED
@@ -4384,7 +4538,8 @@ def student_fee(s_period="curr"):
     s_desc = "Qualification fee transactions amount to no value for contact students"
 
     # ISOLATE QUALIFICATIONS WITH ZERO TRANSACTIONS
-    print("Isolate qualifications with zero value transactions...")
+    if l_debug:
+        print("Isolate qualifications with zero value transactions...")
     sr_file = "X021ca_Qual_zerofee_transaction"
     s_sql = "Create table " + sr_file + " AS" + """
     Select
@@ -4405,7 +4560,8 @@ def student_fee(s_period="curr"):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     so_conn.commit()
     if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-        print("Export findings...")
+        if l_debug:
+            print("Export findings...")
         sx_path = re_path + "/"
         sx_file = "Student_fee_test_021cx_qual_fee_zero_transaction_studentlist_"
         sx_file_dated = sx_file + funcdate.today_file()
@@ -4415,7 +4571,8 @@ def student_fee(s_period="curr"):
         funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
 
     # IDENTIFY FINDINGS
-    print("Identify findings...")
+    if l_debug:
+        print("Identify findings...")
     sr_file = "X021cb_findings"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
@@ -4437,14 +4594,16 @@ def student_fee(s_period="curr"):
 
     # COUNT THE NUMBER OF FINDINGS
     i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
-    print("*** Found " + str(i_finding_before) + " exceptions ***")
+    if l_debug:
+        print("*** Found " + str(i_finding_before) + " exceptions ***")
     funcfile.writelog("%t FINDING: " + str(i_finding_before) + " QUALIFICATION ZERO FEE TRAN finding(s)")
 
     # GET PREVIOUS FINDINGS
     sr_file = "X021cc_get_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
-        print("Import previously reported findings...")
+        if l_debug:
+            print("Import previously reported findings...")
         so_curs.execute(
             "CREATE TABLE " + sr_file + """
             (PROCESS TEXT,
@@ -4481,7 +4640,8 @@ def student_fee(s_period="curr"):
     sr_file = "X021cc_set_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
-        print("Obtain the latest previous finding...")
+        if l_debug:
+            print("Obtain the latest previous finding...")
         s_sql = "Create Table " + sr_file + " As" + """
         Select
             GET.PROCESS,
@@ -4509,7 +4669,8 @@ def student_fee(s_period="curr"):
     sr_file = "X021cd_add_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
-        print("Join previously reported to current findings...")
+        if l_debug:
+            print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         Select
             FIND.*,
@@ -4561,7 +4722,8 @@ def student_fee(s_period="curr"):
         # Export findings to previous reported file
         i_finding_after = funcsys.tablerowcount(so_curs, sr_file)
         if i_finding_after > 0:
-            print("*** " + str(i_finding_after) + " Finding(s) to report ***")
+            if l_debug:
+                print("*** " + str(i_finding_after) + " Finding(s) to report ***")
             sx_path = ed_path
             sx_file = "302_reported"
             # Read the header data
@@ -4575,7 +4737,8 @@ def student_fee(s_period="curr"):
                 funcsms.send_telegram('', 'administrator',
                                       '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
-            print("*** No new findings to report ***")
+            if l_debug:
+                print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
 
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
@@ -4583,7 +4746,8 @@ def student_fee(s_period="curr"):
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
         if i_finding_after > 0:
-            print("Import reporting officers for mail purposes...")
+            if l_debug:
+                print("Import reporting officers for mail purposes...")
             s_sql = "CREATE TABLE " + sr_file + " AS " + """
             Select
                 OFFICER.LOOKUP,
@@ -4606,7 +4770,8 @@ def student_fee(s_period="curr"):
     sr_file = "X021cg_supervisor"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0 and i_finding_after > 0:
-        print("Import reporting supervisors for mail purposes...")
+        if l_debug:
+            print("Import reporting supervisors for mail purposes...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             SUPERVISOR.LOOKUP,
@@ -4629,7 +4794,8 @@ def student_fee(s_period="curr"):
     sr_file = "X021ch_detail"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0 and i_finding_after > 0:
-        print("Add contact details to findings...")
+        if l_debug:
+            print("Add contact details to findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             PREV.ORG,
@@ -4707,7 +4873,8 @@ def student_fee(s_period="curr"):
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
     sr_file = "X021cx_Qual_zerofee_transaction"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    print("Build the final report")
+    if l_debug:
+        print("Build the final report")
     if i_finding_before > 0 and i_finding_after > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
@@ -4752,7 +4919,8 @@ def student_fee(s_period="curr"):
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-            print("Export findings...")
+            if l_debug:
+                print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Student_fee_test_021cx_qual_fee_zero_transaction_"
             sx_file_dated = sx_file + funcdate.today_file()
@@ -4772,7 +4940,8 @@ def student_fee(s_period="curr"):
     """*****************************************************************************
     QUALIFICATION FEE TEST HALF TRANSACTION CONTACT
     *****************************************************************************"""
-    print("QUALIFICATION FEE TEST HALF TRANSACTION CONTACT")
+    if l_debug:
+        print("QUALIFICATION FEE TEST HALF TRANSACTION CONTACT")
     funcfile.writelog("QUALIFICATION FEE TEST HALF TRANSACTION CONTACT")
 
     # FILES NEEDED
@@ -4783,7 +4952,8 @@ def student_fee(s_period="curr"):
     s_desc = "Qualification fee half levied for contact student"
 
     # ISOLATE QUALIFICATIONS WITH HALF TRANSACTIONS - CONTACT STUDENTS ONLY
-    print("Isolate qualifications with half value transactions...")
+    if l_debug:
+        print("Isolate qualifications with half value transactions...")
     sr_file = "X021ea_Qual_halffee_transaction"
     s_sql = "Create table " + sr_file + " AS" + """
     Select
@@ -4806,7 +4976,8 @@ def student_fee(s_period="curr"):
     so_conn.commit()
 
     # IDENTIFY FINDINGS
-    print("Identify findings...")
+    if l_debug:
+        print("Identify findings...")
     sr_file = "X021eb_findings"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
@@ -4828,14 +4999,16 @@ def student_fee(s_period="curr"):
 
     # COUNT THE NUMBER OF FINDINGS
     i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
-    print("*** Found " + str(i_finding_before) + " exceptions ***")
+    if l_debug:
+        print("*** Found " + str(i_finding_before) + " exceptions ***")
     funcfile.writelog("%t FINDING: " + str(i_finding_before) + " QUALIFICATION HALF FEE TRAN finding(s)")
 
     # GET PREVIOUS FINDINGS
     sr_file = "X021ec_get_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
-        print("Import previously reported findings...")
+        if l_debug:
+            print("Import previously reported findings...")
         so_curs.execute(
             "CREATE TABLE " + sr_file + """
             (PROCESS TEXT,
@@ -4872,7 +5045,8 @@ def student_fee(s_period="curr"):
     sr_file = "X021ec_set_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
-        print("Obtain the latest previous finding...")
+        if l_debug:
+            print("Obtain the latest previous finding...")
         s_sql = "Create Table " + sr_file + " As" + """
         Select
             GET.PROCESS,
@@ -4900,7 +5074,8 @@ def student_fee(s_period="curr"):
     sr_file = "X021ed_add_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
-        print("Join previously reported to current findings...")
+        if l_debug:
+            print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         Select
             FIND.*,
@@ -4952,7 +5127,8 @@ def student_fee(s_period="curr"):
         # Export findings to previous reported file
         i_finding_after = funcsys.tablerowcount(so_curs, sr_file)
         if i_finding_after > 0:
-            print("*** " + str(i_finding_after) + " Finding(s) to report ***")
+            if l_debug:
+                print("*** " + str(i_finding_after) + " Finding(s) to report ***")
             sx_path = ed_path
             sx_file = "302_reported"
             # Read the header data
@@ -4966,7 +5142,8 @@ def student_fee(s_period="curr"):
                 funcsms.send_telegram('', 'administrator',
                                       '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
-            print("*** No new findings to report ***")
+            if l_debug:
+                print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
 
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
@@ -4974,7 +5151,8 @@ def student_fee(s_period="curr"):
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
         if i_finding_after > 0:
-            print("Import reporting officers for mail purposes...")
+            if l_debug:
+                print("Import reporting officers for mail purposes...")
             s_sql = "CREATE TABLE " + sr_file + " AS " + """
             Select
                 OFFICER.LOOKUP,
@@ -4997,7 +5175,8 @@ def student_fee(s_period="curr"):
     sr_file = "X021eg_supervisor"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0 and i_finding_after > 0:
-        print("Import reporting supervisors for mail purposes...")
+        if l_debug:
+            print("Import reporting supervisors for mail purposes...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             SUPERVISOR.LOOKUP,
@@ -5020,7 +5199,8 @@ def student_fee(s_period="curr"):
     sr_file = "X021eh_detail"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0 and i_finding_after > 0:
-        print("Add contact details to findings...")
+        if l_debug:
+            print("Add contact details to findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             PREV.ORG,
@@ -5098,7 +5278,8 @@ def student_fee(s_period="curr"):
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
     sr_file = "X021ex_Qual_halffee_transaction"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    print("Build the final report")
+    if l_debug:
+        print("Build the final report")
     if i_finding_before > 0 and i_finding_after > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
@@ -5143,7 +5324,8 @@ def student_fee(s_period="curr"):
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-            print("Export findings...")
+            if l_debug:
+                print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Student_fee_test_021ex_qual_fee_half_transaction_"
             sx_file_dated = sx_file + funcdate.today_file()
@@ -5163,7 +5345,8 @@ def student_fee(s_period="curr"):
     """*****************************************************************************
     QUALIFICATION FEE TEST ABNORMAL TRANSACTION CONTACT
     *****************************************************************************"""
-    print("QUALIFICATION FEE TEST ABNORMAL TRANSACTION CONTACT")
+    if l_debug:
+        print("QUALIFICATION FEE TEST ABNORMAL TRANSACTION CONTACT")
     funcfile.writelog("QUALIFICATION FEE TEST ABNORMAL TRANSACTION CONTACT")
 
     # FILES NEEDED
@@ -5174,7 +5357,8 @@ def student_fee(s_period="curr"):
     s_desc = "Qualification fee abnormal amount for contact student"
 
     # ISOLATE QUALIFICATIONS WITH ABNORMAL TRANSACTIONS - CONTACT STUDENTS ONLY
-    print("Isolate qualifications with abnormal value transactions...")
+    if l_debug:
+        print("Isolate qualifications with abnormal value transactions...")
     sr_file = "X021fa_Qual_abnormalfee_transaction"
     s_sql = "Create table " + sr_file + " AS" + """
     Select
@@ -5195,7 +5379,8 @@ def student_fee(s_period="curr"):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     so_conn.commit()
     if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-        print("Export findings...")
+        if l_debug:
+            print("Export findings...")
         sx_path = re_path + "/"
         sx_file = "Student_fee_test_021fx_qual_fee_abnormal_transaction_studentlist_"
         sx_file_dated = sx_file + funcdate.today_file()
@@ -5205,7 +5390,8 @@ def student_fee(s_period="curr"):
         funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
 
     # IDENTIFY FINDINGS
-    print("Identify findings...")
+    if l_debug:
+        print("Identify findings...")
     sr_file = "X021fb_findings"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
@@ -5227,14 +5413,16 @@ def student_fee(s_period="curr"):
 
     # COUNT THE NUMBER OF FINDINGS
     i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
-    print("*** Found " + str(i_finding_before) + " exceptions ***")
+    if l_debug:
+        print("*** Found " + str(i_finding_before) + " exceptions ***")
     funcfile.writelog("%t FINDING: " + str(i_finding_before) + " QUALIFICATION ABNORMAL FEE TRAN finding(s)")
 
     # GET PREVIOUS FINDINGS
     sr_file = "X021fc_get_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
-        print("Import previously reported findings...")
+        if l_debug:
+            print("Import previously reported findings...")
         so_curs.execute(
             "CREATE TABLE " + sr_file + """
             (PROCESS TEXT,
@@ -5271,7 +5459,8 @@ def student_fee(s_period="curr"):
     sr_file = "X021fc_set_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
-        print("Obtain the latest previous finding...")
+        if l_debug:
+            print("Obtain the latest previous finding...")
         s_sql = "Create Table " + sr_file + " As" + """
         Select
             GET.PROCESS,
@@ -5299,7 +5488,8 @@ def student_fee(s_period="curr"):
     sr_file = "X021fd_add_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
-        print("Join previously reported to current findings...")
+        if l_debug:
+            print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         Select
             FIND.*,
@@ -5351,7 +5541,8 @@ def student_fee(s_period="curr"):
         # Export findings to previous reported file
         i_finding_after = funcsys.tablerowcount(so_curs, sr_file)
         if i_finding_after > 0:
-            print("*** " + str(i_finding_after) + " Finding(s) to report ***")
+            if l_debug:
+                print("*** " + str(i_finding_after) + " Finding(s) to report ***")
             sx_path = ed_path
             sx_file = "302_reported"
             # Read the header data
@@ -5365,7 +5556,8 @@ def student_fee(s_period="curr"):
                 funcsms.send_telegram('', 'administrator',
                                       '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
-            print("*** No new findings to report ***")
+            if l_debug:
+                print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
 
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
@@ -5373,7 +5565,8 @@ def student_fee(s_period="curr"):
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
         if i_finding_after > 0:
-            print("Import reporting officers for mail purposes...")
+            if l_debug:
+                print("Import reporting officers for mail purposes...")
             s_sql = "CREATE TABLE " + sr_file + " AS " + """
             Select
                 OFFICER.LOOKUP,
@@ -5396,7 +5589,8 @@ def student_fee(s_period="curr"):
     sr_file = "X021fg_supervisor"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0 and i_finding_after > 0:
-        print("Import reporting supervisors for mail purposes...")
+        if l_debug:
+            print("Import reporting supervisors for mail purposes...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             SUPERVISOR.LOOKUP,
@@ -5419,7 +5613,8 @@ def student_fee(s_period="curr"):
     sr_file = "X021fh_detail"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0 and i_finding_after > 0:
-        print("Add contact details to findings...")
+        if l_debug:
+            print("Add contact details to findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             PREV.ORG,
@@ -5494,7 +5689,8 @@ def student_fee(s_period="curr"):
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
     sr_file = "X021fx_Qual_abnormalfee_transaction"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    print("Build the final report")
+    if l_debug:
+        print("Build the final report")
     if i_finding_before > 0 and i_finding_after > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
@@ -5539,7 +5735,8 @@ def student_fee(s_period="curr"):
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-            print("Export findings...")
+            if l_debug:
+                print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Student_fee_test_021fx_qual_fee_abnormal_transaction_"
             sx_file_dated = sx_file + funcdate.today_file()
@@ -5559,7 +5756,8 @@ def student_fee(s_period="curr"):
     """*****************************************************************************
     QUALIFICATION FEE TEST OVERCHARGE CONTACT
     *****************************************************************************"""
-    print("QUALIFICATION FEE TEST OVERCHARGE CONTACT")
+    if l_debug:
+        print("QUALIFICATION FEE TEST OVERCHARGE CONTACT")
     funcfile.writelog("QUALIFICATION FEE TEST OVERCHARGE CONTACT")
 
     # FILES NEEDED
@@ -5574,7 +5772,8 @@ def student_fee(s_period="curr"):
     s_desc = "Student account overcharged with qualification fee"
 
     # OBTAIN TEST DATA
-    print("Obtain test data...")
+    if l_debug:
+        print("Obtain test data...")
     sr_file: str = s_fprefix + "a_qual_fee_overcharge"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -5594,7 +5793,8 @@ def student_fee(s_period="curr"):
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-        print("Export findings...")
+        if l_debug:
+            print("Export findings...")
         sx_path = re_path + "/"
         sx_file = "Student_fee_test_" + s_fprefix + "_" + s_finding + "_studentlist_"
         sx_file_dated = sx_file + funcdate.today_file()
@@ -5604,7 +5804,8 @@ def student_fee(s_period="curr"):
         funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
 
     # SELECT TEST DATA
-    print("Identify findings...")
+    if l_debug:
+        print("Identify findings...")
     sr_file = s_fprefix + "b_finding"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -5628,7 +5829,8 @@ def student_fee(s_period="curr"):
 
     # COUNT THE NUMBER OF FINDINGS
     i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
-    print("*** Found " + str(i_finding_before) + " exceptions ***")
+    if l_debug:
+        print("*** Found " + str(i_finding_before) + " exceptions ***")
     funcfile.writelog("%t FINDING: " + str(i_finding_before) + " " + s_finding + " finding(s)")
 
     # GET PREVIOUS FINDINGS
@@ -5645,7 +5847,8 @@ def student_fee(s_period="curr"):
     sr_file = s_fprefix + "d_addprev"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
-        print("Join previously reported to current findings...")
+        if l_debug:
+            print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         Select
             FIND.*,
@@ -5699,7 +5902,8 @@ def student_fee(s_period="curr"):
         # Export findings to previous reported file
         i_finding_after = funcsys.tablerowcount(so_curs, sr_file)
         if i_finding_after > 0:
-            print("*** " + str(i_finding_after) + " Finding(s) to report ***")
+            if l_debug:
+                print("*** " + str(i_finding_after) + " Finding(s) to report ***")
             sx_path = ed_path
             sx_file = s_xfile[:-4]
             # Read the header data
@@ -5713,7 +5917,8 @@ def student_fee(s_period="curr"):
                 funcsms.send_telegram('', 'administrator',
                                       '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
-            print("*** No new findings to report ***")
+            if l_debug:
+                print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
 
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
@@ -5730,7 +5935,8 @@ def student_fee(s_period="curr"):
     sr_file = s_fprefix + "h_detail"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0 and i_finding_after > 0:
-        print("Add contact details to findings...")
+        if l_debug:
+            print("Add contact details to findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             PREV.ORG,
@@ -5812,7 +6018,8 @@ def student_fee(s_period="curr"):
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
     sr_file = s_fprefix + "x_qual_fee_overcharge"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    print("Build the final report")
+    if l_debug:
+        print("Build the final report")
     if i_finding_before > 0 and i_finding_after > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
@@ -5859,7 +6066,8 @@ def student_fee(s_period="curr"):
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-            print("Export findings...")
+            if l_debug:
+                print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Qualification_test_" + s_fprefix + "_" + s_finding.lower() + "_"
             sx_file_dated = sx_file + funcdate.today_file()
@@ -5879,7 +6087,8 @@ def student_fee(s_period="curr"):
     """*****************************************************************************
     SECONDARY QUALIFICATION FEE OVERCHARGE CONTACT
     *****************************************************************************"""
-    print("SECONDARY QUALIFICATION FEE OVERCHARGE CONTACT")
+    if l_debug:
+        print("SECONDARY QUALIFICATION FEE OVERCHARGE CONTACT")
     funcfile.writelog("SECONDARY QUALIFICATION FEE OVERCHARGE CONTACT")
 
     # FILES NEEDED
@@ -5895,7 +6104,8 @@ def student_fee(s_period="curr"):
     s_desc = "Contact student account overcharged for a secondary qualification"
 
     # OBTAIN TEST DATA
-    print("Obtain test data...")
+    if l_debug:
+        print("Obtain test data...")
     sr_file: str = s_fprefix + "a_" + s_fname
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -5915,7 +6125,8 @@ def student_fee(s_period="curr"):
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-        print("Export findings...")
+        if l_debug:
+            print("Export findings...")
         sx_path = re_path + "/"
         sx_file = "Student_fee_test_" + s_fprefix + "_" + s_finding + "_studentlist_"
         sx_file_dated = sx_file + funcdate.today_file()
@@ -5925,7 +6136,8 @@ def student_fee(s_period="curr"):
         funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
 
     # SELECT TEST DATA
-    print("Identify findings...")
+    if l_debug:
+        print("Identify findings...")
     sr_file = s_fprefix + "b_finding"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -5950,7 +6162,8 @@ def student_fee(s_period="curr"):
 
     # COUNT THE NUMBER OF FINDINGS
     i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
-    print("*** Found " + str(i_finding_before) + " exceptions ***")
+    if l_debug:
+        print("*** Found " + str(i_finding_before) + " exceptions ***")
     funcfile.writelog("%t FINDING: " + str(i_finding_before) + " " + s_finding + " finding(s)")
 
     # GET PREVIOUS FINDINGS
@@ -5967,7 +6180,8 @@ def student_fee(s_period="curr"):
     sr_file = s_fprefix + "d_addprev"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
-        print("Join previously reported to current findings...")
+        if l_debug:
+            print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         Select
             FIND.*,
@@ -6021,7 +6235,8 @@ def student_fee(s_period="curr"):
         # Export findings to previous reported file
         i_finding_after = funcsys.tablerowcount(so_curs, sr_file)
         if i_finding_after > 0:
-            print("*** " + str(i_finding_after) + " Finding(s) to report ***")
+            if l_debug:
+                print("*** " + str(i_finding_after) + " Finding(s) to report ***")
             sx_path = ed_path
             sx_file = s_xfile[:-4]
             # Read the header data
@@ -6035,7 +6250,8 @@ def student_fee(s_period="curr"):
                 funcsms.send_telegram('', 'administrator',
                                       '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
-            print("*** No new findings to report ***")
+            if l_debug:
+                print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
 
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
@@ -6052,7 +6268,8 @@ def student_fee(s_period="curr"):
     sr_file = s_fprefix + "h_detail"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0 and i_finding_after > 0:
-        print("Add contact details to findings...")
+        if l_debug:
+            print("Add contact details to findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             PREV.ORG,
@@ -6135,7 +6352,8 @@ def student_fee(s_period="curr"):
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
     sr_file = s_fprefix + "x_" + s_fname
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    print("Build the final report")
+    if l_debug:
+        print("Build the final report")
     if i_finding_before > 0 and i_finding_after > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
@@ -6182,7 +6400,8 @@ def student_fee(s_period="curr"):
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-            print("Export findings...")
+            if l_debug:
+                print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Qualification_test_" + s_fprefix + "_" + s_finding.lower() + "_"
             sx_file_dated = sx_file + funcdate.today_file()
@@ -6202,13 +6421,15 @@ def student_fee(s_period="curr"):
     """*****************************************************************************
     MODULE FEE MASTER 1 - PREPARE MODULE MASTER FILES
     *****************************************************************************"""
-    print("MODULE FEE MASTER")
+    if l_debug:
+        print("MODULE FEE MASTER")
     funcfile.writelog("MODULE FEE MASTER")
 
     # IMPORT MODULE LEVY LIST
     sr_file = "X030aa_Fiabd007"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    print("Import vss module fees...")
+    if l_debug:
+        print("Import vss module fees...")
     so_curs.execute(
         "Create Table " + sr_file + """
         (ACAD_PROG_FEE_TYPE INT,
@@ -6235,7 +6456,8 @@ def student_fee(s_period="curr"):
     # Read the COLUMN database data
     for row in co_reader:
         # Populate the column variables
-        # print(row[0])
+        # if l_debug:
+        #   print(row[0])
         if "Academic Program Fee Type" in row[0]:
             continue
         elif row[0] == "":
@@ -6263,7 +6485,8 @@ def student_fee(s_period="curr"):
             s_cols = s_cols.replace("A'S ", "A ")
             s_cols = s_cols.replace("E'S ", "E ")
             s_cols = s_cols.replace("N'S ", "N ")
-            # print(s_cols)
+            # if l_debug:
+            #   print(s_cols)
             so_curs.execute(s_cols)
     so_conn.commit()
     # Close the imported data file
@@ -6271,7 +6494,8 @@ def student_fee(s_period="curr"):
     funcfile.writelog("%t IMPORT TABLE: " + ed_path + "302_fiapd007_modu_period.csv (" + sr_file + ")")
 
     # SUMM FIAB LEVY LIST
-    print("Build summary of module levy list...")
+    if l_debug:
+        print("Build summary of module levy list...")
     sr_file = "X030aa_Fiabd007_summ"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -6300,7 +6524,8 @@ def student_fee(s_period="curr"):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD SUMMARY OF ALL MODULES PRESENTED
-    print("Build list of all modules presented...")
+    if l_debug:
+        print("Build list of all modules presented...")
     sr_file = "X030ab_Stud_modu_list"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "Create table " + sr_file + " AS" + """
@@ -6334,7 +6559,8 @@ def student_fee(s_period="curr"):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD SUMMARY OF ALL MODULES PRESENTED
-    print("Build summary of all modules presented...")
+    if l_debug:
+        print("Build summary of all modules presented...")
     sr_file = "X030ac_Stud_module_summ"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "Create table " + sr_file + " AS" + """
@@ -6367,7 +6593,8 @@ def student_fee(s_period="curr"):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD LIST OF MODULES PLUS STATS
-    print("Build summary of modules levied from transactions...")
+    if l_debug:
+        print("Build summary of modules levied from transactions...")
     sr_file = "X030bb_Trans_feemodu"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "Create table " + sr_file + " AS" + """
@@ -6393,7 +6620,8 @@ def student_fee(s_period="curr"):
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # CALCULATE THE MODULE FEES LEVIED PER STUDENT
-    print("Calculate the module fees levied per student...")
+    if l_debug:
+        print("Calculate the module fees levied per student...")
     sr_file = "X030bb_Trans_feemodu_stud"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "Create table " + sr_file + " AS" + """
@@ -6427,13 +6655,15 @@ def student_fee(s_period="curr"):
     # NOTE - Function fully functional. Take long time to complete (30min). Not used at the moment.
     """
     # CALCULATE THE STATISTIC MODE FOR EACH QUALIFICATION
-    print("Calculate the module transaction statistic mode...")
+    if l_debug:
+        print("Calculate the module transaction statistic mode...")
     i_value: int = 0
     sr_file = "X030bc_Trans_feemodu_mode"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute("CREATE TABLE " + sr_file + " (FMODAPID INT, ENROL_ID INT, AMOUNT REAL)")
     for qual in so_curs.execute("SELECT FMODAPID, ENROL_ID FROM X030ab_Trans_feemodu").fetchall():
-        # print("FMODAPID = " + str(qual[0]) + " And ENROL_CAT = " + str(qual[1]))
+            # if l_debug:
+            #   print("FMODAPID = " + str(qual[0]) + " And ENROL_CAT = " + str(qual[1]))
         try:
             i_value = funcstat.stat_mode(so_curs,
                                          "X030ab_Trans_feemodu_stud",
@@ -6452,7 +6682,8 @@ def student_fee(s_period="curr"):
                                                       )
             else:
                 i_value = 0
-        # print(i_value)
+            # if l_debug:
+            #   print(i_value)
         s_cols = "INSERT INTO " + sr_file + " VALUES(" + str(qual[0]) + ", " + str(qual[1]) + ", " + str(i_value) + ")"
         so_curs.execute(s_cols)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -6460,7 +6691,8 @@ def student_fee(s_period="curr"):
     """
 
     # BUILD SUMMARY OF ALL MODULES PRESENTED
-    print("Build summary of all modules presented...")
+    if l_debug:
+        print("Build summary of all modules presented...")
     sr_file = "X030bd_Stud_modu_present"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "Create table " + sr_file + " AS" + """
@@ -6490,7 +6722,8 @@ def student_fee(s_period="curr"):
     """*****************************************************************************
     TEST MODULE FEE NOT LOADED
     *****************************************************************************"""
-    print("MODULE FEE NOT LOADED")
+    if l_debug:
+        print("MODULE FEE NOT LOADED")
     funcfile.writelog("MODULE FEE NOT LOADED")
 
     # DECLARE VARIABLES
@@ -6498,7 +6731,8 @@ def student_fee(s_period="curr"):
     s_desc = "Module fee not loaded"
 
     # JOIN MODULES PRESENTED AND LEVY LIST
-    print("Join modules presented and levy list...")
+    if l_debug:
+        print("Join modules presented and levy list...")
     sr_file = "X031aa_Modu_nofee_loaded"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "Create Table " + sr_file + " As" + """
@@ -6527,7 +6761,8 @@ def student_fee(s_period="curr"):
 
     # IDENTIFY FINDINGS
     # NOTE Exclude distance students
-    print("Identify findings...")
+    if l_debug:
+        print("Identify findings...")
     sr_file = "X031ab_findings"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -6556,7 +6791,8 @@ def student_fee(s_period="curr"):
 
     # COUNT THE NUMBER OF FINDINGS
     i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
-    print("*** Found " + str(i_finding_before) + " exceptions ***")
+    if l_debug:
+        print("*** Found " + str(i_finding_before) + " exceptions ***")
     funcfile.writelog("%t FINDING: " + str(i_finding_before) + " MODULE NO FEE LOADED finding(s)")
 
     # GET PREVIOUS FINDINGS
@@ -6573,7 +6809,8 @@ def student_fee(s_period="curr"):
     sr_file = "X031ad_add_previous"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
-        print("Join previously reported to current findings...")
+        if l_debug:
+            print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         Select
             FIND.*,
@@ -6627,7 +6864,8 @@ def student_fee(s_period="curr"):
         # Export findings to previous reported file
         i_finding_after = funcsys.tablerowcount(so_curs, sr_file)
         if i_finding_after > 0:
-            print("*** " + str(i_finding_after) + " Finding(s) to report ***")
+            if l_debug:
+                print("*** " + str(i_finding_after) + " Finding(s) to report ***")
             sx_path = ed_path
             sx_file = "302_reported"
             # Read the header data
@@ -6641,7 +6879,8 @@ def student_fee(s_period="curr"):
                 funcsms.send_telegram('', 'administrator',
                                       '<b>' + str(i_finding_before) + '/' + str(i_finding_after) + '</b> ' + s_desc)
         else:
-            print("*** No new findings to report ***")
+            if l_debug:
+                print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
 
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
@@ -6658,7 +6897,8 @@ def student_fee(s_period="curr"):
     sr_file = "X031ah_detail"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0 and i_finding_after > 0:
-        print("Add contact details to findings...")
+        if l_debug:
+            print("Add contact details to findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             PREV.ORG,
@@ -6717,7 +6957,8 @@ def student_fee(s_period="curr"):
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
     sr_file = "X031ax_Modu_nofee_loaded"
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    print("Build the final report")
+    if l_debug:
+        print("Build the final report")
     if i_finding_before > 0 and i_finding_after > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
@@ -6751,7 +6992,8 @@ def student_fee(s_period="curr"):
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-            print("Export findings...")
+            if l_debug:
+                print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Student_fee_test_031ax_modu_fee_not_loaded_"
             sx_file_dated = sx_file + funcdate.today_file()
@@ -6775,7 +7017,8 @@ def student_fee(s_period="curr"):
     """ ****************************************************************************
     END OF SCRIPT
     *****************************************************************************"""
-    print("END OF SCRIPT")
+    if l_debug:
+        print("END OF SCRIPT")
     funcfile.writelog("END OF SCRIPT")
 
     # CLOSE THE DATABASE CONNECTION
