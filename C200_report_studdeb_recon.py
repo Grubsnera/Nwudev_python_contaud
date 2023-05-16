@@ -466,7 +466,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     # Export the data
     print("Export gl student debtor transactions...")
     sr_filet = sr_file
-    sx_path = re_path + funcdate.cur_year() + "/"
+    sx_path = re_path + s_year + "/"
     sx_file = "Debtor_001_gltran_"
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
     funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
@@ -577,7 +577,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     # Export the data
     print("Export gl student debtor summary per transaction type...")
     sr_filet = sr_file
-    sx_path = re_path + funcdate.cur_year() + "/"
+    sx_path = re_path + s_year + "/"
     sx_file = "Debtor_001_glsummtype_"
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
     funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
@@ -632,7 +632,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
         # Export the data
         print("Export gl post month...")
         sr_filet = sr_file
-        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_path = re_path + s_year + "/"
         sx_file = "Debtor_000_postmonth"
         sx_filet = sx_file + funcdate.prev_monthendfile()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -722,7 +722,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     # Export the data
     print("Export vss campus balances per transaction type...")
     sr_filet = sr_file
-    sx_path = re_path + funcdate.cur_year() + "/"
+    sx_path = re_path + s_year + "/"
     sx_file = "Debtor_001_vsstran_"
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
     funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
@@ -823,7 +823,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     # Export the data
     print("Export vss campus balances per transaction type...")
     sr_filet = sr_file
-    sx_path = re_path + funcdate.cur_year() + "/"
+    sx_path = re_path + s_year + "/"
     sx_file = "Debtor_002_vsssummtype_"
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
     funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
@@ -874,7 +874,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     # Export the data
     print("Export vss student balances...")
     sr_filet = sr_file
-    sx_path = re_path + funcdate.cur_year() + "/"
+    sx_path = re_path + s_year + "/"
     sx_file = "Debtor_002_studbal_"
     # sx_filet = sx_file + funcdate.prev_monthendfile()
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -923,7 +923,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     # Export the data
     print("Export vss student balances...")
     sr_filet = sr_file
-    sx_path = re_path + funcdate.cur_year() + "/"
+    sx_path = re_path + s_year + "/"
     sx_file = "Debtor_002_studbal_open_"
     # sx_filet = sx_file + funcdate.prev_monthendfile()
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -1291,7 +1291,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     # Export the data
     print("Export vss campus balances per month...")
     sr_filet = sr_file
-    sx_path = re_path + funcdate.cur_year() + "/"
+    sx_path = re_path + s_year + "/"
     sx_file = "Debtor_000_vss_gl_summmonth_"
     # sx_filet = sx_file + funcdate.prev_monthendfile()
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -1562,7 +1562,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     if l_export:
         print("Export vss gl recon...")
         sr_filet = sr_file
-        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_path = re_path + s_year + "/"
         sx_file = "Debtor_003_vss_gl_recon_"
         sx_filet = sx_file + funcdate.cur_monthendfile()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -1915,7 +1915,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + s_year + "/"
             sx_file = "Vssgl_test_004bx_vss_gl_difference_"
             sx_file_dated = sx_file + funcdate.today_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -2237,7 +2237,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + s_year + "/"
             sx_file = "Vssgl_test_004cx_invss_nogl_"
             sx_file_dated = sx_file + funcdate.today_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -2557,7 +2557,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + s_year + "/"
             sx_file = "Vssgl_test_004dx_ingl_novss_"
             sx_file_dated = sx_file + funcdate.today_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -2884,7 +2884,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + s_year + "/"
             sx_file = "Vssgl_test_004ex_vss_gl_burs_difference_"
             sx_file_dated = sx_file + funcdate.today_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -2995,7 +2995,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     # Export the data
     print("Export vss bursary campus balances per transaction type...")
     sr_filet = sr_file
-    sx_path = re_path + funcdate.cur_year() + "/"
+    sx_path = re_path + s_year + "/"
     sx_file = "Debtor_002_vsssummtypeburs_"
     sx_filet = sx_file + funcdate.prev_monthendfile()
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -3074,7 +3074,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     # Export the data
     print("Export gl bursary campus balances per transaction type...")
     sr_filet = sr_file
-    sx_path = re_path + funcdate.cur_year() + "/"
+    sx_path = re_path + s_year + "/"
     sx_file = "Debtor_001_glsummtypeburs_"
     sx_filet = sx_file + funcdate.prev_monthendfile()
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -3283,7 +3283,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     # Export the data
     print("Export grouped matched bursary transactions...")
     sr_filet = sr_file
-    sx_path = re_path + funcdate.cur_year() + "/"
+    sx_path = re_path + s_year + "/"
     sx_file = "Debtor_010c_burs_matched_summmonth_"
     # sx_filet = sx_file + funcdate.prev_monthendfile()
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -3325,7 +3325,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     # Export the data
     print("Export bursary transactions in gl not in vss...")
     sr_filet = sr_file
-    sx_path = re_path + funcdate.cur_year() + "/"
+    sx_path = re_path + s_year + "/"
     sx_file = "Debtor_010d_test_burs_ingl_novss_"
     sx_filet = sx_file + funcdate.prev_monthendfile()
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -3653,7 +3653,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + s_year + "/"
             sx_file = "Vssgl_test_010ex_bursary_invss_nogl_"
             sx_file_dated = sx_file + funcdate.today_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -3991,7 +3991,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + s_year + "/"
             sx_file = "Vssgl_test_010fx_burs_gl_diffcampus_"
             sx_file_dated = sx_file + funcdate.today_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -4128,7 +4128,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
         print("Export findings...")
-        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_path = re_path + s_year + "/"
         sx_file = "Student_balance_test_" + s_fprefix + "_" + s_finding.lower() + "_studentlist_"
         # sx_file_dated = sx_file + funcdate.today_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -4358,7 +4358,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + s_year + "/"
             sx_file = "Student_balance_test_" + s_fprefix + "_" + s_finding.lower() + "_"
             sx_file_dated = sx_file + funcdate.today_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
