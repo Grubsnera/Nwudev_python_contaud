@@ -2028,7 +2028,9 @@ def student_fee(s_period="curr"):
         LEVY_CATEGORY TEXT,
         TRANSCODE TEXT,
         UMPT_REGU INT,
-        AMOUNT REAL)
+        AMOUNT REAL,
+        START_DATE TEXT,
+        END_DATE TEXT)
         """)
     co = open(ed_path + "302_fiapd007_qual_" + s_period + ".csv", "r", encoding="utf-8")
     co_reader = csv.reader(co)
@@ -2058,8 +2060,11 @@ def student_fee(s_period="curr"):
                                                 "'" + row[12] + "'," \
                                                 "'" + row[13] + "'," \
                                                 "" + row[14] + "," \
-                                                "" + row[15] + ")"
-            # if l_debug:
+                                                "" + row[15] + "," \
+                                                "'" + row[16] + "'," \
+                                                "'" + row[17] + "')"
+
+        # if l_debug:
             #   print(s_cols)
             so_curs.execute(s_cols)
     so_conn.commit()
@@ -6449,7 +6454,9 @@ def student_fee(s_period="curr"):
         MODULE_TYPE TEXT,
         MODULE_TYPE_NAME TEXT,
         TRANSCODE TEXT,
-        AMOUNT REAL)
+        AMOUNT REAL,
+        START_DATE,
+        END_DATE)
         """)
     co = open(ed_path + "302_fiapd007_modu_" + s_period + ".csv", "r", encoding="utf-8")
     co_reader = csv.reader(co)
@@ -6481,7 +6488,10 @@ def student_fee(s_period="curr"):
                                                 "'" + row[14] + "'," \
                                                 "'" + row[15] + "'," \
                                                 "'" + row[16] + "'," \
-                                                "" + row[17] + ")"
+                                                "" + row[17] + "," \
+                                                "'" + row[18] + "'," \
+                                                "'" + row[19] + "')"
+
             s_cols = s_cols.replace("A'S ", "A ")
             s_cols = s_cols.replace("E'S ", "E ")
             s_cols = s_cols.replace("N'S ", "N ")
