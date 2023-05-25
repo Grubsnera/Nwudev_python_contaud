@@ -7,6 +7,7 @@ Author: Albert J v Rensburg (NWU21162395)
 # IMPORT PYTHON MODULES
 import sqlite3
 import csv
+import zipfile
 
 # IMPORT OWN MODULES
 from _my_modules import funcconf
@@ -17,6 +18,7 @@ from _my_modules import funcstat
 from _my_modules import funcsys
 from _my_modules import funcsms
 from _my_modules import functest
+from _my_modules import funcmail
 
 """ INDEX **********************************************************************
 ENVIRONMENT
@@ -192,12 +194,156 @@ def student_fee(s_period: str = "curr"):
         print("TEMPORARY AREA")
     funcfile.writelog("TEMPORARY AREA")
 
+    """
+    import zipfile
+
+    file_name = 'example.zip'  # Name of zip file to be created
+
+    # List of files to be zipped 
+    files_to_zip = ['example1.txt', 'example2.txt']
+
+    archive = zipfile.ZipFile(file_name, 'w')
+
+    # Adding files to zip
+    for file in files_to_zip:
+        archive.write(file, compress_type=zipfile.ZIP_DEFLATED)
+
+        # Closing file
+    archive.close()
+    """
+
     """ ****************************************************************************
     BEGIN OF SCRIPT
     *****************************************************************************"""
     if l_debug:
         print("BEGIN OF SCRIPT")
     funcfile.writelog("BEGIN OF SCRIPT")
+
+
+    # JOIN STUDENTS AND TRANSACTIONS
+    if l_debug:
+        print("Join students and transactions...")
+    sr_file = "X020bx_Student_master_sort"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        Case
+            When HALF.FEE_COUNT_HALF = 2 Then 1
+            When STUD.CONV_IND != '' And STUD.FEE_MODE = STUD.FEE_QUAL_TOTAL Then 1
+            When STUD.CONV_IND != '' And STUD.FEE_LEVIED > 0 And STUD.FEE_LEVIED = Round(STUD.FEE_QUAL_TOTAL/2,2) Then 1 
+            When STUD.CONV_IND != '' And STUD.FEE_LEVIED > 0 And STUD.FEE_QUAL_TOTAL >= STUD.FEE_LEVIED Then 1
+            When STUD.CONV_IND != '' And FEE_QUAL_TOTAL > 0 And FEE_SHOULD_BE Like('%HALF%') And FEE_MODE_HALF <= FEE_QUAL_TOTAL Then 1 
+            When STUD.CONV_IND != '' And FEE_QUAL_TOTAL > 0 And FEE_SHOULD_BE Like('%FULL%') And FEE_MODE <= FEE_QUAL_TOTAL Then 1
+            Else VALID
+        End As VALID,
+        STUD.CAMPUS,
+        STUD.KSTUDBUSENTID,
+        STUD.FEE_LEVIED,
+        STUD.FEE_MODE,
+        STUD.FEE_MODE_HALF,
+        STUD.CONV_IND,
+        STUD.FEE_QUAL_TOTAL,
+        HALF.FEE_COUNT_HALF,
+        STUD.FEE_SHOULD_BE,
+        STUD.FEE_LEVIED_TYPE,
+        STUD.QUALIFICATION,
+        STUD.QUALIFICATION_NAME,
+        STUD.QUAL_TYPE,
+        STUD.QUAL_TYPE_FEE,
+        STUD.ACTIVE_IND,
+        STUD.LEVY_CATEGORY,
+        STUD.PRESENT_CAT,
+        STUD.ENROL_CAT,
+        STUD.ENTRY_LEVEL,
+        STUD.STATUS_FINAL,
+        STUD.FSITE,
+        STUD.ORGUNIT_NAME,
+        STUD.DATEQUALLEVELSTARTED,
+        STUD.STARTDATE,
+        STUD.DATEENROL,
+        STUD.DISCONTINUEDATE,
+        STUD.DAYS_REG,
+        STUD.DISCDATE_CALC,
+        STUD.RESULTPASSDATE,
+        STUD.DAYS_PASS,
+        STUD.RESULTISSUEDATE,
+        STUD.RESULT,
+        STUD.CEREMONYDATETIME,
+        STUD.CEREMONY,
+        STUD.ISHEMISSUBSIDY,
+        STUD.ISMAINQUALLEVEL,
+        STUD.ENROLACADEMICYEAR,
+        STUD.ENROLHISTORYYEAR,
+        STUD.CALCHISTORYYEAR,
+        STUD.FEEHISTORYYEAR,        
+        STUD.SEM0,
+        STUD.SEM1,
+        STUD.SEM2,
+        STUD.SEM7,
+        STUD.SEM8,
+        STUD.SEM9,
+        STUD.REG_FEE_TYPE,
+        STUD.FEE_BURS,
+        STUD.MIN,
+        STUD.MIN_UNIT,
+        STUD.MAX,
+        STUD.MAX_UNIT,
+        STUD.CERT_TYPE,
+        STUD.LEVY_TYPE,
+        STUD.BLACKLIST,
+        STUD.LONG,
+        STUD.DISCONTINUE_REAS,
+        STUD.POSTPONE_REAS,
+        STUD.FBUSINESSENTITYID,
+        STUD.ORGUNIT_TYPE,
+        STUD.ISCONDITIONALREG,
+        STUD.MARKSFINALISEDDATE,
+        STUD.EXAMSUBMINIMUM,
+        STUD.ISCUMLAUDE,
+        STUD.ISPOSSIBLEGRADUATE,
+        STUD.FACCEPTANCETESTCODEID,
+        STUD.FENROLMENTPRESENTATIONID,
+        STUD.FQUALLEVELAPID,
+        STUD.FPROGRAMAPID,
+        STUD.TRAN_COUNT,
+        STUD.FUSERBUSINESSENTITYID,
+        STUD.NAME_ADDR,
+        STUD.FAUDITUSERCODE,
+        STUD.SYSTEM_DESC
+    From
+        X020ba_Student_master STUD Left Join
+        X020bb_Student_multiple_half HALF On HALF.KSTUDBUSENTID = STUD.KSTUDBUSENTID
+    Order By
+        STUD.FEE_LEVIED_TYPE,
+        STUD.FEE_SHOULD_BE
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
+        if l_debug:
+            print("Export findings...")
+        sx_path = re_path + "/"
+        sx_file = "Student_fee_test_020bx_qual_fee_studentlist_"
+        sx_file_dated = sx_file + funcdate.today_file()
+        s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
+        # funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
+        funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
+
+        # Zip the file
+        zip_file_name = sx_path + 'Student_fee_test_020bx_qual_fee_studentlist_.zip'  # Name of zip file to be created
+        # files_to_zip = ['example1.txt', 'example2.txt']  # List of files to be zipped
+        files_to_zip = [sx_path + 'Student_fee_test_020bx_qual_fee_studentlist_.csv']  # List of files to be zipped
+        archive = zipfile.ZipFile(zip_file_name, 'w')
+        # Adding files to zip
+        for file in files_to_zip:
+            archive.write(file, compress_type=zipfile.ZIP_DEFLATED)
+        archive.close()  # Closing file
+        funcfile.writelog("%t COMPRESS DATA: " + zip_file_name)
+
+    if l_mail:
+        funcmail.Mail('vss_list_020bx_studentlist')
 
     # MESSAGE
     # if l_mess:
