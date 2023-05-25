@@ -7,6 +7,7 @@ Author: Albert J v Rensburg (NWU21162395)
 # IMPORT PYTHON MODULES
 import sqlite3
 import csv
+import zipfile
 
 # IMPORT OWN MODULES
 from _my_modules import funcconf
@@ -3662,6 +3663,18 @@ def student_fee(s_period="curr"):
         funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
         # funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
         funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
+
+        # Zip the file
+        zip_file_name = sx_path + 'Student_fee_test_020bx_qual_fee_studentlist_.zip'  # Name of zip file to be created
+        # files_to_zip = ['example1.txt', 'example2.txt']  # List of files to be zipped
+        files_to_zip = [sx_path + 'Student_fee_test_020bx_qual_fee_studentlist_.csv']  # List of files to be zipped
+        archive = zipfile.ZipFile(zip_file_name, 'w')
+        # Adding files to zip
+        for file in files_to_zip:
+            archive.write(file, compress_type=zipfile.ZIP_DEFLATED)
+        archive.close()  # Closing file
+        funcfile.writelog("%t COMPRESS DATA: " + zip_file_name)
+
     if l_mail:
         funcmail.Mail('vss_list_020bx_studentlist')
 
