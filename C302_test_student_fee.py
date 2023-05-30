@@ -2081,16 +2081,17 @@ def student_fee(s_period="curr"):
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         FIAB.FQUALLEVELAPID,
-        Upper(FIAB.CAMPUS) AS CAMPUS,
+        Upper(FIAB.CAMPUS) As CAMPUS,
         FIAB.FPRESENTATIONCATEGORYCODEID,
-        Upper(FIAB.PRESENT_CAT) AS PRESENT_CAT,
+        Upper(FIAB.PRESENT_CAT) As PRESENT_CAT,
         FIAB.FENROLMENTCATEGORYCODEID,
-        Upper(FIAB.ENROL_CATEGORY) AS ENROL_CATEGORY,
+        Upper(FIAB.ENROL_CATEGORY) As ENROL_CATEGORY,
         FIAB.UMPT_REGU As FEEYEAR,
-        FIAB.AMOUNT,
+        Max(FIAB.AMOUNT) As AMOUNT,
         Count(FIAB.ACAD_PROG_FEE_TYPE) As COUNT,
         FIAB.QUALIFICATION,
-        FIAB.QUALIFICATION_NAME        
+        FIAB.QUALIFICATION_NAME,
+        Max(FIAB.START_DATE) As START_DATE
     From
         X020aa_Fiabd007 FIAB
     Group By
@@ -2098,8 +2099,7 @@ def student_fee(s_period="curr"):
         FIAB.CAMPUS,
         FIAB.FPRESENTATIONCATEGORYCODEID,
         FIAB.FENROLMENTCATEGORYCODEID,
-        FIAB.UMPT_REGU,
-        FIAB.AMOUNT
+        FIAB.UMPT_REGU
     ;"""
     so_curs.execute(s_sql)
     so_conn.commit()
@@ -6529,18 +6529,18 @@ def student_fee(s_period="curr"):
         Upper(FIAB.PRESENT_CAT) As PRESENT_CAT,
         FIAB.FENROLMENTCATEGORYCODEID,
         Upper(FIAB.ENROL_CATEGORY) As ENROL_CATEGORY,    
-        FIAB.AMOUNT,
+        Max(FIAB.AMOUNT) As AMOUNT,
         Cast(Count(FIAB.ACAD_PROG_FEE_TYPE) As INT) As COUNT,
         FIAB.MODULE,
-        FIAB.MODULE_NAME        
+        FIAB.MODULE_NAME,
+        Max(FIAB.START_DATE) As START_DATE        
     From
         X030aa_Fiabd007 FIAB
     Group By
         FIAB.FMODAPID,
         FIAB.CAMPUS,
         FIAB.FPRESENTATIONCATEGORYCODEID,
-        FIAB.FENROLMENTCATEGORYCODEID,
-        FIAB.AMOUNT
+        FIAB.FENROLMENTCATEGORYCODEID
     ;"""
     so_curs.execute(s_sql)
     so_conn.commit()
