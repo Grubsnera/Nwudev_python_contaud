@@ -178,6 +178,8 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     WHERE
       TRANSCODE <> ''
     ;"""
+
+    # Method 1 - Only 1 Jan transactions become month 00
     """
       CASE
         WHEN SUBSTR(TRANSDATE,6,5)='01-01' AND INSTR('001z031z061',TRANSCODE)>0 THEN '00'
@@ -185,7 +187,16 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
          Strftime('%Y',POSTDATEDTRANSDATE) = '%CYEAR%' THEN strftime('%m',POSTDATEDTRANSDATE)
         ELSE strftime('%m',TRANSDATE)
       END AS MONTH,
+    """
 
+    # Method 2 - All opening balance transactions is month 00
+    """
+      CASE
+        WHEN INSTR('001z031z061',TRANSCODE)>0 THEN '00'
+        WHEN strftime('%Y',TRANSDATE)>strftime('%Y',POSTDATEDTRANSDATE) And
+         Strftime('%Y',POSTDATEDTRANSDATE) = '%CYEAR%' THEN strftime('%m',POSTDATEDTRANSDATE)
+        ELSE strftime('%m',TRANSDATE)
+      END AS MONTH,
     """
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     s_sql = s_sql.replace("%CYEAR%", s_year)
