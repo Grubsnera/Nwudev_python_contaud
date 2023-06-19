@@ -183,8 +183,8 @@ def people_detail_list(
         hro.org_head_person_id org_head_person_id,
         head.employee_number oe_head_number,
         head.full_name oe_head_name_name,
-        sup.employee_number supervisor_number,
-        sup.full_name supervisor_name,
+        sup.line_manager supervisor_number,
+        '' supervisor_name,
         paaf.position_id position_id,
         hrp.position position,
         hrp.max_persons max_persons,
@@ -193,7 +193,7 @@ def people_detail_list(
         upper(pj.job_name) job_name,
         upper(pj.job_segment_name) job_segment_name,
         ppb.name salary_basis,
-        cast(pack.element_value As Real) annual_package,
+        cast((pack.element_value*3)/17 As Real) annual_package,
         hrp.attribute1 account_cost,
         upper(hrp.attribute2) account_allocate,
         cast(hrp.attribute3 as int) account_part,
@@ -209,7 +209,8 @@ def people_detail_list(
         papf.last_update_date people_update_date,
         papf.last_updated_by people_update_by,
         paaf.last_update_date assignment_update_date,
-        paaf.last_updated_by assignment_update_by
+        paaf.last_updated_by assignment_update_by,
+        1 As customer
     FROM
         per_all_people_f papf left join
         per_all_assignments_f paaf on paaf.person_id = papf.person_id left join
@@ -221,8 +222,9 @@ def people_detail_list(
         x000_organization hro on hro.organization_id = paaf.organization_id left join
         x000_organization_struct hos on hos.org1 = paaf.organization_id left join 
         hr_locations_all hrl on hrl.location_id = paaf.location_id left join
-        per_all_people_f sup on sup.person_id = paaf.supervisor_id and
-            paaf.effective_end_date between sup.effective_start_date and sup.effective_end_date left join
+        -- per_all_people_f sup on sup.person_id = paaf.supervisor_id and
+        -- paaf.effective_end_date between sup.effective_start_date and sup.effective_end_date left join
+        xxnwu_line_managers sup on sup.employee_number = papf.employee_number left join
         per_all_people_f head on head.person_id = hro.org_head_person_id and
             paaf.effective_end_date between head.effective_start_date and head.effective_end_date left join        
         per_person_type_usages_f pptuf on pptuf.person_id = papf.person_id and
@@ -247,17 +249,15 @@ def people_detail_list(
         hr_lookups dis on dis.lookup_type = 'REGISTERED_DISABLED' and
          dis.lookup_code = papf.registered_disabled_flag left join
         hr_lookups ler on ler.lookup_type = 'LEAV_REAS' and ler.lookup_code = pps.leaving_reason left join
-        X000_phone_work_latest ph on ph.parent_id = papf.person_id and
-            strftime('%Y-%m-%d', '%DATE%') between ph.date_from and ifnull(ph.date_to, '31-DEC-4712') left join
-        x000_phone_mobile_latest mo on mo.parent_id = papf.person_id and
-            strftime('%Y-%m-%d', '%DATE%') between mo.date_from and ifnull(mo.date_to, '31-DEC-4712') left join
+        X000_phone_work_latest ph on ph.parent_id = papf.person_id left join
+        x000_phone_mobile_latest mo on mo.parent_id = papf.person_id left join
         x000_package pack on pack.employee_number = papf.employee_number left join
         x000_nrf_allowance nrf on nrf.employee_number = papf.employee_number left join
         x000_long_service_date lsd on lsd.employee_number = papf.employee_number left join
         x000_pensionable_salary pes on pes.employee_number = papf.employee_number left join
-        x000_pay_accounts acc on acc.assignment_id = paaf.assignment_id and
-            acc.org_payment_method_id = 61 and        
-            paaf.effective_end_date between acc.effective_start_date and acc.effective_end_date left join
+        x000_pay_accounts_latest acc on acc.assignment_id = paaf.assignment_id left join
+        -- acc.org_payment_method_id = 61 and        
+        -- paaf.effective_end_date between acc.effective_start_date and acc.effective_end_date left join
         x000_address_sars sars on sars.person_id = papf.person_id and
             paaf.effective_end_date between sars.date_from and sars.date_to left join
         x000_address_post post on post.person_id = papf.person_id and
@@ -277,6 +277,21 @@ def people_detail_list(
     so_curs.execute("Update " + sr_file + " Set name_list = name_last||' '||title||' '||initials;")
     so_conn.commit()
     so_curs.execute("Update " + sr_file + " Set name_address = title||' '||initials||' '||name_last;")
+    so_conn.commit()
+    # Update the supervisor name
+    l_sql = """
+    Select
+        peop.employee_number,
+        supe.name_full as supervisor
+    From
+        X000_PEOPLE peop Inner Join
+        X000_PEOPLE supe On supe.employee_number = peop.supervisor_number
+    """
+    s_sql = "Update " + \
+            sr_file + \
+            " Set supervisor_name = name.supervisor From (" + l_sql + \
+            ") As name Where X000_PEOPLE.employee_number = name.employee_number;"
+    so_curs.execute(s_sql)
     so_conn.commit()
 
     # RETURN VALUE
