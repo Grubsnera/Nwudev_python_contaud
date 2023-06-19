@@ -1858,6 +1858,91 @@ def people_test_masterfile():
     if l_debug:
         so_conn.commit()
 
+    # BUILD SUMMARY TABLE WITH PAYROLL UIF PAYMENTS
+    print("Obtain master list of uif employee payments...")
+    sr_file = "X003_uif_payments"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    Select
+        pfp.EMPLOYEE_NUMBER,
+        Max(pfp.EFFECTIVE_DATE) As LAST_PAYMENT_DATE,
+        Count(pfp.RUN_RESULT_ID) As COUNT_PAYMENTS
+    From
+        PAYROLL.X000aa_payroll_history_%PERIOD% pfp
+    Where
+        pfp.ELEMENT_NAME Like 'ZA_UIF_Employee_Contribution%'
+        -- pfp.PAYROLL_NAME Like 'UIF Employee%'
+    Group By
+        pfp.EMPLOYEE_NUMBER
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    if funcdate.prev_monthend()[0:4] == funcdate.prev_year:
+        s_sql = s_sql.replace("%PERIOD%", 'prev')
+    else:
+        s_sql = s_sql.replace("%PERIOD%", 'curr')
+    if l_debug:
+        print(s_sql)
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+    if l_debug:
+        so_conn.commit()
+
+    # BUILD SUMMARY TABLE WITH PAYROLL FOREIGN PAYMENTS
+    print("Obtain master list of uif employee payments...")
+    sr_file = "X003_foreign_payments"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    Select
+        pfp.EMPLOYEE_NUMBER,
+        Max(pfp.EFFECTIVE_DATE) As LAST_PAYMENT_DATE,
+        Count(pfp.RUN_RESULT_ID) As COUNT_PAYMENTS
+    From
+        PAYROLL.X000aa_payroll_history_%PERIOD% pfp
+    Where
+        pfp.ELEMENT_NAME Like 'NWU Foreign Payment%'
+    Group By
+        pfp.EMPLOYEE_NUMBER
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    if funcdate.prev_monthend()[0:4] == funcdate.prev_year:
+        s_sql = s_sql.replace("%PERIOD%", 'prev')
+    else:
+        s_sql = s_sql.replace("%PERIOD%", 'curr')
+    if l_debug:
+        print(s_sql)
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+    if l_debug:
+        so_conn.commit()
+
+    # BUILD PEOPLE TO DETERMINE FOREIGN STATUS
+    print("Obtain people master list with foreign status...")
+    sr_file = "X003_foreigner_master"
+    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    Select
+        peop.employee_number,
+        peop.name_list,
+        uifp.COUNT_PAYMENTS As count_uif,
+        forp.COUNT_PAYMENTS As count_foreign,
+        peop.nationality,
+        peop.is_foreign,
+        peop.national_identifier,
+        peop.passport,
+        peop.permit,
+        peop.permit_expire,
+        peop.account_pay_method,
+        peop.user_person_type
+    From
+        PEOPLE.X000_PEOPLE peop Left Join
+        X003_uif_payments uifp ON uifp.EMPLOYEE_NUMBER = peop.employee_number Left Join
+        X003_foreign_payments forp On forp.EMPLOYEE_NUMBER = peop.employee_number      
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    if l_debug:
+        print(s_sql)
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+    if l_debug:
+        so_conn.commit()
+
     """ ****************************************************************************
     TEST PASSPORT NUMBER BLANK
     *****************************************************************************"""
@@ -7112,6 +7197,31 @@ def people_test_masterfile():
     sr_file = "X008ab_findings"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
+        'NWU' As ORG,
+        SubStr(peop.location, 1, 3) As LOC,
+        peop.assignment_category As ACAT,
+        peop.employee_category As ECAT,
+        peop.employee_number As EMP,
+        peop.phone_work As PHONE_WORK
+    From
+        PEOPLE.X000_PEOPLE peop
+    Where
+        (peop.phone_work Is Null) Or
+        (Length(peop.phone_work) <> 10) Or
+        (Cast(peop.phone_work As Integer) < 1) Or
+        (Cast(peop.phone_work As Integer) > 999999999)    
+    Order By
+        ACAT,
+        ECAT,
+        EMP
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    # Replaced on 2023-06-17
+    """
+    Select
         CURR.ORG,
         CURR.LOC,
         CURR.EMP,
@@ -7120,11 +7230,7 @@ def people_test_masterfile():
         X008aa_phone_work_invalid CURR
     Where
         CURR.PHONE_VALID = 0
-    ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    """
 
     # COUNT THE NUMBER OF FINDINGS
     i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
@@ -7205,9 +7311,9 @@ def people_test_masterfile():
         Select
             PREV.PROCESS,
             PREV.EMP AS FIELD1,
-            '' AS FIELD2,
-            '' AS FIELD3,
-            '' AS FIELD4,
+            PREV.LOC AS FIELD2,
+            PREV.ACAT AS FIELD3,
+            PREV.ECAT AS FIELD4,
             '' AS FIELD5,
             PREV.DATE_REPORTED,
             PREV.DATE_RETEST,
@@ -7300,6 +7406,8 @@ def people_test_masterfile():
         Select
             PREV.ORG,
             PREV.LOC,
+            PREV.ACAT,
+            PREV.ECAT,
             PREV.EMP,
             PEOP.NAME_LIST,
             PREV.PHONE_WORK,
@@ -7314,14 +7422,26 @@ def people_test_masterfile():
             ORG_OFF.EMAIL_ADDRESS As ORG_OFF_MAIL,
             ORG_SUP.EMPLOYEE_NUMBER As ORG_SUP_NUMB,
             ORG_SUP.NAME As ORG_SUP_NAME,
-            ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL
+            ORG_SUP.EMAIL_ADDRESS As ORG_SUP_MAIL,
+            RES_OFF.EMPLOYEE_NUMBER As RESP_OFF_NUMB,
+            RES_OFF.NAME As RESP_OFF_NAME,
+            RES_OFF.EMAIL_ADDRESS As RESP_OFF_MAIL,
+            AUD_OFF.EMPLOYEE_NUMBER As AUD_OFF_NUMB,
+            AUD_OFF.NAME As AUD_OFF_NAME,
+            AUD_OFF.EMAIL_ADDRESS As AUD_OFF_MAIL,
+            AUD_SUP.EMPLOYEE_NUMBER As AUD_SUP_NUMB,
+            AUD_SUP.NAME As AUD_SUP_NAME,
+            AUD_SUP.EMAIL_ADDRESS As AUD_SUP_MAIL
         From
-            X008ad_add_previous PREV
-            Left Join PEOPLE.X002_PEOPLE_CURR PEOP On PEOP.EMPLOYEE_NUMBER = PREV.EMP
-            Left Join X008af_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.LOC
-            Left Join X008af_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG
-            Left Join X008ag_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.LOC
-            Left Join X008ag_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG
+            X008ad_add_previous PREV Left Join
+            PEOPLE.X002_PEOPLE_CURR PEOP On PEOP.EMPLOYEE_NUMBER = PREV.EMP Left Join
+            X008af_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.LOC Left Join
+            X008af_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG Left Join
+            X008af_officer RES_OFF On RES_OFF.CAMPUS = PREV.ACAT Left Join
+            X008af_officer AUD_OFF On AUD_OFF.CAMPUS = 'AUD' Left Join
+            X008ag_supervisor CAMP_SUP On CAMP_SUP.CAMPUS = PREV.LOC Left Join
+            X008ag_supervisor ORG_SUP On ORG_SUP.CAMPUS = PREV.ORG Left Join
+            X008ag_supervisor AUD_SUP On AUD_SUP.CAMPUS = 'AUD'
         Where
           PREV.PREV_PROCESS IS NULL
         ;"""
@@ -7341,9 +7461,12 @@ def people_test_masterfile():
             FIND.EMP AS Employee,
             FIND.NAME_LIST As Name,
             FIND.PHONE_WORK As Work_phone,
-            FIND.CAMP_OFF_NAME AS Responsible_Officer,
-            FIND.CAMP_OFF_NUMB AS Responsible_Officer_Numb,
-            FIND.CAMP_OFF_MAIL AS Responsible_Officer_Mail,
+            FIND.RESP_OFF_NAME AS Responsible_Officer,
+            FIND.RESP_OFF_NUMB AS Responsible_Officer_Numb,
+            FIND.RESP_OFF_MAIL AS Responsible_Officer_Mail,
+            FIND.CAMP_OFF_NAME AS Officer,
+            FIND.CAMP_OFF_NUMB AS Officer_Numb,
+            FIND.CAMP_OFF_MAIL AS Officer_Mail,
             FIND.CAMP_SUP_NAME AS Supervisor,
             FIND.CAMP_SUP_NUMB AS Supervisor_Numb,
             FIND.CAMP_SUP_MAIL AS Supervisor_Mail,
@@ -7352,8 +7475,13 @@ def people_test_masterfile():
             FIND.ORG_OFF_MAIL AS Org_Officer_Mail,
             FIND.ORG_SUP_NAME AS Org_Supervisor,
             FIND.ORG_SUP_NUMB AS Org_Supervisor_Numb,
-            FIND.ORG_SUP_MAIL AS Org_Supervisor_Mail            
-
+            FIND.ORG_SUP_MAIL AS Org_Supervisor_Mail,            
+            FIND.AUD_OFF_NAME AS Audit_Officer,
+            FIND.AUD_OFF_NUMB AS Audit_Officer_Numb,
+            FIND.AUD_OFF_MAIL AS Audit_Officer_Mail,
+            FIND.AUD_SUP_NAME AS Audit_Supervisor,
+            FIND.AUD_SUP_NUMB AS Audit_Supervisor_Numb,
+            FIND.AUD_SUP_MAIL AS Audit_Supervisor_Mail            
         From
             X008ah_detail FIND
         ;"""
