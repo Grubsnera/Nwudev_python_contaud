@@ -71,6 +71,48 @@ if l_debug:
     print("BEGIN OF SCRIPT")
 funcfile.writelog("BEGIN OF SCRIPT")
 
+# BUILD PERSONAL PAY BANK ACCOUNT LIST
+print("Build personal pay bank account number list...")
+sr_file = "X000_PAY_ACCOUNTS_LATEST"
+s_sql = "CREATE VIEW " + sr_file + " AS " + """
+Select
+    ppm.ASSIGNMENT_ID,
+    ppm.PERSONAL_PAYMENT_METHOD_ID,
+    ppm.EXTERNAL_ACCOUNT_ID,
+    Max(ppm.EFFECTIVE_START_DATE) As EFFECTIVE_START_DATE,
+    ppm.EFFECTIVE_END_DATE,
+    ppm.ORG_PAYMENT_METHOD_ID,
+    opm.ORG_PAYMENT_METHOD_NAME,
+    Max(ppm.PRIORITY) As PRIORITY,
+    ppm.ppm_information1,
+    ext.TERRITORY_CODE,
+    ext.SEGMENT1 As ACC_BRANCH,
+    ext.SEGMENT2 As ACC_TYPE_CODE,
+    upper(hrty.MEANING) As ACC_TYPE,
+    ext.SEGMENT3 As ACC_NUMBER,
+    ext.SEGMENT4 As ACC_HOLDER,
+    ext.SEGMENT5 As ACC_UNKNOWN,
+    ext.SEGMENT6 As ACC_RELATION_CODE,
+    upper(hrre.MEANING) As ACC_RELATION
+From
+    PAY_PERSONAL_PAYMENT_METHODS_F ppm Inner Join
+    PAY_ORG_PAYMENT_METHODS_F opm On opm.ORG_PAYMENT_METHOD_ID = ppm.ORG_PAYMENT_METHOD_ID Left Join
+    PAY_EXTERNAL_ACCOUNTS ext On ext.EXTERNAL_ACCOUNT_ID = ppm.EXTERNAL_ACCOUNT_ID Left Join
+    HR_LOOKUPS hrty On hrty.LOOKUP_CODE = ext.SEGMENT2 And hrty.LOOKUP_TYPE = 'ZA_ACCOUNT_TYPE' Left Join
+    HR_LOOKUPS hrre On hrre.LOOKUP_CODE = ext.SEGMENT6 And hrre.LOOKUP_TYPE = 'ZA_ACCOUNT_HOLDER_RELATION'
+Where
+    ppm.EFFECTIVE_START_DATE <= Date() And
+    ppm.EFFECTIVE_END_DATE >= Date() And
+    opm.EFFECTIVE_START_DATE <= Date() And
+    opm.EFFECTIVE_END_DATE >= Date()
+Group By
+    ppm.ASSIGNMENT_ID
+;"""
+# so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
+so_curs.execute(s_sql)
+so_conn.commit()
+funcfile.writelog("%t BUILD VIEW: " + sr_file)
+
 """ ****************************************************************************
 BUILD CONTRACTS
 *****************************************************************************"""
