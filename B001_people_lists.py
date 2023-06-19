@@ -789,6 +789,48 @@ def people_lists():
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # BUILD PERSONAL PAY BANK ACCOUNT LIST
+    print("Build view personal pay bank account number list latest...")
+    sr_file = "X000_PAY_ACCOUNTS_LATEST"
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
+    Select
+        ppm.ASSIGNMENT_ID,
+        ppm.PERSONAL_PAYMENT_METHOD_ID,
+        ppm.EXTERNAL_ACCOUNT_ID,
+        Max(ppm.EFFECTIVE_START_DATE) As EFFECTIVE_START_DATE,
+        ppm.EFFECTIVE_END_DATE,
+        ppm.ORG_PAYMENT_METHOD_ID,
+        opm.ORG_PAYMENT_METHOD_NAME,
+        Max(ppm.PRIORITY) As PRIORITY,
+        ppm.PPM_INFORMATION1,
+        ext.TERRITORY_CODE,
+        ext.SEGMENT1 As ACC_BRANCH,
+        ext.SEGMENT2 As ACC_TYPE_CODE,
+        upper(hrty.MEANING) As ACC_TYPE,
+        ext.SEGMENT3 As ACC_NUMBER,
+        ext.SEGMENT4 As ACC_HOLDER,
+        ext.SEGMENT5 As ACC_UNKNOWN,
+        ext.SEGMENT6 As ACC_RELATION_CODE,
+        upper(hrre.MEANING) As ACC_RELATION
+    From
+        PAY_PERSONAL_PAYMENT_METHODS_F ppm Inner Join
+        PAY_ORG_PAYMENT_METHODS_F opm On opm.ORG_PAYMENT_METHOD_ID = ppm.ORG_PAYMENT_METHOD_ID Left Join
+        PAY_EXTERNAL_ACCOUNTS ext On ext.EXTERNAL_ACCOUNT_ID = ppm.EXTERNAL_ACCOUNT_ID Left Join
+        HR_LOOKUPS hrty On hrty.LOOKUP_CODE = ext.SEGMENT2 And hrty.LOOKUP_TYPE = 'ZA_ACCOUNT_TYPE' Left Join
+        HR_LOOKUPS hrre On hrre.LOOKUP_CODE = ext.SEGMENT6 And hrre.LOOKUP_TYPE = 'ZA_ACCOUNT_HOLDER_RELATION'
+    Where
+        ppm.EFFECTIVE_START_DATE <= Date() And
+        ppm.EFFECTIVE_END_DATE >= Date() And
+        opm.EFFECTIVE_START_DATE <= Date() And
+        opm.EFFECTIVE_END_DATE >= Date()
+    Group By
+        ppm.ASSIGNMENT_ID
+    ;"""
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
     funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
     """ ****************************************************************************
@@ -1607,18 +1649,22 @@ def people_lists():
     so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
     s_sql = "CREATE VIEW " + sr_file + " AS " + """
     Select
-        ph.PARENT_ID,
-        ph.PHONE_NUMBER,
-        Max(ph.DATE_FROM) As DATE_FROM,
-        ph.DATE_TO,
-        ph.PHONE_ID
+        phon.PHONE_ID,
+        phon.PARENT_ID,
+        phon.PARENT_TABLE,
+        phon.PHONE_TYPE,
+        Max(phon.DATE_FROM) As DATE_FROM,
+        phon.DATE_TO,
+        phon.PHONE_NUMBER
     From
-        PER_PHONES ph
+        PER_PHONES phon
     Where
-        ph.PHONE_TYPE = 'W1' And
-        ph.PARENT_TABLE = 'PER_ALL_PEOPLE_F'
+        phon.PARENT_TABLE = 'PER_ALL_PEOPLE_F' And
+        phon.PHONE_TYPE = 'W1' And
+        phon.DATE_FROM <= date() And
+        phon.DATE_TO >= date()
     Group By
-        ph.PARENT_ID
+        phon.PARENT_ID
     ;"""
     so_curs.execute(s_sql)
     so_conn.commit()
@@ -1629,18 +1675,22 @@ def people_lists():
     so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
     s_sql = "CREATE VIEW " + sr_file + " AS " + """
     Select
-        ph.PARENT_ID,
-        ph.PHONE_NUMBER,
-        Max(ph.DATE_FROM) As DATE_FROM,
-        ph.DATE_TO,
-        ph.PHONE_ID
+        phon.PHONE_ID,
+        phon.PARENT_ID,
+        phon.PARENT_TABLE,
+        phon.PHONE_TYPE,
+        Max(phon.DATE_FROM) As DATE_FROM,
+        phon.DATE_TO,
+        phon.PHONE_NUMBER
     From
-        PER_PHONES ph
+        PER_PHONES phon
     Where
-        ph.PHONE_TYPE = 'M' And
-        ph.PARENT_TABLE = 'PER_ALL_PEOPLE_F'
+        phon.PARENT_TABLE = 'PER_ALL_PEOPLE_F' And
+        phon.PHONE_TYPE = 'M' And
+        phon.DATE_FROM <= date() And
+        phon.DATE_TO >= date()
     Group By
-        ph.PARENT_ID
+        phon.PARENT_ID
     ;"""
     so_curs.execute(s_sql)
     so_conn.commit()
@@ -1718,46 +1768,46 @@ def people_lists():
     # Build PEOPLE ORGANIZATION STRUCTURE REF **********************************
     print("Build reference people organogram...")
     s_sql = "CREATE TABLE X003_PEOPLE_ORGA_REF AS " + """
-    SELECT
-      X002_PEOPLE_CURR.EMPLOYEE_NUMBER AS employee_one,
-      X002_PEOPLE_CURR.NAME_LIST AS name_list_one,
-      X002_PEOPLE_CURR.KNOWN_NAME AS known_name_one,
-      X002_PEOPLE_CURR.POSITION_FULL AS position_full_one,
-      X002_PEOPLE_CURR.LOCATION_DESCRIPTION AS location_description_one,
-      X002_PEOPLE_CURR.DIVISION AS division_one,
-      X002_PEOPLE_CURR.FACULTY AS faculty_one,
-      X002_PEOPLE_CURR.EMAIL_ADDRESS AS email_address_one,
-      X002_PEOPLE_CURR.PHONE_WORK AS phone_work_one,
-      X002_PEOPLE_CURR.PHONE_MOBI AS phone_mobi_one,
-      X002_PEOPLE_CURR.PHONE_HOME AS phone_home_one,
-      X002_PEOPLE_CURR.ORG_NAME AS org_name_one,
-      X002_PEOPLE_CURR.GRADE_CALC AS grade_calc_one,
-      X002_PEOPLE_TWO.EMPLOYEE_NUMBER AS employee_two,
-      X002_PEOPLE_TWO.NAME_LIST AS name_list_two,
-      X002_PEOPLE_TWO.KNOWN_NAME AS known_name_two,
-      X002_PEOPLE_TWO.POSITION_FULL AS position_full_two,
-      X002_PEOPLE_TWO.LOCATION_DESCRIPTION AS location_description_two,
-      X002_PEOPLE_TWO.DIVISION AS division_two,
-      X002_PEOPLE_TWO.FACULTY AS faculty_two,
-      X002_PEOPLE_TWO.EMAIL_ADDRESS AS email_address_two,
-      X002_PEOPLE_TWO.PHONE_WORK AS phone_work_two,
-      X002_PEOPLE_TWO.PHONE_MOBI AS phone_mobi_two,
-      X002_PEOPLE_TWO.PHONE_HOME AS phone_home_two,
-      X002_PEOPLE_THREE.EMPLOYEE_NUMBER AS employee_three,
-      X002_PEOPLE_THREE.NAME_LIST AS name_list_three,
-      X002_PEOPLE_THREE.KNOWN_NAME AS known_name_three,
-      X002_PEOPLE_THREE.POSITION_FULL AS position_full_three,
-      X002_PEOPLE_THREE.LOCATION_DESCRIPTION AS location_description_three,
-      X002_PEOPLE_THREE.DIVISION AS division_three,
-      X002_PEOPLE_THREE.FACULTY AS faculty_three,
-      X002_PEOPLE_THREE.EMAIL_ADDRESS AS email_address_three,
-      X002_PEOPLE_THREE.PHONE_WORK AS phone_work_three,
-      X002_PEOPLE_THREE.PHONE_MOBI AS phone_mobi_three,
-      X002_PEOPLE_THREE.PHONE_HOME AS phone_home_three
-    FROM
-      X002_PEOPLE_CURR
-      LEFT JOIN X002_PEOPLE_CURR X002_PEOPLE_TWO ON X002_PEOPLE_TWO.EMPLOYEE_NUMBER = X002_PEOPLE_CURR.SUPERVISOR
-      LEFT JOIN X002_PEOPLE_CURR X002_PEOPLE_THREE ON X002_PEOPLE_THREE.EMPLOYEE_NUMBER = X002_PEOPLE_TWO.SUPERVISOR
+    Select
+        peop1.employee_number As employee_one,
+        peop1.name_list As name_list_one,
+        peop1.preferred_name As known_name_one,
+        peop1.position_name As position_full_one,
+        peop1.location As location_description_one,
+        peop1.division As division_one,
+        peop1.faculty As faculty_one,
+        lower(peop1.email_address) As email_address_one,
+        peop1.phone_work As phone_work_one,
+        peop1.phone_mobile As phone_mobi_one,
+        peop1.internal_box As phone_home_one,
+        peop1.organization As org_name_one,
+        peop1.grade_calc As grade_calc_one,
+        peop2.employee_number As employee_two,
+        peop2.name_list As name_list_two,
+        peop2.preferred_name As known_name_two,
+        peop2.position_name As position_full_two,
+        peop2.location As location_description_two,
+        peop2.division As division_two,
+        peop2.faculty As faculty_two,
+        lower(peop2.email_address) As email_address_two,
+        peop2.phone_work As phone_work_two,
+        peop2.phone_mobile As phone_mobi_two,
+        peop2.internal_box As phone_home_two,
+        peop3.employee_number As employee_three,
+        peop3.name_list As name_list_three,
+        peop3.preferred_name As known_name_three,
+        peop3.position_name As position_full_three,
+        peop3.location As location_description_three,
+        peop3.division As division_three,
+        peop3.faculty As faculty_three,
+        lower(peop3.email_address) As email_address_three,
+        peop3.phone_work As phone_work_three,
+        peop3.phone_mobile As phone_mobi_three,
+        peop3.internal_box As phone_home_three
+    From
+        X000_PEOPLE peop1 Left Join
+        X000_PEOPLE peop2 On peop2.employee_number = peop1.supervisor_number Left Join
+        X000_PEOPLE peop3 On peop3.employee_number = peop2.supervisor_number
     """
     so_curs.execute("DROP TABLE IF EXISTS X003_PEOPLE_ORGA_REF")
     so_curs.execute(s_sql)
