@@ -41,7 +41,9 @@ def mysql_lists(s_database):
 
     # Declare variables
     s_schema: str = ""
-    if s_database == "Web_ia_nwu":
+    if s_database == "Web_nwu_ia":
+        s_schema = "nwuiaeapciy_db1"
+    elif s_database == "Web_ia_nwu":
         s_schema = "Ia_nwu"
     elif s_database == "Web_ia_joomla":
         s_schema = "Ia_joomla"
