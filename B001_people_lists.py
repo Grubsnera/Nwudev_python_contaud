@@ -803,7 +803,7 @@ def people_lists():
         ppm.EFFECTIVE_END_DATE,
         ppm.ORG_PAYMENT_METHOD_ID,
         opm.ORG_PAYMENT_METHOD_NAME,
-        Max(ppm.PRIORITY) As PRIORITY,
+        ppm.PRIORITY As PRIORITY,
         ppm.PPM_INFORMATION1,
         ext.TERRITORY_CODE,
         ext.SEGMENT1 As ACC_BRANCH,
