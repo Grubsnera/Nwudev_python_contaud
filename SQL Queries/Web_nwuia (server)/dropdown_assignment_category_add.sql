@@ -1,13 +1,15 @@
 ﻿Select
-    cate.ia_assicate_auto As value,
-    cate.ia_assicate_name As label
+    dtab.ia_assicate_auto As value,
+    dtab.ia_assicate_name As label
 From
-    ia_assignment_category cate
+    ia_assignment_category dtab
 Where
-    -- cate.ia_assicate_customer = ".$customer_id." And
-    cate.ia_assicate_customer = 1 And
-    cate.ia_assicate_active = 1 And
-    cate.ia_assicate_from <= Now() And
-    cate.ia_assicate_to >= Now()
+    dtab.ia_assicate_active = 1 And
+    -- dtab.ia_assicate_customer = ".$customer_id." And
+    dtab.ia_assicate_customer = 1 And
+    -- dtab.ia_assicate_from <= '".date('Y-m-d')."' And
+    dtab.ia_assicate_from <= Now() And
+    -- dtab.ia_assicate_to >= '".date('Y-m-d')."'
+    dtab.ia_assicate_to >= Now()
 Order By
     label;

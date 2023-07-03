@@ -1,13 +1,14 @@
 ﻿Select
-    orig.ia_assiorig_auto As value,
-    orig.ia_assiorig_name As label
+    dtab.ia_assiorig_auto As value,
+    dtab.ia_assiorig_name As label
 From
-    ia_assignment_origin orig
+    ia_assignment_origin dtab
 Where
-    -- orig.ia_assiorig_customer = ".$customer_id." And
-    orig.ia_assiorig_customer = 1 And
-    orig.ia_assiorig_active = 1 And
-    orig.ia_assiorig_from <= orig.ia_assiorig_createdate And
-    orig.ia_assiorig_to >= orig.ia_assiorig_createdate
+    -- dtab.ia_assiorig_customer = ".$customer_id." And
+    dtab.ia_assiorig_customer = 1 And
+    -- dtab.ia_assiorig_from <= '".$create_date."' And
+    dtab.ia_assiorig_from <= dtab.ia_assiorig_createdate And
+    -- dtab.ia_assiorig_to >= '".$create_date."'
+    dtab.ia_assiorig_to >= dtab.ia_assiorig_createdate
 Order By
     label

@@ -10,10 +10,10 @@
         Then 'Yes'
         Else 'No'
     End As active,
-    Concat('<a href = "index.php?option=com_rsform&formId=', type.ia_assitype_form, '&id=', type.ia_assitype_auto,
-    '&action=edit">Edit</a>', ' | ', '<a href = "index.php?option=com_rsform&formId=', type.ia_assitype_form, '&id=',
+    Concat('<a href = "index.php?option=com_rsform&formId=', type.ia_assitype_form, '&recordId=', type.ia_assitype_auto,
+    '&action=edit">Edit</a>', ' | ', '<a href = "index.php?option=com_rsform&formId=', type.ia_assitype_form, '&recordId=',
     type.ia_assitype_auto, '&action=copy">Copy</a>', ' | ', '<a href = "index.php?option=com_rsform&formId=',
-    type.ia_assitype_form, '&id=', type.ia_assitype_auto, '&action=delete">Delete</a>') As actions
+    type.ia_assitype_form, '&recordId=', type.ia_assitype_auto, '&action=delete">Delete</a>') As actions
 From
     ia_assignment_type type Inner Join
     ia_assignment_category cate On cate.ia_assicate_auto = type.ia_assicate_auto
