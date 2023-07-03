@@ -7121,25 +7121,13 @@ def people_test_masterfile():
     BIO MASTER FILE
     *****************************************************************************"""
 
-    # BUILD TABLE WITH EMPLOYEE BIO INFORMATION
-    print("Obtain master list of all employees...")
+    # TODO Remove after first run
     sr_file = "X008_bio_master"
-    s_sql = "CREATE TABLE " + sr_file + " AS " + """
-    Select
-        PEOP.EMPLOYEE_NUMBER,
-        PEOP.LOCATION_DESCRIPTION,
-        PEOP.ADDRESS_POST,
-        PEOP.ADDRESS_SARS,
-        PEOP.ADDRESS_HOME,
-        PEOP.ADDRESS_OTHE,
-        PEOP.PHONE_WORK
-    From
-        PEOPLE.X002_PEOPLE_CURR PEOP
-    ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    sr_file: str = "X008aa_phone_work_invalid"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sr_file: str = "X008ba_address_primary_invalid"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 
     """ ****************************************************************************
     TEST PHONE WORK INVALID
@@ -7149,48 +7137,6 @@ def people_test_masterfile():
 
     # DECLARE TEST VARIABLES
     i_finding_after: int = 0
-
-    # OBTAIN TEST DATA
-    print("Obtain test data and add employee details...")
-    sr_file: str = "X008aa_phone_work_invalid"
-    s_sql = "CREATE TABLE " + sr_file + " AS " + """
-    Select
-        'NWU' AS ORG,
-        CASE MASTER.LOCATION_DESCRIPTION
-            WHEN 'MAFIKENG CAMPUS' THEN 'MAF'
-            WHEN 'POTCHEFSTROOM CAMPUS' THEN 'POT'
-            WHEN 'VAAL TRIANGLE CAMPUS' THEN 'VAA'
-            ELSE 'NWU'
-        END AS LOC,
-        MASTER.EMPLOYEE_NUMBER As EMP,
-        CASE
-            WHEN Substr(MASTER.ADDRESS_POST,1,1) = 'Y' THEN 1
-            ELSE 0
-        END As PRIMARY_VALID,
-        CASE 
-            WHEN Substr(MASTER.ADDRESS_POST,1,1) = 'Y' AND
-                Substr(MASTER.ADDRESS_POST,2) <> Substr(MASTER.ADDRESS_SARS,2) AND
-                Substr(MASTER.ADDRESS_SARS,1,1) = 'N' THEN 1
-            WHEN Substr(MASTER.ADDRESS_POST,1,1) = 'Y' AND
-                Substr(MASTER.ADDRESS_POST,2) <> Substr(MASTER.ADDRESS_HOME,2) AND
-                Substr(MASTER.ADDRESS_HOME,1,1) = 'N' THEN 2
-            WHEN Substr(MASTER.ADDRESS_POST,1,1) = 'Y' AND
-                Substr(MASTER.ADDRESS_POST,2) <> Substr(MASTER.ADDRESS_OTHE,2) AND
-                Substr(MASTER.ADDRESS_OTHE,1,1) = 'N' THEN 3
-            ELSE 0 
-        END As SECONDARY_VALID,
-        CASE
-            WHEN Length(MASTER.PHONE_WORK) = 10 THEN 1
-            ELSE 0
-        END As PHONE_VALID,
-        MASTER.PHONE_WORK
-    From
-        X008_bio_master MASTER
-    ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # IDENTIFY FINDINGS
     print("Identify findings...")
@@ -7202,6 +7148,7 @@ def people_test_masterfile():
         peop.assignment_category As ACAT,
         peop.employee_category As ECAT,
         peop.employee_number As EMP,
+        peop.position_name As POSITION,
         peop.phone_work As PHONE_WORK
     From
         PEOPLE.X000_PEOPLE peop
@@ -7219,18 +7166,6 @@ def people_test_masterfile():
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
-    # Replaced on 2023-06-17
-    """
-    Select
-        CURR.ORG,
-        CURR.LOC,
-        CURR.EMP,
-        CURR.PHONE_WORK
-    From
-        X008aa_phone_work_invalid CURR
-    Where
-        CURR.PHONE_VALID = 0
-    """
 
     # COUNT THE NUMBER OF FINDINGS
     i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
@@ -7520,45 +7455,26 @@ def people_test_masterfile():
     # DECLARE TEST VARIABLES
     i_finding_after: int = 0
 
-    # OBTAIN TEST DATA
-    print("Obtain test data and add employee details...")
-    sr_file: str = "X008ba_address_primary_invalid"
-    s_sql = "CREATE TABLE " + sr_file + " AS " + """
-    Select
-        'NWU' AS ORG,
-        CASE MASTER.LOCATION_DESCRIPTION
-            WHEN 'MAFIKENG CAMPUS' THEN 'MAF'
-            WHEN 'POTCHEFSTROOM CAMPUS' THEN 'POT'
-            WHEN 'VAAL TRIANGLE CAMPUS' THEN 'VAA'
-            ELSE 'NWU'
-        END AS LOC,
-        MASTER.EMPLOYEE_NUMBER As EMP,
-        CASE
-            WHEN Substr(MASTER.ADDRESS_POST,1,1) = 'Y' THEN 1
-            ELSE 0
-        END As PRIMARY_VALID,
-        MASTER.ADDRESS_POST
-    From
-        X008_bio_master MASTER
-    ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: " + sr_file)
-
     # IDENTIFY FINDINGS
     print("Identify findings...")
     sr_file = "X008bb_findings"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
-        CURR.ORG,
-        CURR.LOC,
-        CURR.EMP,
-        CURR.ADDRESS_POST
+        'NWU' As ORG,
+        SubStr(peop.location, 1, 3) As LOC,
+        peop.assignment_category As ACAT,
+        peop.employee_category As ECAT,
+        peop.employee_number As EMP,
+        peop.position_name As POSITION,
+        peop.address_sars As ADDRESS_POST
     From
-        X008ba_address_primary_invalid CURR
+        PEOPLE.X000_PEOPLE peop
     Where
-        CURR.PRIMARY_VALID = 0
+        peop.address_sars Is Null    
+    Order By
+        ACAT,
+        ECAT,
+        EMP
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
