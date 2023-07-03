@@ -7484,6 +7484,9 @@ def people_test_masterfile():
             FIND.AUD_SUP_MAIL AS Audit_Supervisor_Mail            
         From
             X008ah_detail FIND
+        Order By
+            Work_phone,
+            Employee            
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
