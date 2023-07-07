@@ -26,6 +26,7 @@ OPEN THE DATABASES
 BEGIN OF SCRIPT
 
 MASTER FILE LISTS
+CURRENT EMPLOYEES
 PEOPLE BIRTHDAYS
 
 ID NUMBER MASTER FILE
@@ -157,9 +158,59 @@ def people_test_masterfile():
     MASTER FILE LISTS
     *****************************************************************************"""
 
-    """*****************************************************************************
-    PEOPLE BIRTHDAYS
-    *****************************************************************************"""
+    # CURRENT EMPLOYEES
+    if l_debug:
+        print("CURRENT EMPLOYEES")
+
+    # BUILD CURRENT EMPLOYEES
+    # SQL Test query is Sqlite_people->List_active_employee_today
+    sr_file = "X000_People_current"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        pap.EMPLOYEE_NUMBER As employee_number,
+        pap.PERSON_ID As person_id,
+        paa.ASSIGNMENT_ID As assignment_id,
+        pap.FULL_NAME As name_full,
+        upper(hrl.LOCATION_CODE) As location,
+        Max(pps.ACTUAL_TERMINATION_DATE) As service_end_date,
+        upper(ppt.USER_PERSON_TYPE) As user_person_type,
+        upper(cat.MEANING) As assignment_category,
+        Case
+            When paa.position_id = 0 Then upper(paa.EMPLOYEE_CATEGORY)
+            Else upper(hrp.acad_supp)
+        End as employee_category,
+        upper(hrp.position_name) position_name
+    From
+        PER_ALL_PEOPLE_F pap Left Join
+        PER_ALL_ASSIGNMENTS_F paa On paa.PERSON_ID = pap.PERSON_ID
+                And Date() Between paa.EFFECTIVE_START_DATE And paa.EFFECTIVE_END_DATE
+                And paa.EFFECTIVE_END_DATE Between pap.EFFECTIVE_START_DATE And pap.EFFECTIVE_END_DATE
+                And paa.ASSIGNMENT_STATUS_TYPE_ID = 1 Left Join
+        PER_PERIODS_OF_SERVICE pps On pps.PERSON_ID = pap.PERSON_ID Left Join
+        PER_PERSON_TYPE_USAGES_F ptu On pap.PERSON_ID = ptu.PERSON_ID
+                And paa.EFFECTIVE_END_DATE Between ptu.EFFECTIVE_START_DATE And ptu.EFFECTIVE_END_DATE Left Join
+        PER_PERSON_TYPES ppt On ptu.PERSON_TYPE_ID = ppt.PERSON_TYPE_ID Left Join
+        HR_LOCATIONS_ALL hrl On hrl.LOCATION_ID = paa.LOCATION_ID Left Join
+        HR_LOOKUPS cat On cat.LOOKUP_CODE = paa.EMPLOYMENT_CATEGORY
+                And cat.LOOKUP_TYPE = 'EMP_CAT' Left Join
+        X000_POSITIONS hrp On hrp.POSITION_ID = paa.POSITION_ID
+                And paa.EFFECTIVE_END_DATE Between hrp.EFFECTIVE_START_DATE And hrp.EFFECTIVE_END_DATE    
+    Where
+        (paa.EFFECTIVE_END_DATE Between pps.DATE_START And pps.ACTUAL_TERMINATION_DATE And
+            ppt.USER_PERSON_TYPE != 'Retiree') Or
+        (ppt.USER_PERSON_TYPE != 'Retiree' And
+            pps.ACTUAL_TERMINATION_DATE == pps.DATE_START)
+    Group By
+        pap.EMPLOYEE_NUMBER
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    if l_debug:
+        print(s_sql)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # PEOPLE BIRTHDAYS
     print("PEOPLE BIRTHDAYS")
     funcfile.writelog("PEOPLE BIRTHDAYS")
 
@@ -7140,6 +7191,26 @@ def people_test_masterfile():
 
     # IDENTIFY FINDINGS
     print("Identify findings...")
+    sr_file = "X008aa_phone_master"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        peo.employee_number,
+        peo.location,
+        peo.assignment_category,
+        peo.employee_category,
+        peo.position_name,
+        pho.PHONE_NUMBER As phone_work
+    From
+        X000_People_current peo Left Join
+        PEOPLE.X000_PHONE_WORK_LATEST pho On pho.PARENT_ID = peo.PERSON_ID
+    ;"""
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # IDENTIFY FINDINGS
+    print("Identify findings...")
     sr_file = "X008ab_findings"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
@@ -7151,7 +7222,7 @@ def people_test_masterfile():
         peop.position_name As POSITION,
         peop.phone_work As PHONE_WORK
     From
-        PEOPLE.X000_PEOPLE peop
+        X008aa_phone_master peop
     Where
         (peop.phone_work Is Null) Or
         (Length(peop.phone_work) <> 10) Or
@@ -7249,7 +7320,7 @@ def people_test_masterfile():
             PREV.LOC AS FIELD2,
             PREV.ACAT AS FIELD3,
             PREV.ECAT AS FIELD4,
-            '' AS FIELD5,
+            PREV.POSITION AS FIELD5,
             PREV.DATE_REPORTED,
             PREV.DATE_RETEST,
             PREV.REMARK
