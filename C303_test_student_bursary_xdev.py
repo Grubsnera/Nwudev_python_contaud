@@ -170,7 +170,7 @@ def student_bursary(s_period: str = "curr"):
         Where
             burs.staff_discount <> 0
         ;"""
-        s_sql = s_sql.replace("%RESULT_EXCLUDE%", s_exclude_list)
+        # s_sql = s_sql.replace("%RESULT_EXCLUDE%", s_exclude_list)
         so_curs.execute(s_sql)
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
         if l_debug:
