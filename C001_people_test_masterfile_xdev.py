@@ -97,6 +97,10 @@ def people_test_masterfile_xdev():
         print("BEGIN OF SCRIPT")
     funcfile.writelog("BEGIN OF SCRIPT")
 
+    # CURRENT EMPLOYEES
+    if l_debug:
+        print("CURRENT EMPLOYEES")
+
     """ ****************************************************************************
     END OF SCRIPT
     *****************************************************************************"""
