@@ -97,7 +97,7 @@ def student_fee(s_period="curr"):
         s_mpa: str = "665566z618161z618167z618169"  # Exclude these FQUALLEVELAPID
         s_aud: str = "71839z71840z71841z71842z71820z71821z71822z1085390"  # Exclude these FQUALLEVELAPID
         l_record: bool = False
-        l_export: bool = True
+        l_export: bool = False
     elif s_period == "2020":
         f_reg_fee = 1930.00
         d_sem1_con = "2020-02-21"
@@ -115,7 +115,7 @@ def student_fee(s_period="curr"):
         s_mpa: str = "665566z618161z618167z618169"  # Exclude these FQUALLEVELAPID
         s_aud: str = "71839z71840z71841z71842z71820z71821z71822z1085390"  # Exclude these FQUALLEVELAPID
         l_record: bool = False
-        l_export: bool = True
+        l_export: bool = False
     elif s_period == "2021":
         f_reg_fee = 2020.00
         d_sem1_con = "2021-04-09"
@@ -133,7 +133,7 @@ def student_fee(s_period="curr"):
         s_mpa: str = "665566z618161z618167z618169"  # Exclude these FQUALLEVELAPID
         s_aud: str = "71839z71840z71841z71842z71820z71821z71822z1085390"  # Exclude these FQUALLEVELAPID
         l_record: bool = False
-        l_export: bool = True
+        l_export: bool = False
     elif s_period == "prev":
         f_reg_fee = 2110.00
         d_sem1_con = "2022-03-11"
@@ -151,7 +151,7 @@ def student_fee(s_period="curr"):
         s_mpa: str = "665566z618161z618167z618169"  # Exclude these FQUALLEVELAPID
         s_aud: str = "71839z71840z71841z71842z71820z71821z71822z1085390"  # Exclude these FQUALLEVELAPID
         l_record: bool = False
-        l_export: bool = True
+        l_export: bool = False
     else:
         f_reg_fee = 2220.00
         d_sem1_con = "2023-03-03"
@@ -7057,6 +7057,6 @@ def student_fee(s_period="curr"):
 
 if __name__ == '__main__':
     try:
-        student_fee()
+        student_fee("prev")
     except Exception as e:
         funcsys.ErrMessage(e)
