@@ -188,7 +188,11 @@ def people_test_masterfile():
         Upper(pap.PER_INFORMATION2) passport,
         Upper(pap.PER_INFORMATION3) permit,
         Replace(Substr(pap.PER_INFORMATION8,1,10),'/','-') permit_expire,
-        acc.ORG_PAYMENT_METHOD_NAME As account_pay_method    
+        acc.ORG_PAYMENT_METHOD_NAME As account_pay_method,
+        pap.last_update_date people_update_date,
+        pap.last_updated_by people_update_by,        
+        paa.last_update_date assignment_update_date,
+        paa.last_updated_by assignment_update_by            
     From
         PER_ALL_PEOPLE_F pap Left Join
         PER_ALL_ASSIGNMENTS_F paa On paa.PERSON_ID = pap.PERSON_ID
@@ -1982,7 +1986,7 @@ def people_test_masterfile():
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     Select
         peop.employee_number,
-        peop.name_list,
+        peop.name_full,
         uifp.COUNT_PAYMENTS As count_uif,
         forp.COUNT_PAYMENTS As count_foreign,
         peop.nationality,
@@ -1994,7 +1998,7 @@ def people_test_masterfile():
         peop.account_pay_method,
         peop.user_person_type
     From
-        PEOPLE.X000_PEOPLE peop Left Join
+        X000_People_current peop Left Join
         X003_uif_payments uifp ON uifp.EMPLOYEE_NUMBER = peop.employee_number Left Join
         X003_foreign_payments forp On forp.EMPLOYEE_NUMBER = peop.employee_number      
     ;"""
@@ -2689,10 +2693,8 @@ def people_test_masterfile():
             p.permit PERMIT,
             p.permit_expire PERMIT_EXPIRE,
             Case
-                When p.nationality Like('ZIM%') Then '0 ZIMBABWE EXTEND TO END 2022'
+                -- When p.nationality Like('ZIM%') Then '0 ZIMBABWE EXTEND TO END 2023'
                 When p.permit Like('PRP%') Then '0 PRP PERMIT'
-                When p.position_name Like('EXTRA%') And p.permit = '' Then '0 EXTRAORDINARY POSITION'
-                When p.position_name Like('EXTRA%') And p.permit != '' Then '1 PERMIT EXPIRED EXTRAORDINARY'
                 When p.passport != '' And p.permit_expire >= Date('1900-01-01') And p.permit_expire < Date('%TODAY%')
                  Then '1 PERMIT EXPIRED'
                 When p.passport != '' And p.permit_expire >= Date('1900-01-01') And p.permit_expire < Date('%MONTH%')
@@ -2717,11 +2719,12 @@ def people_test_masterfile():
             pu.EMPLOYEE_NUMBER As PEOPLE_UPDATE,
             pu.NAME_ADDR As PEOPLE_UPDATE_NAME
         From
-            X000_PEOPLE p Left Join
+            X000_People_current p Left Join
             X000_USER_CURR au On au.USER_ID = p.assignment_update_by Left join
             X000_USER_CURR pu On pu.USER_ID = p.people_update_by
         Where
-            p.national_identifier = ''
+            p.national_identifier = '' And
+            p.account_pay_method Like('NWU ACB')
         Order By
             VALID,
             EMPLOYEE_NUMBER                        
@@ -2745,7 +2748,9 @@ def people_test_masterfile():
             FIND.EMPLOYEE_NUMBER,
             FIND.TRAN_OWNER,
             FIND.ASSIGNMENT_CATEGORY,
-            FIND.VALID
+            FIND.VALID,
+            FIND.NATIONALITY,            
+            FIND.POSITION            
         From
             %FILEP%%FILEN% FIND
         Where
@@ -2817,10 +2822,10 @@ def people_test_masterfile():
             Select
                 PREV.PROCESS,
                 PREV.EMPLOYEE_NUMBER AS FIELD1,
-                '' AS FIELD2,
-                '' AS FIELD3,
-                '' AS FIELD4,
-                '' AS FIELD5,
+                PREV.LOC AS FIELD2,
+                PREV.ASSIGNMENT_CATEGORY AS FIELD3,
+                PREV.POSITION AS FIELD4,
+                PREV.NATIONALITY AS FIELD5,
                 PREV.DATE_REPORTED,
                 PREV.DATE_RETEST,
                 PREV.REMARK
@@ -2880,11 +2885,11 @@ def people_test_masterfile():
                 PREV.LOC,
                 PREV.EMPLOYEE_NUMBER,
                 PEOP.name_address As NAME_ADDRESS,
-                MAST.NATIONALITY,
+                PREV.NATIONALITY,
                 MAST.PASSPORT,
                 MAST.PERMIT,
                 MAST.PERMIT_EXPIRE,
-                MAST.POSITION,                
+                PREV.POSITION,                
                 PREV.ASSIGNMENT_CATEGORY,
                 OWNR.EMPLOYEE_NUMBER AS TRAN_OWNER_NUMB,
                 OWNR.name_address AS TRAN_OWNER_NAME,
@@ -2930,8 +2935,8 @@ def people_test_masterfile():
             From
                 %FILEP%d_addprev PREV Left Join
                 %FILEP%a_%FILEN% MAST On MAST.EMPLOYEE_NUMBER = PREV.EMPLOYEE_NUMBER Left Join
-                PEOPLE.X000_PEOPLE PEOP ON PEOP.EMPLOYEE_NUMBER = PREV.EMPLOYEE_NUMBER Left Join
-                PEOPLE.X000_PEOPLE OWNR ON OWNR.EMPLOYEE_NUMBER = PREV.TRAN_OWNER Left Join
+                PEOPLE.X000_People PEOP ON PEOP.EMPLOYEE_NUMBER = PREV.EMPLOYEE_NUMBER Left Join
+                PEOPLE.X000_People OWNR ON OWNR.EMPLOYEE_NUMBER = PREV.TRAN_OWNER Left Join
                 Z001af_officer CAMP_OFF On CAMP_OFF.CAMPUS = PREV.ASSIGNMENT_CATEGORY Left Join
                 Z001af_officer ORG_OFF On ORG_OFF.CAMPUS = PREV.ORG Left Join
                 Z001af_officer AUD_OFF On AUD_OFF.CAMPUS = 'AUD' Left Join
