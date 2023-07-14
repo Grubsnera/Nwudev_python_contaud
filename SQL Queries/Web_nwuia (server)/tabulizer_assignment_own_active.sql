@@ -3,7 +3,7 @@
     cate.ia_assicate_name As Category,
     type.ia_assitype_name As Type,
     ia_user.ia_user_name As Owner,
-    Concat('<a href = "index.php?option=com_rsform&view=rsform&formId=', assi.ia_assi_formedit, '&recordId=', assi.ia_assi_auto, '&recordHash=', assi.ia_assi_token, '&action=edit&category=', assi.ia_assicate_auto, '">', Concat(assi.ia_assi_name, ' (', assi.ia_assi_auto, ')'), '</a>') As Assignment,
+    Concat('<a title="Assignment edit" href="index.php?option=com_rsform&view=rsform&formId=', assi.ia_assi_formedit, '&recordId=', assi.ia_assi_auto, '&recordHash=', assi.ia_assi_token, '&action=edit&category=', assi.ia_assicate_auto, '" target="_blank" rel="noopener nofollow noreferrer">', Concat(assi.ia_assi_name, ' (', assi.ia_assi_auto, ')'), '</a>') As Assignment,
     Case
         When assi.ia_assi_priority = 1
         Then 'Low'
@@ -25,25 +25,19 @@
         -- When assi.ia_assi_permission = {user_id}
         When assi.ia_assi_permission = 855
         Then
-            Concat('<a href = "index.php?option=com_content&view=article&id=', assi.ia_assi_formview, '&hash=', assi.ia_assi_token, '" target="_blankh" rel="noopener noreferrer">', 'Report', '</a>')
+            Concat('<a title="Assignment report" href = "index.php?option=com_content&view=article&id=', assi.ia_assi_formview, '&hash=', assi.ia_assi_token, '" target="_blank" rel="noopener noreferrer nofollow">', 'Report', '</a>')
         Else
-            Concat('<a href = "index.php?option=com_rsform&view=rsform&formId=', assi.ia_assi_formedit, '&recordId=', assi.ia_assi_auto, '&recordHash=', assi.ia_assi_token, '&action=copy', '&category=', assi.ia_assicate_auto, '">', 'Copy', '</a>', ' | ', '<a href = "index.php?option=com_rsform&view=rsform&formId=', assi.ia_assi_formedit, '&recordId=', assi.ia_assi_auto, '&recordHash=', assi.ia_assi_token, '&action=delete', '&category=', assi.ia_assicate_auto, '">', 'Delete', '</a>', ' | ', '<a href = "index.php?option=com_rsform&view=rsform&formId=', assi.ia_assi_formdelete, '&recordId=', assi.ia_assi_auto, '&recordHash=', assi.ia_assi_token, '&action=edit', '&category=', assi.ia_assicate_auto, '">', 'WIP', '</a>', ' | ', '<a href = "index.php?option=com_content&view=article&id=', assi.ia_assi_formview, '&hash=', assi.ia_assi_token, '" target="_blank" rel="noopener noreferrer">', 'Report', '</a>')
+            Concat('<a title="Assignment copy" href = "index.php?option=com_rsform&view=rsform&formId=', assi.ia_assi_formedit, '&recordId=', assi.ia_assi_auto, '&recordHash=', assi.ia_assi_token, '&action=copy', '&category=', assi.ia_assicate_auto, '" target="_blank" rel="noopener noreferrer nofollow">', 'Copy', '</a>', ' | ', '<a title="Assignment delete" href = "index.php?option=com_rsform&view=rsform&formId=', assi.ia_assi_formedit, '&recordId=', assi.ia_assi_auto, '&recordHash=', assi.ia_assi_token, '&action=delete', '&category=', assi.ia_assicate_auto, '" target="_blank" rel="noopener noreferrer nofollow">', 'Delete', '</a>', ' | ', '<a title="Assignment wip" href = "index.php?option=com_rsform&view=rsform&formId=', assi.ia_assi_formdelete, '&recordId=', assi.ia_assi_auto, '&recordHash=', assi.ia_assi_token, '&action=edit', '&category=', assi.ia_assicate_auto, '" target="_blank" rel="noopener noreferrer nofollow">', 'WIP', '</a>', ' | ', '<a title="Assignment report" href = "index.php?option=com_content&view=article&id=', assi.ia_assi_formview, '&hash=', assi.ia_assi_token, '" target="_blank" rel="noopener noreferrer nofollow">', 'Report', '</a>')
     End As Actions,
     Case
         When Count(find.ia_find_auto) > 1
-        Then Concat('<a href = "index.php?option=com_rsform&view=rsform&formId=9&aid=', assi.ia_assi_auto,
-            '" target="_blank" rel="noopener noreferrer">Add</a>', '|',
-            '<a href = "index.php?option=com_content&view=article&id=26&rid=', to_base64(Concat('1:',
-            assi.ia_assi_auto)), '" target="_blank" rel="noopener noreferrer">', Concat(Cast(Count(find.ia_find_auto) As
-            Character), 'Findings'), '</a>')
+        Then
+            Concat('<a title="Finding add" href = "index.php?option=com_rsform&view=rsform&formId=9&aid=', assi.ia_assi_auto, '" target="_blank" rel="noopener noreferrer nofollow">Add</a>', '|', '<a title="Findings" href = "index.php?option=com_content&view=article&id=26&rid=', to_base64(Concat('1:', assi.ia_assi_auto)), '" target="_blank" rel="noopener noreferrer nofollow">', Concat(Cast(Count(find.ia_find_auto) As Character), 'Findings'), '</a>')
         When Count(find.ia_find_auto) > 0
-        Then Concat('<a href = "index.php?option=com_rsform&view=rsform&formId=9&aid=', assi.ia_assi_auto,
-            '" target="_blank" rel="noopener noreferrer">Add</a>', '|',
-            '<a href = "index.php?option=com_content&view=article&id=26&rid=', to_base64(Concat('1:',
-            assi.ia_assi_auto)), '" target="_blank" rel="noopener noreferrer">', Concat(Cast(Count(find.ia_find_auto) As
-            Character), 'Finding'), '</a>')
-        Else Concat('<a href = "index.php?option=com_rsform&view=rsform&formId=9&aid=', assi.ia_assi_auto,
-            '" target="_blank" rel="noopener noreferrer">Add</a>')
+        Then
+            Concat('<a title="Finding add" href = "index.php?option=com_rsform&view=rsform&formId=9&aid=', assi.ia_assi_auto, '" target="_blank" rel="noopener noreferrer nofollow">Add</a>', '|', '<a title="Findings" href = "index.php?option=com_content&view=article&id=26&rid=', to_base64(Concat('1:', assi.ia_assi_auto)), '" target="_blank" rel="noopener noreferrer nofollow">', Concat(Cast(Count(find.ia_find_auto) As Character), 'Finding'), '</a>')
+        Else
+            Concat('<a title="Finding add" href = "index.php?option=com_rsform&view=rsform&formId=9&aid=', assi.ia_assi_auto, '" target="_blank" rel="noopener noreferrer nofollow">Add</a>')
     End As Findings
 From
     ia_assignment assi Left Join
