@@ -40,14 +40,8 @@ From
     ia_assignment_category cate On cate.ia_assicate_auto = assi.ia_assicate_auto Left Join
     ia_user user On user.ia_user_sysid = assi.ia_user_sysid
 Where
-    (find.ia_find_auto > 0 And
-        -- assi.ia_user_sysid = {user_id} And
-        assi.ia_user_sysid = 855 And
-        assi.ia_assi_priority < 9) Or
-    (find.ia_find_auto > 0 And
-        -- assi.ia_assi_permission = {user_id} And
-        assi.ia_assi_permission = 855 And
-        assi.ia_assi_priority < 9)
+    -- find.ia_assi_auto = {user_param_1:int}
+    find.ia_assi_auto = 564
 Group By
     cate.ia_assicate_name,
     type.ia_assitype_name,
