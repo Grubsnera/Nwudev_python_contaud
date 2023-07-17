@@ -7243,9 +7243,7 @@ def people_test_masterfile():
     Where
         (peop.phone_work Is Null) Or
         (Length(peop.phone_work) < 10) Or
-        (Length(peop.phone_work) > 13) Or
-        (Cast(peop.phone_work As Integer) < 1000000000) Or
-        (Cast(peop.phone_work As Integer) > 9999999999999)    
+        (Length(peop.phone_work) > 13)
     Order By
         ACAT,
         ECAT,
