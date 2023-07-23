@@ -23,12 +23,14 @@ OPEN THE DATABASES
 TEMPORARY AREA
 BEGIN OF SCRIPT
 OBTAIN LIST OF ASSIGNMENTS
+OBTAIN LIST OF FINDINGS
 IDENTIFY PRIORITY INCONSISTENCY
 IDENTIFY STATUS INCONSISTENCY
 IDENTIFY YEAR INCONSISTENCY
 ASSIGNMENT OVERDUE
 FOLLOW-UP NO FINDING
 FOLLOW-UP NO REMINDER
+IDENTIFY FINDING RATING INVALID
 END OF SCRIPT
 """
 
@@ -334,6 +336,113 @@ def ia_lists(s_period: str = "curr"):
         funcsms.send_telegram('', 'administrator', '<b>IA Assignments</b> ' + s_year + ' records ' + str(ri_count))
 
     """************************************************************************
+    OBTAIN LIST OF FINDINGS
+    ************************************************************************"""
+    funcfile.writelog("OBTAIN FINDINGS")
+    if l_debug:
+        print("OBTAIN FINDINGS")
+
+    # OBTAIN THE LIST
+    if l_debug:
+        print("Obtain the list of findings...")
+    sr_file = "X000_Finding_" + s_period
+    s_sql = "CREATE TABLE " + sr_file + " AS" + """
+    Select
+        user.ia_user_name As auditor,
+        user.ia_user_active As auditor_active,
+        assi.ia_assi_year As year,
+        assi.ia_assi_finishdate,
+        cate.ia_assicate_name As category,
+        cate.ia_assicate_private As category_private,
+        type.ia_assitype_name As type,
+        type.ia_assitype_private As type_private,
+        assi.ia_assi_name || ' (' || assi.ia_assi_auto || ')' As Assignment,
+        assi.ia_assi_priority As priority,
+        find.ia_find_name || ' (' || find.ia_find_auto || ')' As finding,
+        find.ia_find_private As finding_private,
+        stat.ia_findstat_name As wstatus,
+        stat.ia_findstat_private As wstatus_private,
+        rate.ia_findrate_name As rating,
+        rate.ia_findrate_impact As rating_value,
+        `like`.ia_findlike_name As likelihood,
+        `like`.ia_findlike_value As likelihood_value,
+        cont.ia_findcont_name As control,
+        cont.ia_findcont_value As control_value,
+        user.ia_user_mail,
+        Case
+            When user.ia_user_mail == '%madelein%'
+            Then ''
+            When user.ia_user_mail == '%shahed%'
+            Then ''
+            When user.ia_user_mail == '%nicolene%'
+            Then ''
+            When cate.ia_assicate_name = 'Assignment'
+            Then '%nicolene%'
+            When cate.ia_assicate_name = 'Special investigation'
+            Then '%shahed%'
+            Else ''
+        End As Email_manager1,
+        Case
+            When user.ia_user_mail == '%madelein%'
+            Then ''
+            Else '%madelein%'  
+        End As Email_manager2        
+    From
+        ia_finding find Inner Join
+        ia_assignment assi On assi.ia_assi_auto = find.ia_assi_auto Inner Join
+        ia_user user On user.ia_user_sysid = assi.ia_user_sysid Inner Join
+        ia_assignment_category cate On cate.ia_assicate_auto = assi.ia_assicate_auto Inner Join
+        ia_assignment_type type On type.ia_assitype_auto = assi.ia_assitype_auto Inner Join
+        ia_finding_status stat On stat.ia_findstat_auto = find.ia_findstat_auto Left Join
+        ia_finding_rate rate On rate.ia_findrate_auto = find.ia_findrate_auto Left Join
+        ia_finding_likelihood `like` On `like`.ia_findlike_auto = find.ia_findlike_auto Left Join
+        ia_finding_control cont On cont.ia_findcont_auto = find.ia_findcont_auto
+    Where
+        (assi.ia_assi_year = '%year%' And
+            user.ia_user_active = '1' And
+            cate.ia_assicate_private = '0' And
+            type.ia_assitype_private = '0' And
+            find.ia_find_private = '0' And
+            stat.ia_findstat_private = '0') Or
+        (assi.ia_assi_year < '%year%' And
+            user.ia_user_active = '1' And
+            cate.ia_assicate_private = '0' And
+            type.ia_assitype_private = '0' And
+            find.ia_find_private = '0' And
+            stat.ia_findstat_private = '0' And
+            assi.ia_assi_priority < 9) Or
+        (user.ia_user_active = '1' And
+            cate.ia_assicate_private = '0' And
+            type.ia_assitype_private = '0' And
+            find.ia_find_private = '0' And
+            stat.ia_findstat_private = '0' And
+            assi.ia_assi_finishdate >= '%from%' And
+            assi.ia_assi_finishdate <= '%to%')
+    Order By
+        auditor,
+        year,
+        category,
+        type
+     ;"""
+    s_sql = s_sql.replace("%year%", s_year)
+    s_sql = s_sql.replace("%from%", s_from)
+    s_sql = s_sql.replace("%to%", s_to)
+    s_sql = s_sql.replace("%madelein%", s_madelein)
+    s_sql = s_sql.replace("%nicolene%", s_nicolene)
+    s_sql = s_sql.replace("%shahed%", s_shahed)
+    if l_debug:
+        print(s_sql)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_curs.execute("SELECT auditor FROM " + sr_file)
+    ri_count: int = len(so_curs.fetchall())
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # MESSAGE
+    if l_mess:
+        funcsms.send_telegram('', 'administrator', '<b>IA Findings/b> ' + s_year + ' records ' + str(ri_count))
+
+    """************************************************************************
     IDENTIFY PRIORITY INCONSISTENCY
     ************************************************************************"""
     funcfile.writelog("IDENTIFY PRIORITY INCONSISTENCY")
@@ -634,7 +743,7 @@ def ia_lists(s_period: str = "curr"):
         assc.Email_manager1 As Mail_manager1,
         assc.Email_manager2 As Mail_manager2
     From
-        X000_Assignment_curr assc Left Join
+        X000_Assignment_%period% assc Left Join
         ia_finding find On find.ia_assi_auto = assc.File Inner Join
         ia_finding_status fins On fins.ia_findstat_auto = find.ia_findstat_auto Left Join
         ia_finding_remediation reme On reme.ia_find_auto = find.ia_find_auto
@@ -661,6 +770,56 @@ def ia_lists(s_period: str = "curr"):
     # MESSAGE
     if l_mess and ri_count > 0:
         funcsms.send_telegram('', 'administrator', '<b>Follow-up no reminder</b> ' + str(ri_count))
+
+    """************************************************************************
+    IDENTIFY FINDING RATING INVALID
+    ************************************************************************"""
+    funcfile.writelog("IDENTIFY PRIORITY INCONSISTENCY")
+    if l_debug:
+        print("IDENTIFY PRIORITY INCONSISTENCY")
+
+    # OBTAIN THE LIST
+    if l_debug:
+        print("Identify finding rating invalid...")
+    sr_file = "X001_Test_finding_rating_invalid_" + s_period
+    s_sql = "CREATE TABLE " + sr_file + " AS" + """
+    Select
+        'Finding rating invalid' As Test,
+        find.auditor,
+        find.year,
+        find.Assignment,
+        find.finding,
+        find.wstatus As status,
+        find.ia_user_mail,
+        find.Email_manager1,
+        find.Email_manager2
+    From
+        X000_Finding_%period% find
+    Where
+        ((find.rating_value Is Null) Or
+        (find.rating_value = '0') Or
+        (find.likelihood_value Is Null) Or
+        (find.likelihood_value = '0') Or
+        (find.control_value Is Null) Or
+        (find.control_value = '0')) 
+    Order By
+        find.auditor,
+        find.year,
+        find.Assignment,
+        find.finding
+    ;"""
+    s_sql = s_sql.replace("%period%", s_period)
+    if l_debug:
+        print(s_sql)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_curs.execute("SELECT auditor FROM " + sr_file)
+    ri_count: int = len(so_curs.fetchall())
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # MESSAGE
+    if l_mess and ri_count > 0:
+        funcsms.send_telegram('', 'administrator', '<b>Finding rating invalid</b> ' + str(ri_count))
 
     """************************************************************************
     END OF SCRIPT
