@@ -10,6 +10,11 @@
         Then 'Yes'
         Else 'No'
     End As active,
+    Case
+        When type.ia_assitype_private = 1
+        Then 'No'
+        Else 'Yes'
+    End As private,
     Concat('<a href = "index.php?option=com_rsform&formId=', type.ia_assitype_form, '&recordId=', type.ia_assitype_auto,
     '&action=edit">Edit</a>', ' | ', '<a href = "index.php?option=com_rsform&formId=', type.ia_assitype_form, '&recordId=',
     type.ia_assitype_auto, '&action=copy">Copy</a>', ' | ', '<a href = "index.php?option=com_rsform&formId=',

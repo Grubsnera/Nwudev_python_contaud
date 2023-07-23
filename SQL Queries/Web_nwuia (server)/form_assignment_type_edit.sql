@@ -9,9 +9,10 @@
     type.ia_assitype_to,
     type.ia_assitype_active,
     type.ia_assitype_form,
-    type.ia_assitype_editdate
+    type.ia_assitype_editdate,
+    type.ia_assitype_private
 From
     ia_assignment_type type
 Where
-    -- type.ia_assitype_auto = '". $id."'
+    -- type.ia_assitype_auto  = '". $id."'
     type.ia_assitype_auto = 1

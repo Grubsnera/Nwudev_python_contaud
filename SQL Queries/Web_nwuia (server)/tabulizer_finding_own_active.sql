@@ -11,16 +11,14 @@
     Case
         -- When assi.ia_assi_permission = {user_id}
         When assi.ia_assi_permission = 855
-        Then Concat('<a href = "index.php?option=com_rsform&view=rsform&formId=', find.ia_find_formedit, '&fid=',
-            find.ia_find_auto, '&hash=', find.ia_find_token, '" target="_blank" rel="noopener noreferrer">Edit</a>',
-            ' | ', '<a href = "index.php?option=com_content&view=article&id=', find.ia_find_formview, '&rid=',
-            find.ia_find_auto, '" target="_blank" rel="noopener noreferrer">View</a>')
-        Else Concat('<a href = "index.php?option=com_rsform&view=rsform&formId=', find.ia_find_formedit, '&fid=',
-            find.ia_find_auto, '&hash=', find.ia_find_token, '" target="_blank" rel="noopener noreferrer">Edit</a>',
-            ' | ', '<a href = "index.php?option=com_rsform&view=rsform&formId=', find.ia_find_formdelete, '&fid=',
-            find.ia_find_auto, '&hash=', find.ia_find_token, '" target="_blank" rel="noopener noreferrer">Delete</a>',
-            ' | ', '<a href = "index.php?option=com_content&view=article&id=', find.ia_find_formview, '&rid=',
-            find.ia_find_auto, '" target="_blank" rel="noopener noreferrer">View</a>')
+        Then Concat('View_to_do')
+        Else Concat('<a title="Finding copy" href="index.php?option=com_rsform&view=rsform&formId=',
+            find.ia_find_formedit, '&recordId=', find.ia_find_auto, '&recordHash=', find.ia_find_token,
+            '&action=copy&assignment=', find.ia_assi_auto,
+            '" target="_blank" rel="noopener nofollow noreferrer">Copy</a>', ' | ',
+            '<a title="Finding delete" href="index.php?option=com_rsform&view=rsform&formId=', find.ia_find_formedit,
+            '&recordId=', find.ia_find_auto, '&recordHash=', find.ia_find_token, '&action=delete&assignment=',
+            find.ia_assi_auto, '" target="_blank" rel="noopener nofollow noreferrer">Delete</a>', ' | View_to_do')
     End As actions,
     Case
         When Count(reme.ia_findreme_auto) > 1
@@ -45,9 +43,9 @@ Where
         assi.ia_user_sysid = 855 And
         assi.ia_assi_priority < 9) Or
     (find.ia_find_auto > 0 And
-        -- assi.ia_assi_permission = {user_id} And
-        assi.ia_assi_permission = 855 And
-        assi.ia_assi_priority < 9)
+        assi.ia_assi_priority < 9 And
+        -- assi.ia_assi_permission = {user_id})
+        assi.ia_assi_permission = 855)
 Group By
     cate.ia_assicate_name,
     type.ia_assitype_name,

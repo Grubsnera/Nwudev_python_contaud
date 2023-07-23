@@ -1,19 +1,10 @@
 ﻿Select
-peop.employee_number,
-peop.name_list,
-peop.preferred_name,
-peop.gender,
-peop.phone_work,
-peop.phone_mobile,
-concat('<a href = "mailto: ', peop.email_address, '">', peop.email_address, '</a>') as email_address,
-peop.organization,
-peop.grade_calc,
-peop.position_name
+    ia_assignment_category.ia_assicate_auto,
+    ia_assignment_category.ia_assicate_name,
+    ia_assignment_category.ia_assicate_private,
+    ia_assignment_type.ia_assitype_auto,
+    ia_assignment_type.ia_assitype_name,
+    ia_assignment_type.ia_assitype_private
 From
-ia_people peop
-Where
---peop.customer = '{user_param_1:cmd}'
-peop.customer = 1
-Group By
-peop.employee_number,
-peop.name_list;
+    ia_assignment_category Inner Join
+    ia_assignment_type On ia_assignment_type.ia_assicate_auto = ia_assignment_category.ia_assicate_auto
