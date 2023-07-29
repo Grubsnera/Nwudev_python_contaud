@@ -143,6 +143,7 @@ def people_detail_list(
         upper(papf.per_information3) permit,
         Replace(Substr(papf.per_information8,1,10),'/','-') permit_expire,
         ph.phone_number phone_work,
+        ho.phone_number phone_home,        
         mo.phone_number phone_mobile,
         papf.email_address email_address,
         papf.attribute2 internal_box,
@@ -250,6 +251,7 @@ def people_detail_list(
          dis.lookup_code = papf.registered_disabled_flag left join
         hr_lookups ler on ler.lookup_type = 'LEAV_REAS' and ler.lookup_code = pps.leaving_reason left join
         X000_phone_work_latest ph on ph.parent_id = papf.person_id left join
+        X000_phone_home_latest ho on ho.parent_id = papf.person_id left join        
         x000_phone_mobile_latest mo on mo.parent_id = papf.person_id left join
         x000_package pack on pack.employee_number = papf.employee_number left join
         x000_nrf_allowance nrf on nrf.employee_number = papf.employee_number left join
@@ -291,6 +293,148 @@ def people_detail_list(
             sr_file + \
             " Set supervisor_name = name.supervisor From (" + l_sql + \
             ") As name Where X000_PEOPLE.employee_number = name.employee_number;"
+    so_curs.execute(s_sql)
+    so_conn.commit()
+
+    # RETURN VALUE
+    i_return = funcsys.tablerowcount(so_curs, s_table)
+
+    return i_return
+
+
+def people_detail_list2(
+        so_conn,
+        s_table: str = 'X000_PEOPLE2',
+        s_date: str = funcdate.today()
+        ) -> int:
+    """
+    Function to build PEOPLE lists on any given date.
+
+    :param so_conn: object: Table connection object
+    :param s_table: str: Table name to create (Default=X000_PEOPLE)
+    :param s_date: str: List date (Default=Today)
+    :return: int: Table row count
+    """
+
+    # IMPORT FUNCTIONS
+    from _my_modules import funcpayroll
+
+    # DECLARE VARIABLES
+    l_debug: bool = False
+
+    # OPEN THE DATABASE CURSOR
+    so_curs = so_conn.cursor()
+
+    # BUILD CURRENT PEOPLE
+    if l_debug:
+        print("Build people list 2...")
+        print(s_table)
+        print(s_date)
+    sr_file = s_table
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        pap.EMPLOYEE_NUMBER As employee_number,
+        pap.PERSON_ID As person_id,
+        paa.ASSIGNMENT_ID As assignment_id,
+        pap.full_name name_full,
+        '' name_list,
+        '' name_address,
+        pap.attribute4 preferred_name,
+        case
+            when upper(tit.meaning) = 'MR.' then 'MR'
+            when upper(tit.meaning) = 'MRS.' then 'MRS'
+            when upper(tit.meaning) = 'MS.' then 'MS'
+            else upper(tit.meaning)
+        end as title,
+        case
+            when instr(pap.middle_names,' ') > 1 then
+                substr(pap.first_name,1,1) ||
+                 substr(pap.middle_names,1,1) ||
+                  trim(substr(pap.middle_names,instr(pap.middle_names,' '),2))
+            when length(pap.middle_names) > 0 then
+                substr(pap.first_name,1,1) || substr(pap.middle_names,1,1)
+            else substr(pap.first_name,1,1)
+        end as initials,
+        pap.last_name name_last,
+        pap.date_of_birth date_of_birth,
+        strftime('%Y','%DATE%') - strftime('%Y', pap.date_of_birth) as employee_age,
+        Upper(hrl.LOCATION_CODE) As location,
+        Max(pps.ACTUAL_TERMINATION_DATE) As service_end_date,
+        Upper(ppt.USER_PERSON_TYPE) As user_person_type,
+        Upper(cat.MEANING) As assignment_category,
+        Case
+            When paa.POSITION_ID = 0
+            Then Upper(paa.EMPLOYEE_CATEGORY)
+            Else Upper(hrp.ACAD_SUPP)
+        End As employee_category,
+        Upper(hrp.POSITION_NAME) position_name,
+        Upper(nat.meaning) nationality,
+        Upper(pan.meaning) nationality_passport,      
+        pap.PER_INFORMATION9 As is_foreign,
+        pap.NATIONAL_IDENTIFIER As national_identifier,
+        Upper(pap.PER_INFORMATION2) passport,
+        Upper(pap.PER_INFORMATION3) permit,
+        Replace(Substr(pap.PER_INFORMATION8,1,10),'/','-') permit_expire,
+        acc.ORG_PAYMENT_METHOD_NAME As account_pay_method,
+        pap.last_update_date people_update_date,
+        pap.last_updated_by people_update_by,        
+        paa.last_update_date assignment_update_date,
+        paa.last_updated_by assignment_update_by,
+        sup.line_manager supervisor_number,
+        '' supervisor_name                   
+    From
+        PER_ALL_PEOPLE_F pap Left Join
+        PER_ALL_ASSIGNMENTS_F paa On paa.PERSON_ID = pap.PERSON_ID
+                -- And Date() Between paa.EFFECTIVE_START_DATE And paa.EFFECTIVE_END_DATE
+                And '%DATE%' Between paa.EFFECTIVE_START_DATE And paa.EFFECTIVE_END_DATE
+                And paa.EFFECTIVE_END_DATE Between pap.EFFECTIVE_START_DATE And pap.EFFECTIVE_END_DATE
+                And paa.ASSIGNMENT_STATUS_TYPE_ID = 1 Left Join
+        PER_PERIODS_OF_SERVICE pps On pps.PERSON_ID = pap.PERSON_ID Left Join
+        PER_PERSON_TYPE_USAGES_F ptu On pap.PERSON_ID = ptu.PERSON_ID
+                And paa.EFFECTIVE_END_DATE Between ptu.EFFECTIVE_START_DATE And ptu.EFFECTIVE_END_DATE Left Join
+        PER_PERSON_TYPES ppt On ptu.PERSON_TYPE_ID = ppt.PERSON_TYPE_ID Left Join
+        HR_LOCATIONS_ALL hrl On hrl.LOCATION_ID = paa.LOCATION_ID Left Join
+        HR_LOOKUPS cat On cat.LOOKUP_CODE = paa.EMPLOYMENT_CATEGORY
+                And cat.LOOKUP_TYPE = 'EMP_CAT' Left Join
+        X000_POSITIONS hrp On hrp.POSITION_ID = paa.POSITION_ID
+                And paa.EFFECTIVE_END_DATE Between hrp.EFFECTIVE_START_DATE And hrp.EFFECTIVE_END_DATE Left join
+        HR_LOOKUPS tit on tit.lookup_type = 'TITLE' and tit.lookup_code = pap.title Left join    
+        HR_LOOKUPS nat on nat.lookup_type = 'NATIONALITY' and nat.lookup_code = pap.nationality Left join
+        HR_LOOKUPS pan on pan.lookup_type = 'NATIONALITY' and pan.lookup_code = pap.per_information10 Left join
+        X000_pay_accounts_latest acc on acc.assignment_id = paa.assignment_id Left Join
+        XXNWU_LINE_MANAGERS sup on sup.employee_number = pap.employee_number
+    Where
+        (paa.EFFECTIVE_END_DATE Between pps.DATE_START And pps.ACTUAL_TERMINATION_DATE And
+            ppt.USER_PERSON_TYPE != 'Retiree') Or
+        (ppt.USER_PERSON_TYPE != 'Retiree' And
+            pps.ACTUAL_TERMINATION_DATE == pps.DATE_START)
+    Group By
+        pap.EMPLOYEE_NUMBER
+    ;"""
+    s_sql = s_sql.replace("%DATE%", s_date)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+
+    # Update the names
+    so_curs.execute("Update " + sr_file + " Set name_list = name_last||' '||title||' '||initials;")
+    so_conn.commit()
+    so_curs.execute("Update " + sr_file + " Set name_address = title||' '||initials||' '||name_last;")
+    so_conn.commit()
+
+    # Update the supervisor name
+    l_sql = """
+    Select
+        peop.employee_number,
+        supe.name_full as supervisor
+    From
+        X000_PEOPLE2 peop Inner Join
+        X000_PEOPLE2 supe On supe.employee_number = peop.supervisor_number
+    """
+    s_sql = "Update " + \
+            sr_file + \
+            " Set supervisor_name = name.supervisor From (" + l_sql + \
+            ") As name Where X000_PEOPLE2.employee_number = name.employee_number;"
     so_curs.execute(s_sql)
     so_conn.commit()
 
