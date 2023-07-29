@@ -216,6 +216,17 @@ def ia_mysql_backup(s_source_database: str = "Web_ia_nwu", s_target_database: st
             funcsms.send_telegram("", "administrator", "<b>" + str(i_table_counter) + "</b> tables backup")
             funcsms.send_telegram("", "administrator", "<b>" + str(i_record_counter) + "</b> records backup")
 
+        # UPDATE SOME FIELD VALUES NEEDED IN NEW DATABASE
+        # Update the assignments
+        s_sql = "UPDATE ia_assignment SET ia_assi_formedit=13,ia_assi_formdelete=14,ia_assi_formview=23;"
+        ms_to_cursor.execute(s_sql)
+        s_sql = "UPDATE ia_finding SET ia_find_formedit=15,ia_find_formdelete=16,ia_find_formview=24;"
+        ms_to_cursor.execute(s_sql)
+        ms_to_connection.commit()
+        ms_to_connection.close()
+        ms_from_connection.close()
+
+
         """************************************************************************
         END OF SCRIPT
         ************************************************************************"""
