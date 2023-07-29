@@ -1,6 +1,11 @@
 ﻿Select
     concat(cont.name, ' - ', cate.ia_assicate_name) As cust_cate,
     type.ia_assitype_file As file,
+    Case
+        When cate.ia_assicate_private = 1
+        Then 'No'
+        Else 'Yes'
+    End As cprivate,     
     type.ia_assitype_name As name,
     type.ia_assitype_desc As description,
     Date(type.ia_assitype_from) As date_from,

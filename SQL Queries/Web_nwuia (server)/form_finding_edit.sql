@@ -12,7 +12,15 @@
     find.ia_find_criteria_toggle,
     find.ia_find_criteria,
     find.ia_find_procedure_toggle,
-    find.ia_find_procedure
+    find.ia_find_procedure,
+    find.ia_find_condition_toggle,
+    find.ia_find_condition,
+    find.ia_find_effect_toggle,
+    find.ia_find_effect,
+    find.ia_find_cause_toggle,
+    find.ia_find_cause,
+    find.ia_find_recommend_toggle,
+    find.ia_find_recommend
 From
     ia_finding find
 Where
