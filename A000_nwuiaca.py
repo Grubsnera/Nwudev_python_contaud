@@ -13,8 +13,8 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from threading import Thread
 import time
 
-import A004_import_ia
-import B009_ia_lists
+# import A004_import_ia
+# import B009_ia_lists
 # IMPORT OWN MODULES
 from _my_modules import funcbott
 from _my_modules import funcconf
@@ -38,6 +38,8 @@ VACUUM TEST FINDING TABLES (A003_table_vacuum)(24/7)
 BACKUP MYSQL (B008_mysql_backup(web->server))(MonTueWedThuFri)
 IMPORT INTERNAL AUDIT (A004_import_ia)(MonTueWedThuFri)
 INTERNAL AUDIT LISTS (B009_ia_lists)(MonTueWedThuFri)
+INTERNAL AUDIT LISTS BACKUP TO NEW WEB SERVER (A006_backup_ia)(SunMonTueWedThuFriSat)
+PEOPLE BACKUP TO NEW WEB SERVER (A007_backup_people)(MonTueWedThuFri)
 IMPORT LOOKUP TABLES (A005_import_lookup_tables)(MonTueWedThuFri)
 IMPORT PEOPLE (A001_oracle_to_sqlite(people))(MonTueWedThuFri)
 PEOPLE LISTS (B001_people_lists)(MonTueWedThuFri)
@@ -140,6 +142,8 @@ class RunVacuum(Thread):
         import A003_table_vacuum
         import A004_import_ia
         import B009_ia_lists
+        import A006_backup_ia
+        import A007_backup_people
         import A005_import_lookup_tables
         import A001_oracle_to_sqlite
         import B001_people_lists
@@ -297,6 +301,7 @@ class RunVacuum(Thread):
                             "%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
 
                     # INTERNAL AUDIT LISTS ************************************
+
                     # CURRENT YEAR
                     s_project: str = "B009_ia_lists"
                     if funcdate.today_dayname() in "MonTueWedThuFri":
@@ -338,6 +343,52 @@ class RunVacuum(Thread):
                                                "NWUIACA: Fail: " + s_project)
                     else:
                         print("INTERNAL AUDIT LISTS " + s_project + " do not run on Saturdays and Sundays")
+                        if funcconf.l_mess_project:
+                            funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
+                        funcfile.writelog(
+                            "%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
+
+                    # INTERNAL AUDIT LISTS BACKUP TO NEW WEB SERVER ***********
+                    s_project: str = "A006_backup_ia"
+                    if funcdate.today_dayname() in "SunMonTueWedThuFriSat":
+                        try:
+                            A006_backup_ia.ia_mysql_backup()
+                            if funcconf.l_mail_project:
+                                funcmail.Mail('std_success_nwu',
+                                              'NWUIACA:Success:' + s_project,
+                                              'NWUIACA: Success: ' + s_project)
+                        except Exception as err:
+                            # DISABLE VSS TESTS
+                            # funcconf.l_run_vss_test = False
+                            # ERROR MESSAGE
+                            funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                               "NWUIACA:Fail:" + s_project,
+                                               "NWUIACA: Fail: " + s_project)
+                    else:
+                        print("INTERNAL AUDIT LISTS BACKUP " + s_project + " do not run on Saturdays and Sundays")
+                        if funcconf.l_mess_project:
+                            funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
+                        funcfile.writelog(
+                            "%t SCRIPT: " + s_project.upper() + ": DO NOT RUN ON SATURDAYS AND SUNDAYS")
+
+                    # PEOPLE BACKUP TO NEW WEB SERVER *************************
+                    s_project: str = "A007_backup_people"
+                    if funcdate.today_dayname() in "MonTueWedThuFri":
+                        try:
+                            A007_backup_people.ia_mysql_backup_people()
+                            if funcconf.l_mail_project:
+                                funcmail.Mail('std_success_nwu',
+                                              'NWUIACA:Success:' + s_project,
+                                              'NWUIACA: Success: ' + s_project)
+                        except Exception as err:
+                            # DISABLE VSS TESTS
+                            # funcconf.l_run_vss_test = False
+                            # ERROR MESSAGE
+                            funcsys.ErrMessage(err, funcconf.l_mail_project,
+                                               "NWUIACA:Fail:" + s_project,
+                                               "NWUIACA: Fail: " + s_project)
+                    else:
+                        print("PEOPLE BACKUP TO NEW WEB SERVER " + s_project + " do not run on Saturdays and Sundays")
                         if funcconf.l_mess_project:
                             funcsms.send_telegram("", "administrator", s_project + " do not run sat sun.")
                         funcfile.writelog(
