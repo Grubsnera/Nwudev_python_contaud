@@ -1670,6 +1670,32 @@ def people_lists():
     so_conn.commit()
     funcfile.writelog("%t BUILD VIEW: " + sr_file)
 
+    print("Build view phone home latest...")
+    sr_file = "X000_PHONE_HOME_LATEST"
+    so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
+    s_sql = "CREATE VIEW " + sr_file + " AS " + """
+    Select
+        phon.PHONE_ID,
+        phon.PARENT_ID,
+        phon.PARENT_TABLE,
+        phon.PHONE_TYPE,
+        Max(phon.DATE_FROM) As DATE_FROM,
+        phon.DATE_TO,
+        phon.PHONE_NUMBER
+    From
+        PER_PHONES phon
+    Where
+        phon.PARENT_TABLE = 'PER_ALL_PEOPLE_F' And
+        phon.PHONE_TYPE = 'H1' And
+        phon.DATE_FROM <= date() And
+        phon.DATE_TO >= date()
+    Group By
+        phon.PARENT_ID
+    ;"""
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    funcfile.writelog("%t BUILD VIEW: " + sr_file)
+
     print("Build view phone mobile latest...")
     sr_file = "X000_PHONE_MOBILE_LATEST"
     so_curs.execute("DROP VIEW IF EXISTS " + sr_file)
@@ -1704,6 +1730,13 @@ def people_lists():
     funcfile.writelog("BUILD ASSIGNMENTS AND PEOPLE")
 
     # BUILD LIST OF CURRENT PEOPLE
+    i_count = funcpeople.people_detail_list2(so_conn)
+    # MESSAGE TO ADMIN
+    if l_mess:
+        # ACTIVE EMPLOYEES
+        funcsms.send_telegram("", "administrator", "<b>" + str(i_count) + "</b> Active employees method 1")
+
+    # BUILD LIST OF CURRENT PEOPLE
     i_count = funcpeople.people_detail_list(so_conn)
     if l_debug:
         print(i_count)
@@ -1728,7 +1761,7 @@ def people_lists():
     # MESSAGE TO ADMIN
     if l_mess:
         # ACTIVE EMPLOYEES
-        funcsms.send_telegram("", "administrator", "<b>" + str(i_count) + "</b> Active employees method 1")
+        funcsms.send_telegram("", "administrator", "<b>" + str(i_count) + "</b> Active employees method 2")
 
     # Build current year assignment round 1 ******************************************
     funcpeople.assign01(so_conn, "X001_ASSIGNMENT_CURR_01", funcdate.cur_yearbegin(), funcdate.cur_yearend(),
@@ -1755,7 +1788,7 @@ def people_lists():
     # MESSAGE TO ADMIN
     if l_mess:
         # ACTIVE EMPLOYEES
-        funcsms.send_telegram("", "administrator", "<b>" + str(i_count) + "</b> Active employees method 2")
+        funcsms.send_telegram("", "administrator", "<b>" + str(i_count) + "</b> Active employees method 3")
 
     # Build PEOPLE CURRENT ******************************************************
     funcpeople.people01(so_conn, "X002_PEOPLE_CURR_YEAR", "X001_ASSIGNMENT_CURR", "CURR",
