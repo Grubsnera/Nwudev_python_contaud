@@ -117,7 +117,10 @@ def people_test_conflict():
         COI_DECLARATIONS.AUDIT_USER,
         COI_DECLARATIONS.LAST_UPDATE_DATE,
         COI_DECLARATIONS.LAST_UPDATED_BY,
-        COI_DECLARATIONS.EXTERNAL_REFERENCE
+        COI_DECLARATIONS.EXTERNAL_REFERENCE,
+        COI_DECLARATIONS.OBO_DATE,
+        COI_DECLARATIONS.FORM_DATE,
+        COI_DECLARATIONS.PRIVACY_FLAG
     From
       COI_DECLARATIONS
       Left Join PEOPLE.HR_LOOKUPS ON PEOPLE.HR_LOOKUPS.LOOKUP_CODE = COI_DECLARATIONS.STATUS_ID And
@@ -165,7 +168,11 @@ def people_test_conflict():
         COI_INTERESTS.AUDIT_USER,
         COI_INTERESTS.LAST_UPDATE_DATE,
         COI_INTERESTS.LAST_UPDATED_BY,
-        COI_INTERESTS.EXTERNAL_REFERENCE
+        COI_INTERESTS.EXTERNAL_REFERENCE,
+        COI_INTERESTS.VENDOR_NUMBER,
+        COI_INTERESTS.VENDOR_NAME,
+        COI_INTERESTS.CC_NUMBER,
+        COI_INTERESTS.VAT_NUMBER
     From
       COI_INTERESTS
       Left Join COI_DECLARATIONS ON COI_DECLARATIONS.DECLARATION_ID = COI_INTERESTS.DECLARATION_ID
@@ -192,62 +199,76 @@ def people_test_conflict():
     # BUILD CURRENT YEAR DECLARATIONS
     print("Build current declarations...")
     sr_file = "X001_declarations_curr"
-    s_sql = "CREATE TABLE "+sr_file+" AS " + """
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
-        X000_declarations_all.DECLARATION_ID,
-        X000_declarations_all.EMPLOYEE_NUMBER AS EMPLOYEE,
-        EMPLOYEE.LAST_NAME AS EMP_SURNAME,
-        EMPLOYEE.NAME_ADDR AS EMP_NAME,
-        EMPLOYEE.ADDRESS_SARS AS EMP_ADD_SARS,
-        EMPLOYEE.ADDRESS_POST AS EMP_ADD_POST,
-        EMPLOYEE.EMP_ACTIVE,    
-        EMPLOYEE.EMAIL_ADDRESS AS EMP_MAIL,
-        EMPLOYEE.POSITION_FULL AS EMP_POSITION,    
-        X000_declarations_all.DECLARATION_DATE,
-        X000_declarations_all.UNDERSTAND_POLICY_FLAG,
-        X000_declarations_all.INTEREST_TO_DECLARE_FLAG,
-        X000_declarations_all.FULL_DISCLOSURE_FLAG,
-        X000_declarations_all.STATUS,
-        X000_declarations_all.LINE_MANAGER,
-        MANAGER.LAST_NAME AS MAN_SURNAME,
-        MANAGER.NAME_ADDR AS MAN_NAME,
-        MANAGER.ADDRESS_SARS AS MAN_ADD_SARS,
-        MANAGER.ADDRESS_POST AS MAN_ADD_POST,
-        MANAGER.EMP_ACTIVE AS MAN_ACTIVE,    
-        MANAGER.EMAIL_ADDRESS AS MAN_MAIL,
-        MANAGER.POSITION_FULL AS MAN_POSITION,    
-        X000_declarations_all.REJECTION_REASON,
-        X000_declarations_all.CREATION_DATE,
-        X000_declarations_all.AUDIT_USER,
-        X000_declarations_all.LAST_UPDATE_DATE,
-        X000_declarations_all.LAST_UPDATED_BY,
-        X000_declarations_all.EXTERNAL_REFERENCE,
-        EMPLOYEE.SUPERVISOR,
-        SUPERVISOR.LAST_NAME AS SUP_SURNAME,
-        SUPERVISOR.NAME_ADDR AS SUP_NAME,
-        SUPERVISOR.EMP_ACTIVE AS SUP_ACTIVE,    
-        SUPERVISOR.EMAIL_ADDRESS AS SUP_MAIL,
-        SUPERVISOR.POSITION_FULL AS SUP_POSITION
+        DECL.DECLARATION_ID,
+        DECL.EMPLOYEE_NUMBER AS EMPLOYEE,
+        PEOP.LAST_NAME AS EMP_SURNAME,
+        PEOP.FULL_NAME AS EMP_FULL,
+        ACTP.name_address AS EMP_NAME,
+        ACTP.phone_work AS EMP_PHONE_WORK,
+        ACTP.phone_work AS EMP_PHONE_HOME,    
+        ACTP.phone_mobile AS EMP_PHONE_MOBILE,
+        ACTP.address_sars AS EMP_ADD_SARS,
+        ACTP.address_post AS EMP_ADD_POST,
+        CASE
+        WHEN ACTP.employee_number IS NULL THEN 'N'
+        ELSE 'Y'
+        END AS EMP_ACTIVE,    
+        ACTP.email_address AS EMP_MAIL,
+        ACTP.position_name EMP_POSITION,    
+        DECL.DECLARATION_DATE,
+        DECL.UNDERSTAND_POLICY_FLAG,
+        DECL.INTEREST_TO_DECLARE_FLAG,
+        DECL.FULL_DISCLOSURE_FLAG,
+        DECL.STATUS,
+        DECL.LINE_MANAGER,
+        MANA.name_last AS MAN_SURNAME,
+        MANA.name_address AS MAN_NAME,
+        MANA.address_sars AS MAN_ADD_SARS,
+        MANA.address_post AS MAN_ADD_POST,
+        CASE
+        WHEN MANA.employee_number IS NULL THEN 'N'
+        ELSE 'Y'
+        END AS MAN_ACTIVE,      
+        MANA.email_address AS MAN_MAIL,
+        MANA.position_name AS MAN_POSITION,    
+        DECL.REJECTION_REASON,
+        DECL.CREATION_DATE,
+        DECL.AUDIT_USER,
+        DECL.LAST_UPDATE_DATE,
+        DECL.LAST_UPDATED_BY,
+        DECL.EXTERNAL_REFERENCE,
+        ACTP.supervisor_number AS SUPERVISOR,
+        SUPE.name_last AS SUP_SURNAME,
+        SUPE.name_address AS SUP_NAME,
+        CASE
+        WHEN SUPE.employee_number IS NULL THEN 'N'
+        ELSE 'Y'
+        END AS SUP_ACTIVE,      
+        SUPE.email_address AS SUP_MAIL,
+        SUPE.position_name AS SUP_POSITION
     From
-        X000_declarations_all Left Join
-        PEOPLE.X002_PEOPLE_CURR_YEAR EMPLOYEE ON EMPLOYEE.EMPLOYEE_NUMBER = X000_declarations_all.EMPLOYEE_NUMBER Left join
-        PEOPLE.X002_PEOPLE_CURR_YEAR MANAGER ON MANAGER.EMPLOYEE_NUMBER = X000_declarations_all.LINE_MANAGER Left Join
-        PEOPLE.X002_PEOPLE_CURR_YEAR SUPERVISOR ON SUPERVISOR.EMPLOYEE_NUMBER = EMPLOYEE.SUPERVISOR
+        X000_declarations_all DECL Left Join
+        PEOPLE.PER_ALL_PEOPLE_F PEOP ON PEOP.EMPLOYEE_NUMBER = DECL.EMPLOYEE_NUMBER
+         AND DATE(DECL.LAST_UPDATE_DATE) BETWEEN PEOP.EFFECTIVE_START_DATE AND PEOP.EFFECTIVE_END_DATE Left Join 
+        PEOPLE.X000_PEOPLE ACTP ON ACTP.employee_number = DECL.EMPLOYEE_NUMBER Left join
+        PEOPLE.X000_PEOPLE MANA ON MANA.employee_number = DECL.LINE_MANAGER Left join
+        PEOPLE.X000_PEOPLE SUPE ON SUPE.employee_number = ACTP.supervisor_number        
     Where
-        X000_declarations_all.DECLARATION_DATE >= Date("%CYEARB%") AND
-        X000_declarations_all.DECLARATION_DATE <= Date("%CYEARE%")
+        DECL.DECLARATION_DATE >= Date("%CYEARB%") AND
+        DECL.DECLARATION_DATE <= Date("%CYEARE%")
     Order By
-        EMPLOYEE.LAST_NAME,
-        EMPLOYEE.NAME_ADDR,
-        X000_declarations_all.LAST_UPDATE_DATE
+        PEOP.FULL_NAME,
+        DECL.LAST_UPDATE_DATE
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sqlp = s_sql
     s_sql = s_sql.replace("%CYEARB%", funcdate.cur_yearbegin())
     s_sql = s_sql.replace("%CYEARE%", funcdate.cur_yearend())
     so_curs.execute(s_sql)
     so_conn.commit()
-    funcfile.writelog("%t BUILD TABLE: "+sr_file)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD PREVIOUS YEAR DECLARATIONS
     print("Build previous declarations...")
