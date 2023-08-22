@@ -20,7 +20,15 @@
     find.ia_find_cause_toggle,
     find.ia_find_cause,
     find.ia_find_recommend_toggle,
-    find.ia_find_recommend
+    find.ia_find_recommend,
+    find.ia_find_comment_toggle,
+    find.ia_find_comment,
+    find.ia_find_frequency_toggle,
+    find.ia_find_frequency,
+    find.ia_find_definition_toggle,
+    find.ia_find_definition,
+    find.ia_find_reference_toggle,
+    find.ia_find_reference
 From
     ia_finding find
 Where
