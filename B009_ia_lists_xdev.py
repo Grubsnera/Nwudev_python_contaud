@@ -44,6 +44,7 @@ def ia_lists(s_period: str = "curr"):
         s_year: str = s_period
     s_from: str = str(int(s_year) - 1) + '-10-01'
     s_to: str = s_year + '-09-30'
+
     # ed_path: str = "S:/_external_data/"  # External data path
     # re_path: str = "R:/Internal_audit/" + s_year
     so_path: str = "W:/Internal_audit/"  # Source database path
