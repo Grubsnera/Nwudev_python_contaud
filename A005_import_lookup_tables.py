@@ -43,7 +43,7 @@ def lookup_import(s_table: str = 'all'):
     l_return: bool = True
     l_debug: bool = False  # Display debug messages
     l_mess: bool = funcconf.l_mess_project  # Send messages
-    # l_mess: bool = True  # Send messages
+    # l_mess: bool = False  # Send messages
     ed_path = "S:/_external_data/"  # external data path
 
     # RUN THE IMPORT
