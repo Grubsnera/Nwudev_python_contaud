@@ -24,6 +24,8 @@ TEMPORARY AREA
 BEGIN OF SCRIPT
 OBTAIN LIST OF ASSIGNMENTS
 OBTAIN LIST OF FINDINGS
+OBTAIN LIST OF SPECIAL INVESTIGATIONS PER PERIOD
+OBTAIN LIST OF SPECIAL INVESTIGATIONS PER CALENDAR YEAR
 IDENTIFY PRIORITY INCONSISTENCY
 IDENTIFY STATUS INCONSISTENCY
 IDENTIFY YEAR INCONSISTENCY
@@ -86,7 +88,7 @@ def ia_lists(s_period: str = "curr"):
 
     # MESSAGE
     if l_mess:
-        funcsms.send_telegram("", "administrator", "<b>" + s_function + "</b>")
+        funcsms.send_telegram("", "administrator", "<b>" + s_function.upper() + "</b>")
 
     """************************************************************************
     OPEN THE DATABASES
@@ -440,7 +442,393 @@ def ia_lists(s_period: str = "curr"):
 
     # MESSAGE
     if l_mess:
-        funcsms.send_telegram('', 'administrator', '<b>IA Findings/b> ' + s_year + ' records ' + str(ri_count))
+        funcsms.send_telegram('', 'administrator', '<b>IA Findings</b> ' + s_year + ' records ' + str(ri_count))
+
+    """************************************************************************
+    OBTAIN LIST OF SPECIAL INVESTIGATIONS PER PERIOD
+    ************************************************************************"""
+    funcfile.writelog("OBTAIN SPECIAL INVESTIGATIONS PERIOD")
+    if l_debug:
+        print("OBTAIN SPECIAL INVESTIGATIONS PERIOD")
+
+    # OBTAIN THE LIST
+    if l_debug:
+        print("Obtain the list of investigations...")
+    sr_file = "X000_Assignment_si_" + s_period
+    s_sql = "CREATE TABLE " + sr_file + " AS" + """
+    SELECT
+        us.ia_user_name as Auditor,
+        ia.ia_assi_year as Assignment_year,
+        Cast(Case
+            When Date(ia.ia_assi_startdate) >= '%from%' And Date(ia.ia_assi_startdate) <= '%to%' 
+            Then %year%
+            Else '0' 
+        End As Integer) As Year_calc,     
+        Case
+            When ia.ia_assi_year = %year%
+            Then 'Current'
+            When ia.ia_assi_priority < 9
+            Then 'Previous'
+            Else 'Period'
+        End As Year_indicator,
+        ia.ia_assi_name || ' (' || ia.ia_assi_auto || ')' as Assignment_name,
+        ia.ia_assi_si_caseyear as Case_year,
+        ia.ia_assi_si_casenumber as Case_number,
+        ia.ia_assi_si_boxyear as Box_year,
+        ia.ia_assi_si_boxnumber as Box_number,
+        ia.ia_assi_startdate as Start_date,
+        Case
+            When Date(ia.ia_assi_startdate) < '%from%'
+            Then StrfTime('%Y', ia.ia_assi_startdate)
+            When Date(ia.ia_assi_startdate) < '%to%'
+            Then StrfTime('%Y-%m', ia.ia_assi_startdate)
+            When Date(ia.ia_assi_startdate) >= '%from%'
+            Then StrfTime('%Y', ia.ia_assi_startdate)
+            Else StrfTime('%Y-%m', 'now')
+        End As Date_opened_month,
+        Case
+            When Cast((StrfTime("%s", 'now') - StrfTime("%s", ia.ia_assi_startdate)) / 86400.0 As Integer) > 0
+            Then Cast((StrfTime("%s", 'now') - StrfTime("%s", ia.ia_assi_startdate)) / 86400.0 As Integer)
+            Else 0
+        End As Date_opened_days,
+        ia.ia_assi_si_reportdate as Report_date,
+        ia.ia_assi_si_report1date as Report1_date,
+        ia.ia_assi_si_report2date as Report2_date,
+        ia.ia_assi_completedate as Due_date,
+        ia.ia_assi_finishdate as Close_date,    
+        Case
+            When ia.ia_assi_priority = 7
+            Then ia.ia_assi_proofdate
+            When ia.ia_assi_priority = 8
+            Then Date('now')
+            Else ia.ia_assi_finishdate
+        End As Close_date_calc,
+        Case
+            When ia.ia_assi_priority = 7 And Date(ia.ia_assi_proofdate) >= '%from%' And Date(ia.ia_assi_proofdate) <= '%to%'
+            Then StrfTime('%Y-%m', ia.ia_assi_proofdate)
+            When ia.ia_assi_priority = 7
+            Then StrfTime('%Y', ia.ia_assi_proofdate)
+            When Date(ia.ia_assi_finishdate) >= '%from%' And Date(ia.ia_assi_finishdate) <= '%to%'
+            Then StrfTime('%Y-%m', ia.ia_assi_finishdate)
+            Else '00 Unclosed'
+        End As Close_date_month,
+        Case
+            When Cast((StrfTime("%s", ia.ia_assi_finishdate) - StrfTime("%s", ia.ia_assi_startdate)) / 86400.0
+                As Integer) > 0
+            Then Cast((StrfTime("%s", ia.ia_assi_finishdate) - StrfTime("%s", ia.ia_assi_startdate)) / 86400.0
+                As Integer)
+            Else 0
+        End As Days_to_close,
+        Case
+            When ia.ia_assi_priority < 7 And StrfTime("%s", 'now') > StrfTime("%s", ia.ia_assi_completedate)
+            Then Cast((StrfTime("%s", 'now') - StrfTime("%s", ia.ia_assi_completedate)) / 86400.0 As Integer)
+            Else 0
+        End As Days_due,
+        Case
+            When ia.ia_assi_priority < 7 And StrfTime("%s", 'now') > StrfTime("%s", ia.ia_assi_si_report2date)
+            Then Cast((StrfTime("%s", 'now') - StrfTime("%s", ia.ia_assi_si_report2date)) / 86400.0 As Integer)
+            Else 0
+        End As Days_due_si,
+        at.ia_assitype_name as Assignment_type,
+        Case
+            When ia.ia_assi_priority == 0 Then '0-Inactive'
+            When ia.ia_assi_priority == 1 Then '1-Low'
+            When ia.ia_assi_priority == 2 Then '2-Medium'
+            When ia.ia_assi_priority == 3 Then '3-High'
+            When ia.ia_assi_priority == 7 Then '7-Follow-up'
+            When ia.ia_assi_priority == 8 Then '8-Continuous'
+            When ia.ia_assi_priority == 9 Then '9-Closed'
+            Else '0-Unknown'
+        End As Assignment_priority, 
+        --ia.ia_assi_si_accused as Accused,
+        --ia.ia_assi_si_issue as Issue,
+        og.ia_assiorig_name as Assignment_origin,
+        co.ia_assicond_name as Conducted_by,
+        st.ia_assistat_name as Assignment_status,
+        Case
+            When SubStr(st.ia_assistat_name, 1, 2) = '00'
+            Then '1-NotStarted'
+            When ia.ia_assi_priority = 8
+            Then '8-Continuous'
+            When ia.ia_assi_priority = 7
+            Then '7-Follow-up'
+            When Upper(SubStr(st.ia_assistat_name, 1, 2)) = 'CO'
+            Then '9-Completed'
+            When Cast(SubStr(st.ia_assistat_name, 1, 2) As Integer) >= 1 And Cast(SubStr(st.ia_assistat_name, 1,
+                2) As Integer) <= 10
+            Then '2-Planning'
+            When Cast(SubStr(st.ia_assistat_name, 1, 2) As Integer) >= 11 And Cast(SubStr(st.ia_assistat_name,
+                1, 2) As Integer) <= 50
+            Then '3-FieldworkInitial'
+            When Cast(SubStr(st.ia_assistat_name, 1, 2) As Integer) >= 51 And Cast(SubStr(st.ia_assistat_name,
+                1, 2) As Integer) <= 79
+            Then '4-FieldworkFinal'
+            When Cast(SubStr(st.ia_assistat_name, 1, 2) As Integer) >= 80 And Cast(SubStr(st.ia_assistat_name,
+                1, 2) As Integer) <= 89
+            Then '5-DraftReport'
+            When Cast(SubStr(st.ia_assistat_name, 1, 2) As Integer) >= 90 And Cast(SubStr(st.ia_assistat_name,
+                1, 2) As Integer) <= 99
+            Then '6-FinalReport'
+            Else 'Unknown'
+        End As Assignment_status_calc,
+        ia.ia_assi_si_reference as Reference,
+        Cast(ia.ia_assi_si_value As Integer) as Value,
+        ia.ia_assi_offi as Note_official,
+        --ia.ia_assi_desc as Note_private,
+        ia.ia_assi_auto as Assignment_number,
+        --ia.ia_assicate_auto as Category_number,
+        us.ia_user_mail As User_mail,
+        Case
+            When us.ia_user_mail == '%madelein%'
+            Then ''
+            When us.ia_user_mail == '%shahed%'
+            Then ''
+            When us.ia_user_mail == '%nicolene%'
+            Then ''
+            When ca.ia_assicate_name = 'Assignment'
+            Then '%nicolene%'
+            When ca.ia_assicate_name = 'Special investigation'
+            Then '%shahed%'
+            Else ''
+        End As Email_manager1,
+        Case
+            When us.ia_user_mail == '%madelein%'
+            Then ''
+            Else '%madelein%'  
+        End As Email_manager2,
+        Cast('1' As Integer) As Record_counter
+    FROM
+        ia_assignment ia Left Join
+        ia_user us On us.ia_user_sysid = ia.ia_user_sysid Left Join
+        ia_assignment_category ca On ca.ia_assicate_auto = ia.ia_assicate_auto Left Join
+        ia_assignment_type at On at.ia_assitype_auto = ia.ia_assitype_auto Left Join
+        ia_assignment_status st On st.ia_assistat_auto = ia.ia_assistat_auto Left Join
+        ia_assignment_conducted co On co.ia_assicond_auto = ia.ia_assicond_auto Left Join
+        ia_assignment_origin og On og.ia_assiorig_auto = ia.ia_assiorig_auto
+    WHERE
+        (ia.ia_assi_year = %year% And
+            ia.ia_assicate_auto = 9 And        
+            us.ia_user_active = '1' And
+            ca.ia_assicate_private = '0') Or
+        (ia.ia_assi_year < %year% And
+            ia.ia_assicate_auto = 9 And        
+            ia.ia_assi_priority < 9 And
+            us.ia_user_active = '1' And
+            ca.ia_assicate_private = '0') Or
+        (ia.ia_assi_finishdate >= '%from%' And
+            ia.ia_assi_finishdate <= '%to%' And
+            ia.ia_assicate_auto = 9 And            
+            us.ia_user_active = '1' And
+            ca.ia_assicate_private = '0')    
+    ORDER BY
+    ia_assi_si_caseyear,
+    ia_assi_si_casenumber    
+    ;"""
+    s_sql = s_sql.replace("%year%", s_year)
+    s_sql = s_sql.replace("%from%", s_from)
+    s_sql = s_sql.replace("%to%", s_to)
+    s_sql = s_sql.replace("%madelein%", s_madelein)
+    s_sql = s_sql.replace("%nicolene%", s_nicolene)
+    s_sql = s_sql.replace("%shahed%", s_shahed)
+    if l_debug:
+        print(s_sql)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_curs.execute("SELECT assignment_number FROM " + sr_file)
+    ri_count: int = len(so_curs.fetchall())
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # MESSAGE
+    if l_mess:
+        funcsms.send_telegram('', 'administrator', '<b>IA Assignments SI</b> ' + s_period + ' records ' + str(ri_count))
+
+    """************************************************************************
+    OBTAIN LIST OF SPECIAL INVESTIGATIONS PER CALENDAR YEAR
+    ************************************************************************"""
+    funcfile.writelog("OBTAIN SPECIAL INVESTIGATIONS PERIOD")
+    if l_debug:
+        print("OBTAIN SPECIAL INVESTIGATIONS PERIOD")
+
+    # OBTAIN THE LIST
+    if l_debug:
+        print("Obtain the list of investigations...")
+    sr_file = "X000_Assignment_si_" + s_period + "_year"
+    s_sql = "CREATE TABLE " + sr_file + " AS" + """
+    SELECT
+        us.ia_user_name as Auditor,
+        ia.ia_assi_year as Assignment_year,
+        Cast(Case
+            When Date(ia.ia_assi_startdate) >= '%from%' And Date(ia.ia_assi_startdate) <= '%to%' 
+            Then %year%
+            Else '0' 
+        End As Integer) As Year_calc,     
+        Case
+            When ia.ia_assi_year = %year%
+            Then 'Current'
+            When ia.ia_assi_priority < 9
+            Then 'Previous'
+            Else 'Period'
+        End As Year_indicator,
+        ia.ia_assi_name || ' (' || ia.ia_assi_auto || ')' as Assignment_name,
+        ia.ia_assi_si_caseyear as Case_year,
+        ia.ia_assi_si_casenumber as Case_number,
+        ia.ia_assi_si_boxyear as Box_year,
+        ia.ia_assi_si_boxnumber as Box_number,
+        ia.ia_assi_startdate as Start_date,
+        Case
+            When Date(ia.ia_assi_startdate) < '%from%'
+            Then StrfTime('%Y', ia.ia_assi_startdate)
+            When Date(ia.ia_assi_startdate) < '%to%'
+            Then StrfTime('%Y-%m', ia.ia_assi_startdate)
+            When Date(ia.ia_assi_startdate) >= '%from%'
+            Then StrfTime('%Y', ia.ia_assi_startdate)
+            Else StrfTime('%Y-%m', 'now')
+        End As Date_opened_month,
+        Case
+            When Cast((StrfTime("%s", 'now') - StrfTime("%s", ia.ia_assi_startdate)) / 86400.0 As Integer) > 0
+            Then Cast((StrfTime("%s", 'now') - StrfTime("%s", ia.ia_assi_startdate)) / 86400.0 As Integer)
+            Else 0
+        End As Date_opened_days,
+        ia.ia_assi_si_reportdate as Report_date,
+        ia.ia_assi_si_report1date as Report1_date,
+        ia.ia_assi_si_report2date as Report2_date,
+        ia.ia_assi_completedate as Due_date,
+        ia.ia_assi_finishdate as Close_date,    
+        Case
+            When ia.ia_assi_priority = 7
+            Then ia.ia_assi_proofdate
+            When ia.ia_assi_priority = 8
+            Then Date('now')
+            Else ia.ia_assi_finishdate
+        End As Close_date_calc,
+        Case
+            When ia.ia_assi_priority = 7 And Date(ia.ia_assi_proofdate) >= '%from%' And Date(ia.ia_assi_proofdate) <= '%to%'
+            Then StrfTime('%Y-%m', ia.ia_assi_proofdate)
+            When ia.ia_assi_priority = 7
+            Then StrfTime('%Y', ia.ia_assi_proofdate)
+            When Date(ia.ia_assi_finishdate) >= '%from%' And Date(ia.ia_assi_finishdate) <= '%to%'
+            Then StrfTime('%Y-%m', ia.ia_assi_finishdate)
+            Else '00 Unclosed'
+        End As Close_date_month,
+        Case
+            When Cast((StrfTime("%s", ia.ia_assi_finishdate) - StrfTime("%s", ia.ia_assi_startdate)) / 86400.0
+                As Integer) > 0
+            Then Cast((StrfTime("%s", ia.ia_assi_finishdate) - StrfTime("%s", ia.ia_assi_startdate)) / 86400.0
+                As Integer)
+            Else 0
+        End As Days_to_close,
+        Case
+            When ia.ia_assi_priority < 7 And StrfTime("%s", 'now') > StrfTime("%s", ia.ia_assi_completedate)
+            Then Cast((StrfTime("%s", 'now') - StrfTime("%s", ia.ia_assi_completedate)) / 86400.0 As Integer)
+            Else 0
+        End As Days_due,
+        Case
+            When ia.ia_assi_priority < 7 And StrfTime("%s", 'now') > StrfTime("%s", ia.ia_assi_si_report2date)
+            Then Cast((StrfTime("%s", 'now') - StrfTime("%s", ia.ia_assi_si_report2date)) / 86400.0 As Integer)
+            Else 0
+        End As Days_due_si,
+        at.ia_assitype_name as Assignment_type,
+        Case
+            When ia.ia_assi_priority == 0 Then '0-Inactive'
+            When ia.ia_assi_priority == 1 Then '1-Low'
+            When ia.ia_assi_priority == 2 Then '2-Medium'
+            When ia.ia_assi_priority == 3 Then '3-High'
+            When ia.ia_assi_priority == 7 Then '7-Follow-up'
+            When ia.ia_assi_priority == 8 Then '8-Continuous'
+            When ia.ia_assi_priority == 9 Then '9-Closed'
+            Else '0-Unknown'
+        End As Assignment_priority, 
+        --ia.ia_assi_si_accused as Accused,
+        --ia.ia_assi_si_issue as Issue,
+        og.ia_assiorig_name as Assignment_origin,
+        co.ia_assicond_name as Conducted_by,
+        st.ia_assistat_name as Assignment_status,
+        Case
+            When SubStr(st.ia_assistat_name, 1, 2) = '00'
+            Then '1-NotStarted'
+            When ia.ia_assi_priority = 8
+            Then '8-Continuous'
+            When ia.ia_assi_priority = 7
+            Then '7-Follow-up'
+            When Upper(SubStr(st.ia_assistat_name, 1, 2)) = 'CO'
+            Then '9-Completed'
+            When Cast(SubStr(st.ia_assistat_name, 1, 2) As Integer) >= 1 And Cast(SubStr(st.ia_assistat_name, 1,
+                2) As Integer) <= 10
+            Then '2-Planning'
+            When Cast(SubStr(st.ia_assistat_name, 1, 2) As Integer) >= 11 And Cast(SubStr(st.ia_assistat_name,
+                1, 2) As Integer) <= 50
+            Then '3-FieldworkInitial'
+            When Cast(SubStr(st.ia_assistat_name, 1, 2) As Integer) >= 51 And Cast(SubStr(st.ia_assistat_name,
+                1, 2) As Integer) <= 79
+            Then '4-FieldworkFinal'
+            When Cast(SubStr(st.ia_assistat_name, 1, 2) As Integer) >= 80 And Cast(SubStr(st.ia_assistat_name,
+                1, 2) As Integer) <= 89
+            Then '5-DraftReport'
+            When Cast(SubStr(st.ia_assistat_name, 1, 2) As Integer) >= 90 And Cast(SubStr(st.ia_assistat_name,
+                1, 2) As Integer) <= 99
+            Then '6-FinalReport'
+            Else 'Unknown'
+        End As Assignment_status_calc,
+        ia.ia_assi_si_reference as Reference,
+        Cast(ia.ia_assi_si_value As Integer) as Value,
+        ia.ia_assi_offi as Note_official,
+        --ia.ia_assi_desc as Note_private,
+        ia.ia_assi_auto as Assignment_number,
+        --ia.ia_assicate_auto as Category_number,
+        us.ia_user_mail As User_mail,
+        Case
+            When us.ia_user_mail == '%madelein%'
+            Then ''
+            When us.ia_user_mail == '%shahed%'
+            Then ''
+            When us.ia_user_mail == '%nicolene%'
+            Then ''
+            When ca.ia_assicate_name = 'Assignment'
+            Then '%nicolene%'
+            When ca.ia_assicate_name = 'Special investigation'
+            Then '%shahed%'
+            Else ''
+        End As Email_manager1,
+        Case
+            When us.ia_user_mail == '%madelein%'
+            Then ''
+            Else '%madelein%'  
+        End As Email_manager2,
+        Cast('1' As Integer) As Record_counter
+    FROM
+        ia_assignment ia Left Join
+        ia_user us On us.ia_user_sysid = ia.ia_user_sysid Left Join
+        ia_assignment_category ca On ca.ia_assicate_auto = ia.ia_assicate_auto Left Join
+        ia_assignment_type at On at.ia_assitype_auto = ia.ia_assitype_auto Left Join
+        ia_assignment_status st On st.ia_assistat_auto = ia.ia_assistat_auto Left Join
+        ia_assignment_conducted co On co.ia_assicond_auto = ia.ia_assicond_auto Left Join
+        ia_assignment_origin og On og.ia_assiorig_auto = ia.ia_assiorig_auto
+    WHERE
+        (ia.ia_assi_si_caseyear = %year% And
+            ia.ia_assicate_auto = 9 And        
+            us.ia_user_active = '1' And
+            ca.ia_assicate_private = '0')
+    ORDER BY
+    ia_assi_si_caseyear,
+    ia_assi_si_casenumber    
+    ;"""
+    s_sql = s_sql.replace("%year%", s_year)
+    s_sql = s_sql.replace("%from%", s_from)
+    s_sql = s_sql.replace("%to%", s_to)
+    s_sql = s_sql.replace("%madelein%", s_madelein)
+    s_sql = s_sql.replace("%nicolene%", s_nicolene)
+    s_sql = s_sql.replace("%shahed%", s_shahed)
+    if l_debug:
+        print(s_sql)
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_curs.execute("SELECT assignment_number FROM " + sr_file)
+    ri_count: int = len(so_curs.fetchall())
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # MESSAGE
+    if l_mess:
+        funcsms.send_telegram('', 'administrator', '<b>IA Assignments SI</b> ' + s_year + ' records ' + str(ri_count))
 
     """************************************************************************
     IDENTIFY PRIORITY INCONSISTENCY
