@@ -866,6 +866,8 @@ def kfs_period_list(s_period="curr"):
         PAY.VENDOR_ID,
         PAY.PAYEE_NAME,
         PAY.VENDOR_NAME,
+        VEN.VNDR_URL_ADDR As REG_NO,
+        VEN.VNDR_TAX_NBR As VAT_NO,
         PAY.PAYEE_TYPE,
         PAY.PAYEE_TYP_DESC As PAYEE_TYPE_DESC,
         PAY.PAYEE_OWNR_CD_CALC As OWNER_TYPE,
@@ -877,6 +879,7 @@ def kfs_period_list(s_period="curr"):
         Count(PAY.VENDOR_ID) As TRAN_COUNT
     From
         X001aa_Report_payments PAY Left Join
+        KFS.X000_Vendor VEN On VEN.VENDOR_ID = PAY.VENDOR_ID Left Join
         KFS.X000_OWN_KFS_LOOKUPS VTY on VTY.LOOKUP_CODE = PAY.VENDOR_TYPE_CALC And
             VTY.LOOKUP = "VENDOR TYPE CALC"
     Group By
