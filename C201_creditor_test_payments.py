@@ -4054,7 +4054,7 @@ def creditor_test_payments():
             s_sql = s_sql.replace("%FINDING%", s_finding)
             s_sql = s_sql.replace("%FILEP%", s_file_prefix)
             s_sql = s_sql.replace("%TODAY%", funcdate.today())
-            s_sql = s_sql.replace("%DATETEST%", funcdate.cur_monthendnext())
+            s_sql = s_sql.replace("%DATETEST%", funcdate.cur_yearend())
             so_curs.execute(s_sql)
             funcfile.writelog("%t BUILD TABLE: " + sr_file)
             if l_debug:
