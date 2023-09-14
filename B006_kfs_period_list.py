@@ -868,6 +868,7 @@ def kfs_period_list(s_period="curr"):
         PAY.VENDOR_NAME,
         VEN.VNDR_URL_ADDR As REG_NO,
         VEN.VNDR_TAX_NBR As VAT_NO,
+        VEN.VEND_MAIL,
         PAY.PAYEE_TYPE,
         PAY.PAYEE_TYP_DESC As PAYEE_TYPE_DESC,
         PAY.PAYEE_OWNR_CD_CALC As OWNER_TYPE,
