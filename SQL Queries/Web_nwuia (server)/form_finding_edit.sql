@@ -28,9 +28,18 @@
     find.ia_find_definition_toggle,
     find.ia_find_definition,
     find.ia_find_reference_toggle,
-    find.ia_find_reference
+    find.ia_find_reference,
+    find.ia_findlike_auto,
+    flik.ia_findlike_desc,
+    find.ia_findrate_auto,
+    frat.ia_findrate_desc,
+    find.ia_findcont_auto,
+    fcon.ia_findcont_desc
 From
-    ia_finding find
+    ia_finding find Left Join
+    ia_finding_likelihood flik On flik.ia_findlike_auto = find.ia_findlike_auto Left Join
+    ia_finding_rate frat On frat.ia_findrate_auto = find.ia_findrate_auto Left Join
+    ia_finding_control fcon On fcon.ia_findcont_auto = find.ia_findcont_auto
 Where
     find.ia_find_auto = 906 And
     find.ia_find_token = '3e8830b63d7e55194d54e9682c4f6292'
