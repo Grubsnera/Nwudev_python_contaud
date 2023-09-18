@@ -2705,9 +2705,9 @@ def creditor_test_payments():
             %FILEP%b_finding FIND Left Join
             Z001ab_setprev PREV ON PREV.FIELD1 = FIND.ACC_COST_STRING And
                 PREV.FIELD2 = FIND.EDOC_A And
-                PREV.FIELD3 = FIND.AMOUNT_PD_A And
+                PREV.FIELD3 = Round(FIND.AMOUNT_PD_A,2) And
                 PREV.FIELD4 = FIND.EDOC_B And
-                PREV.FIELD5 = FIND.AMOUNT_PD_B
+                PREV.FIELD5 = Round(FIND.AMOUNT_PD_B,2)
         ;"""
         s_sql = s_sql.replace("%FINDING%", s_finding)
         s_sql = s_sql.replace("%FILEP%", s_file_prefix)
@@ -2729,9 +2729,9 @@ def creditor_test_payments():
             PREV.PROCESS,
             PREV.ACC_COST_STRING AS FIELD1,
             PREV.EDOC_A AS FIELD2,
-            PREV.AMOUNT_PD_A AS FIELD3,
+            Round(PREV.AMOUNT_PD_A,2) AS FIELD3,
             PREV.EDOC_B AS FIELD4,
-            AMOUNT_PD_B AS FIELD5,
+            Round(AMOUNT_PD_B,2) AS FIELD5,
             PREV.DATE_REPORTED,
             PREV.DATE_RETEST,
             PREV.REMARK
