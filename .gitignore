@@ -130,6 +130,7 @@ _external_data_history/
 History/
 Logs/
 Logs_history/
+searchworks/
 SQL Queries/*.fsqlayout
 SQL Queries/*.history
 Testing/
