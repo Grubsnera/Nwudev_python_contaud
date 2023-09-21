@@ -1627,7 +1627,7 @@ def people_test_conflict():
                 X003_dashboard_curr d
             Where
                 d.DECLARED = 'NO DECLARATION' And
-                d.PERSON_TYPE Not In ('COUNCIL MEMBER', 'ADVISORY BOARD MEMBER', 'AD HOC APPOINTMENT', 'TEMPORARY APPOINTMENT') And
+                d.PERSON_TYPE Not In ('COUNCIL MEMBER', 'ADVISORY BOARD MEMBER', 'AD HOC APPOINTMENT', 'STUDENT ASSISTANT') And
                 d.SUPERVISOR Is Not Null And
                 d.DAYS_IN_SERVICE > 30
             ;"""
