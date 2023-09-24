@@ -114,6 +114,7 @@ dmypy.json
 .pyre/
 
 # Albert
+/.config.ini
 /README.md
 /*.csv
 _my_modules/funcbott.py
