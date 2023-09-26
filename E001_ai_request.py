@@ -30,16 +30,12 @@ def ai_completion(s_prompt: str = '', s_name: str = '', i_token: int = 1024):
 
     # IMPORT PYTHON MODULES
     import openai
+    import configparser
     from datetime import datetime
 
     # IMPORT OWN MODULES
     from _my_modules import funcfile
     from _my_modules import funcsms
-    # from _my_modules import funccsv
-    # from _my_modules import funcdate
-    # from _my_modules import funcmail
-    # from _my_modules import funcstat
-    # from _my_modules import funcoracle
 
     # DECLARE VARIABLES
     l_debug: bool = False
@@ -51,17 +47,20 @@ def ai_completion(s_prompt: str = '', s_name: str = '', i_token: int = 1024):
         print("ENVIRONMENT")
 
     # DECLARE VARIABLES
+    # Read from the configuration file
+    config = configparser.ConfigParser()
+    config.read('.config.ini')
+
     s_function: str = 'ai_completion'
     s_description: str = "chatGPT completion request"
-    l_mess: bool = funcconf.l_mess_project
+    # l_mess: bool = funcconf.l_mess_project
     l_mess: bool = True
-    l_mailed: bool = False
 
     # Exit function if no prompt
     if s_prompt == '':
         return 'No prompt given!'
     if s_name == '':
-            s_name = 'Unknown'
+        s_name = 'Unknown'
 
     # LOG
     if l_debug:
@@ -83,8 +82,8 @@ def ai_completion(s_prompt: str = '', s_name: str = '', i_token: int = 1024):
         print("COMPLETION REQUEST")
 
     # Initiate chatGPT
-    openai.organization = funcconf.s_gpt_org
-    openai.api_key = funcconf.s_gpt_api
+    openai.organization = config.get('API', 'token_chatgpt_organization')
+    openai.api_key = config.get('API', 'token_chatgpt')
 
     # Feed the prompt
     response = openai.Completion.create(
