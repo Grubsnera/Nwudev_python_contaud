@@ -19,7 +19,7 @@ def group2_functions():
 
     # Vacuum tables
     try:
-        A003_table_vacuum.table_vacuums()
+        A003_table_vacuum.table_vacuum()
     except Exception as e:
         funcsys.ErrMessage(e)
 
