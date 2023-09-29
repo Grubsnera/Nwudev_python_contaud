@@ -91,7 +91,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                 A002_log.log_capture(funcdate.today(), False)
             l_return = True
             if funcconf.l_mail_project:
-                funcmail.Mail('std_success_nwu',
+                funcmail.send_mail('std_success_nwu',
                               'NWUIACA:Success:' + s_project,
                               'NWUIACA: Success: ' + s_project)
         except Exception as err:
@@ -108,7 +108,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
             A003_table_vacuum.table_vacuum()
             l_return = True
             if funcconf.l_mail_project:
-                funcmail.Mail('std_success_nwu',
+                funcmail.send_mail('std_success_nwu',
                               'NWUIACA:Success:' + s_project,
                               'NWUIACA: Success: ' + s_project)
         except Exception as err:
@@ -126,7 +126,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                 A005_import_lookup_tables.lookup_import(s_parameter1)
                 l_return = True
                 if funcconf.l_mail_project:
-                    funcmail.Mail('std_success_nwu',
+                    funcmail.send_mail('std_success_nwu',
                                   'NWUIACA:Success:' + s_project,
                                   'NWUIACA: Success: ' + s_project)
             except Exception as err:
@@ -144,12 +144,12 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
             l_return = B008_mysql_backup.mysql_backup()
             if l_return:
                 if funcconf.l_mail_project:
-                    funcmail.Mail('std_success_nwu',
+                    funcmail.send_mail('std_success_nwu',
                                   'NWUIACA:Success:' + s_project,
                                   'NWUIACA: Success: ' + s_project)
             else:
                 if funcconf.l_mail_project:
-                    funcmail.Mail('std_success_nwu',
+                    funcmail.send_mail('std_success_nwu',
                                   'NWUIACA:Fail:' + s_project,
                                   'NWUIACA: Fail: ' + s_project)
         except Exception as err:
@@ -168,7 +168,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                 A001_oracle_to_sqlite.oracle_to_sqlite()
                 l_return = True
                 if funcconf.l_mail_project:
-                    funcmail.Mail('std_success_nwu',
+                    funcmail.send_mail('std_success_nwu',
                                   'NWUIACA:Success:' + s_project,
                                   'NWUIACA: Success: ' + s_project)
             except Exception as err:
@@ -188,7 +188,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                 A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - people.csv", "PEOPLE")
                 l_return = True
                 if funcconf.l_mail_project:
-                    funcmail.Mail('std_success_nwu',
+                    funcmail.send_mail('std_success_nwu',
                                   'NWUIACA:Success:' + s_project,
                                   'NWUIACA: Success: ' + s_project)
             except Exception as err:
@@ -208,7 +208,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                 B001_people_lists.people_lists()
                 l_return = True
                 if funcconf.l_mail_project:
-                    funcmail.Mail('std_success_nwu',
+                    funcmail.send_mail('std_success_nwu',
                                   'NWUIACA:Success:' + s_project,
                                   'NWUIACA: Success: ' + s_project)
             except Exception as err:
@@ -227,7 +227,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                 C003_people_list_masterfile.people_list_masterfile()
                 l_return = True
                 if funcconf.l_mail_project:
-                    funcmail.Mail('std_success_nwu',
+                    funcmail.send_mail('std_success_nwu',
                                   'NWUIACA:Success:' + s_project,
                                   'NWUIACA: Success: ' + s_project)
             except Exception as err:
@@ -247,7 +247,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                 A005_import_lookup_tables.lookup_import('hr')
                 l_return = True
                 if funcconf.l_mail_project:
-                    funcmail.Mail('std_success_nwu',
+                    funcmail.send_mail('std_success_nwu',
                                   'NWUIACA:Success:' + s_project,
                                   'NWUIACA: Success: ' + s_project)
             except Exception as err:
@@ -261,7 +261,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                 C001_people_test_masterfile.people_test_masterfile()
                 l_return = True
                 if funcconf.l_mail_project:
-                    funcmail.Mail('std_success_nwu',
+                    funcmail.send_mail('std_success_nwu',
                                   'NWUIACA:Success:' + s_project,
                                   'NWUIACA: Success: ' + s_project)
             except Exception as err:
@@ -281,7 +281,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                 A005_import_lookup_tables.lookup_import('hr')
                 l_return = True
                 if funcconf.l_mail_project:
-                    funcmail.Mail('std_success_nwu',
+                    funcmail.send_mail('std_success_nwu',
                                   'NWUIACA:Success:' + s_project,
                                   'NWUIACA: Success: ' + s_project)
             except Exception as err:
@@ -295,7 +295,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                 C002_people_test_conflict.people_test_conflict()
                 l_return = True
                 if funcconf.l_mail_project:
-                    funcmail.Mail('std_success_nwu',
+                    funcmail.send_mail('std_success_nwu',
                                   'NWUIACA:Success:' + s_project,
                                   'NWUIACA: Success: ' + s_project)
             except Exception as err:
@@ -313,7 +313,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
             B004_payroll_lists.payroll_lists()
             l_return = True
             if funcconf.l_mail_project:
-                funcmail.Mail('std_success_nwu',
+                funcmail.send_mail('std_success_nwu',
                               'NWUIACA:Success:' + s_project,
                               'NWUIACA: Success: ' + s_project)
         except Exception as err:
@@ -333,7 +333,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                 A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - vss.csv", "VSS")
                 l_return = True
                 if funcconf.l_mail_project:
-                    funcmail.Mail('std_success_nwu',
+                    funcmail.send_mail('std_success_nwu',
                                   'NWUIACA:Success:' + s_project,
                                   'NWUIACA: Success: ' + s_project)
             except Exception as err:
@@ -352,7 +352,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                 B003_vss_lists.vss_lists()
                 l_return = True
                 if funcconf.l_mail_project:
-                    funcmail.Mail('std_success_nwu',
+                    funcmail.send_mail('std_success_nwu',
                                   'NWUIACA:Success:' + s_project,
                                   'NWUIACA: Success: ' + s_project)
             except Exception as err:
@@ -374,7 +374,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                     B007_vss_period_list.vss_period_list(s_parameter1)
                     l_return = True
                     if funcconf.l_mail_project:
-                        funcmail.Mail('std_success_nwu',
+                        funcmail.send_mail('std_success_nwu',
                                       'NWUIACA:Success:' + s_project,
                                       'NWUIACA: Success: ' + s_project)
                 except Exception as err:
@@ -396,7 +396,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                     C301_report_student_deferment.studdeb_deferments(s_parameter1)
                     l_return = True
                     if funcconf.l_mail_project:
-                        funcmail.Mail('std_success_nwu',
+                        funcmail.send_mail('std_success_nwu',
                                       'NWUIACA:Success:' + s_project,
                                       'NWUIACA: Success: ' + s_project)
                 except Exception as err:
@@ -419,7 +419,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                     C301_report_student_deferment.studdeb_deferments(s_parameter1)
                     l_return = True
                     if funcconf.l_mail_project:
-                        funcmail.Mail('std_success_nwu',
+                        funcmail.send_mail('std_success_nwu',
                                       'NWUIACA:Success:' + s_project,
                                       'NWUIACA: Success: ' + s_project)
                 except Exception as err:
@@ -441,7 +441,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                     C301_report_student_deferment.studdeb_deferments(s_parameter1)
                     l_return = True
                     if funcconf.l_mail_project:
-                        funcmail.Mail('std_success_nwu',
+                        funcmail.send_mail('std_success_nwu',
                                       'NWUIACA:Success:' + s_project,
                                       'NWUIACA: Success: ' + s_project)
                 except Exception as err:
@@ -488,7 +488,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                     A005_import_lookup_tables.lookup_import('vss')
                     l_return = True
                     if funcconf.l_mail_project:
-                        funcmail.Mail('std_success_nwu',
+                        funcmail.send_mail('std_success_nwu',
                                       'NWUIACA:Success:' + s_project,
                                       'NWUIACA: Success: ' + s_project)
                 except Exception as err:
@@ -502,7 +502,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                     C200_report_studdeb_recon.report_studdeb_recon(r_maf, r_pot, r_vaa, s_parameter1)
                     l_return = True
                     if funcconf.l_mail_project:
-                        funcmail.Mail('std_success_nwu',
+                        funcmail.send_mail('std_success_nwu',
                                       'NWUIACA:Success:' + s_project,
                                       'NWUIACA: Success: ' + s_project)
                 except Exception as err:
@@ -522,7 +522,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                 A005_import_lookup_tables.lookup_import('vss')
                 l_return = True
                 if funcconf.l_mail_project:
-                    funcmail.Mail('std_success_nwu',
+                    funcmail.send_mail('std_success_nwu',
                                   'NWUIACA:Success:' + s_project,
                                   'NWUIACA: Success: ' + s_project)
             except Exception as err:
@@ -536,7 +536,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                 C300_test_student_general.test_student_general()
                 l_return = True
                 if funcconf.l_mail_project:
-                    funcmail.Mail('std_success_nwu',
+                    funcmail.send_mail('std_success_nwu',
                                   'NWUIACA:Success:' + s_project,
                                   'NWUIACA: Success: ' + s_project)
             except Exception as err:
@@ -559,7 +559,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                     A005_import_lookup_tables.lookup_import('vss')
                     l_return = True
                     if funcconf.l_mail_project:
-                        funcmail.Mail('std_success_nwu',
+                        funcmail.send_mail('std_success_nwu',
                                       'NWUIACA:Success:' + s_project,
                                       'NWUIACA: Success: ' + s_project)
                 except Exception as err:
@@ -573,7 +573,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                     C302_test_student_fee.student_fee(s_parameter1)
                     l_return = True
                     if funcconf.l_mail_project:
-                        funcmail.Mail('std_success_nwu',
+                        funcmail.send_mail('std_success_nwu',
                                       'NWUIACA:Success:' + s_project,
                                       'NWUIACA: Success: ' + s_project)
                 except Exception as err:
@@ -593,7 +593,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
             A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - kfs.csv", "KFS")
             l_return = True
             if funcconf.l_mail_project:
-                funcmail.Mail('std_success_nwu',
+                funcmail.send_mail('std_success_nwu',
                               'NWUIACA:Success:' + s_project,
                               'NWUIACA: Success: ' + s_project)
         except Exception as err:
@@ -615,7 +615,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                     B006_kfs_period_list.kfs_period_list(s_parameter1)
                     l_return = True
                     if funcconf.l_mail_project:
-                        funcmail.Mail('std_success_nwu',
+                        funcmail.send_mail('std_success_nwu',
                                       'NWUIACA:Success:' + s_project,
                                       'NWUIACA: Success: ' + s_project)
                 except Exception as err:
