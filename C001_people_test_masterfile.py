@@ -273,7 +273,7 @@ def people_test_masterfile():
     funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
     # Mail the birthdays
     if l_mail:
-        funcmail.Mail("hr_people_birthday")
+        funcmail.send_mail("hr_people_birthday")
 
     """ ****************************************************************************
     ID NUMBER MASTER FILE
