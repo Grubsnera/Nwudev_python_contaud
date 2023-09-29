@@ -5,6 +5,7 @@ Create date: 25 Sep 2023
 """
 
 # Import own functions
+from _my_modules import funcsys
 import A003_table_vacuum
 
 
@@ -17,11 +18,10 @@ def group2_functions():
     # Declare variables
 
     # Vacuum tables
-    s_function: str = 'A003_table_vacuum.table_vacuum'
     try:
-        A003_table_vacuum.table_vacuum()
+        A003_table_vacuum.table_vacuums()
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+        funcsys.ErrMessage(e)
 
 
 if __name__ == '__main__':

@@ -95,7 +95,7 @@ def main():
         updater.idle()
 
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+        funcsys.ErrMessage(e)
 
 
 def group1():
@@ -112,7 +112,7 @@ def group1():
         if datetime.datetime.now().weekday() < 5:
             funcsms.send_telegram("Dear", "administrator", "your working day started, and I'm up and running!")
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+        funcsys.ErrMessage(e)
 
 
 def group2():
@@ -132,13 +132,13 @@ def group2():
         if datetime.datetime.now().weekday() < 5:
             funcsms.send_telegram("Dear", "administrator", "how about going for a walk, while I'm keeping up!")
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+        funcsys.ErrMessage(e)
 
     # Run functions
     try:
         A000_nwuiaca_group2.group2_functions()
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+        funcsys.ErrMessage(e)
 
 
 def group3():
@@ -158,13 +158,13 @@ def group3():
         if datetime.datetime.now().weekday() < 5:
             funcsms.send_telegram("Dear", "administrator", "you've done your part today, while I'm prepping!")
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+        funcsys.ErrMessage(e)
 
     # Run functions
     try:
         A000_nwuiaca_group3.group3_functions()
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+        funcsys.ErrMessage(e)
 
 
 def group4():
@@ -184,13 +184,13 @@ def group4():
         if datetime.datetime.now().weekday() < 5:
             funcsms.send_telegram("Dear", "administrator", "good evening!")
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+        funcsys.ErrMessage(e)
 
     # Run functions
     try:
         A000_nwuiaca_group4.group4_functions()
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+        funcsys.ErrMessage(e)
 
 
 def group5():
@@ -210,13 +210,13 @@ def group5():
         if datetime.datetime.now().weekday() < 5:
             funcsms.send_telegram("Dear", "administrator", "goog night, sleep tight!")
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+        funcsys.ErrMessage(e)
 
     # Run functions
     try:
         A000_nwuiaca_group5.group5_functions()
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+        funcsys.ErrMessage(e)
 
 
 def group6():
@@ -236,13 +236,13 @@ def group6():
         if datetime.datetime.now().weekday() < 5:
             funcsms.send_telegram("Dear", "administrator", "deep sleep!")
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+        funcsys.ErrMessage(e)
 
     # Run functions
     try:
         A000_nwuiaca_group6.group6_functions()
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+        funcsys.ErrMessage(e)
 
 
 def group7():
@@ -262,13 +262,13 @@ def group7():
         if datetime.datetime.now().weekday() < 5:
             funcsms.send_telegram("Dear", "administrator", "early start!")
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+        funcsys.ErrMessage(e)
 
     # Run functions
     try:
         A000_nwuiaca_group7.group7_functions()
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+        funcsys.ErrMessage(e)
 
 
 if __name__ == '__main__':

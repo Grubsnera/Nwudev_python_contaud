@@ -11,6 +11,7 @@ from _my_modules import funcsms
 from _my_modules import funcfile
 from _my_modules import funcdate
 from _my_modules import funcmail
+from _my_modules import funcsys
 import B001_people_lists  # People master lists
 import C003_people_list_masterfile  # People lists for graphs in Highbond
 import B004_payroll_lists  # Payroll master lists
@@ -44,7 +45,7 @@ def group5_functions():
                 try:
                     B001_people_lists.people_lists()
                 except Exception as e:
-                    funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+                    funcsys.ErrMessage(e)
                     # DISABLE PEOPLE TESTS
                     funcconf.l_run_people_test = False
 
@@ -55,7 +56,7 @@ def group5_functions():
                 try:
                     C003_people_list_masterfile.people_list_masterfile()
                 except Exception as e:
-                    funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+                    funcsys.ErrMessage(e)
 
         # PEOPLE PAYROLL LISTS ************************************************
         s_function: str = "B004_payroll_lists"
@@ -64,7 +65,7 @@ def group5_functions():
                 try:
                     B004_payroll_lists.payroll_lists()
                 except Exception as e:
-                    funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+                    funcsys.ErrMessage(e)
 
         # VSS LISTS ***********************************************************
         s_function: str = "B003_vss_lists"
@@ -73,7 +74,7 @@ def group5_functions():
                 try:
                     B003_vss_lists.vss_lists()
                 except Exception as e:
-                    funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+                    funcsys.ErrMessage(e)
                     # DISABLE VSS TESTS
                     funcconf.l_run_vss_test = False
 
@@ -84,7 +85,7 @@ def group5_functions():
                 try:
                     B007_vss_period_list.vss_period_list("curr")
                 except Exception as e:
-                    funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+                    funcsys.ErrMessage(e)
                     # DISABLE VSS TESTS
                     funcconf.l_run_vss_test = False
 
@@ -95,7 +96,7 @@ def group5_functions():
                 try:
                     C301_report_student_deferment.studdeb_deferments()
                 except Exception as e:
-                    funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+                    funcsys.ErrMessage(e)
 
         # MESSAGE TO ADMIN
         if funcconf.l_mess_project:

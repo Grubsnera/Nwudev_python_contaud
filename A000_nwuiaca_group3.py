@@ -5,6 +5,7 @@ Create date: 25 Sep 2023
 """
 
 # Import own functions
+from _my_modules import funcsys
 import A003_table_vacuum
 
 
@@ -21,7 +22,7 @@ def group3_functions():
     try:
         A003_table_vacuum.table_vacuum()
     except Exception as e:
-        funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+        funcsys.ErrMessage(e)
 
 
 if __name__ == '__main__':

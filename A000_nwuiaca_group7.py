@@ -11,6 +11,7 @@ from _my_modules import funcsms
 from _my_modules import funcfile
 from _my_modules import funcdate
 from _my_modules import funcmail
+from _my_modules import funcsys
 import A002_log
 import C001_people_test_masterfile
 import C002_people_test_conflict
@@ -46,7 +47,7 @@ def group7_functions():
             try:
                 A002_log.log_capture(funcdate.yesterday(), True)
             except Exception as e:
-                funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+                funcsys.ErrMessage(e)
 
         # PEOPLE TEST MASTER FILE **************************************
         s_function: str = "C001_people_test_masterfile"
@@ -55,7 +56,7 @@ def group7_functions():
                 try:
                     C001_people_test_masterfile.people_test_masterfile()
                 except Exception as e:
-                    funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+                    funcsys.ErrMessage(e)
 
         # PEOPLE TEST CONFLICT *****************************************
         s_function: str = "C002_people_test_conflict"
@@ -64,7 +65,7 @@ def group7_functions():
                 try:
                     C002_people_test_conflict.people_test_conflict()
                 except Exception as e:
-                    funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+                    funcsys.ErrMessage(e)
 
         # VSS STUDENT DEBTOR RECON *************************************
         s_function: str = "C200_report_studdeb_recon"
@@ -84,7 +85,7 @@ def group7_functions():
                     # C200_report_studdeb_recon.report_studdeb_recon(48501952.09, -12454680.98, 49976048.39, "curr")
                     # 2019 balances C200_report_studdeb_recon.report_studdeb_recon(66561452.48, -18340951.06, 39482933.18, "prev")
                 except Exception as e:
-                    funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+                    funcsys.ErrMessage(e)
 
         # VSS STUDENT MASTER FILE TESTS ********************************
         s_function: str = "C300_test_student_general"
@@ -93,7 +94,7 @@ def group7_functions():
                 try:
                     C300_test_student_general.test_student_general()
                 except Exception as e:
-                    funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+                    funcsys.ErrMessage(e)
 
         # VSS STUDENT FEE TESTS AND REPORTS ****************************
         s_function: str = "C302_test_student_fee"
@@ -102,7 +103,7 @@ def group7_functions():
                 try:
                     C302_test_student_fee.student_fee()
                 except Exception as e:
-                    funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+                    funcsys.ErrMessage(e)
 
         # KFS CREDITOR PAYMENT TESTS ***********************************
         s_function: str = "C201_creditor_test_payments"
@@ -111,7 +112,7 @@ def group7_functions():
                 try:
                     C201_creditor_test_payments.creditor_test_payments()
                 except Exception as e:
-                    funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+                    funcsys.ErrMessage(e)
 
         # KFS GL TRANSACTION TESTS *************************************
         s_function: str = "C202_gl_test_transactions"
@@ -120,7 +121,7 @@ def group7_functions():
                 try:
                     C202_gl_test_transactions.gl_test_transactions()
                 except Exception as e:
-                    funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+                    funcsys.ErrMessage(e)
 
         # VSS STUDENT BURSARY TESTS *******************************
         s_function: str = "C303_test_student_bursary(curr)"
@@ -129,7 +130,7 @@ def group7_functions():
                 try:
                     C303_test_student_bursary.student_bursary("curr")
                 except Exception as e:
-                    funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+                    funcsys.ErrMessage(e)
 
         # MESSAGE TO ADMIN
         if funcconf.l_mess_project:

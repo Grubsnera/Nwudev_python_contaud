@@ -11,6 +11,7 @@ from _my_modules import funcsms
 from _my_modules import funcfile
 from _my_modules import funcdate
 from _my_modules import funcmail
+from _my_modules import funcsys
 import A001_oracle_to_sqlite  # Import oracle data to various sqlite tables
 import B002_kfs_lists  # KFS master lists
 import B006_kfs_period_list  # KFS general ledger and payments
@@ -42,7 +43,7 @@ def group6_functions():
                 try:
                     A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - kfs.csv", "KFS")
                 except Exception as e:
-                    funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+                    funcsys.ErrMessage(e)
                     # DISABLE KFS TESTS
                     funcconf.l_run_kfs_test = False
 
@@ -53,7 +54,7 @@ def group6_functions():
                 try:
                     B002_kfs_lists.kfs_lists()
                 except Exception as e:
-                    funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+                    funcsys.ErrMessage(e)
                     # DISABLE PEOPLE TESTS
                     funcconf.l_run_kfs = False
 
@@ -64,7 +65,7 @@ def group6_functions():
                 try:
                     B006_kfs_period_list.kfs_period_list("curr")
                 except Exception as e:
-                    funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+                    funcsys.ErrMessage(e)
                     # DISABLE PEOPLE TESTS
                     funcconf.l_run_kfs = False
 
@@ -76,7 +77,7 @@ def group6_functions():
                 try:
                     B006_kfs_period_list.kfs_period_list("prev")
                 except Exception as e:
-                    funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+                    funcsys.ErrMessage(e)
                     # DISABLE PEOPLE TESTS
                     funcconf.l_run_kfs = False
         """
@@ -88,7 +89,7 @@ def group6_functions():
                 try:
                     B005_mysql_lists.mysql_lists("Web_ia_nwu")
                 except Exception as e:
-                    funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+                    funcsys.ErrMessage(e)
 
         # MESSAGE TO ADMIN
         if funcconf.l_mess_project:

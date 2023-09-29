@@ -11,6 +11,7 @@ from _my_modules import funcsms
 from _my_modules import funcfile
 from _my_modules import funcdate
 from _my_modules import funcmail
+from _my_modules import funcsys
 import A004_import_ia  # Copy web (ia-nwu) mysql data to sqlite
 import B009_ia_lists  # Build IA project lists for export to Highbond
 import A006_backup_ia  # Copy web (ia-nwu) mysql data to web (nwu-ia) mysql
@@ -47,42 +48,42 @@ def group4_functions():
         try:
             A004_import_ia.ia_mysql_import()
         except Exception as e:
-            funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+            funcsys.ErrMessage(e)
 
         # INTERNAL AUDIT LISTS CURRENT YEAR ***********************************
         s_function: str = "B009_ia_lists"
         try:
             B009_ia_lists.ia_lists("curr")
         except Exception as e:
-            funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+            funcsys.ErrMessage(e)
 
         # INTERNAL AUDIT LISTS PREVIOUS YEAR **********************************
         s_function: str = "B009_ia_lists"
         try:
             B009_ia_lists.ia_lists("prev")
         except Exception as e:
-            funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+            funcsys.ErrMessage(e)
 
         # INTERNAL AUDIT LISTS BACKUP TO NEW WEB SERVER ***********************
         s_function: str = "A006_backup_ia"
         try:
             A006_backup_ia.ia_mysql_backup()
         except Exception as e:
-            funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+            funcsys.ErrMessage(e)
 
         # PEOPLE BACKUP TO NEW WEB SERVER *************************************
         s_function: str = "A007_backup_people"
         try:
             A007_backup_people.ia_mysql_backup_people()
         except Exception as e:
-            funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+            funcsys.ErrMessage(e)
 
         # IMPORT LOOKUP TABLES ************************************************
         s_function: str = "A005_import_lookup_tables"
         try:
             A005_import_lookup_tables.lookup_import()
         except Exception as e:
-            funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+            funcsys.ErrMessage(e)
             # DISABLE TESTS
             funcconf.l_run_people_test = False
             funcconf.l_run_kfs_test = False
@@ -95,7 +96,7 @@ def group4_functions():
                 try:
                     A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - people.csv", "PEOPLE")
                 except Exception as e:
-                    funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+                    funcsys.ErrMessage(e)
                     # DISABLE PEOPLE TESTS
                     funcconf.l_run_people_test = False
 
@@ -106,7 +107,7 @@ def group4_functions():
                 try:
                     A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - vss.csv", "VSS")
                 except Exception as e:
-                    funcsys.ErrMessage(e, True, 'NWUIACA Error Message', s_function)
+                    funcsys.ErrMessage(e)
                     # DISABLE PEOPLE TESTS
                     funcconf.l_run_vss_test = False
 
