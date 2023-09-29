@@ -1,3 +1,9 @@
+"""
+FUNCTIONS USED BY THE SYSTEM
+29 Sep 2023
+"""
+
+# Import python libraries
 import traceback
 
 def ResultIter(cursor, size=10000):
@@ -15,7 +21,7 @@ def ResultIter(cursor, size=10000):
             yield result
 
 
-def ErrMessage(e, l_mail=False, s_subject='', s_body=''):
+def ErrMessage(e, l_mail: bool = True, s_subject: str = 'NWUIACA Error Message', s_body: str = 'SCRIPT ERROR'):
     """
     Error message handler.
     :param e: Error object
@@ -32,6 +38,11 @@ def ErrMessage(e, l_mail=False, s_subject='', s_body=''):
     from _my_modules import funcsms
 
     # DECLARE VARIABLES
+    l_debug: bool = False
+    if not funcconf.l_mail_project:
+        l_mail = False
+
+    # Remove special characters from the error object for messaging purposes
     s_mess = str(e).replace("'", "")
     s_mess = s_mess.replace('"', '')
     s_mess = s_mess.replace(':', '')
@@ -41,27 +52,32 @@ def ErrMessage(e, l_mail=False, s_subject='', s_body=''):
     s_mess = s_mess.replace(')', '')
     s_mess = s_mess.replace('< ', 'smaller than sign ')
     s_mess = s_mess.replace(' >', 'greater than sign ')
-    if not funcconf.l_mail_project:
-        l_mail = False
 
     # DISPLAY
-    print('funcsys.ErrMessage')
-    print(s_mess)
-    print("E: ", e)
-    print("TYPE(E): ", type(e))
-    print("TYPE(E)NAME: ", type(e).__name__)
-    print("JOIN(E.ARGS: ", e.args)
-    print('funcsys.ErrMessage.Extended')
+    if l_debug:
+        print('funcsys.ErrMessage')
+        print(s_mess)
+        print("E: ", e)
+        print("TYPE(E): ", type(e))
+        print("TYPE(E)NAME: ", type(e).__name__)
+        print("JOIN(E.ARGS: ", e.args)
+        print('funcsys.ErrMessage.Extended')
     error_message = traceback.format_exc()
     print(error_message)
 
     # DEFINE THE ERROR TEMPLATE AND MESSAGE
-    template = "Exception type {0} occurred. Arguments:\n{1!r}"
-    message = template.format(type(e).__name__, e.args)
-    print("MESSAGE: ", message)
+    # template = "Exception type {0} occurred. Arguments:\n{1!r}"
+    # message = template.format(type(e).__name__, e.args)
+    # print("MESSAGE: ", message)
+
+    # WRITE ERROR TO LOG
+    # funcfile.writelog("%t ERROR: " + type(e).__name__)
+    # funcfile.writelog("%t ERROR: " + "".join(e.args))
+    # funcfile.writelog("%t ERROR: " + s_mess)
+    funcfile.writelog('%t ERROR: ' + str(e))
 
     # SEND MAIL
-    if l_mail and s_subject != '' and s_body != '':
+    if l_mail:
         # s_body1 = s_body + '\n' + type(e).__name__ + '\n' + "".join(e.args)
         # s_body1 = s_body + '\n' + s_mess
         s_body1 = s_body + '\n' + error_message
@@ -73,11 +89,6 @@ def ErrMessage(e, l_mail=False, s_subject='', s_body=''):
         s_body1 = s_body + ' | ' + s_mess
         # s_body1 = s_body + ' | ' + error_message
         funcsms.send_telegram('Dear', 'administrator', s_body1)
-
-    # WRITE ERROR TO LOG
-    funcfile.writelog("%t ERROR: " + type(e).__name__)
-    # funcfile.writelog("%t ERROR: " + "".join(e.args))
-    funcfile.writelog("%t ERROR: " + s_mess)
 
     return
 
