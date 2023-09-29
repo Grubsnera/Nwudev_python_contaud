@@ -34,12 +34,21 @@
     find.ia_findrate_auto,
     frat.ia_findrate_desc,
     find.ia_findcont_auto,
-    fcon.ia_findcont_desc
+    fcon.ia_findcont_desc,
+    find.ia_findlike_auto_client,
+    clik.ia_findlike_desc As ia_findlike_desc_client,
+    find.ia_findrate_auto_client,
+    crat.ia_findrate_desc As ia_findrate_desc_client,
+    find.ia_findcont_auto_client,
+    ccon.ia_findcont_desc As ia_findrcont_desc_client
 From
     ia_finding find Left Join
     ia_finding_likelihood flik On flik.ia_findlike_auto = find.ia_findlike_auto Left Join
     ia_finding_rate frat On frat.ia_findrate_auto = find.ia_findrate_auto Left Join
-    ia_finding_control fcon On fcon.ia_findcont_auto = find.ia_findcont_auto
+    ia_finding_control fcon On fcon.ia_findcont_auto = find.ia_findcont_auto Left Join
+    ia_finding_likelihood clik On clik.ia_findlike_auto = find.ia_findlike_auto_client Left Join
+    ia_finding_rate crat On crat.ia_findrate_auto = find.ia_findrate_auto_client Left Join
+    ia_finding_control ccon On ccon.ia_findcont_auto = find.ia_findcont_auto_client
 Where
     find.ia_find_auto = 906 And
     find.ia_find_token = '3e8830b63d7e55194d54e9682c4f6292'

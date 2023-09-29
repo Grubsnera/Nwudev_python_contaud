@@ -10,5 +10,6 @@ from _my_modules import funcmail
 # Ask which mail trigger to send
 s_trigger = input("Mail trigger: ")
 
-funcmail.Mail(s_trigger)
+# funcmail.Mail(s_trigger)
+funcmail.send_mail(s_trigger)
 
