@@ -49,7 +49,7 @@ l_mess = True
 
 # MESSAGES TO ADMIN
 if l_mail:
-    funcmail.Mail('std_success_nwu', 'Python:Success:Start_runall', 'NWUIAPython: Success: Start runall')
+    funcmail.send_mail('std_success_nwu', 'Python:Success:Start_runall', 'NWUIAPython: Success: Start runall')
 if l_mess:
     funcsms.send_telegram('', 'administrator', 'Downloading <b>kfs</b> data from oracle and <b>running</b> tests.')
 
@@ -70,7 +70,7 @@ if funcdate.today_dayname() in "TueWedThuFriSat":
     try:
         A001_oracle_to_sqlite.oracle_to_sqlite()
         if l_mail:
-            funcmail.Mail('std_success_nwu', 'NWUIAPython:Success:A001_oracle_to_sqlite',
+            funcmail.send_mail('std_success_nwu', 'NWUIAPython:Success:A001_oracle_to_sqlite',
                           'NWUIAPython: Success: A001_oracle_to_sqlite')
     except Exception as e:
         funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:A001_oracle_to_sqlite',
@@ -88,7 +88,7 @@ if funcdate.today_dayname() in "MonTueWedThuFriSatSun":
     try:
         A002_log.log_capture(funcdate.yesterday(), True)
         if l_mail:
-            funcmail.Mail('std_success_nwu', 'NWUIAPython:Success:A002_log',
+            funcmail.send_mail('std_success_nwu', 'NWUIAPython:Success:A002_log',
                           'NWUIAPython: Success: A002_log')
     except Exception as e:
         funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:A002_log',
@@ -106,7 +106,7 @@ if funcdate.today_dayname() in "TueWedThuFriSat":
     try:
         B001_people_lists.people_lists()
         if l_mail:
-            funcmail.Mail('std_success_nwu', 'NWUIAPython:Success:B001_people_lists',
+            funcmail.send_mail('std_success_nwu', 'NWUIAPython:Success:B001_people_lists',
                           'NWUIAPython: Success: B001_people_lists')
     except Exception as e:
         funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:B001_people_lists',
@@ -124,7 +124,7 @@ if funcdate.today_dayname() in "TueWedThuFriSat":
     try:
         B002_kfs_lists.kfs_lists()
         if l_mail:
-            funcmail.Mail('std_success_nwu', 'NWUIAPython:Success:B002_kfs_lists',
+            funcmail.send_mail('std_success_nwu', 'NWUIAPython:Success:B002_kfs_lists',
                           'NWUIAPython: Success: B002_kfs_lists')
     except Exception as e:
         funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:B002_kfs_lists',
@@ -143,7 +143,7 @@ if funcdate.today_dayname() in "TueWedThuFriSat":
     try:
         B006_kfs_period_list.kfs_period_list("curr")
         if l_mail:
-            funcmail.Mail('std_success_nwu', 'NWUIAPython:Success:B006_kfs_period_list',
+            funcmail.send_mail('std_success_nwu', 'NWUIAPython:Success:B006_kfs_period_list',
                           'NWUIAPython: Success: B006_kfs_period_list')
     except Exception as e:
         funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:B006_kfs_period_list',
@@ -158,7 +158,7 @@ if funcdate.today_dayname() in "TueWedThuFriSat":
     try:
         B006_kfs_period_list.kfs_period_list("prev")
         if l_mail:
-            funcmail.Mail('std_success_nwu', 'NWUIAPython:Success:B006_kfs_period_list_prev',
+            funcmail.send_mail('std_success_nwu', 'NWUIAPython:Success:B006_kfs_period_list_prev',
                           'NWUIAPython: Success: B006_kfs_period_list_prev')
     except Exception as e:
         funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:B006_kfs_period_list_prev',
@@ -176,7 +176,7 @@ if funcdate.today_dayname() in "TueWedThuFriSat":
     try:
         B003_vss_lists.vss_lists()
         if l_mail:
-            funcmail.Mail('std_success_nwu', 'NWUIAPython:Success:B003_vss_lists',
+            funcmail.send_mail('std_success_nwu', 'NWUIAPython:Success:B003_vss_lists',
                           'NWUIAPython: Success: B003_vss_lists')
     except Exception as e:
         funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:B003_vss_lists',
@@ -194,7 +194,7 @@ if funcdate.today_dayname() in "TueWedThuFriSat":
     try:
         B007_vss_period_list.vss_period_list("curr")
         if l_mail:
-            funcmail.Mail('std_success_nwu', 'NWUIAPython:Success:B007_vss_period_list',
+            funcmail.send_mail('std_success_nwu', 'NWUIAPython:Success:B007_vss_period_list',
                           'NWUIAPython: Success: B007_vss_period_list')
     except Exception as e:
         funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:B007_vss_period_list',
@@ -212,7 +212,7 @@ if funcdate.today_dayname() in "MonTueWedThuFri":
     try:
         C003_people_list_masterfile.people_list_masterfile()
         if l_mail:
-            funcmail.Mail('std_success_nwu', 'NWUIAPython:Success:C003_people_list_masterfile',
+            funcmail.send_mail('std_success_nwu', 'NWUIAPython:Success:C003_people_list_masterfile',
                           'NWUIAPython: Success: C003_people_list_masterfile')
     except Exception as e:
         funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:C003_people_list_masterfile',
@@ -230,7 +230,7 @@ if funcdate.today_dayname() in "MonTueWedThuFri":
     try:
         C001_people_test_masterfile.people_test_masterfile()
         if l_mail:
-            funcmail.Mail('std_success_nwu', 'NWUIAPython:Success:C001_people_test_masterfile',
+            funcmail.send_mail('std_success_nwu', 'NWUIAPython:Success:C001_people_test_masterfile',
                           'NWUIAPython: Success: C001_people_test_masterfile')
     except Exception as e:
         funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:C001_people_test_masterfile',
@@ -248,7 +248,7 @@ if funcdate.today_dayname() in "MonTueWedThuFri":
     try:
         C002_people_test_conflict.people_test_conflict()
         if l_mail:
-            funcmail.Mail('std_success_nwu', 'NWUIAPython:Success:C002_people_test_conflict',
+            funcmail.send_mail('std_success_nwu', 'NWUIAPython:Success:C002_people_test_conflict',
                           'NWUIAPython: Success: C002_people_test_conflict')
     except Exception as e:
         funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:C002_people_test_conflict',
@@ -266,7 +266,7 @@ if funcdate.today_dayname() in "MonTueWedThuFri":
     try:
         C201_creditor_test_payments.creditor_test_payments()
         if l_mail:
-            funcmail.Mail('std_success_nwu', 'NWUIAPython:Success:C201_creditor_test_payments',
+            funcmail.send_mail('std_success_nwu', 'NWUIAPython:Success:C201_creditor_test_payments',
                           'NWUIAPython: Success: C201_creditor_test_payments')
     except Exception as e:
         funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:C201_creditor_test_payments',
@@ -284,7 +284,7 @@ if funcdate.today_dayname() in "MonTueWedThuFri":
     try:
         C202_gl_test_transactions.gl_test_transactions()
         if l_mail:
-            funcmail.Mail('std_success_nwu', 'NWUIAPython:Success:C202_gl_test_transactions', 'NWUIAPython: Success: C202_gl_test_transactions')
+            funcmail.send_mail('std_success_nwu', 'NWUIAPython:Success:C202_gl_test_transactions', 'NWUIAPython: Success: C202_gl_test_transactions')
     except Exception as e:
         funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:C202_gl_test_transactions', 'NWUIAPython: Fail: C202_gl_test_transactions')
 else:
@@ -302,7 +302,7 @@ if funcdate.today_dayname() in "MonTueWedThuFri":
         # 2019 balances
         # C200_report_studdeb_recon.report_studdeb_recon('66561452.48','-18340951.06','39482933.18')
         if l_mail:
-            funcmail.Mail('std_success_nwu', 'NWUIAPython:Success:C200_report_studdeb_recon',
+            funcmail.send_mail('std_success_nwu', 'NWUIAPython:Success:C200_report_studdeb_recon',
                           'NWUIAPython: Success: C200_report_studdeb_recon')
     except Exception as e:
         funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:C200_report_studdeb_recon',
@@ -320,7 +320,7 @@ if funcdate.cur_day() in "01z13":
     try:
         C300_test_student_general.test_student_general()
         if l_mail:
-            funcmail.Mail('std_success_nwu', 'NWUIAPython:Success:C300_test_student_general',
+            funcmail.send_mail('std_success_nwu', 'NWUIAPython:Success:C300_test_student_general',
                           'NWUIAPython: Success: C300_test_student_general')
     except Exception as e:
         funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:C300_test_student_general',
@@ -339,7 +339,7 @@ if funcdate.today_dayname() in "MonTueWedThuFri":
     try:
         C302_test_student_fee.student_fee()
         if l_mail:
-            funcmail.Mail('std_success_nwu', 'NWUIAPython:Success:C302_test_student_fee',
+            funcmail.send_mail('std_success_nwu', 'NWUIAPython:Success:C302_test_student_fee',
                           'NWUIAPython: Success: C302_test_student_fee')
     except Exception as e:
         funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:C302_test_student_fee',
@@ -357,7 +357,7 @@ if funcdate.today_dayname() in "MonTueWedThuFri":
     try:
         C301_report_student_deferment.studdeb_deferments('curr', funcdate.cur_year())
         if l_mail:
-            funcmail.Mail('std_success_nwu', 'NWUIAPython:Success:C301_report_student_deferment',
+            funcmail.send_mail('std_success_nwu', 'NWUIAPython:Success:C301_report_student_deferment',
                           'NWUIAPython: Success: C301_report_student_deferment')
     except Exception as e:
         funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:C301_report_student_deferment',
@@ -375,7 +375,7 @@ if funcdate.today_dayname() in "TueWedThuFriSat":
     try:
         B005_mysql_lists.mysql_lists("Web_ia_nwu")
         if l_mail:
-            funcmail.Mail('std_success_nwu', 'NWUIAPython:Success:B005_mysql_lists(Web_ia_nwu)',
+            funcmail.send_mail('std_success_nwu', 'NWUIAPython:Success:B005_mysql_lists(Web_ia_nwu)',
                           'NWUIAPython: Success: B005_mysql_lists (Web_ia_nwu)')
     except Exception as e:
         funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:B005_mysql_lists(Web_ia_nwu)',
@@ -393,7 +393,7 @@ if funcdate.today_dayname() in "TueWedThuFriSat":
     try:
         B005_mysql_lists.mysql_lists("Mysql_ia_server")
         if l_mail:
-            funcmail.Mail('std_success_nwu', 'NWUIAPython:Success:B005_mysql_lists(Mysql_ia_server)',
+            funcmail.send_mail('std_success_nwu', 'NWUIAPython:Success:B005_mysql_lists(Mysql_ia_server)',
                           'NWUIAPython: Success: B005_mysql_lists (Mysql_ia_server)')
     except Exception as e:
         funcsys.ErrMessage(e, l_mail, 'NWUIAPython:Fail:B005_mysql_lists(Mysql_ia_server)',
@@ -413,6 +413,6 @@ funcfile.writelog("-----------------------")
 
 # SEND MAIL TO INDICATE THE SUCCESSFUL COMPLETION OF ALL PYTHON SCRIPTS
 if l_mail:
-    funcmail.Mail("python_log")
+    funcmail.send_mail("python_log")
 if l_mess:
     funcsms.send_telegram('', 'administrator', 'Completed downloading and running all tests.')
