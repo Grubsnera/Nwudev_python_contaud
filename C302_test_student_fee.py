@@ -3676,7 +3676,7 @@ def student_fee(s_period="curr"):
         funcfile.writelog("%t COMPRESS DATA: " + zip_file_name)
 
     if l_mail:
-        funcmail.Mail('vss_list_020bx_studentlist')
+        funcmail.send_mail('vss_list_020bx_studentlist')
 
     # LIST OF STUDENTS REGISTERED FOR MARK ONLY AND THEIR MODULES
     if l_debug:
