@@ -1,4 +1,4 @@
-
+import traceback
 
 def ResultIter(cursor, size=10000):
     """
@@ -39,15 +39,21 @@ def ErrMessage(e, l_mail=False, s_subject='', s_body=''):
     s_mess = s_mess.replace(']', '')
     s_mess = s_mess.replace('(', '')
     s_mess = s_mess.replace(')', '')
+    s_mess = s_mess.replace('< ', 'smaller than sign ')
+    s_mess = s_mess.replace(' >', 'greater than sign ')
     if not funcconf.l_mail_project:
         l_mail = False
 
     # DISPLAY
+    print('funcsys.ErrMessage')
     print(s_mess)
     print("E: ", e)
     print("TYPE(E): ", type(e))
     print("TYPE(E)NAME: ", type(e).__name__)
     print("JOIN(E.ARGS: ", e.args)
+    print('funcsys.ErrMessage.Extended')
+    error_message = traceback.format_exc()
+    print(error_message)
 
     # DEFINE THE ERROR TEMPLATE AND MESSAGE
     template = "Exception type {0} occurred. Arguments:\n{1!r}"
@@ -57,14 +63,16 @@ def ErrMessage(e, l_mail=False, s_subject='', s_body=''):
     # SEND MAIL
     if l_mail and s_subject != '' and s_body != '':
         # s_body1 = s_body + '\n' + type(e).__name__ + '\n' + "".join(e.args)
-        s_body1 = s_body + '\n' + s_mess
+        # s_body1 = s_body + '\n' + s_mess
+        s_body1 = s_body + '\n' + error_message
         funcmail.send_mail('std_fail_nwu', s_subject, s_body1)
 
     # SEND MESSAGE
     if funcconf.l_mess_project:
         # s_body1 = s_body + ' | ' + type(e).__name__ + ' | ' + "".join(e.args)
         s_body1 = s_body + ' | ' + s_mess
-        funcsms.send_telegram('', 'administrator', s_body1)
+        # s_body1 = s_body + ' | ' + error_message
+        funcsms.send_telegram('Dear', 'administrator', s_body1)
 
     # WRITE ERROR TO LOG
     funcfile.writelog("%t ERROR: " + type(e).__name__)
