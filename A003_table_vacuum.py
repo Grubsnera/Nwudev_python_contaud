@@ -31,17 +31,19 @@ def table_vacuum():
     *****************************************************************************"""
 
     # DECLARE VARIABLES
+    l_debug: bool = False
     s_root: str = "S:/"
     l_mess: bool = True
     i_counter: int = 0
 
     # SCRIPT LOG FILE
+    if l_debug:
+        print("-----------------")
+        print("A003_TABLE_VACUUM")
+        print("-----------------")
     funcfile.writelog("Now")
     funcfile.writelog("SCRIPT: A003_TABLE_VACUUM")
     funcfile.writelog("-------------------------")
-    print("-----------------")
-    print("A003_TABLE_VACUUM")
-    print("-----------------")
 
     # SEND MESSAGE TO ADMIN
     if funcconf.l_mess_project:
@@ -50,7 +52,8 @@ def table_vacuum():
     """*****************************************************************************
     BEGIN OF SCRIPT
     *****************************************************************************"""
-    print("BEGIN OF SCRIPT")
+    if l_debug:
+        print("BEGIN OF SCRIPT")
     funcfile.writelog("BEGIN OF SCRIPT")
 
     # READ THE TEXT FILE
@@ -67,7 +70,8 @@ def table_vacuum():
         elif row[0] == "X":
             continue
         else:
-            print("Vacuum: " + row[1] + row[2] + "/" + row[3])
+            if l_debug:
+                print("Vacuum: " + row[1] + row[2] + "/" + row[3])
 
         # OPEN THE DATABASE
         with sqlite3.connect(row[1] + row[2]) as so_conn:
@@ -94,7 +98,8 @@ def table_vacuum():
     """*****************************************************************************
     END OF SCRIPT
     *****************************************************************************"""
-    print("END OF SCRIPT")
+    if l_debug:
+        print("END OF SCRIPT")
     funcfile.writelog("END OF SCRIPT")
 
     # SEND MESSAGE TO ADMIN
