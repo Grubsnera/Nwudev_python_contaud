@@ -343,7 +343,7 @@ def student_fee(s_period: str = "curr"):
         funcfile.writelog("%t COMPRESS DATA: " + zip_file_name)
 
     if l_mail:
-        funcmail.Mail('vss_list_020bx_studentlist')
+        funcmail.send_mail('vss_list_020bx_studentlist')
 
     # MESSAGE
     # if l_mess:
