@@ -342,10 +342,10 @@ def test_student_general():
         funcfile.writelog("%t EXPORT DATA: No new data to export")
 
     if l_mail:
-        funcmail.Mail("vss_list_idno_ytd")
+        funcmail.send_mail("vss_list_idno_ytd")
 
     if l_mail:
-        funcmail.Mail("vss_list_idno_curr")
+        funcmail.send_mail("vss_list_idno_curr")
 
     # MESSAGE
     # if funcconf.l_mess_project:
