@@ -17,7 +17,7 @@ import B009_ia_lists  # Build IA project lists for export to Highbond
 import A006_backup_ia  # Copy web (ia-nwu) mysql data to web (nwu-ia) mysql
 import A007_backup_people  # Copy current nwu employees to web (nwu-ia) mysql
 import A005_import_lookup_tables  # Import own lookup tables used in all audit test functions
-import A001_oracle_to_sqlite  # Import oracle data to various sqlite tables
+# import A001_oracle_to_sqlite  # Import oracle data to various sqlite tables
 
 
 def group4_functions():
@@ -88,28 +88,6 @@ def group4_functions():
             funcconf.l_run_people_test = False
             funcconf.l_run_kfs_test = False
             funcconf.l_run_vss_test = False
-
-        # IMPORT PEOPLE *******************************************************
-        s_function: str = "A001_oracle_to_sqlite(people)"
-        if funcconf.l_run_people_test:
-            if funcdate.today_dayname() in "MonTueWedThuFri":
-                try:
-                    A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - people.csv", "PEOPLE")
-                except Exception as e:
-                    funcsys.ErrMessage(e)
-                    # DISABLE PEOPLE TESTS
-                    funcconf.l_run_people_test = False
-
-        # IMPORT VSS **********************************************************
-        s_function: str = "A001_oracle_to_sqlite(vss)"
-        if funcconf.l_run_vss_test:
-            if funcdate.today_dayname() in "MonTueWedThuFri":
-                try:
-                    A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - vss.csv", "VSS")
-                except Exception as e:
-                    funcsys.ErrMessage(e)
-                    # DISABLE PEOPLE TESTS
-                    funcconf.l_run_vss_test = False
 
         # Message to admin
         if funcconf.l_mess_project:
