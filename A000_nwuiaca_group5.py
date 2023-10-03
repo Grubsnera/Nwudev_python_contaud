@@ -15,6 +15,7 @@ from _my_modules import funcsys
 import A001_oracle_to_sqlite  # Import oracle data to various sqlite tables
 import B001_people_lists  # People master lists
 import C003_people_list_masterfile  # People lists for graphs in Highbond
+import A007_backup_people  # Copy current nwu employees to web (nwu-ia) mysql
 import B004_payroll_lists  # Payroll master lists
 import B003_vss_lists  # VSS master lists
 import B007_vss_period_list  # VSS transaction lists
@@ -67,6 +68,15 @@ def group5_functions():
             if funcdate.today_dayname() in "MonTueWedThuFri":
                 try:
                     C003_people_list_masterfile.people_list_masterfile()
+                except Exception as e:
+                    funcsys.ErrMessage(e)
+
+        # PEOPLE BACKUP TO NEW WEB SERVER *************************************
+        s_function: str = "A007_backup_people"
+        if funcconf.l_run_people_test:
+            if funcdate.today_dayname() in "MonTueWedThuFri":
+                try:
+                    A007_backup_people.ia_mysql_backup_people()
                 except Exception as e:
                     funcsys.ErrMessage(e)
 
