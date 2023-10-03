@@ -81,12 +81,16 @@ def main():
         scheduler = BackgroundScheduler(executors=executors, job_defaults=job_defaults)
 
         scheduler.add_job(group6, 'cron', hour=1, minute=0)
+        scheduler.add_job(group6, 'cron', hour=1, minute=2)
         scheduler.add_job(group7, 'cron', hour=5, minute=0)
+        scheduler.add_job(group7, 'cron', hour=5, minute=2)
         scheduler.add_job(group1, 'cron', hour=7, minute=45)
         scheduler.add_job(group2, 'cron', hour=12, minute=55)
         scheduler.add_job(group3, 'cron', hour=16, minute=30)
         scheduler.add_job(group4, 'cron', hour=17, minute=0)
-        scheduler.add_job(group5, 'cron', hour=22, minute=0)
+        scheduler.add_job(group4, 'cron', hour=17, minute=2)
+        scheduler.add_job(group5, 'cron', hour=17, minute=15)
+        scheduler.add_job(group5, 'cron', hour=17, minute=17)
 
         scheduler.start()
 
@@ -106,6 +110,10 @@ def group1():
 
     # Setup variables
     s_function = 'A000_nwuiaca_xdev1.group1'
+    funcconf.l_run_group4 = False
+    funcconf.l_run_group5 = False
+    funcconf.l_run_group6 = False
+    funcconf.l_run_group7 = False
 
     # Send message
     try:
@@ -123,9 +131,10 @@ def group2():
 
     # Import function
     import A000_nwuiaca_group2
-
-    # Declare variables
-    s_function = 'A000_nwuiaca_xdev1.group2'
+    funcconf.l_run_group4 = False
+    funcconf.l_run_group5 = False
+    funcconf.l_run_group6 = False
+    funcconf.l_run_group7 = False
 
     # Send message
     try:
@@ -149,9 +158,10 @@ def group3():
 
     # Import function
     import A000_nwuiaca_group3
-
-    # Declare variables
-    s_function = 'A000_nwuiaca_xdev1.group3'
+    funcconf.l_run_group4 = False
+    funcconf.l_run_group5 = False
+    funcconf.l_run_group6 = False
+    funcconf.l_run_group7 = False
 
     # Send message
     try:
@@ -176,9 +186,6 @@ def group4():
     # Import function
     import A000_nwuiaca_group4
 
-    # Declare variables
-    s_function = 'A000_nwuiaca_xdev1.group4'
-
     # Send message
     try:
         if datetime.datetime.now().weekday() < 5:
@@ -188,7 +195,9 @@ def group4():
 
     # Run functions
     try:
-        A000_nwuiaca_group4.group4_functions()
+        if not funcconf.l_run_group4:
+            funcconf.l_run_group4 = True
+            A000_nwuiaca_group4.group4_functions()
     except Exception as e:
         funcsys.ErrMessage(e)
 
@@ -202,19 +211,18 @@ def group5():
     # Import function
     import A000_nwuiaca_group5
 
-    # Declare variables
-    s_function = 'A000_nwuiaca_xdev1.group5'
-
     # Send message
     try:
         if datetime.datetime.now().weekday() < 5:
-            funcsms.send_telegram("Dear", "administrator", "goog night, sleep tight!")
+            funcsms.send_telegram("Dear", "administrator", "good night, sleep tight!")
     except Exception as e:
         funcsys.ErrMessage(e)
 
     # Run functions
     try:
-        A000_nwuiaca_group5.group5_functions()
+        if not funcconf.l_run_group5:
+            funcconf.l_run_group5 = True
+            A000_nwuiaca_group5.group5_functions()
     except Exception as e:
         funcsys.ErrMessage(e)
 
@@ -228,9 +236,6 @@ def group6():
     # Import function
     import A000_nwuiaca_group6
 
-    # Declare variables
-    s_function = 'A000_nwuiaca_xdev1.group6'
-
     # Send message
     try:
         if datetime.datetime.now().weekday() < 5:
@@ -240,7 +245,9 @@ def group6():
 
     # Run functions
     try:
-        A000_nwuiaca_group6.group6_functions()
+        if not funcconf.l_run_group6:
+            funcconf.l_run_group6 = True
+            A000_nwuiaca_group6.group6_functions()
     except Exception as e:
         funcsys.ErrMessage(e)
 
@@ -254,9 +261,6 @@ def group7():
     # Import function
     import A000_nwuiaca_group7
 
-    # Declare variables
-    s_function = 'A000_nwuiaca_xdev1.group7'
-
     # Send message
     try:
         if datetime.datetime.now().weekday() < 5:
@@ -266,7 +270,9 @@ def group7():
 
     # Run functions
     try:
-        A000_nwuiaca_group7.group7_functions()
+        if not funcconf.l_run_group7:
+            funcconf.l_run_group7 = True
+            A000_nwuiaca_group7.group7_functions()
     except Exception as e:
         funcsys.ErrMessage(e)
 
