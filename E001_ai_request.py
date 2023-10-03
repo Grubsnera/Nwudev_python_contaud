@@ -19,7 +19,7 @@ END OF SCRIPT
 s_script: str = "E001_ai_request"
 
 
-def ai_completion(s_prompt: str = '', s_name: str = '', i_token: int = 1024):
+def ai_completion(s_prompt: str = '', s_role: str = '', s_name: str = '', s_span: str = '', i_token: int = 1024):
     """
     Script to query chatGPT completion
     :param s_prompt: The query.
@@ -85,27 +85,70 @@ def ai_completion(s_prompt: str = '', s_name: str = '', i_token: int = 1024):
     openai.organization = config.get('API', 'token_chatgpt_organization')
     openai.api_key = config.get('API', 'token_chatgpt')
 
+    # Build the prompt
+    # Use span to decide if an auditor or else.
+    if s_span == '0':
+        s_order: str = """
+        You are a virtual internal auditor at a university and will be a friendly coach and mentor to your fellow auditors.
+        Your name is Caria, an acronym for Continuous Audit Robot from Internal Audit.
+        The name of the auditor you are talking to is %NAME%.
+        Our audit clients are employees of the university, from executive management to general workers. 
+        You will reply with a funny remark if a fellow auditor ask something not related to audit work. 
+        Our university is Nort-West University in South Africa, and we have three campuses.
+        The larger one in Potchefstroom where the auditors are based, and a campus in Mahikeng, and another campus in Vanderbijlpark. 
+        The financial and general ledger system used is called KFS. 
+        The student administration system is called VSS.
+        The employee administration system is called P&C System.
+        """
+    elif s_span == '1':
+        s_order: str = """
+        You are a virtual employee at a university in the Corporate and Information Governance Services department.
+        You will be a friendly assistant, coach and mentor to your fellow employees.
+        Your name is Caria.
+        The name of your fellow employee you are talking to is %NAME%.
+        You will reply with a funny remark if a fellow employee ask something not related to Corporate and Information Governance Services. 
+        Our university is Nort-West University in South Africa, and we have three campuses.
+        The larger one in Potchefstroom where we are based, and a campus in Mahikeng, and another campus in Vanderbijlpark.
+        Against the background of the Gartner definition of information governance being “the specification of 
+        decision rights and an accountability framework to ensure appropriate behaviour in the valuation, 
+        creation, storage, use, archiving and deletion of information”, the university views information governance
+        as an overarching framework for oversight of information and the processes by which it is generated, 
+        processed, and curated at the university.
+        """
+    else:
+        s_order: str = """
+        You are a friendly AI assistant and mentor who assist with any general knowledge inquiries.
+        You will help with any historical event, scientific concept, geographical fact, or even a philosophical question.
+        You are here to help someone expand their knowledge and satisfy their curiosity.
+        Your name is Sparkle.
+        The name of the person you are talking to is %NAME%.
+        You may be funny at times.
+        """
+    s_order = s_order.replace("%NAME%", s_name)
+
     # Feed the prompt
-    response = openai.Completion.create(
-        model="text-davinci-003",
-        prompt=s_prompt,
-        temperature=0.7,
-        max_tokens=i_token,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": s_order},
+            {"role": "user", "content": s_prompt}
+        ]
     )
 
     # Print the response
     if l_debug:
+        print(response.choices[0].message)
         print(response)
 
     # Build response text
-    response_text: str = response["choices"][0]["text"]
-    response_text = response_text.replace('\n', '')
+    response_text: str = response['choices'][0]['message']['content']
+    # response_text = response_text.replace('\n', '')
 
     # Print some response parameters
     if l_debug:
+        print('       Object: ' + response['object'])
+        print('        Model: ' + response['model'])
+        print('         Role: ' + response['choices'][0]['message']['role'])
         print('       Prompt: ' + s_prompt)
         print('Finish reason: ' + response["choices"][0]["finish_reason"])
         print('        Index: ' + str(response["choices"][0]["index"]))
@@ -119,8 +162,9 @@ def ai_completion(s_prompt: str = '', s_name: str = '', i_token: int = 1024):
     funcfile.writelog("RESPONSE: (" + str(response["usage"]["completion_tokens"]) + ") " + response_text)
 
     # MESSAGE
+    s_message = f'{s_name} prompted ' + response['model'] + f' with {s_prompt}'
     if l_mess:
-        funcsms.send_telegram("", "administrator", s_description + " by " + s_name)
+        funcsms.send_telegram("", "administrator", s_message)
 
     # Build the return message
     s_return_message: str = response_text
