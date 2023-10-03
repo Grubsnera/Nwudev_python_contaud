@@ -26,6 +26,10 @@ l_run_vss_test: bool = True  # Flag to indicate vss tests to run
 l_run_kfs_test: bool = True  # Flag to indicate kfs tests to run
 
 # SCHEDULE TIME VARIABLES
+l_run_group4: bool = False
+l_run_group5: bool = False
+l_run_group6: bool = False
+l_run_group7: bool = False
 
 # VACUUM SCHEDULE PROCESS
 if time.strftime("%R", time.localtime()) <= "16:45":
