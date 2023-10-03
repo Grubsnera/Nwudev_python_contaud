@@ -3,6 +3,9 @@ NWU INTERNAL AUDIT ROBOT USING TELEGRAM MESSAGING
 Press Ctrl-C on the command line or send a signal to the process to stop the bot.
 Author: Albert B Janse van Rensburg (NWU:21162395)
 Date created: 24 September 2023
+
+Experimental code for telegram v20 togethet with A000_nwuiaca_xdev2_bot_commands.py
+
 """
 
 # IMPORT PYTHON MODULES
