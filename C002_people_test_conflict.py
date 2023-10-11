@@ -1563,6 +1563,7 @@ def people_test_conflict():
         AD HOC APPOINTMENT
         COUNCIL MEMBER
         ADVISORY BOARD MEMBER
+        EXTRAORDINARY APPOINTMENT
         If employed less than 31 days.                
     Created: 21 May 2021 (Albert J v Rensburg NWU:21162395)
     """
@@ -1597,6 +1598,8 @@ def people_test_conflict():
             funcfile.writelog("TEST " + s_finding)
 
             # OBTAIN TEST DATA FOR EMPLOYEES
+            # Add student assistants to test 2023-10-11
+            # Exclude extraordinary appointments 2023-10-11 legal advice
             if l_debug:
                 print("Obtain test data...")
             sr_file: str = s_file_prefix + "a_" + s_file_name
@@ -1627,7 +1630,7 @@ def people_test_conflict():
                 X003_dashboard_curr d
             Where
                 d.DECLARED = 'NO DECLARATION' And
-                d.PERSON_TYPE Not In ('COUNCIL MEMBER', 'ADVISORY BOARD MEMBER', 'AD HOC APPOINTMENT', 'STUDENT ASSISTANT') And
+                d.PERSON_TYPE Not In ('COUNCIL MEMBER', 'ADVISORY BOARD MEMBER', 'AD HOC APPOINTMENT', 'EXTRAORDINARY APPOINTMENT') And
                 d.SUPERVISOR Is Not Null And
                 d.DAYS_IN_SERVICE > 30
             ;"""
@@ -1650,14 +1653,6 @@ def people_test_conflict():
                 FIND.PERSON_TYPE
             From
                 %FILEP%%FILEN% FIND
-            Where
-                (((FIND.CATEGORY Like 'PERM%')) Or
-                ((FIND.PERSON_TYPE Like 'EX%') And
-                (FIND.FOREIGN_PAY_DATE Like '%PREVMONTH%%')) Or
-                ((FIND.PERSON_TYPE Like 'EX%') And
-                (FIND.UIF_PAY_DATE Like '%PREVMONTH%%')) Or
-                ((FIND.CATEGORY Like 'TEMP%') And
-                (FIND.PERSON_TYPE Not Like 'EX%')))
             Order By
                 FIND.SUPERVISOR,
                 FIND.EMPLOYEE    
