@@ -14,6 +14,7 @@ from _my_modules import funcmail
 from _my_modules import funcsys
 import A002_log
 import C001_people_test_masterfile
+import B011_searchworks
 import C002_people_test_conflict
 import C200_report_studdeb_recon
 import C300_test_student_general
@@ -55,6 +56,15 @@ def group7_functions():
             if funcdate.today_dayname() in "MonTueWedThuFri":
                 try:
                     C001_people_test_masterfile.people_test_masterfile()
+                except Exception as e:
+                    funcsys.ErrMessage(e)
+
+        # SEARCHWORKS SUBMISSION **********************************************
+        s_function: str = "B011_searchworks"
+        if funcconf.l_run_people_test:
+            if funcdate.today_dayname() in "MonTueWedThuFri":
+                try:
+                    B011_searchworks.searchworks_submit(True)
                 except Exception as e:
                     funcsys.ErrMessage(e)
 
