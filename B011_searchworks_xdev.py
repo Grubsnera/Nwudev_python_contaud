@@ -11,6 +11,7 @@ import sqlite3
 import csv
 import shutil
 import os
+import pandas as pd
 
 # IMPORT OWN MODULES
 sys.path.append('_my_modules')
@@ -31,6 +32,8 @@ BUILD TABLE WITH PREVIOUS SUBMITTED EMPLOYEES
 READ THE WATCHLIST DATA
 BUILD NEW SUBMISSIONS IN SQLITE
 BUILD THE EMAIL
+IMPORT SEARCHWORKS CIPC RESULTS IF A FILE WITH DATA EXISTS
+NO SEARCHWORKS DIRECTORS IMPORTED
 END OF SCRIPT
 """
 
@@ -58,13 +61,13 @@ def searchworks_submit(l_override_date: bool = False):
     # l_mess: bool = False  # Enable / disable the robot communicator message function.
     so_path: str = "W:/People_conflict/"  # Source database path
     so_file: str = "People_conflict.sqlite"  # Source database
-    csv_master_path: str = "S:/searchworks/"
+    sw_path: str = "S:/searchworks/"
     csv_master_name: str = "01_master_submit.csv"
-    csv_send_path: str = "S:/searchworks/"
     csv_send_name: str = "02_nwu_submit_" + funcdate.today_file() + ".csv"
-    csv_watchlist_path: str = "S:/searchworks/"
     csv_watchlist_name: str = "03_searchworks_watchlist.csv"
     csv_watchlist_new: str = "03_searchworks_watchlist_" + funcdate.today_file() + ".csv"
+    xls_results: str = "NWU CIPC Results.xlsx"
+    csv_results: str = "04_cipc_results_" + funcdate.today_file() + ".csv"
 
     # LOG
     funcfile.writelog("Now")
@@ -169,14 +172,14 @@ def searchworks_submit(l_override_date: bool = False):
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
         # Read csv data previously submitted and populate SQLite table.
-        with open(csv_master_path + csv_master_name, "r") as file:
+        with open(sw_path + csv_master_name, "r") as file:
             csv_reader = csv.DictReader(file)
             for row in csv_reader:
                 so_curs.execute(
                     "INSERT INTO " + sr_file + " VALUES (:nwu_number, :employee_name, :national_identifier, :ni_type, :date_submitted)",
                     row)
         so_conn.commit()
-        funcfile.writelog("%t IMPORT CSV: " + csv_master_path + csv_master_name)
+        funcfile.writelog("%t IMPORT CSV: " + sw_path + csv_master_name)
 
         # Build a new SQLite table with all current employees, and join the previously submitted employees.
         sr_file = "X004b_employee_submitted"
@@ -221,18 +224,18 @@ def searchworks_submit(l_override_date: bool = False):
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
         # Read watchlist csv data and populate SQLite table.
-        with open(csv_watchlist_path + csv_watchlist_name, 'r') as file:
+        with open(sw_path + csv_watchlist_name, 'r') as file:
             csv_reader = csv.DictReader(file)
             for row in csv_reader:
                 so_curs.execute(
                     "INSERT INTO " + sr_file + " VALUES (:national_identifier)",
                     row)
         so_conn.commit()
-        funcfile.writelog("%t IMPORT CSV: " + csv_watchlist_path + csv_watchlist_name)
+        funcfile.writelog("%t IMPORT CSV: " + sw_path + csv_watchlist_name)
 
         # Count the number of lines in the watchlist.
         line_count_watchlist: int = 0
-        with open(csv_watchlist_path + csv_watchlist_name, 'r') as file:
+        with open(sw_path + csv_watchlist_name, 'r') as file:
             csv_reader = csv.reader(file)
             line_count_watchlist: int = sum(1 for row in csv_reader) - 1
             if l_debug:
@@ -260,7 +263,7 @@ def searchworks_submit(l_override_date: bool = False):
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
         # Make a copy of the raw watchlist data submitted for future reference.
-        send_file_size: int = os.path.getsize(csv_watchlist_path + csv_watchlist_name)
+        send_file_size: int = os.path.getsize(sw_path + csv_watchlist_name)
         # Debug
         if l_debug:
             print("Watchlist file size: ")
@@ -270,15 +273,15 @@ def searchworks_submit(l_override_date: bool = False):
         if send_file_size > 24:
 
             # Make a copy of the temporary watchlist file.
-            shutil.copy2(csv_watchlist_path + csv_watchlist_name, csv_watchlist_path + csv_watchlist_new)
+            shutil.copy2(sw_path + csv_watchlist_name, sw_path + csv_watchlist_new)
 
             if not l_debug:
                 # Delete the watchlist file.
-                os.remove(csv_watchlist_path + csv_watchlist_name)
+                os.remove(sw_path + csv_watchlist_name)
                 # Create a blank watchlist file size = 24.
                 header = ['national_identifier']
                 data = ['0']
-                with open(csv_watchlist_path + csv_watchlist_name, 'w', newline='') as f:
+                with open(sw_path + csv_watchlist_name, 'w', newline='') as f:
                     writer = csv.writer(f)
                     writer.writerow(header)
                     writer.writerow(data)
@@ -331,8 +334,8 @@ def searchworks_submit(l_override_date: bool = False):
             funcfile.writelog("%t READ DATA: " + sr_file)
 
             # Create and export the new submissions to a csv file to send via email.
-            funcfile.file_delete(csv_send_path, csv_send_name)
-            with open(csv_send_path + csv_send_name, 'w', newline='') as csv_file:
+            funcfile.file_delete(sw_path, csv_send_name)
+            with open(sw_path + csv_send_name, 'w', newline='') as csv_file:
                 writer = csv.writer(csv_file)
                 header = [('nwu_number', 'employee_name', 'national_identifier', 'ni_type', 'date_submitted')]
                 # Write data to the CSV file
@@ -347,7 +350,7 @@ def searchworks_submit(l_override_date: bool = False):
 
             # Update the master submission csv file with the new submissions.
             if not l_debug:
-                with open(csv_master_path + csv_master_name, 'a', newline='') as csv_file:
+                with open(sw_path + csv_master_name, 'a', newline='') as csv_file:
                     writer = csv.writer(csv_file)
                     # Write data to the CSV file
                     writer.writerows(data)
@@ -380,6 +383,170 @@ def searchworks_submit(l_override_date: bool = False):
             if l_mess:
                 s_desc = "No submissions"
                 funcsms.send_telegram('', 'administrator', s_desc)
+                
+    # IMPORT SEARCHWORKS CIPC RESULTS IF A FILE WITH DATA EXISTS
+    # Test for file name NWU CIPC Results.xlsx.
+    # File should contain sheet named Directorships.
+
+    if os.path.isfile(sw_path + xls_results):
+
+        # Read the Excel file.
+        excel_file = pd.read_excel(sw_path + xls_results, sheet_name='Directorships')
+        funcfile.writelog("%t IMPORT EXCEL: " + sw_path + xls_results)
+
+        # Write to csv.
+        excel_file.to_csv(sw_path + csv_results, index=False)
+        funcfile.writelog("%t BUILD CSV: " + sw_path + csv_results)
+
+        # Read the csv file.
+        df = pd.read_csv(sw_path + csv_results)
+
+        # Actions to clean the data.
+        # Rename the columns by replacing spaces with underscores and removing ':'.
+        df.columns = df.columns.str.replace(' ', '_').str.replace(':', '').str.lower()
+        # Replace illegal characters with normal characters.
+        df.replace('É', 'E', regex=True, inplace=True)
+
+        # Write the new dataframe.
+        df.to_csv(sw_path + csv_results, index=False)
+        funcfile.writelog("%t CLEAN CSV: " + sw_path + csv_results)
+
+        # Count the number of lines in the watchlist.
+        line_count_results: int = 0
+        with open(sw_path + csv_results, 'r') as file:
+            csv_reader = csv.reader(file)
+            line_count_results: int = sum(1 for row in csv_reader) - 1
+            if l_debug:
+                print('Results imported:')
+                print(line_count_results)
+
+        # Communicate the total submission count
+        if l_mess:
+            s_desc = "Results imported"
+            funcsms.send_telegram('', 'administrator', '<b>' + str(line_count_results) + '</b> ' + s_desc)
+
+        # Create SQLite table to receive searchworks results.
+        sr_file = "X004e_searchworks_results_import"
+        # Remove before production, otherwise import history would be deleted.
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        s_sql = "CREATE TABLE IF NOT EXISTS " + sr_file + """
+        (
+        nwu_number TEXT,
+        employee_name TEXT,
+        national_identifier TEXT,
+        ni_type TEXT,
+        date_submitted TEXT,
+        id_number TEXT,
+        surname TEXT,
+        full_name TEXT,
+        date_of_birth TEXT,
+        registration_number TEXT,
+        company_name TEXT,
+        enterprise_type TEXT,
+        company_status TEXT,
+        history_date TEXT,
+        business_start_date TEXT,
+        directorship_status TEXT,
+        directorship_start_date TEXT,
+        directorship_end_date TEXT,
+        directorship_type TEXT,
+        directorship_interest TEXT,
+        nationality TEXT,
+        unnamed TEXT
+        )
+        """
+        so_curs.execute(s_sql)
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+        # Read csv searchworks results into SQLite.
+        with open(sw_path + csv_results, "r") as file:
+            csv_reader = csv.DictReader(file)
+            for row in csv_reader:
+                so_curs.execute(
+                    "INSERT INTO " + sr_file + " VALUES (:nwu_number,"
+                                               " :employee_name,"
+                                               " :national_identifier,"
+                                               " :ni_type,"
+                                               " :date_submitted,"
+                                               " :idnum,"
+                                               " :surname,"
+                                               " :full_name,"
+                                               " :dob,"
+                                               " :regnum,"
+                                               " :companyname,"
+                                               " :enterprisetype,"
+                                               " :companystatus,"
+                                               " :historydate,"
+                                               " :businessstartdate,"
+                                               " :directorship_status,"
+                                               " :directorship_startdate,"
+                                               " :directorship_enddate,"
+                                               " :directorship_type,"
+                                               " :directorship_interest,"
+                                               " :nationality,"
+                                               " :unnamed_21)",
+                row)
+        so_conn.commit()
+        funcfile.writelog("%t IMPORT CSV: " + sw_path + csv_results)
+
+        # Build the final SQLite table containing all the new sumbissions.
+        sr_file = "X004x_searchworks_directors"
+        s_sql = "CREATE TABLE " + sr_file + " AS " + """
+        Select
+            r.nwu_number,
+            r.employee_name,
+            r.national_identifier,
+            Max(r.date_submitted) As Date_submitted,
+            r.registration_number,
+            r.company_name,
+            r.enterprise_type,
+            r.company_status,
+            r.history_date,
+            r.business_start_date,
+            r.directorship_status,
+            r.directorship_start_date,
+            r.directorship_end_date,
+            r.directorship_type,
+            r.directorship_interest,
+            r.nationality
+        From
+            X004e_searchworks_results_import r
+        Group By
+            r.nwu_number,
+            r.national_identifier,
+            r.registration_number
+        Order By
+            r.nwu_number,
+            r.business_start_date        
+        """
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        line_count_director: int = funcsys.tablerowcount(so_curs, sr_file)
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+        # Communicate the total director count
+        if l_mess:
+            s_desc = "Directors"
+            funcsms.send_telegram('', 'administrator', '<b>' + str(line_count_director) + '</b> ' + s_desc)
+
+        # Delete the imported Excel file.
+        if not l_debug:
+            os.remove(sw_path + xls_results)
+
+    else:
+
+        # NO SEARCHWORKS DIRECTORS IMPORTED
+
+        # No new records found
+        funcfile.writelog("%t NO SEARCHWORKS DIRECTORS IMPORTED")
+
+        # Communicate the total director count
+        sr_file = "X004x_searchworks_directors"
+        line_count_director: int = funcsys.tablerowcount(so_curs, sr_file)
+        if l_mess:
+            s_desc = "Directors"
+            funcsms.send_telegram('', 'administrator', '<b>' + str(line_count_director) + '</b> ' + s_desc)
 
     """************************************************************************
     END OF SCRIPT
