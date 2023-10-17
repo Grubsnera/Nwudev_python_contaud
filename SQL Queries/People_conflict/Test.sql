@@ -1,8 +1,26 @@
 ﻿Select
-  *
+    r.nwu_number,
+    r.employee_name,
+    r.national_identifier,
+    Max(r.date_submitted) As Date_submitted,
+    r.registration_number,
+    r.company_name,
+    r.enterprise_type,
+    r.company_status,
+    r.history_date,
+    r.business_start_date,
+    r.directorship_status,
+    r.directorship_start_date,
+    r.directorship_end_date,
+    r.directorship_type,
+    r.directorship_interest,
+    r.nationality
 From
-  X003_dashboard_curr
-Where
-  (((X003_dashboard_curr.EMPLOYEE_NUMBER Is Not Null) And (X003_dashboard_curr.DECLARED Like 'NO%') And (X003_dashboard_curr.SUPERVISOR Is Not Null) And (X003_dashboard_curr.PERSON_TYPE Like 'EX%')) Or
-  ((X003_dashboard_curr."EMPLOYEE_NUMBER:1" Is Not Null) And (X003_dashboard_curr.DECLARED Like 'NO%') And (X003_dashboard_curr.SUPERVISOR Is Not Null) And (X003_dashboard_curr.CATEGORY Like 'TEM%')) Or
-  ((X003_dashboard_curr.DECLARED Like 'NO%') And (X003_dashboard_curr.CATEGORY Like 'PER%')))
+    X004e_searchworks_results_import r
+Group By
+    r.nwu_number,
+    r.national_identifier,
+    r.registration_number
+Order By
+    r.nwu_number,
+    r.business_start_date
