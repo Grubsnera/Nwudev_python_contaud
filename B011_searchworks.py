@@ -13,13 +13,13 @@ import shutil
 import os
 
 # IMPORT OWN MODULES
-sys.path.append('_my_modules')
-import funcconf
-import funcdate
-import funcsys
-import funcfile
-import funcmail
-import funcsms
+# sys.path.append('_my_modules')
+from _my_modules import funcconf
+from _my_modules import funcdate
+from _my_modules import funcsys
+from _my_modules import funcfile
+from _my_modules import funcmail
+from _my_modules import funcsms
 
 # INDEX
 """
@@ -173,7 +173,11 @@ def searchworks_submit(l_override_date: bool = False):
             csv_reader = csv.DictReader(file)
             for row in csv_reader:
                 so_curs.execute(
-                    "INSERT INTO " + sr_file + " VALUES (:nwu_number, :employee_name, :national_identifier, :ni_type, :date_submitted)",
+                    "INSERT INTO " + sr_file + " VALUES (:nwu_number,"
+                                               " :employee_name,"
+                                               " :national_identifier,"
+                                               " :ni_type,"
+                                               " :date_submitted)",
                     row)
         so_conn.commit()
         funcfile.writelog("%t IMPORT CSV: " + csv_master_path + csv_master_name)
@@ -199,8 +203,8 @@ def searchworks_submit(l_override_date: bool = False):
             PEOPLE.X000_PEOPLE p Left Join
             X004a_submitted_to_searchworks s On s.nwu_number = p.employee_number
         Where
-            (p.assignment_category Like('PERM%')) Or
-            (p.user_person_type Like('COUN%'))     
+            (p.assignment_category Like('PERMANENT%')) Or
+            (p.user_person_type Like('COUNCIL%'))     
         """
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -234,7 +238,7 @@ def searchworks_submit(l_override_date: bool = False):
         line_count_watchlist: int = 0
         with open(csv_watchlist_path + csv_watchlist_name, 'r') as file:
             csv_reader = csv.reader(file)
-            line_count_watchlist: int = sum(1 for row in csv_reader) - 1
+            line_count_watchlist = sum(1 for row in csv_reader) - 1
             if l_debug:
                 print('Watchlist items:')
                 print(line_count_watchlist)
@@ -285,7 +289,7 @@ def searchworks_submit(l_override_date: bool = False):
 
         # BUILD NEW SUBMISSIONS IN SQLITE
 
-        # Build the final SQLite table containing all the new sumbissions.
+        # Build the final SQLite table containing all the new submissions.
         sr_file = "X004c_new_submissions"
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
