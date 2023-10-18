@@ -64,7 +64,7 @@ def group7_functions():
         if funcconf.l_run_people_test:
             if funcdate.today_dayname() in "MonTueWedThuFri":
                 try:
-                    B011_searchworks.searchworks_submit(True)
+                    B011_searchworks.searchworks_submit(False)
                 except Exception as e:
                     funcsys.ErrMessage(e)
 
