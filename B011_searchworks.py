@@ -569,7 +569,8 @@ def searchworks_submit(l_override_date: bool = False):
             r.directorship_start_date,
             r.directorship_end_date,
             r.directorship_type,
-            r.directorship_interest
+            r.directorship_interest,
+            '1' As customer
         From
             X004g_searchworks_results_history r
         Where
