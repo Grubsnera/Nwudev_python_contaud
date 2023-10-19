@@ -23,6 +23,7 @@ from _my_modules import funcfile
 from _my_modules import funcmail
 from _my_modules import funcsms
 from _my_modules import funcsqlite
+import A008_backup_director
 
 # INDEX
 """
@@ -401,6 +402,8 @@ def searchworks_submit(l_override_date: bool = False):
 
         # Rename the columns by replacing spaces with underscores and removing ':'.
         excel_file.columns = excel_file.columns.str.replace(' ', '_').str.replace(':', '').str.lower()
+        excel_file.replace("'", '', regex=True, inplace=True)
+        excel_file.replace('"', '', regex=True, inplace=True)
         excel_file.replace('É', 'E', regex=True, inplace=True)
         funcfile.writelog("%t CLEAN DATA: " + sw_path + csv_results)
 
@@ -592,6 +595,12 @@ def searchworks_submit(l_override_date: bool = False):
         # Delete the imported Excel file.
         if not l_debug:
             os.remove(sw_path + xls_results)
+
+        # BACKUP THE DIRECTORS TO THE NWUIA WEB APP
+        try:
+            A008_backup_director.ia_backup_director()
+        except Exception as e:
+            funcsys.ErrMessage(e, funcconf.l_mess_project, s_function, s_function)
 
     else:
 
