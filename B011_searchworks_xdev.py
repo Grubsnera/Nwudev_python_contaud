@@ -593,7 +593,13 @@ def searchworks_submit(l_override_date: bool = False):
         # Delete the imported Excel file.
         if not l_debug:
             os.remove(sw_path + xls_results)
-            
+
+        # BACKUP THE DIRECTORS TO THE NWUIA WEB APP
+        try:
+            A008_backup_director.ia_backup_director()
+        except Exception as e:
+            funcsys.ErrMessage(e, funcconf.l_mess_project, s_function, s_function)
+
     else:
 
         # NO SEARCHWORKS DIRECTORS IMPORTED
