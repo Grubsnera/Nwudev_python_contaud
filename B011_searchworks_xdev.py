@@ -70,6 +70,7 @@ def searchworks_submit(l_override_date: bool = False):
     csv_watchlist_new: str = "03_searchworks_watchlist_" + funcdate.today_file() + ".csv"
     xls_results: str = "NWU CIPC Results.xlsx"
     csv_results: str = "04_cipc_results_" + funcdate.today_file() + ".csv"
+    csv_history: str = "05_cipc_history_" + funcdate.today_file() + ".csv"
 
     # LOG
     funcfile.writelog("Now")
@@ -111,6 +112,98 @@ def searchworks_submit(l_override_date: bool = False):
     if l_debug:
         print("BEGIN OF SCRIPT")
     funcfile.writelog("BEGIN OF SCRIPT")
+
+    # Create SQLite table to join with people
+    sr_file = "X004f_searchworks_results_people"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        i.nwu_number,
+        i.employee_name,
+        i.national_identifier,
+        i.ni_type,
+        i.date_submitted,
+        i.registration_number,
+        i.company_name,
+        i.enterprise_type,
+        i.company_status,
+        i.history_date,
+        i.business_start_date,
+        i.directorship_status,
+        Case
+            When i.directorship_start_date = '' Then i.business_start_date  
+            Else i.directorship_start_date
+        End As directorship_start_date,
+        i.directorship_end_date,
+        i.directorship_type,
+        i.directorship_interest,
+        p.employee_number,
+        p.user_person_type,
+        p.position_name,
+        Date('now') As import_date
+        --'2023-09-26' As import_date
+    From
+        X004e_searchworks_results_import i Left Join
+        PEOPLE.X000_PEOPLE As p On p.employee_number = i.nwu_number
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # Create or Update the history table with the new results
+    sr_file = "X004g_searchworks_results_history"
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    # Create SQLite history file if it does not exist
+    s_sql = "CREATE TABLE IF NOT EXISTS " + sr_file + " AS " + """
+    Select
+        p.*
+    From
+        X004f_searchworks_results_people p
+    """
+    so_curs.execute(s_sql)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    # Write all the history to a csv file
+    funcsqlite.sqlite_to_csv(so_curs, sr_file, sw_path + csv_history)
+
+    # Build the final SQLite table containing all the current directorship data.
+    sr_file = "X004x_searchworks_directors"
+    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    Select
+        r.nwu_number,
+        r.employee_name,
+        r.national_identifier,
+        r.user_person_type,
+        r.position_name,
+        Max(r.date_submitted) As date_submitted,
+        r.import_date,
+        r.registration_number,
+        r.company_name,
+        r.enterprise_type,
+        r.company_status,
+        r.history_date,
+        r.business_start_date,
+        r.directorship_status,
+        r.directorship_start_date,
+        r.directorship_end_date,
+        r.directorship_type,
+        r.directorship_interest,
+        '1' As customer
+    From
+        X004g_searchworks_results_history r
+    Where
+        r.employee_number Is Not Null
+    Group By
+        r.national_identifier,
+        r.registration_number
+    Order By
+        r.nwu_number,
+        r.directorship_start_date        
+    """
+    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    so_curs.execute(s_sql)
+    so_conn.commit()
+    line_count_director: int = funcsqlite.table_row_count(so_curs, sr_file)
+    funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """************************************************************************
     END OF SCRIPT
