@@ -47,7 +47,7 @@ def robot_report_person_conflict(s_nwu: str = "", s_name: str = "", s_mail: str 
     from _my_modules import funcstat
 
     # DECLARE VARIABLES
-    l_debug: bool = True
+    l_debug: bool = False
 
     """*************************************************************************
     ENVIRONMENT
