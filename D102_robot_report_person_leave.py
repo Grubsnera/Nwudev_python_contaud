@@ -46,7 +46,7 @@ def robot_report_person_leave(s_nwu: str = "", s_name: str = "", s_mail: str = "
     from _my_modules import funcstat
 
     # DECLARE VARIABLES
-    l_debug: bool = True
+    l_debug: bool = False
 
     """*************************************************************************
     ENVIRONMENT
@@ -225,6 +225,7 @@ def robot_report_person_leave(s_nwu: str = "", s_name: str = "", s_mail: str = "
                 print("Delete the report...")
 
     else:
+
         s_message += "\n\n"
         s_message += "No leave on record."
 
@@ -232,6 +233,7 @@ def robot_report_person_leave(s_nwu: str = "", s_name: str = "", s_mail: str = "
     if l_mailed:
         s_message += "\n\n"
         s_message += "Report was mailed to " + s_mail + "."
+
     s_return_message = s_message
 
     """*****************************************************************************
