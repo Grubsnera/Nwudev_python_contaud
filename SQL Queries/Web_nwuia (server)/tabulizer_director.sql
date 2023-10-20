@@ -2,7 +2,10 @@
     dir.nwu_number,
     dir.employee_name,
     dir.national_identifier,
+    dir.user_person_type,
+    dir.position_name,
     dir.date_submitted,
+    dir.import_date,
     dir.registration_number,
     dir.company_name,
     dir.enterprise_type,
@@ -12,8 +15,10 @@
 From
     ia_director dir
 Where
-    -- dir.customer = '{user_param_1:cmd}'
     dir.customer = '1'
 Group By
     dir.nwu_number,
-    dir.registration_number
+    dir.registration_number,
+    dir.user_person_type,
+    dir.position_name,
+    dir.import_date
