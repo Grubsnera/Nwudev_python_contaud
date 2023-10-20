@@ -70,6 +70,7 @@ def searchworks_submit(l_override_date: bool = False):
     csv_watchlist_new: str = "03_searchworks_watchlist_" + funcdate.today_file() + ".csv"
     xls_results: str = "NWU CIPC Results.xlsx"
     csv_results: str = "04_cipc_results_" + funcdate.today_file() + ".csv"
+    csv_history: str = "05_cipc_history_" + funcdate.today_file() + ".csv"
 
     # LOG
     funcfile.writelog("Now")
@@ -509,6 +510,8 @@ def searchworks_submit(l_override_date: bool = False):
             i.directorship_type,
             i.directorship_interest,
             p.employee_number,
+            p.user_person_type,
+            p.position_name,
             Date('now') As import_date
             --'2023-09-26' As import_date
         From
@@ -551,6 +554,9 @@ def searchworks_submit(l_override_date: bool = False):
             # Insert the data into the target table
             so_curs.executemany(f"INSERT INTO {sr_file} ({column_str}) VALUES ({placeholder_str})", data)
 
+        # Write all the history to a csv file
+        funcsqlite.sqlite_to_csv(so_curs, sr_file, sw_path + csv_history)
+
         # Build the final SQLite table containing all the current directorship data.
         sr_file = "X004x_searchworks_directors"
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -558,7 +564,10 @@ def searchworks_submit(l_override_date: bool = False):
             r.nwu_number,
             r.employee_name,
             r.national_identifier,
+            r.user_person_type,
+            r.position_name,
             Max(r.date_submitted) As date_submitted,
+            r.import_date,
             r.registration_number,
             r.company_name,
             r.enterprise_type,
