@@ -6,6 +6,7 @@ Author: Albert B Janse van Rensburg (NWU:21162395)
 
 # IMPORT PYTHON MODULES
 import sqlite3
+import csv
 
 # INDEX TO FUNCTIONS
 """
@@ -61,3 +62,27 @@ def table_row_count(db_cursor, table_name):
     db_cursor.execute("SELECT COUNT(*) FROM " + table_name)
     x = db_cursor.fetchone()
     return int(x[0])
+
+
+def sqlite_to_csv(db_cursor, table_name, csv_file):
+    """
+    Write all the data in an SQLite table to a csv file.
+    :param db_cursor: Database cursor
+    :param table_name: Table to read
+    :param csv_file: Csv file to write
+    :rtype: none
+    :return: None
+    """
+
+    # Execute a query to get all data from the table
+    db_cursor.execute(f"SELECT * FROM {table_name}")
+    rows = db_cursor.fetchall()
+
+    # Get column names from the cursor description
+    column_names = [description[0] for description in db_cursor.description]
+
+    # Write data to the csv file
+    with open(csv_file, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(column_names)  # write header
+        writer.writerows(rows)  # write data
