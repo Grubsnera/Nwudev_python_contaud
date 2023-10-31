@@ -220,7 +220,9 @@ def ia_mysql_backup(s_source_database: str = "Web_ia_nwu", s_target_database: st
         # Update the assignments
         s_sql = "UPDATE ia_assignment SET ia_assi_formedit=13,ia_assi_formdelete=14,ia_assi_formview=23;"
         ms_to_cursor.execute(s_sql)
-        s_sql = "UPDATE ia_finding SET ia_find_formedit=15,ia_find_formdelete=16,ia_find_formview=24;"
+        s_sql = "UPDATE ia_finding SET ia_find_formedit=15,ia_find_formdelete=16,ia_find_formview=31;"
+        ms_to_cursor.execute(s_sql)
+        s_sql = "UPDATE ia_finding_remediation SET ia_findreme_formedit=21,ia_findreme_formdelete=5,ia_findreme_formview=33,ia_findreme_formclient=22,ia_findreme_formtransfer=23;"
         ms_to_cursor.execute(s_sql)
         ms_to_connection.commit()
         ms_to_connection.close()
