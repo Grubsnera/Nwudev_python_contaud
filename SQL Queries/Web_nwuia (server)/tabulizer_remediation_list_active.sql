@@ -8,8 +8,8 @@
         Then "withClient"
         Else "atAudit"
     End As status,
-    Date(reme.ia_findreme_date_send) As send,
-    Date(reme.ia_findreme_date_submit) As submit,
+    reme.ia_findreme_date_send As send,
+    reme.ia_findreme_date_submit As submit,
     iafr.ia_findresp_name As response,
     Concat('<a title="Remediation edit" href="index.php?option=com_rsform&view=rsform&formId=', reme.ia_findreme_formedit, '&recordId=', reme.ia_findreme_auto, '&recordHash=', reme.ia_findreme_token, '&action=edit', '&assignment=', assi.ia_assi_auto, '&finding=', find.ia_find_auto, '" target="_blank" rel="noopener nofollow noreferrer">', 'Edit', '</a>', " | ", '<a title="Remediation copy" href="index.php?option=com_rsform&view=rsform&formId=', reme.ia_findreme_formedit, '&recordId=', reme.ia_findreme_auto, '&recordHash=', reme.ia_findreme_token, '&action=copy', '&assignment=', assi.ia_assi_auto, '&finding=', find.ia_find_auto, '" target="_blank" rel="noopener nofollow noreferrer">', 'Copy', '</a>', " | "'<a title="Remediation delete" href="index.php?option=com_rsform&view=rsform&formId=', reme.ia_findreme_formedit, '&recordId=', reme.ia_findreme_auto, '&recordHash=', reme.ia_findreme_token, '&action=delete', '&assignment=', assi.ia_assi_auto, '&finding=', find.ia_find_auto, '" target="_blank" rel="noopener nofollow noreferrer">', 'Delete', '</a>', " | ", '<a href = "index.php?option=com_content&view=article&id=', reme.ia_findreme_formview, '&hash=', reme.ia_findreme_token, '" target="_blank" rel="noopener nofollow noreferrer">View</a>', " | ", '<a href = "index.php?option=com_rsform&formId=', reme.ia_findreme_formtransfer, '&id=', reme.ia_findreme_auto, '" target="_blank" rel="noopener noreferrer">Update</a>') As actions
 From
@@ -24,6 +24,6 @@ Where
 Group By
     assi.ia_assi_name,
     find.ia_find_name,
-    reme.ia_findreme_employee,
     reme.ia_findreme_date_send,
+    reme.ia_findreme_employee,
     reme.ia_findreme_auto
