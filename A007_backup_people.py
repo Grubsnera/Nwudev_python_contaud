@@ -45,6 +45,7 @@ def ia_mysql_backup_people(s_source_database: str = "Web_ia_nwu", s_target_datab
     l_mail: bool = False
     # so_path: str = "W:/Internal_audit/"
     # so_file: str = "Web_ia_nwu.sqlite"
+    target_table: str = "ia_people"
 
     # IF SOURCE OR TARGET EMPTY RETURN FALSE AND DO NOTHING
 
@@ -122,13 +123,13 @@ def ia_mysql_backup_people(s_source_database: str = "Web_ia_nwu", s_target_datab
         # BUILD THE TARGET TABLE AFTER DELETING THE OLD TABLE
         if l_debug:
             print("Drop target table...")
-        ms_to_cursor.execute("DROP TABLE IF EXISTS `ia_people`;")
-        ms_to_cursor.execute('CREATE TABLE `ia_people` ( ' + s_source_struct + ' ) ENGINE = InnoDB;')
+        ms_to_cursor.execute(f"DROP TABLE IF EXISTS `{target_table}`;")
+        ms_to_cursor.execute(f'CREATE TABLE `{target_table}` ( ' + s_source_struct + ' ) ENGINE = InnoDB;')
         i_table_counter = i_table_counter + 1
 
         # LOOP THE DATA SOURCE PER ROW
         if l_debug:
-            print("Insert target ia_people")
+            print(f"Insert target {target_table}")
         so_curs.execute("SELECT * FROM X000_PEOPLE")
         rows = so_curs.fetchall()
         i_tota = 0
@@ -139,7 +140,7 @@ def ia_mysql_backup_people(s_source_database: str = "Web_ia_nwu", s_target_datab
             s_data = funcmysql.convert_sqlite_mysql(row, l_source_type, 0, 0)
             if l_debug:
                 print(s_data)
-            s_sql = "INSERT IGNORE INTO `ia_people` " + s_source_column + " VALUES " + s_data + ";"
+            s_sql = f"INSERT IGNORE INTO `{target_table}` " + s_source_column + " VALUES " + s_data + ";"
             ms_to_cursor.execute(s_sql)
             i_record_counter = i_record_counter + 1
             i_tota = i_tota + 1
@@ -149,6 +150,15 @@ def ia_mysql_backup_people(s_source_database: str = "Web_ia_nwu", s_target_datab
                     print(i_record_counter)
                 ms_to_connection.commit()
                 i_coun = 0
+
+        # Add table indexes
+        '''
+        ms_to_connection.commit()
+        s_sql = f"ALTER TABLE `{s_target_database}`.`{target_table}` ADD INDEX `index_employee_number` (`employee_number`(8));"
+        ms_to_cursor.execute(s_sql)
+        s_sql = f"ALTER TABLE `{s_target_database}`.`{target_table}` ADD INDEX `index_name_list` (`name_list`(30));"
+        ms_to_cursor.execute(s_sql)
+        '''
 
         # MESSAGE
         if l_mess:
