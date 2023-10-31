@@ -1,7 +1,7 @@
 ﻿Select
-    Concat(assi.ia_assi_year, '.', assi.ia_assi_file) As FileRef,
     cate.ia_assicate_name As Category,
     type.ia_assitype_name As Type,
+    Concat(assi.ia_assi_year, '.', assi.ia_assi_file) As FileRef,
     ia_user.ia_user_name As Owner,
     Concat('<a title="Assignment edit" href="index.php?option=com_rsform&view=rsform&formId=', assi.ia_assi_formedit, '&recordId=', assi.ia_assi_auto, '&recordHash=', assi.ia_assi_token, '&action=edit&category=', assi.ia_assicate_auto, '" target="_blank" rel="noopener nofollow noreferrer">', Concat(assi.ia_assi_name, ' (', assi.ia_assi_auto, ')'), '</a>') As Assignment,
     Case
@@ -32,10 +32,10 @@
     Case
         When Count(find.ia_find_auto) > 1
         Then
-            Concat('<a title="Finding add" href = "index.php?option=com_rsform&view=rsform&formId=15&recordId=0&recordHash=0&action=add&assignment=', assi.ia_assi_auto, '" target="_blank" rel="noopener noreferrer nofollow">Add</a>', '|', '<a title="Findings" href = "index.php?option=com_content&view=article&id=25&aid=', to_base64(Concat('1:', assi.ia_assi_auto)), '" target="_blank" rel="noopener noreferrer nofollow">', Concat(Cast(Count(find.ia_find_auto) As Character), 'Findings'), '</a>')
+            Concat('<a title="Finding add" href = "index.php?option=com_rsform&view=rsform&formId=15&recordId=0&recordHash=0&action=add&assignment=', assi.ia_assi_auto, '" target="_blank" rel="noopener noreferrer nofollow">Add</a>', ' | ', '<a title="Findings" href = "index.php?option=com_content&view=article&id=25&aid=', to_base64(Concat('1:', assi.ia_assi_auto)), '" target="_blank" rel="noopener noreferrer nofollow">', Concat(Cast(Count(find.ia_find_auto) As Character), 'Findings'), '</a>')
         When Count(find.ia_find_auto) > 0
         Then
-            Concat('<a title="Finding add" href = "index.php?option=com_rsform&view=rsform&formId=15&recordId=0&recordHash=0&action=add&assignment=', assi.ia_assi_auto, '" target="_blank" rel="noopener noreferrer nofollow">Add</a>', '|', '<a title="Findings" href = "index.php?option=com_content&view=article&id=25&aid=', to_base64(Concat('1:', assi.ia_assi_auto)), '" target="_blank" rel="noopener noreferrer nofollow">', Concat(Cast(Count(find.ia_find_auto) As Character), 'Finding'), '</a>')
+            Concat('<a title="Finding add" href = "index.php?option=com_rsform&view=rsform&formId=15&recordId=0&recordHash=0&action=add&assignment=', assi.ia_assi_auto, '" target="_blank" rel="noopener noreferrer nofollow">Add</a>', ' | ', '<a title="Findings" href = "index.php?option=com_content&view=article&id=25&aid=', to_base64(Concat('1:', assi.ia_assi_auto)), '" target="_blank" rel="noopener noreferrer nofollow">', Concat(Cast(Count(find.ia_find_auto) As Character), 'Finding'), '</a>')
         Else
             Concat('<a title="Finding add" href = "index.php?option=com_rsform&view=rsform&formId=15&recordId=0&recordHash=0&action=add&assignment=', assi.ia_assi_auto, '" target="_blank" rel="noopener noreferrer nofollow">Add</a>')
     End As Findings
