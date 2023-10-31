@@ -29,6 +29,7 @@
     find.ia_find_definition,
     find.ia_find_reference_toggle,
     find.ia_find_reference,
+    find.ia_find_riskmatrix_toggle,
     find.ia_findlike_auto,
     flik.ia_findlike_desc,
     find.ia_findrate_auto,
