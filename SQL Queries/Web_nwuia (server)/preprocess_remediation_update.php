@@ -16,21 +16,24 @@ Select
     reme.ia_find_auto,
     reme.ia_findreme_response,
     reme.ia_findrate_auto,
-    concat(frat.ia_findrate_name,' - ',frat.ia_findrate_desc) As ia_findrate_name,
+    Concat(frat.ia_findrate_name, ' - ', frat.ia_findrate_desc) As ia_findrate_name,
     reme.ia_findlike_auto,
-    concat(flik.ia_findlike_name,' - ',flik.ia_findlike_desc) As ia_findlike_name,
+    Concat(flik.ia_findlike_name, ' - ', flik.ia_findlike_desc) As ia_findlike_name,
     reme.ia_findcont_auto,
-    concat(fcon.ia_findcont_name,' - ',fcon.ia_findcont_desc) As ia_findcont_name,
+    Concat(fcon.ia_findcont_name, ' - ', fcon.ia_findcont_desc) As ia_findcont_name,
     find.ia_find_comment,
     reme.ia_findreme_name,
     reme.ia_findreme_date_submit,
-    reme.ia_findreme_mail_trigger
+    reme.ia_findreme_mail_trigger,
+    ia_finding_response.ia_findresp_name,
+    ia_finding_response.ia_findresp_desc
 From
     ia_finding_remediation reme Inner Join
     ia_finding find On find.ia_find_auto = reme.ia_find_auto Inner Join
     ia_finding_likelihood flik On flik.ia_findlike_auto = reme.ia_findlike_auto Inner Join
     ia_finding_rate frat On frat.ia_findrate_auto = reme.ia_findrate_auto Inner Join
-    ia_finding_control fcon On fcon.ia_findcont_auto = reme.ia_findcont_auto
+    ia_finding_control fcon On fcon.ia_findcont_auto = reme.ia_findcont_auto Inner Join
+    ia_finding_response On ia_finding_response.ia_findresp_auto = reme.ia_findresp_auto
 Where
     reme.ia_findreme_auto = '".$id."'
 ";
@@ -61,12 +64,20 @@ $val['impact'] = $result->ia_findrate_auto;
 $val['impact_description'] = $result->ia_findrate_name;
 $val['control'] = $result->ia_findcont_auto;
 $val['control_description'] = $result->ia_findcont_name;
+$val['response_type_name'] = $result->ia_findresp_name;
+$val['response_type_description'] = $result->ia_findresp_desc;
+$val['audit_client'] = $result->ia_findreme_name;
+$val['date_submitted'] = $result->ia_findreme_date_submit;
+
 // $val['remediation_trigger'] = $result->ia_findreme_mail_trigger; // By default set to zero
 
 // Add title to response
-// $response = $result->ia_find_comment."\n\n";
-// $response .= $result->ia_findreme_name." replied on ".$result->ia_findreme_date_submit."\n\n";
-$response = $result->ia_findreme_response;
+$response = $result->ia_find_comment;
+$response .= '<h3>'.$result->ia_findreme_name.' replied on '.$result->ia_findreme_date_submit.'</h3>';
+$response .= '<h4>Response type</h4>';
+$response .= '<strong>'.$result->ia_findresp_name.'</strong><br />';
+$response .= $result->ia_findresp_desc;
+$response .= $result->ia_findreme_response;
 $val['response'] = $response;
 
 
