@@ -1,0 +1,71 @@
+/* STYLES FOR JOOMLA! EDITOR */
+body {
+  margin: 16pt;
+  font-size: 11pt;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #22262a;
+  background-color: #fff;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+  margin-bottom: 8pt;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: calc(14pt + 1.5vw);
+}
+
+h2 {
+  font-size: calc(13.25pt + 0.9vw);
+}
+
+h3 {
+  font-size: calc(13pt + 0.6vw);
+}
+
+h4 {
+  font-size: calc(12.75pt + 0.3vw);
+}
+
+h5 {
+  font-size: 12.5pt;
+}
+
+h6 {
+  font-size: 10pt;
+}
+
+a {
+  text-decoration: none;
+}
+a:link {
+  color: #224faa;
+}
+a:hover {
+  color: #424077;
+}
+
+p {
+  margin-top: 0pt;
+  margin-bottom: 8pt;
+}
+
+hr#system-readmore {
+  color: #f00;
+  border: #f00 dashed 1pt;
+}
+
+span[lang] {
+  padding: 2pt;
+  border: 1pt dashed #bbb;
+}
+span[lang]:after {
+  font-size: smaller;
+  color: #f00;
+  vertical-align: super;
+  content: attr(lang);
+}

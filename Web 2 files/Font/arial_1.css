@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'arial_1';
+    src: url('../fonts/arial_1-webfont.woff2') format('woff2'),
+         url('../fonts/arial_1-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}

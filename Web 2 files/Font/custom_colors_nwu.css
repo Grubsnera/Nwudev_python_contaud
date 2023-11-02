@@ -1,0 +1,5 @@
+:root {
+  --cassiopeia-color-primary: hsl(274, 41%, 40%);
+  --cassiopeia-color-link: hsl(188, 100%, 31%);
+  --cassiopeia-color-hover: hsl(274, 41%, 26%);
+}
