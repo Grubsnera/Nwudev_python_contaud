@@ -49,7 +49,7 @@ END OF SCRIPT
 s_function: str = "B011_searchworks"
 
 
-def searchworks_submit(l_override_date: bool = False):
+def searchworks_submit(i_day_to_run: int = 2, l_override_date: bool = False):
     """****************************************************************************
     ENVIRONMENT
     Format can be different and not exact.
@@ -115,47 +115,30 @@ def searchworks_submit(l_override_date: bool = False):
 
     # SCRIPT MUST ONLY RUN ON 2ND OF EACH MONTH
 
-    # Get the current date
+    # Get the current date and days
     today = datetime.date.today()
     if l_debug:
         print("Today: ")
         print(today)
+    current_day = today.day
+    current_weekday = today.weekday()
+    b_run_script: bool = False
 
-    # Check if it is the 2nd or 3rd of the month
-    if today.day == 2 or today.day == 3:
-        # Check if it is a Saturday
-        if today.day == 2 and today.weekday() == 5:
-            # Add 1 day to run the script on the 3rd
-            run_date = today + datetime.timedelta(days=1)
-        # Check if it is a Sunday
-        elif today.day == 3 and today.weekday() == 6:
-            # Run the script on the 3rd (Sunday)
-            run_date = today
-        else:
-            # Run the script on the current day (2nd or 3rd)
-            run_date = today
-    else:
-        # Get the next 2nd of the month
-        next_month = today.replace(day=28) + datetime.timedelta(days=4)
-        run_date = next_month.replace(day=2)
-
-    # Send message to indicate run date
-    if l_debug:
-        if l_mess:
-            s_desc = "Run date"
-            funcsms.send_telegram('', 'administrator', '<b>' + str(run_date) + '</b> ' + s_desc)
+    # Determine if the code should run or not
+    for i in range(3):
+        if current_day == i_day_to_run and current_weekday < 5:
+            b_run_script = True
+            break
+        elif current_day == i_day_to_run + i and current_weekday == 0:
+            b_run_script = True
+            break
 
     # Override the run date
     if l_override_date:
-        run_date = datetime.date.today()
+        b_run_script = True
 
-    # Debug
-    if l_debug:
-        print("Run date: ")
-        print(run_date)
-
-    # Check if it is the scheduled run date
-    if today == run_date:
+    # Run the script
+    if b_run_script:
 
         # IDENTIFY NEW EMPLOYEES WHO SHOULD BE SUBMITTED
 
@@ -263,6 +246,8 @@ def searchworks_submit(l_override_date: bool = False):
         From
             X004b_employee_submitted s Left Join
             X004d_searchworks_watchlist w On w.national_identifier = s.national_identifier
+        Group By
+            s.national_identifier    
         """
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         so_curs.execute(s_sql)
@@ -302,7 +287,10 @@ def searchworks_submit(l_override_date: bool = False):
             s.employee_number,
             s.name_address,
             s.national_identifier,
-            s.ni_type,
+            Case
+            When s.national_identifier_watchlist Is Not Null Then s.ni_type || 'W'
+            Else s.ni_type   
+            End As ni_type,
             CURRENT_DATE As date_submitted
         From
             X004b_employee_submitted_watchlist s
@@ -642,6 +630,6 @@ def searchworks_submit(l_override_date: bool = False):
 
 if __name__ == '__main__':
     try:
-        searchworks_submit(False)
+        searchworks_submit(2, False)
     except Exception as e:
         funcsys.ErrMessage(e, funcconf.l_mess_project, s_function, s_function)
