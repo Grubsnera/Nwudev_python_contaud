@@ -1,8 +1,8 @@
 /* STYLES FOR JOOMLA! EDITOR */
 body {
-  margin: 1rem;
-  font-size: 1rem;
-  font-weight: 400;
+  font-family: arial, helvetica, sans-serif;
+  margin: 16pt;
+  font-size: 10pt;
   line-height: 1.5;
   color: #22262a;
   background-color: #fff;
@@ -10,33 +10,33 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   margin-top: 0;
-  margin-bottom: 0.5rem;
-  font-weight: 700;
+  margin-bottom: 8pt;
+  font-weight: bold;
   line-height: 1.2;
 }
 
 h1 {
-  font-size: calc(1.375rem + 1.5vw);
+  font-size: 14pt;
 }
 
 h2 {
-  font-size: calc(1.325rem + 0.9vw);
+  font-size: 13pt;
 }
 
 h3 {
-  font-size: calc(1.3rem + 0.6vw);
+  font-size: 12pt;
 }
 
 h4 {
-  font-size: calc(1.275rem + 0.3vw);
+  font-size: 11pt;
 }
 
 h5 {
-  font-size: 1.25rem;
+  font-size: 10.5pt;
 }
 
 h6 {
-  font-size: 1rem;
+  font-size: 10pt;
 }
 
 a {
@@ -50,19 +50,18 @@ a:hover {
 }
 
 p {
-  margin-top: 0;
-  margin-bottom: 1rem;
+  margin-top: 0pt;
+  margin-bottom: 8pt;
 }
 
-/* STYLES FOR JOOMLA! EDITOR */
 hr#system-readmore {
   color: #f00;
-  border: #f00 dashed 1px;
+  border: #f00 dashed 1pt;
 }
 
 span[lang] {
-  padding: 2px;
-  border: 1px dashed #bbb;
+  padding: 2pt;
+  border: 1pt dashed #bbb;
 }
 span[lang]:after {
   font-size: smaller;
