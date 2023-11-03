@@ -47,6 +47,7 @@ def group7_functions():
         if funcdate.today_dayname() in "MonTueWedThuFriSatSun":
             try:
                 A002_log.log_capture(funcdate.yesterday(), True)
+                # pass
             except Exception as e:
                 funcsys.ErrMessage(e)
 
@@ -64,7 +65,7 @@ def group7_functions():
         if funcconf.l_run_people_test:
             if funcdate.today_dayname() in "MonTueWedThuFri":
                 try:
-                    B011_searchworks.searchworks_submit(False)
+                    B011_searchworks.searchworks_submit()
                 except Exception as e:
                     funcsys.ErrMessage(e)
 
