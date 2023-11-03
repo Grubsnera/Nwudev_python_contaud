@@ -21,6 +21,7 @@ VACUUM TEST FINDING TABLES (A003_table_vacuum)
 BACKUP MYSQL (B008_mysql_backup) DISCONTINUED 20221118
 IMPORT LOOKUP TABLES (A005_import_lookup_tables)
 IMPORT TEMP (A001_oracle_to_sqlite(temp))
+SEARCHWORKS SUBMISSION (B011_searchworks)
 
 PEOPLE
 IMPORT TEMP (A001_oracle_to_sqlite(people))
@@ -176,6 +177,18 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
                 funcsys.ErrMessage(err, funcconf.l_mail_project,
                                    "NWUIACA:Fail:" + s_project,
                                    "NWUIACA: Fail: " + s_project)
+
+    # SEARCHWORKS SUBMISSION **********************************************
+    s_project: str = "B011_searchworks"
+    if s_script in "b011":
+        if s_parameter1[0:1] == "1":
+            import B011_searchworks
+            try:
+                B011_searchworks.searchworks_submit(0, True)
+                l_return = True
+            except Exception as e:
+                l_return = False
+                funcsys.ErrMessage(e)
 
     # PEOPLE GROUP *****************************************************************
 
