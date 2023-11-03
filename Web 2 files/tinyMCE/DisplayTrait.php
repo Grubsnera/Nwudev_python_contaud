@@ -452,7 +452,7 @@ trait DisplayTrait
                 'remove_script_host' => false,
 
                 // Drag and drop Images always FALSE, reverting this allows for inlining the images
-                'paste_data_images' => false,
+                'paste_data_images' => true,
 
                 // Layout
                 'content_css'       => $content_css,
