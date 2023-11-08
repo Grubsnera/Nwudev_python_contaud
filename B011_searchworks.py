@@ -435,8 +435,7 @@ def searchworks_submit(i_day_to_run: int = 2, l_override_date: bool = False):
         directorship_end_date TEXT,
         directorship_type TEXT,
         directorship_interest TEXT,
-        nationality TEXT,
-        unnamed TEXT
+        nationality TEXT
         )
         """
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
@@ -468,8 +467,7 @@ def searchworks_submit(i_day_to_run: int = 2, l_override_date: bool = False):
                                                " :directorship_enddate,"
                                                " :directorship_type,"
                                                " :directorship_interest,"
-                                               " :nationality,"
-                                               " :unnamed_21)", row)
+                                               " :nationality)", row)
 
         so_conn.commit()
         funcfile.writelog("%t IMPORT CSV: " + sw_path + csv_results)
