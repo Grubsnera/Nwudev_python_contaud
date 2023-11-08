@@ -1,9 +1,7 @@
 ﻿Select
-    X000_Vendor.VEND_BRANCH,
-    X000_Vendor.VEND_BANK,
-    Count(X000_Vendor.VNDR_INACTV_REAS_CD) As Count_VNDR_INACTV_REAS_CD
+    v.VNDR_NM
 From
-    X000_Vendor
-Group By
-    X000_Vendor.VEND_BRANCH,
-    X000_Vendor.VEND_BANK
+    X000_Vendor v
+Where
+    v.VNDR_TYP_CD In ('PO', 'DV') And
+    v.DOBJ_MAINT_CD_ACTV_IND = 'Y'
