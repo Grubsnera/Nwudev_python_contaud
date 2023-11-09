@@ -79,7 +79,7 @@ def robot_report_audit_finding(s_year: str = "", s_type: str = "", s_name: str =
     funcfile.writelog("OPEN THE MYSQL DATABASE")
 
     # VARIABLES
-    s_source_database: str = "Web_ia_nwu"
+    s_source_database: str = "Web_nwu_ia"
 
     # OPEN THE SOURCE FILE
     ms_from_connection = funcmysql.mysql_open(s_source_database)
