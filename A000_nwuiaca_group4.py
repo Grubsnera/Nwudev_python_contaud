@@ -14,7 +14,7 @@ from _my_modules import funcmail
 from _my_modules import funcsys
 import A004_import_ia  # Copy web (ia-nwu) mysql data to sqlite
 import B009_ia_lists  # Build IA project lists for export to Highbond
-import A006_backup_ia  # Copy web (ia-nwu) mysql data to web (nwu-ia) mysql
+# import A006_backup_ia  # Copy web (ia-nwu) mysql data to web (nwu-ia) mysql
 import A005_import_lookup_tables  # Import own lookup tables used in all audit test functions
 # import A001_oracle_to_sqlite  # Import oracle data to various sqlite tables
 
@@ -64,11 +64,14 @@ def group4_functions():
             funcsys.ErrMessage(e)
 
         # INTERNAL AUDIT LISTS BACKUP TO NEW WEB SERVER ***********************
+        # Depractaed 2023-11-04 due to move to new web server
+        '''
         s_function: str = "A006_backup_ia"
         try:
             A006_backup_ia.ia_mysql_backup()
         except Exception as e:
             funcsys.ErrMessage(e)
+        '''
 
         # IMPORT LOOKUP TABLES ************************************************
         s_function: str = "A005_import_lookup_tables"
