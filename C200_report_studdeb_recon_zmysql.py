@@ -77,9 +77,9 @@ ms_cnxn = funcmysql.mysql_open(s_database)
 ms_curs = ms_cnxn.cursor()
 funcfile.writelog("%t OPEN MYSQL DATABASE: " + s_database)    
 
-
-
 # Create MYSQL VSS GL MONTHLY BALANCES TO WEB table ****************************
+# Depracated 20231104 with move to new web server
+'''
 print("Build mysql vss gl monthly balances...")
 ms_curs.execute("DROP TABLE IF EXISTS ia_finding_5")
 funcfile.writelog("%t DROP MYSQL TABLE: ia_finding_5")
@@ -159,10 +159,7 @@ for row in rows:
 ms_cnxn.commit()
 print("Inserted " + str(i_tota) + " rows...")
 funcfile.writelog("%t POPULATE MYSQL TABLE: ia_finding_5 with " + str(i_tota) + " rows")
-
-
-
-
+'''
 
 """*************************************************************************
 ***
