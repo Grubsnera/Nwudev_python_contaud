@@ -15,7 +15,7 @@ from _my_modules import funcsys
 import A001_oracle_to_sqlite  # Import oracle data to various sqlite tables
 import B002_kfs_lists  # KFS master lists
 import B006_kfs_period_list  # KFS general ledger and payments
-import B005_mysql_lists  # Copy current nwu employees to web (ia-nwu) mysql
+# import B005_mysql_lists  # Copy current nwu employees to web (ia-nwu) mysql
 
 
 def group6_functions():
@@ -83,6 +83,8 @@ def group6_functions():
         """
 
         # MYSQL UPDATE WEB IA NWU *********************************************
+        # Depracated 2023-11-04 due to move to new web server
+        '''
         s_function: str = "B005_mysql_lists(web)"
         if funcconf.l_run_people_test:
             if funcdate.today_dayname() in "TueWedThuFriSat":
@@ -94,6 +96,7 @@ def group6_functions():
         # MESSAGE TO ADMIN
         if funcconf.l_mess_project:
             funcsms.send_telegram('', 'administrator', 'Group6 (midnight) schedule end.')
+        '''
 
         """********************************************************************
         GROUP6 SCHEDULE END
