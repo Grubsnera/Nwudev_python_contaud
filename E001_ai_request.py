@@ -131,12 +131,15 @@ def ai_completion(s_prompt: str = '', s_role: str = '', s_name: str = '', s_span
 
     # Feed the prompt
     response = openai.ChatCompletion.create(
-        model="gpt-4",
+        model="gpt-4-1106-preview",
         messages=[
             {"role": "system", "content": s_order},
             {"role": "user", "content": s_prompt}
         ]
     )
+    # OpenAI models
+    # gpt-4 Started with this one
+    # gpt-4-1106-preview Released 20231107
 
     # Print the response
     if l_debug:
