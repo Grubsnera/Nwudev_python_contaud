@@ -50,3 +50,14 @@ def isBlank(myString):
 # Function to test if string is not blank
 def isNotBlank(myString):
     return bool(myString and myString.strip())
+
+
+# Function to build a word list from a paragraph
+def build_word_list(paragraph):
+    # Remove any special characters or punctuation and convert to lower case.
+    cleaned_paragraph = ''.join(char.upper() for char in paragraph if char.isalnum() or char.isspace())
+
+    # Split the paragraph into individual words based on spaces
+    words = cleaned_paragraph.split()
+
+    return words
