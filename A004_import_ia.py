@@ -25,7 +25,7 @@ ia_mysql_import = Function to import the mysql data
 s_function: str = "A004 IMPORT IA"
 
 
-def ia_mysql_import(s_source_database: str = "Web_ia_nwu"):
+def ia_mysql_import(s_source_database: str = "Web_nwu_ia"):
     """
     Script to import ia web data from mysql to sqlite
     :param s_source_database: str: The MySQL database to import data from
@@ -48,7 +48,9 @@ def ia_mysql_import(s_source_database: str = "Web_ia_nwu"):
 
     # IF SOURCE OR TARGET EMPTY RETURN FALSE AND DO NOTHING
     s_source_schema: str = ""
-    if s_source_database == "Web_ia_nwu":
+    if s_source_database == "Web_nwu_ia":
+        s_source_schema = "nwuiaeapciy_db1"
+    elif s_source_database == "Web_ia_nwu":
         s_source_schema = "Ia_nwu"
     elif s_source_database == "Web_ia_joomla":
         s_source_schema = "Ia_joomla"
@@ -120,13 +122,15 @@ def ia_mysql_import(s_source_database: str = "Web_ia_nwu"):
             s_table = row[0]
 
             # SKIP CERTAIN TABLES
-            if s_table == "ia_finding_5":
-                continue
-            if s_table == "ia_finding_6":
-                continue
             if s_table == "ia_people":
                 continue
-            if s_table == "ia_people_struct":
+            if s_table == "ia_director":
+                continue
+            if s_table == "ia_town":
+                continue
+            if s_table == "ia_country":
+                continue
+            if s_table[:3] == "jm4":
                 continue
 
             # UPDATE THE TABLE COUNTER
