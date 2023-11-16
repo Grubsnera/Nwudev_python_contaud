@@ -1,13 +1,21 @@
 ﻿Select
-    venc.VENDOR_ID As vendor_id,
-    venc.VENDOR_NAME As vendor_name,
-    Count(venc.EDOC) As tran_count,
-    Max(venc.PMT_DT) As last_pay_date,
-    Total(venc.NET_PMT_AMT) As tran_total
+    p.PAYEE_TYPE_DESC,
+    p.VENDOR_TYPE,
+    p.OWNER_TYPE,
+    p.OWNER_TYPE_DESC,
+    Count(p.VENDOR_ID) As Sum_VENDOR_ID
 From
-    X001ad_Report_payments_accroute venc
+    X002aa_Report_payments_summary p
 Where
-    venc.VENDOR_TYPE_CALC In ('DV', 'PO') And
-    SubStr(venc.ACC_COST_STRING, -4) Not In ('2552', '2553')
+    (p.PAYEE_TYPE = 'V' And
+        p.PAYEE_NAME Like '%PTY%') Or
+    (p.PAYEE_TYPE = 'V' And
+        p.PAYEE_NAME Like '%LTD%') Or
+    (p.PAYEE_TYPE = 'V' And
+        p.PAYEE_NAME Like '%EDMS%') Or
+    (p.PAYEE_TYPE = 'V' And
+        p.PAYEE_NAME Like '%BPK%') Or
+    (p.PAYEE_TYPE = 'V' And
+        p.PAYEE_NAME Like '%CC')
 Group By
-    venc.VENDOR_ID
+    p.PAYEE_TYPE
