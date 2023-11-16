@@ -50,6 +50,11 @@ $finding_id = $result->ia_assi_auto;
 $report_output = '';
 $report_name = '';
 
+// Assignment header
+if (!empty($result->ia_assi_header) && $result->ia_assi_header != '<p> </p>') {
+	$report_output .= $result->ia_assi_header;
+}
+
 // Assignment header title
 if ($result->ia_assi_header_text == '' or $result->ia_assi_header_text == '<p> </p>') {
 	$report_output .= '<h1>Audit report</h1>';
@@ -58,12 +63,7 @@ if ($result->ia_assi_header_text == '' or $result->ia_assi_header_text == '<p> <
 	$report_output .= '<h1>'.$result->ia_assi_header_text.'</h1>';
 	$report_name = $result->ia_assi_header_text;
 }
-		
-// Assignment header
-if (!empty($result->ia_assi_header) && $result->ia_assi_header != '<p> </p>') {
-	$report_output .= $result->ia_assi_header;
-} 
-		
+
 // Assignment report
 if (!empty($result->ia_assi_report) && $result->ia_assi_report != '<p> </p>') {
 	$report_output .= $result->ia_assi_report;
