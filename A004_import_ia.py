@@ -38,7 +38,7 @@ def ia_mysql_import(s_source_database: str = "Web_nwu_ia"):
 
     # FUNCTION WIDE VARIABLES
     l_return: bool = True
-    l_debug: bool = False  # Display debug messages
+    l_debug: bool = True  # Display debug messages
     # l_mess: bool = funcconf.l_mess_project  # Send messages
     l_mess: bool = True  # Send messages
     # l_mail: bool = funcconf.l_mail_project
@@ -122,13 +122,19 @@ def ia_mysql_import(s_source_database: str = "Web_nwu_ia"):
             s_table = row[0]
 
             # SKIP CERTAIN TABLES
+            '''
+            if s_table == "ia_assignment":
+                continue
+            if s_table == "ia_finding":
+                continue
+            '''
             if s_table == "ia_people":
                 continue
             if s_table == "ia_director":
                 continue
-            if s_table == "ia_town":
+            if s_table == "def_town":
                 continue
-            if s_table == "ia_country":
+            if s_table == "def_country":
                 continue
             if s_table[:3] == "jm4":
                 continue
@@ -181,10 +187,14 @@ def ia_mysql_import(s_source_database: str = "Web_nwu_ia"):
                 i_record_counter = i_record_counter + 1
 
                 s_data = funcmysql.convert_mysql_sqlite(o_records, a_from_types)
-                # print(s_data)
+                if l_debug:
+                    # print(s_data)
+                    pass
                 s_sql = "INSERT INTO " + s_table + " VALUES" + s_data + ";"
                 so_curs.execute(s_sql)
-                # print(s_sql)
+                if l_debug:
+                    # print(s_sql)
+                    pass
                 # break
                 i_total = i_total + 1
                 i_counter = i_counter + 1
