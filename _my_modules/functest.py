@@ -146,11 +146,11 @@ def get_officer(o_cursor, s_source="HR", s_key=""):
             LOOKUP.LOOKUP,
             Upper(LOOKUP.LOOKUP_CODE) AS CAMPUS,
             LOOKUP.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-            PEOPLE.NAME_ADDR,
+            PEOPLE.name_address AS NAME_ADDR,
             PEOPLE.EMAIL_ADDRESS
         FROM
             %TABLE% LOOKUP Left Join
-            PEOPLE.X002_PEOPLE_CURR PEOPLE ON PEOPLE.EMPLOYEE_NUMBER = LOOKUP.LOOKUP_DESCRIPTION
+            PEOPLE.X000_PEOPLE PEOPLE ON PEOPLE.employee_number = LOOKUP.LOOKUP_DESCRIPTION
         WHERE
             LOOKUP.LOOKUP = '%KEY%'
         ;"""
@@ -188,11 +188,11 @@ def get_supervisor(o_cursor, s_source="HR", s_key=""):
             LOOKUP.LOOKUP,
             Upper(LOOKUP.LOOKUP_CODE) AS CAMPUS,
             LOOKUP.LOOKUP_DESCRIPTION AS EMPLOYEE_NUMBER,
-            PEOPLE.NAME_ADDR,
+            PEOPLE.name_address AS NAME_ADDR,
             PEOPLE.EMAIL_ADDRESS
         FROM
             %TABLE% LOOKUP Left Join
-            PEOPLE.X002_PEOPLE_CURR PEOPLE ON PEOPLE.EMPLOYEE_NUMBER = LOOKUP.LOOKUP_DESCRIPTION
+            PEOPLE.X000_PEOPLE PEOPLE ON PEOPLE.employee_number = LOOKUP.LOOKUP_DESCRIPTION
         WHERE
             LOOKUP.LOOKUP = '%KEY%'
         ;"""
