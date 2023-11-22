@@ -15,6 +15,8 @@ from _my_modules import funcfile
 from _my_modules import funcsms
 from _my_modules import funcsys
 from _my_modules import functest
+from _my_modules import funcstr
+from _my_modules import funcstat
 
 """ INDEX **********************************************************************
 ENVIRONMENT
@@ -29,6 +31,7 @@ TEST EMPLOYEE VENDOR SHARE BANK ACCOUNT (V1.1.2)
 TEST EMPLOYEE VENDOR SHARE EMAIL ADDRESS (V2.0.3)
 TEST EMPLOYEE NO DECLARATION (V2.0.5)
 TEST DECLARATION PENDING (V2.0.5)
+TEST CONFLICTING TRANSACTIONS MASTER TABLES
 END OF SCRIPT
 *****************************************************************************"""
 
@@ -44,10 +47,11 @@ def people_test_conflict():
     *****************************************************************************"""
 
     # DECLARE VARIABLES
-    so_path = "W:/People_conflict/"   # Source database path
-    re_path = "R:/People/" + funcdate.cur_year() + "/"  # Results path
-    ed_path = "S:/_external_data/"   # external data path
-    so_file = "People_conflict.sqlite"  # Source database
+    source_database_path: str = "W:/People_conflict/"  # Source database path
+    source_database_name: str = "People_conflict.sqlite"  # Source database
+    source_database: str = source_database_path + source_database_name
+    external_data_path: str = "S:/_external_data/"  # external data path
+    results_path: str = "R:/People/" + funcdate.cur_year() + "/"  # Results path
     l_debug: bool = False
     l_export: bool = False
     l_mail: bool = False
@@ -55,9 +59,10 @@ def people_test_conflict():
     l_record: bool = True
 
     # OPEN THE SCRIPT LOG FILE
-    print("-----------------------------")
-    print("C002_PEOPLE_TEST_CONFLICT_DEV")
-    print("-----------------------------")
+    if l_debug:
+        print("-----------------------------")
+        print("C002_PEOPLE_TEST_CONFLICT_DEV")
+        print("-----------------------------")
     funcfile.writelog("Now")
     funcfile.writelog("SCRIPT: C002_PEOPLE_TEST_CONFLICT_DEV")
     funcfile.writelog("-------------------------------------")
@@ -68,40 +73,44 @@ def people_test_conflict():
     """*****************************************************************************
     OPEN THE DATABASES
     *****************************************************************************"""
-    print("OPEN THE DATABASES")
+    if l_debug:
+        print("OPEN THE DATABASES")
     funcfile.writelog("OPEN THE DATABASES")
 
     # OPEN THE WORKING DATABASE
-    with sqlite3.connect(so_path+so_file) as so_conn:
-        so_curs = so_conn.cursor()
-    funcfile.writelog("OPEN DATABASE: " + so_file)
+    with sqlite3.connect(source_database_path+source_database_name) as sqlite_connection:
+        sqlite_cursor = sqlite_connection.cursor()
+    funcfile.writelog("OPEN DATABASE: " + source_database_name)
 
     # ATTACH DATA SOURCES
-    so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
+    sqlite_cursor.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
     funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
-    so_curs.execute("ATTACH DATABASE 'W:/People_payroll/People_payroll.sqlite' AS 'PAYROLL'")
+    sqlite_cursor.execute("ATTACH DATABASE 'W:/People_payroll/People_payroll.sqlite' AS 'PAYROLL'")
     funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
-    so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs.sqlite' AS 'KFS'")
+    sqlite_cursor.execute("ATTACH DATABASE 'W:/Kfs/Kfs.sqlite' AS 'KFS'")
     funcfile.writelog("%t ATTACH DATABASE: KFS.SQLITE")
-    so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs_curr.sqlite' AS 'KFSCURR'")
+    sqlite_cursor.execute("ATTACH DATABASE 'W:/Kfs/Kfs_curr.sqlite' AS 'KFSCURR'")
     funcfile.writelog("%t ATTACH DATABASE: KFS_CURR.SQLITE")
-    so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss_curr.sqlite' AS 'VSSCURR'")
+    sqlite_cursor.execute("ATTACH DATABASE 'W:/Vss/Vss_curr.sqlite' AS 'VSSCURR'")
     funcfile.writelog("%t ATTACH DATABASE: VSS_CURR.SQLITE")
 
     """ ****************************************************************************
     BEGIN OF SCRIPT
     *****************************************************************************"""
-    print("BEGIN OF SCRIPT")
+    if l_debug:
+        print("BEGIN OF SCRIPT")
     funcfile.writelog("BEGIN OF SCRIPT")
 
     """ ****************************************************************************
     BUILD CONFLICT MASTER TABLES
     *****************************************************************************"""
-    print("CONFLICT MASTER TABLES")
+    if l_debug:
+        print("CONFLICT MASTER TABLES")
     funcfile.writelog("CONFLICT MASTER TABLES")
 
     # BUILD DECLARATIONS MASTER TABLE
-    print("Build declarations master table...")
+    if l_debug:
+        print("Build declarations master table...")
     sr_file = "X000_declarations_all"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     Select
@@ -132,13 +141,14 @@ def people_test_conflict():
       COI_DECLARATIONS.EMPLOYEE_NUMBER,
       COI_DECLARATIONS.DECLARATION_DATE
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
+    sqlite_cursor.execute("DROP TABLE IF EXISTS "+sr_file)
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
     # BUILD INTERESTS MASTER TABLE
-    print("Build interests master table...")
+    if l_debug:
+        print("Build interests master table...")
     sr_file = "X000_interests_all"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     Select
@@ -186,19 +196,21 @@ def people_test_conflict():
       Left Join PEOPLE.HR_LOOKUPS HR_LOOKUPS3 ON HR_LOOKUPS3.LOOKUP_CODE = COI_INTERESTS.STATUS_ID AND
           HR_LOOKUPS3.LOOKUP_TYPE = "NWU_COI_STATUS"
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
+    sqlite_cursor.execute("DROP TABLE IF EXISTS "+sr_file)
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
     """ ****************************************************************************
     BUILD ANNUAL TABLES
     *****************************************************************************"""
-    print("CURRENT YEAR DECLARATIONS")
+    if l_debug:
+        print("CURRENT YEAR DECLARATIONS")
     funcfile.writelog("CURRENT YEAR DECLARATIONS")
 
     # BUILD CURRENT YEAR DECLARATIONS
-    print("Build current declarations...")
+    if l_debug:
+        print("Build current declarations...")
     sr_file = "X001_declarations_curr"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
@@ -263,29 +275,31 @@ def people_test_conflict():
         PEOP.FULL_NAME,
         DECL.LAST_UPDATE_DATE
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sqlp = s_sql
     s_sql = s_sql.replace("%CYEARB%", funcdate.cur_yearbegin())
     s_sql = s_sql.replace("%CYEARE%", funcdate.cur_yearend())
-    so_curs.execute(s_sql)
-    so_conn.commit()
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD PREVIOUS YEAR DECLARATIONS
-    print("Build previous declarations...")
+    if l_debug:
+        print("Build previous declarations...")
     sr_file = "X001_declarations_prev"
     s_sql = s_sqlp
     s_sql = s_sql.replace("X001_declarations_curr", sr_file)
     s_sql = s_sql.replace("X002_PEOPLE_CURR_YEAR", "X002_PEOPLE_PREV_YEAR")
     s_sql = s_sql.replace("%CYEARB%", funcdate.prev_yearbegin())
     s_sql = s_sql.replace("%CYEARE%", funcdate.prev_yearend())
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
+    sqlite_cursor.execute("DROP TABLE IF EXISTS "+sr_file)
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
     # BUILD THE CURRENT YEAR INTERESTS
-    print("Build current interests...")
+    if l_debug:
+        print("Build current interests...")
     sr_file = "X002_interests_curr"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     Select
@@ -354,31 +368,34 @@ def people_test_conflict():
         EMPLOYEE.NAME_ADDR,
         X000_interests_all.LAST_UPDATE_DATE
     """
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
+    sqlite_cursor.execute("DROP TABLE IF EXISTS "+sr_file)
     s_sqlp = s_sql
-    so_curs.execute(s_sql)
+    sqlite_cursor.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
     # BUILD PREVIOUS YEAR INTERESTS
-    print("Build previous interests...")
+    if l_debug:
+        print("Build previous interests...")
     sr_file = "X002_interests_prev"
     s_sql = s_sqlp
     s_sql = s_sql.replace("X002_interests_curr", sr_file)
     s_sql = s_sql.replace("X001_declarations_curr", "X001_declarations_prev")
     s_sql = s_sql.replace("X002_PEOPLE_CURR_YEAR", "X002_PEOPLE_PREV_YEAR")
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
+    sqlite_cursor.execute("DROP TABLE IF EXISTS "+sr_file)
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
     """ ****************************************************************************
     BUILD DASHBOARD TABLES
     *****************************************************************************"""
-    print("BUILD DASHBOARD TABLES")
+    if l_debug:
+        print("BUILD DASHBOARD TABLES")
     funcfile.writelog("BUILD DASHBOARD TABLES")
 
     # BUILD TABLE WITH PAYROLL FOREIGN PAYMENTS FOR THE PREVIOUS MONTH
-    print("Obtain master list of foreign employee payments...")
+    if l_debug:
+        print("Obtain master list of foreign employee payments...")
     sr_file = "X003_foreign_payments"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
@@ -393,7 +410,7 @@ def people_test_conflict():
     Group By
         pfp.EMPLOYEE_NUMBER    
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = s_sql.replace("%PREVMONTH%", funcdate.prev_monthend()[0:7])
     if funcdate.prev_monthend()[0:4] == funcdate.prev_year:
         s_sql = s_sql.replace("%PERIOD%", 'prev')
@@ -401,13 +418,14 @@ def people_test_conflict():
         s_sql = s_sql.replace("%PERIOD%", 'curr')
     if l_debug:
         print(s_sql)
-    so_curs.execute(s_sql)
+    sqlite_cursor.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     if l_debug:
-        so_conn.commit()
+        sqlite_connection.commit()
 
     # BUILD TABLE WITH UIF PAYMENTS FOR THE PREVIOUS MONTH
-    print("Obtain master list of uif employee payments...")
+    if l_debug:
+        print("Obtain master list of uif employee payments...")
     sr_file = "X003_uif_payments"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
@@ -422,7 +440,7 @@ def people_test_conflict():
     Group By
         pfp.EMPLOYEE_NUMBER    
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = s_sql.replace("%PREVMONTH%", funcdate.prev_monthend()[0:7])
     if funcdate.prev_monthend()[0:4] == funcdate.prev_year:
         s_sql = s_sql.replace("%PERIOD%", 'prev')
@@ -430,13 +448,14 @@ def people_test_conflict():
         s_sql = s_sql.replace("%PERIOD%", 'curr')
     if l_debug:
         print(s_sql)
-    so_curs.execute(s_sql)
+    sqlite_cursor.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     if l_debug:
-        so_conn.commit()
+        sqlite_connection.commit()
 
     # BUILD CURRENT DECLARATION DASHBOARD PEOPLE
-    print("Build current declaration dashboard people data...")
+    if l_debug:
+        print("Build current declaration dashboard people data...")
     sr_file = "X003aa_people_curr"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
@@ -463,13 +482,14 @@ def people_test_conflict():
     From
         PEOPLE.X000_PEOPLE PEOPLE 
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
+    sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD CURRENT DECLARATION DASHBOARD DECLARATION DATA
-    print("Build current declaration dashboard unique declarations...")
+    if l_debug:
+        print("Build current declaration dashboard unique declarations...")
     sr_file = "X003ab_declarations_curr"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
@@ -500,13 +520,14 @@ def people_test_conflict():
     Group By
         DECLARE.EMPLOYEE
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
+    sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD CURRENT DECLARATION DASHBOARD DATA
-    print("Build current declaration dashboard data...")
+    if l_debug:
+        print("Build current declaration dashboard data...")
     sr_file = "X003_dashboard_curr"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
@@ -550,14 +571,15 @@ def people_test_conflict():
         X003_uif_payments u On p.EMPLOYEE = u.EMPLOYEE_NUMBER Left Join
         X003_foreign_payments f On p.EMPLOYEE = f.EMPLOYEE_NUMBER
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = s_sql.replace("%TODAY%", funcdate.today())
-    so_curs.execute(s_sql)
-    so_conn.commit()
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD PREVIOUS DECLARATION DASHBOARD PEOPLE
-    print("Build previous declaration dashboard people data...")
+    if l_debug:
+        print("Build previous declaration dashboard people data...")
     sr_file = "X003aa_people_prev"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     Select
@@ -585,13 +607,14 @@ def people_test_conflict():
     Where
         PERSON.EMP_ACTIVE = 'Y'
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
+    sqlite_cursor.execute("DROP TABLE IF EXISTS "+sr_file)
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
     # BUILD PREVIOUS DECLARATION DASHBOARD DECLARATION DATA
-    print("Build previous declaration dashboard unique declarations...")
+    if l_debug:
+        print("Build previous declaration dashboard unique declarations...")
     sr_file = "X003ab_declarations_prev"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     Select
@@ -622,13 +645,14 @@ def people_test_conflict():
     Group By
         DECLARE.EMPLOYEE
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
+    sqlite_cursor.execute("DROP TABLE IF EXISTS "+sr_file)
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
     # BUILD PREVIOUS DECLARATION DASHBOARD DATA
-    print("Build previous declaration dashboard data...")
+    if l_debug:
+        print("Build previous declaration dashboard data...")
     sr_file = "X003_dashboard_prev"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     Select
@@ -643,23 +667,24 @@ def people_test_conflict():
     Where
         PEOPLE.EMPLOYEE IS NOT NULL
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
+    sqlite_cursor.execute("DROP TABLE IF EXISTS "+sr_file)
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
     # DELETE CALCULATION FILES
-    so_curs.execute("DROP TABLE IF EXISTS X003aa_people_curr")
-    so_curs.execute("DROP TABLE IF EXISTS X003ab_declarations_curr")
-    so_curs.execute("DROP TABLE IF EXISTS X003aa_people_prev")
-    so_curs.execute("DROP TABLE IF EXISTS X003ab_declarations_prev")
+    sqlite_cursor.execute("DROP TABLE IF EXISTS X003aa_people_curr")
+    sqlite_cursor.execute("DROP TABLE IF EXISTS X003ab_declarations_curr")
+    sqlite_cursor.execute("DROP TABLE IF EXISTS X003aa_people_prev")
+    sqlite_cursor.execute("DROP TABLE IF EXISTS X003ab_declarations_prev")
 
     """ ****************************************************************************
     BANK NUMBER MASTER FILES
     *****************************************************************************"""
 
     # BUILD TABLE WITH EMPLOYEE BANK ACCOUNT NUMBERS
-    print("Obtain master list of all employees...")
+    if l_debug:
+        print("Obtain master list of all employees...")
     sr_file = "X100_bank_emp"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     Select
@@ -672,13 +697,14 @@ def people_test_conflict():
     Where
         PEOPLE.X002_PEOPLE_CURR.ACC_NUMBER <> ''
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
+    sqlite_cursor.execute("DROP TABLE IF EXISTS "+sr_file)
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
     # BUILD TABLE WITH VENDOR BANK ACCOUNT NUMBERS
-    print("Obtain master list of all vendors...")
+    if l_debug:
+        print("Obtain master list of all vendors...")
     sr_file = "X100_bank_ven"
     s_sql = "CREATE TABLE "+sr_file+" AS " + """
     Select
@@ -692,9 +718,9 @@ def people_test_conflict():
         KFS.X000_Vendor.DOBJ_MAINT_CD_ACTV_IND = 'Y' AND
         Instr(KFS.X000_Vendor.VNDR_NM, "DT CARD") = 0         
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
+    sqlite_cursor.execute("DROP TABLE IF EXISTS "+sr_file)
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
 
     """ ****************************************************************************
@@ -702,7 +728,8 @@ def people_test_conflict():
     *****************************************************************************"""
 
     # BUILD TABLE WITH CHILD SUPPORT AND ADVANCES FOR THE PREVIOUS MONTH
-    print("Obtain master list of child support payments...")
+    if l_debug:
+        print("Obtain master list of child support payments...")
 
     sr_file = "X100_child_support_from_payroll"
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
@@ -720,7 +747,7 @@ def people_test_conflict():
     Group By
         pfp.EMPLOYEE_NUMBER    
     ;"""
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = s_sql.replace("%PREVMONTH%", funcdate.prev_monthend()[0:7])
     if funcdate.prev_monthend()[0:4] == funcdate.prev_year:
         s_sql = s_sql.replace("%PERIOD%", 'prev')
@@ -728,10 +755,10 @@ def people_test_conflict():
         s_sql = s_sql.replace("%PERIOD%", 'curr')
     if l_debug:
         print(s_sql)
-    so_curs.execute(s_sql)
+    sqlite_cursor.execute(s_sql)
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     if l_debug:
-        so_conn.commit()
+        sqlite_connection.commit()
 
     # IDENTIFY CHILD SUPPORT VENDORS
     # Exclusions
@@ -741,9 +768,10 @@ def people_test_conflict():
     'NW.3G00111.9641',
     'NW.3G00111.7702'
     )"""
-    print("Identify child support vendors...")
+    if l_debug:
+        print("Identify child support vendors...")
     sr_file = "X100_child_support_from_vendor"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         acc.VENDOR_ID,
@@ -756,16 +784,17 @@ def people_test_conflict():
     Group By
         acc.VENDOR_ID
     """
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = s_sql.replace("%EXCLUDE%", s_exclude)
-    so_curs.execute(s_sql)
-    so_conn.commit()
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """ ****************************************************************************
     TEST EMPLOYEE VENDOR SHARE BANK ACCOUNT
     *****************************************************************************"""
-    print("TEST EMPLOYEE VENDOR COMMON BANK")
+    if l_debug:
+        print("TEST EMPLOYEE VENDOR COMMON BANK")
     funcfile.writelog("TEST EMPLOYEE VENDOR COMMON BANK")
 
     # DECLARE TEST VARIABLES
@@ -773,9 +802,10 @@ def people_test_conflict():
     s_desc: str = "Employee vendor share bank acc"
 
     # BUILD TABLE WITH VENDOR BANK ACCOUNT NUMBERS
-    print("Merge employees and vendors on bank account...")
+    if l_debug:
+        print("Merge employees and vendors on bank account...")
     sr_file = "X100aa_bank_empven"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         BANK.*,
@@ -785,14 +815,15 @@ def people_test_conflict():
         X100_bank_ven VEND On VEND.VENDOR_BANK = BANK.EMP_BANK And
             Instr(VEND.VENDOR_ID, BANK.EMP) = 0
     ;"""
-    so_curs.execute(s_sql)
-    so_conn.commit()
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD TABLE WITH VENDOR BANK ACCOUNT NUMBERS
-    print("Compile list of shared bank accounts...")
+    if l_debug:
+        print("Compile list of shared bank accounts...")
     sr_file = "X100ab_bank_empven"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         FINDING.ORG,
@@ -804,30 +835,32 @@ def people_test_conflict():
     From
         X100aa_bank_empven FINDING
     ;"""
-    so_curs.execute(s_sql)
-    so_conn.commit()
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # COUNT THE NUMBER OF FINDINGS
-    i_find = funcsys.tablerowcount(so_curs, sr_file)
-    print("*** Found " + str(i_find) + " exceptions ***")
+    i_find = funcsys.tablerowcount(sqlite_cursor, sr_file)
+    if l_debug:
+        print("*** Found " + str(i_find) + " exceptions ***")
     funcfile.writelog("%t FINDING: " + str(i_find) + " EMPL BANK conflict finding(s)")
 
     # GET PREVIOUS FINDINGS
     if i_find > 0:
-        functest.get_previous_finding(so_curs, ed_path, "002_reported.txt", "bank_share_emp_ven", "ITTTT")
-        so_conn.commit()
+        functest.get_previous_finding(sqlite_cursor, external_data_path, "002_reported.txt", "bank_share_emp_ven", "ITTTT")
+        sqlite_connection.commit()
 
     # SET PREVIOUS FINDINGS
     if i_find > 0:
-        functest.set_previous_finding(so_curs)
-        so_conn.commit()
+        functest.set_previous_finding(sqlite_cursor)
+        sqlite_connection.commit()
 
     # ADD PREVIOUS FINDINGS
     sr_file = "X100ad_bank_addprev"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_find > 0:
-        print("Join previously reported to current findings...")
+        if l_debug:
+            print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         SELECT
             FIND.*,
@@ -842,16 +875,16 @@ def people_test_conflict():
             X100ab_bank_empven FIND Left Join
             Z001ab_setprev PREV ON PREV.FIELD1 = FIND.EMP AND PREV.FIELD2 = FIND.EMP_BANK
         ;"""
-        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
         s_sql = s_sql.replace("%TODAYPLUS%", funcdate.cur_monthendnext())
-        so_curs.execute(s_sql)
-        so_conn.commit()
+        sqlite_cursor.execute(s_sql)
+        sqlite_connection.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD LIST TO UPDATE FINDINGS
     sr_file = "X100ae_bank_newprev"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_find > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         SELECT
@@ -870,45 +903,48 @@ def people_test_conflict():
             PREV.PREV_PROCESS IS NULL Or
             PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""
         ;"""
-        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        so_curs.execute(s_sql)
-        so_conn.commit()
+        sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
+        sqlite_cursor.execute(s_sql)
+        sqlite_connection.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
         # Export findings to previous reported file
-        i_coun = funcsys.tablerowcount(so_curs, sr_file)
+        i_coun = funcsys.tablerowcount(sqlite_cursor, sr_file)
         if i_coun > 0:
-            print("*** " + str(i_coun) + " Finding(s) to report ***")
+            if l_debug:
+                print("*** " + str(i_coun) + " Finding(s) to report ***")
             sr_filet = sr_file
-            sx_path = ed_path
+            sx_path = external_data_path
             sx_file = "002_reported"
             # Read the header data
-            s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
+            s_head = funccsv.get_colnames_sqlite(sqlite_connection, sr_filet)
             # Write the data
             if l_record:
-                funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head, "a", ".txt")
+                funccsv.write_data(sqlite_connection, "main", sr_filet, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_coun) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
             if l_mess:
                 funcsms.send_telegram('', 'administrator', '<b>' + str(i_find) + '/' + str(i_coun) + '</b> ' + s_desc)
         else:
-            print("*** No new findings to report ***")
+            if l_debug:
+                print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
 
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
     if i_find > 0 and i_coun > 0:
-        functest.get_officer(so_curs, "HR", "TEST_BANKACC_CONFLICT_VENDOR_OFFICER")
-        so_conn.commit()
+        functest.get_officer(sqlite_cursor, "HR", "TEST_BANKACC_CONFLICT_VENDOR_OFFICER")
+        sqlite_connection.commit()
 
     # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
     if i_find > 0 and i_coun > 0:
-        functest.get_supervisor(so_curs, "HR", "TEST_BANKACC_CONFLICT_VENDOR_SUPERVISOR")
-        so_conn.commit()
+        functest.get_supervisor(sqlite_cursor, "HR", "TEST_BANKACC_CONFLICT_VENDOR_SUPERVISOR")
+        sqlite_connection.commit()
 
     # ADD CONTACT DETAILS TO FINDINGS
     sr_file = "X100ah_bank_addempven"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_find > 0 and i_coun > 0:
-        print("Add details to findings...")
+        if l_debug:
+            print("Add details to findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             PREV.*,
@@ -958,15 +994,16 @@ def people_test_conflict():
             PREV.PREV_PROCESS IS NULL Or
             PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""    
         ;"""
-        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        so_curs.execute(s_sql)
-        so_conn.commit()
+        sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
+        sqlite_cursor.execute(s_sql)
+        sqlite_connection.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
     sr_file = "X100ax_bank_emp_vend"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    print("Build the final report")
+    sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
+    if l_debug:
+        print("Build the final report")
     if i_find > 0 and i_coun > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
@@ -1010,34 +1047,36 @@ def people_test_conflict():
         From
             X100ah_bank_addempven FIND
         ;"""
-        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        so_curs.execute(s_sql)
-        so_conn.commit()
+        sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
+        sqlite_cursor.execute(s_sql)
+        sqlite_connection.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
         # Export findings
-        if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-            print("Export findings...")
+        if l_export and funcsys.tablerowcount(sqlite_cursor, sr_file) > 0:
+            if l_debug:
+                print("Export findings...")
             sr_filet = sr_file
-            sx_path = re_path
+            sx_path = results_path
             sx_file = "People_test_100ax_bank_emp_vend_"
             sx_filet = sx_file + funcdate.today_file()
-            s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-            funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
-            funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
+            s_head = funccsv.get_colnames_sqlite(sqlite_connection, sr_filet)
+            funccsv.write_data(sqlite_connection, "main", sr_filet, sx_path, sx_file, s_head)
+            funccsv.write_data(sqlite_connection, "main", sr_filet, sx_path, sx_filet, s_head)
             funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
     else:
         s_sql = "CREATE TABLE " + sr_file + " (" + """
         BLANK TEXT
         );"""
-        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        so_curs.execute(s_sql)
-        so_conn.commit()
+        sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
+        sqlite_cursor.execute(s_sql)
+        sqlite_connection.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """*****************************************************************************
     TEST EMPLOYEE VENDOR SHARE EMAIL ADDRESS
     *****************************************************************************"""
-    print("TEST EMPLOYEE VENDOR SHARE EMAIL ADDRESS")
+    if l_debug:
+        print("TEST EMPLOYEE VENDOR SHARE EMAIL ADDRESS")
     funcfile.writelog("TEST EMPLOYEE VENDOR SHARE EMAIL ADDRESS")
 
     # FILES NEEDED
@@ -1052,9 +1091,10 @@ def people_test_conflict():
     s_report_file: str = "002_reported.txt"
 
     # OBTAIN TEST DATA FOR CURRENT ACTIVE VENDORS - NEW VENDORS
-    print("Obtain test data...")
+    if l_debug:
+        print("Obtain test data...")
     sr_file: str = s_file_prefix + "aaa_" + s_file_name
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         VEND.VENDOR_ID,
@@ -1064,16 +1104,17 @@ def people_test_conflict():
     Where
         VEND.DOBJ_MAINT_CD_ACTV_IND = 'Y'
     ;"""
-    so_curs.execute(s_sql)
-    so_conn.commit()
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # GET PREVIOUS VENDORS - NEW VENDORS
     sr_file: str = s_file_prefix + "aab_" + s_file_name
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    print("Import previous vendors...")
-    so_curs.execute("CREATE TABLE " + sr_file + "(VENDOR_ID_PREV TEXT,VENDOR_MAIL_PREV TEXT)")
-    co = open(ed_path + "201_vendor_new.csv", "r")
+    sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
+    if l_debug:
+        print("Import previous vendors...")
+    sqlite_cursor.execute("CREATE TABLE " + sr_file + "(VENDOR_ID_PREV TEXT,VENDOR_MAIL_PREV TEXT)")
+    co = open(external_data_path + "201_vendor_new.csv", "r")
     co_reader = csv.reader(co)
     # Read the COLUMN database data
     for row in co_reader:
@@ -1082,34 +1123,37 @@ def people_test_conflict():
             continue
         else:
             s_cols = "INSERT INTO " + sr_file + " VALUES('" + row[0] + "','" + row[1] + "')"
-            so_curs.execute(s_cols)
-    so_conn.commit()
+            sqlite_cursor.execute(s_cols)
+    sqlite_connection.commit()
     # Close the imported data file
     co.close()
-    funcfile.writelog("%t IMPORT TABLE: " + ed_path + "201_vendor_new.csv (" + sr_file + ")")
+    funcfile.writelog("%t IMPORT TABLE: " + external_data_path + "201_vendor_new.csv (" + sr_file + ")")
 
     # EXPORT THE PREVIOUS VENDORS AS BACKUP - NEW VENDORS
     if l_record:
-        print("Export previous vendor details...")
+        if l_debug:
+            print("Export previous vendor details...")
         sr_filet: str = s_file_prefix + "aab_" + s_file_name
-        sx_path = ed_path
+        sx_path = external_data_path
         sx_file = "201_vendor_new_prev"
-        s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
+        s_head = funccsv.get_colnames_sqlite(sqlite_connection, sr_filet)
+        funccsv.write_data(sqlite_connection, "main", sr_filet, sx_path, sx_file, s_head)
         funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
 
     # EXPORT THE CURRENT VENDORS - NEW VENDORS
     if l_record:
-        print("Export current vendor details...")
+        if l_debug:
+            print("Export current vendor details...")
         sr_filet: str = s_file_prefix + "aaa_" + s_file_name
-        sx_path = ed_path
+        sx_path = external_data_path
         sx_file = "201_vendor_new"
-        s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
-        funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
+        s_head = funccsv.get_colnames_sqlite(sqlite_connection, sr_filet)
+        funccsv.write_data(sqlite_connection, "main", sr_filet, sx_path, sx_file, s_head)
         funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
 
     # COMBINE CURRENT AND PREVIOUS VENDORS  - NEW VENDORS WITH NWU.AC.ZA MAIL
-    print("Combine current and previous vendors...")
+    if l_debug:
+        print("Combine current and previous vendors...")
     sr_file: str = s_file_prefix + "aac_" + s_file_name
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
@@ -1123,13 +1167,14 @@ def people_test_conflict():
         Lower(NEW.VENDOR_MAIL) Like ('%nwu.ac.za%') And
         OLD.VENDOR_ID_PREV Is Null
     """
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
+    sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # COMBINE CURRENT AND PREVIOUS VENDORS  - CURRENT VENDOR CHANGED TO NWU.AC.ZA
-    print("Combine current and previous vendors...")
+    if l_debug:
+        print("Combine current and previous vendors...")
     sr_file: str = s_file_prefix + "ab_" + s_file_name
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
@@ -1158,15 +1203,16 @@ def people_test_conflict():
     Where
         OLD.VENDOR_MAIL_PREV != NEW.VENDOR_MAIL
     """
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(s_sql)
-    so_conn.commit()
+    sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # OBTAIN TEST DATA FOR CURRENT ACTIVE VENDORS - CATEGORY CURRENT ACTIVE VENDOR
-    print("Obtain test data...")
+    if l_debug:
+        print("Obtain test data...")
     sr_file: str = s_file_prefix + "ac_" + s_file_name
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         'CURRENT VENDOR' As VENDOR_CATEGORY,
@@ -1198,27 +1244,30 @@ def people_test_conflict():
     # Substr(VEND.VENDOR_ID, 1, 8) != Substr(VEND.VEND_MAIL, 1, 8) And
     # PEOP.EMPLOYEE_NUMBER Is Null
     # PREP.EMPLOYEE_NUMBER Is Null
-    so_curs.execute(s_sql)
-    so_conn.commit()
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # COMBINE VENDOR FINDINGS
-    print("Create combined table...")
+    if l_debug:
+        print("Create combined table...")
     sr_file: str = s_file_prefix + "ad_" + s_file_name
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    so_curs.execute(
+    sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
+    sqlite_cursor.execute(
         "CREATE TABLE " + sr_file + "(VENDOR_CATEGORY TEXT, VENDOR_ID TEXT, VENDOR_MAIL TEXT, VENDOR_MAIL_NEW TEXT)")
     # NEW VENDOR
-    print("Add new vendors...")
+    if l_debug:
+        print("Add new vendors...")
     data_file: str = s_file_prefix + "aac_" + s_file_name
     s_sql = "INSERT INTO " + sr_file + \
             "(VENDOR_CATEGORY, VENDOR_ID, VENDOR_MAIL)" \
             " SELECT VENDOR_CATEGORY, VENDOR_ID, VENDOR_MAIL FROM " + \
             data_file + \
             ";"
-    so_curs.execute(s_sql)
+    sqlite_cursor.execute(s_sql)
     # CHANGED VENDOR
-    print("Add changed vendors...")
+    if l_debug:
+        print("Add changed vendors...")
     data_file: str = s_file_prefix + "ab_" + s_file_name
     s_sql = "INSERT INTO " + sr_file + \
             "(VENDOR_CATEGORY, VENDOR_ID, VENDOR_MAIL, VENDOR_MAIL_NEW)" \
@@ -1226,23 +1275,25 @@ def people_test_conflict():
             data_file + \
             " WHERE TEST_TYPE Like('0%')" + \
             ";"
-    so_curs.execute(s_sql)
+    sqlite_cursor.execute(s_sql)
     # CURRENT VENDOR VENDOR
-    print("Add current vendors...")
+    if l_debug:
+        print("Add current vendors...")
     data_file: str = s_file_prefix + "ac_" + s_file_name
     s_sql = "INSERT INTO " + sr_file + \
             "(VENDOR_CATEGORY, VENDOR_ID, VENDOR_MAIL)" \
             " SELECT VENDOR_CATEGORY, VENDOR_ID, VENDOR_MAIL FROM " + \
             data_file + \
             ";"
-    so_curs.execute(s_sql)
-    so_conn.commit()
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
     funcfile.writelog("%t COMBINE TABLE: " + sr_file)
 
     # SELECT TEST DATA
-    print("Identify findings...")
+    if l_debug:
+        print("Identify findings...")
     sr_file: str = s_file_prefix + "ae_" + s_file_name
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         COMB.*,
@@ -1260,14 +1311,15 @@ def people_test_conflict():
     ;"""
     s_sql = s_sql.replace("%FILEP%", s_file_prefix)
     s_sql = s_sql.replace("%FILEN%", "ad_" + s_file_name)
-    so_curs.execute(s_sql)
-    so_conn.commit()
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # SELECT TEST DATA
-    print("Identify findings...")
+    if l_debug:
+        print("Identify findings...")
     sr_file: str = s_file_prefix + "af_" + s_file_name
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         VEND.*,
@@ -1278,14 +1330,15 @@ def people_test_conflict():
     ;"""
     s_sql = s_sql.replace("%FILEP%", s_file_prefix)
     s_sql = s_sql.replace("%FILEN%", "ae_" + s_file_name)
-    so_curs.execute(s_sql)
-    so_conn.commit()
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # SELECT TEST DATA
-    print("Identify findings...")
+    if l_debug:
+        print("Identify findings...")
     sr_file = s_file_prefix + "b_finding"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sql = "CREATE TABLE " + sr_file + " AS " + """
     Select
         'NWU' As ORG,
@@ -1305,30 +1358,32 @@ def people_test_conflict():
     ;"""
     s_sql = s_sql.replace("%FILEP%", s_file_prefix)
     s_sql = s_sql.replace("%FILEN%", "af_" + s_file_name)
-    so_curs.execute(s_sql)
-    so_conn.commit()
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # COUNT THE NUMBER OF FINDINGS
-    i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
-    print("*** Found " + str(i_finding_before) + " exceptions ***")
+    i_finding_before: int = funcsys.tablerowcount(sqlite_cursor, sr_file)
+    if l_debug:
+        print("*** Found " + str(i_finding_before) + " exceptions ***")
     funcfile.writelog("%t FINDING: " + str(i_finding_before) + " " + s_finding + " finding(s)")
 
     # GET PREVIOUS FINDINGS
     if i_finding_before > 0:
-        functest.get_previous_finding(so_curs, ed_path, s_report_file, s_finding, "TTTTT")
-        so_conn.commit()
+        functest.get_previous_finding(sqlite_cursor, external_data_path, s_report_file, s_finding, "TTTTT")
+        sqlite_connection.commit()
 
     # SET PREVIOUS FINDINGS
     if i_finding_before > 0:
-        functest.set_previous_finding(so_curs)
-        so_conn.commit()
+        functest.set_previous_finding(sqlite_cursor)
+        sqlite_connection.commit()
 
     # ADD PREVIOUS FINDINGS
     sr_file = s_file_prefix + "d_addprev"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
-        print("Join previously reported to current findings...")
+        if l_debug:
+            print("Join previously reported to current findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS" + """
         Select
             FIND.*,
@@ -1348,13 +1403,13 @@ def people_test_conflict():
         s_sql = s_sql.replace("%FILEP%", s_file_prefix)
         s_sql = s_sql.replace("%TODAY%", funcdate.today())
         s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
-        so_curs.execute(s_sql)
-        so_conn.commit()
+        sqlite_cursor.execute(s_sql)
+        sqlite_connection.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD LIST TO UPDATE FINDINGS
     sr_file = s_file_prefix + "e_newprev"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
@@ -1374,44 +1429,47 @@ def people_test_conflict():
             PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""        
         ;"""
         s_sql = s_sql.replace("%FILEP%", s_file_prefix)
-        so_curs.execute(s_sql)
-        so_conn.commit()
+        sqlite_cursor.execute(s_sql)
+        sqlite_connection.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
         # Export findings to previous reported file
-        i_finding_after = funcsys.tablerowcount(so_curs, sr_file)
+        i_finding_after = funcsys.tablerowcount(sqlite_cursor, sr_file)
         if i_finding_after > 0:
-            print("*** " + str(i_finding_after) + " Finding(s) to report ***")
-            sx_path = ed_path
+            if l_debug:
+                print("*** " + str(i_finding_after) + " Finding(s) to report ***")
+            sx_path = external_data_path
             sx_file = s_report_file[:-4]
             # Read the header data
-            s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+            s_head = funccsv.get_colnames_sqlite(sqlite_connection, sr_file)
             # Write the data
             if l_record:
-                funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
+                funccsv.write_data(sqlite_connection, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                 funcfile.writelog("%t EXPORT DATA: " + sr_file)
             if l_mess:
                 funcsms.send_telegram('', 'administrator', '<b>' + str(i_finding_before) + '/' + str(
                     i_finding_after) + '</b> ' + s_description)
         else:
-            print("*** No new findings to report ***")
+            if l_debug:
+                print("*** No new findings to report ***")
             funcfile.writelog("%t FINDING: No new findings to export")
 
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
     if i_finding_before > 0 and i_finding_after > 0:
-        functest.get_officer(so_curs, "HR", "TEST " + s_finding + " OFFICER")
-        so_conn.commit()
+        functest.get_officer(sqlite_cursor, "HR", "TEST " + s_finding + " OFFICER")
+        sqlite_connection.commit()
 
     # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
     if i_finding_before > 0 and i_finding_after > 0:
-        functest.get_supervisor(so_curs, "HR", "TEST " + s_finding + " SUPERVISOR")
-        so_conn.commit()
+        functest.get_supervisor(sqlite_cursor, "HR", "TEST " + s_finding + " SUPERVISOR")
+        sqlite_connection.commit()
 
     # ADD CONTACT DETAILS TO FINDINGS
     sr_file = s_file_prefix + "h_detail"
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+    sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
     if i_finding_before > 0 and i_finding_after > 0:
-        print("Add contact details to findings...")
+        if l_debug:
+            print("Add contact details to findings...")
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
             PREV.ORG,
@@ -1477,14 +1535,15 @@ def people_test_conflict():
         ;"""
         s_sql = s_sql.replace("%FILEP%", s_file_prefix)
         s_sql = s_sql.replace("%FILEN%", "ae_" + s_file_name)
-        so_curs.execute(s_sql)
-        so_conn.commit()
+        sqlite_cursor.execute(s_sql)
+        sqlite_connection.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
     sr_file = s_file_prefix + "x_" + s_file_name
-    so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    print("Build the final report")
+    sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
+    if l_debug:
+        print("Build the final report")
     if i_finding_before > 0 and i_finding_after > 0:
         s_sql = "CREATE TABLE " + sr_file + " AS " + """
         Select
@@ -1530,26 +1589,27 @@ def people_test_conflict():
         ;"""
         s_sql = s_sql.replace("%FIND%", s_finding)
         s_sql = s_sql.replace("%FILEP%", s_file_prefix)
-        so_curs.execute(s_sql)
-        so_conn.commit()
+        sqlite_cursor.execute(s_sql)
+        sqlite_connection.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
         # Export findings
-        if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-            print("Export findings...")
-            sx_path = re_path
+        if l_export and funcsys.tablerowcount(sqlite_cursor, sr_file) > 0:
+            if l_debug:
+                print("Export findings...")
+            sx_path = results_path
             sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
             sx_file_dated = sx_file + funcdate.today_file()
-            s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
-            funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
-            funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
+            s_head = funccsv.get_colnames_sqlite(sqlite_connection, sr_file)
+            funccsv.write_data(sqlite_connection, "main", sr_file, sx_path, sx_file, s_head)
+            funccsv.write_data(sqlite_connection, "main", sr_file, sx_path, sx_file_dated, s_head)
             funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
     else:
         s_sql = "CREATE TABLE " + sr_file + " (" + """
         BLANK TEXT
         );"""
-        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        so_curs.execute(s_sql)
-        so_conn.commit()
+        sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
+        sqlite_cursor.execute(s_sql)
+        sqlite_connection.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """*****************************************************************************
@@ -1585,7 +1645,7 @@ def people_test_conflict():
         s_report_file: str = "002_reported.txt"
 
         # OBTAIN TEST RUN FLAG
-        if functest.get_test_flag(so_curs, "HR", "TEST " + s_finding, "RUN") == "FALSE":
+        if functest.get_test_flag(sqlite_cursor, "HR", "TEST " + s_finding, "RUN") == "FALSE":
 
             if l_debug:
                 print('TEST DISABLED')
@@ -1604,7 +1664,7 @@ def people_test_conflict():
             if l_debug:
                 print("Obtain test data...")
             sr_file: str = s_file_prefix + "a_" + s_file_name
-            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+            sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
             s_sql = "CREATE TABLE " + sr_file + " AS " + """
             Select
                 d.EMPLOYEE,
@@ -1635,15 +1695,15 @@ def people_test_conflict():
                 d.SUPERVISOR Is Not Null And
                 d.DAYS_IN_SERVICE > 30
             ;"""
-            so_curs.execute(s_sql)
-            so_conn.commit()
+            sqlite_cursor.execute(s_sql)
+            sqlite_connection.commit()
             funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
             # SELECT TEST DATA
             if l_debug:
                 print("Identify findings...")
             sr_file = s_file_prefix + "b_finding"
-            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+            sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
             s_sql = "CREATE TABLE " + sr_file + " AS " + """
             Select
                 'NWU' As ORG,
@@ -1671,29 +1731,29 @@ def people_test_conflict():
             s_sql = s_sql.replace("%PREVMONTH%", funcdate.prev_monthend()[0:7])
             if l_debug:
                 print(s_sql)
-            so_curs.execute(s_sql)
-            so_conn.commit()
+            sqlite_cursor.execute(s_sql)
+            sqlite_connection.commit()
             funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
             # COUNT THE NUMBER OF FINDINGS
-            i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
+            i_finding_before: int = funcsys.tablerowcount(sqlite_cursor, sr_file)
             if l_debug:
                 print("*** Found " + str(i_finding_before) + " exceptions ***")
             funcfile.writelog("%t FINDING: " + str(i_finding_before) + " " + s_finding + " finding(s)")
 
             # GET PREVIOUS FINDINGS
             if i_finding_before > 0:
-                functest.get_previous_finding(so_curs, ed_path, s_report_file, s_finding, "TTTTT")
-                so_conn.commit()
+                functest.get_previous_finding(sqlite_cursor, external_data_path, s_report_file, s_finding, "TTTTT")
+                sqlite_connection.commit()
 
             # SET PREVIOUS FINDINGS
             if i_finding_before > 0:
-                functest.set_previous_finding(so_curs)
-                so_conn.commit()
+                functest.set_previous_finding(sqlite_cursor)
+                sqlite_connection.commit()
 
             # ADD PREVIOUS FINDINGS
             sr_file = s_file_prefix + "d_addprev"
-            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+            sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
             if i_finding_before > 0:
                 if l_debug:
                     print("Join previously reported to current findings...")
@@ -1717,13 +1777,13 @@ def people_test_conflict():
                 s_sql = s_sql.replace("%FILEP%", s_file_prefix)
                 s_sql = s_sql.replace("%TODAY%", funcdate.today())
                 s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
-                so_curs.execute(s_sql)
-                so_conn.commit()
+                sqlite_cursor.execute(s_sql)
+                sqlite_connection.commit()
                 funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
             # BUILD LIST TO UPDATE FINDINGS
             sr_file = s_file_prefix + "e_newprev"
-            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+            sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
             if i_finding_before > 0:
                 s_sql = "CREATE TABLE " + sr_file + " AS " + """
                 Select
@@ -1743,21 +1803,21 @@ def people_test_conflict():
                     PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""        
                 ;"""
                 s_sql = s_sql.replace("%FILEP%", s_file_prefix)
-                so_curs.execute(s_sql)
-                so_conn.commit()
+                sqlite_cursor.execute(s_sql)
+                sqlite_connection.commit()
                 funcfile.writelog("%t BUILD TABLE: " + sr_file)
                 # Export findings to previous reported file
-                i_finding_after = funcsys.tablerowcount(so_curs, sr_file)
+                i_finding_after = funcsys.tablerowcount(sqlite_cursor, sr_file)
                 if i_finding_after > 0:
                     if l_debug:
                         print("*** " + str(i_finding_after) + " Finding(s) to report ***")
-                    sx_path = ed_path
+                    sx_path = external_data_path
                     sx_file = s_report_file[:-4]
                     # Read the header data
-                    s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+                    s_head = funccsv.get_colnames_sqlite(sqlite_connection, sr_file)
                     # Write the data
                     if l_record:
-                        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
+                        funccsv.write_data(sqlite_connection, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                         funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                         funcfile.writelog("%t EXPORT DATA: " + sr_file)
                     if l_mess:
@@ -1770,17 +1830,17 @@ def people_test_conflict():
 
             # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
             if i_finding_before > 0 and i_finding_after > 0:
-                functest.get_officer(so_curs, "HR", "TEST " + s_finding + " OFFICER")
-                so_conn.commit()
+                functest.get_officer(sqlite_cursor, "HR", "TEST " + s_finding + " OFFICER")
+                sqlite_connection.commit()
 
             # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
             if i_finding_before > 0 and i_finding_after > 0:
-                functest.get_supervisor(so_curs, "HR", "TEST " + s_finding + " SUPERVISOR")
-                so_conn.commit()
+                functest.get_supervisor(sqlite_cursor, "HR", "TEST " + s_finding + " SUPERVISOR")
+                sqlite_connection.commit()
 
             # ADD CONTACT DETAILS TO FINDINGS
             sr_file = s_file_prefix + "h_detail"
-            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+            sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
             if i_finding_before > 0 and i_finding_after > 0:
                 if l_debug:
                     print("Add contact details to findings...")
@@ -1856,13 +1916,13 @@ def people_test_conflict():
                 """
                 s_sql = s_sql.replace("%FILEP%", s_file_prefix)
                 s_sql = s_sql.replace("%FILEN%", "a_" + s_file_name)
-                so_curs.execute(s_sql)
-                so_conn.commit()
+                sqlite_cursor.execute(s_sql)
+                sqlite_connection.commit()
                 funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
             # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
             sr_file = s_file_prefix + "x_" + s_file_name
-            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+            sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
             if l_debug:
                 print("Build the final report")
             if i_finding_before > 0 and i_finding_after > 0:
@@ -1905,26 +1965,27 @@ def people_test_conflict():
                 ;"""
                 s_sql = s_sql.replace("%FIND%", s_finding)
                 s_sql = s_sql.replace("%FILEP%", s_file_prefix)
-                so_curs.execute(s_sql)
-                so_conn.commit()
+                sqlite_cursor.execute(s_sql)
+                sqlite_connection.commit()
                 funcfile.writelog("%t BUILD TABLE: " + sr_file)
                 # Export findings
-                if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-                    print("Export findings...")
-                    sx_path = re_path
+                if l_export and funcsys.tablerowcount(sqlite_cursor, sr_file) > 0:
+                    if l_debug:
+                        print("Export findings...")
+                    sx_path = results_path
                     sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
                     sx_file_dated = sx_file + funcdate.today_file()
-                    s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
-                    funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
-                    funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
+                    s_head = funccsv.get_colnames_sqlite(sqlite_connection, sr_file)
+                    funccsv.write_data(sqlite_connection, "main", sr_file, sx_path, sx_file, s_head)
+                    funccsv.write_data(sqlite_connection, "main", sr_file, sx_path, sx_file_dated, s_head)
                     funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
             else:
                 s_sql = "CREATE TABLE " + sr_file + " (" + """
                 BLANK TEXT
                 );"""
-                so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-                so_curs.execute(s_sql)
-                so_conn.commit()
+                sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
+                sqlite_cursor.execute(s_sql)
+                sqlite_connection.commit()
                 funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
     """*****************************************************************************
@@ -1955,7 +2016,7 @@ def people_test_conflict():
         s_report_file: str = "002_reported.txt"
 
         # OBTAIN TEST RUN FLAG
-        if functest.get_test_flag(so_curs, "HR", "TEST " + s_finding, "RUN") == "FALSE":
+        if functest.get_test_flag(sqlite_cursor, "HR", "TEST " + s_finding, "RUN") == "FALSE":
 
             if l_debug:
                 print('TEST DISABLED')
@@ -1972,7 +2033,7 @@ def people_test_conflict():
             if l_debug:
                 print("Obtain test data...")
             sr_file: str = s_file_prefix + "a_" + s_file_name
-            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+            sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
             s_sql = "CREATE TABLE " + sr_file + " AS " + """
             Select
                 'NWU' As ORG,
@@ -1987,15 +2048,15 @@ def people_test_conflict():
                 X003_dashboard_curr a
             ;"""
             s_sql = s_sql.replace("%TODAY%", funcdate.today())
-            so_curs.execute(s_sql)
-            so_conn.commit()
+            sqlite_cursor.execute(s_sql)
+            sqlite_connection.commit()
             funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
             # SELECT TEST DATA
             if l_debug:
                 print("Identify findings...")
             sr_file = s_file_prefix + "b_finding"
-            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+            sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
             s_sql = "CREATE TABLE " + sr_file + " AS " + """
             Select
                 FIND.ORG,
@@ -2015,29 +2076,29 @@ def people_test_conflict():
             ;"""
             s_sql = s_sql.replace("%FILEP%", s_file_prefix)
             s_sql = s_sql.replace("%FILEN%", "a_" + s_file_name)
-            so_curs.execute(s_sql)
-            so_conn.commit()
+            sqlite_cursor.execute(s_sql)
+            sqlite_connection.commit()
             funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
             # COUNT THE NUMBER OF FINDINGS
-            i_finding_before: int = funcsys.tablerowcount(so_curs, sr_file)
+            i_finding_before: int = funcsys.tablerowcount(sqlite_cursor, sr_file)
             if l_debug:
                 print("*** Found " + str(i_finding_before) + " exceptions ***")
             funcfile.writelog("%t FINDING: " + str(i_finding_before) + " " + s_finding + " finding(s)")
 
             # GET PREVIOUS FINDINGS
             if i_finding_before > 0:
-                functest.get_previous_finding(so_curs, ed_path, s_report_file, s_finding, "TTTTT")
-                so_conn.commit()
+                functest.get_previous_finding(sqlite_cursor, external_data_path, s_report_file, s_finding, "TTTTT")
+                sqlite_connection.commit()
 
             # SET PREVIOUS FINDINGS
             if i_finding_before > 0:
-                functest.set_previous_finding(so_curs)
-                so_conn.commit()
+                functest.set_previous_finding(sqlite_cursor)
+                sqlite_connection.commit()
 
             # ADD PREVIOUS FINDINGS
             sr_file = s_file_prefix + "d_addprev"
-            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+            sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
             if i_finding_before > 0:
                 if l_debug:
                     print("Join previously reported to current findings...")
@@ -2061,13 +2122,13 @@ def people_test_conflict():
                 s_sql = s_sql.replace("%FILEP%", s_file_prefix)
                 s_sql = s_sql.replace("%TODAY%", funcdate.today())
                 s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
-                so_curs.execute(s_sql)
-                so_conn.commit()
+                sqlite_cursor.execute(s_sql)
+                sqlite_connection.commit()
                 funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
             # BUILD LIST TO UPDATE FINDINGS
             sr_file = s_file_prefix + "e_newprev"
-            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+            sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
             if i_finding_before > 0:
                 s_sql = "CREATE TABLE " + sr_file + " AS " + """
                 Select
@@ -2087,22 +2148,22 @@ def people_test_conflict():
                     PREV.DATE_REPORTED > PREV.PREV_DATE_RETEST And PREV.REMARK = ""        
                 ;"""
                 s_sql = s_sql.replace("%FILEP%", s_file_prefix)
-                so_curs.execute(s_sql)
-                so_conn.commit()
+                sqlite_cursor.execute(s_sql)
+                sqlite_connection.commit()
                 funcfile.writelog("%t BUILD TABLE: " + sr_file)
                 # Export findings to previous reported file
-                i_finding_after = funcsys.tablerowcount(so_curs, sr_file)
+                i_finding_after = funcsys.tablerowcount(sqlite_cursor, sr_file)
                 if i_finding_after > 0:
                     if l_debug:
                         print("*** " + str(i_finding_after) + " Finding(s) to report ***")
-                    sx_path = ed_path
+                    sx_path = external_data_path
                     sx_file = s_report_file[:-4]
                     # Read the header data
-                    s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
+                    s_head = funccsv.get_colnames_sqlite(sqlite_connection, sr_file)
                     # Write the data
                     l_record_temporary: bool = False
                     if l_record and l_record_temporary:
-                        funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
+                        funccsv.write_data(sqlite_connection, "main", sr_file, sx_path, sx_file, s_head, "a", ".txt")
                         funcfile.writelog("%t FINDING: " + str(i_finding_after) + " new finding(s) to export")
                         funcfile.writelog("%t EXPORT DATA: " + sr_file)
                     if l_mess:
@@ -2115,17 +2176,17 @@ def people_test_conflict():
 
             # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
             if i_finding_before > 0 and i_finding_after > 0:
-                functest.get_officer(so_curs, "HR", "TEST " + s_finding + " OFFICER")
-                so_conn.commit()
+                functest.get_officer(sqlite_cursor, "HR", "TEST " + s_finding + " OFFICER")
+                sqlite_connection.commit()
 
             # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
             if i_finding_before > 0 and i_finding_after > 0:
-                functest.get_supervisor(so_curs, "HR", "TEST " + s_finding + " SUPERVISOR")
-                so_conn.commit()
+                functest.get_supervisor(sqlite_cursor, "HR", "TEST " + s_finding + " SUPERVISOR")
+                sqlite_connection.commit()
 
             # ADD CONTACT DETAILS TO FINDINGS
             sr_file = s_file_prefix + "h_detail"
-            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+            sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
             if i_finding_before > 0 and i_finding_after > 0:
                 if l_debug:
                     print("Add contact details to findings...")
@@ -2206,13 +2267,13 @@ def people_test_conflict():
                 """
                 s_sql = s_sql.replace("%FILEP%", s_file_prefix)
                 s_sql = s_sql.replace("%FILEN%", "a_" + s_file_name)
-                so_curs.execute(s_sql)
-                so_conn.commit()
+                sqlite_cursor.execute(s_sql)
+                sqlite_connection.commit()
                 funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
             # BUILD THE FINAL TABLE FOR EXPORT AND REPORT
             sr_file = s_file_prefix + "x_" + s_file_name
-            so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+            sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
             if l_debug:
                 print("Build the final report")
             if i_finding_before > 0 and i_finding_after > 0:
@@ -2259,27 +2320,266 @@ def people_test_conflict():
                 ;"""
                 s_sql = s_sql.replace("%FIND%", s_finding)
                 s_sql = s_sql.replace("%FILEP%", s_file_prefix)
-                so_curs.execute(s_sql)
-                so_conn.commit()
+                sqlite_cursor.execute(s_sql)
+                sqlite_connection.commit()
                 funcfile.writelog("%t BUILD TABLE: " + sr_file)
                 # Export findings
-                if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
-                    print("Export findings...")
-                    sx_path = re_path
+                if l_export and funcsys.tablerowcount(sqlite_cursor, sr_file) > 0:
+                    if l_debug:
+                        print("Export findings...")
+                    sx_path = results_path
                     sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
                     sx_file_dated = sx_file + funcdate.today_file()
-                    s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
-                    funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
-                    funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
+                    s_head = funccsv.get_colnames_sqlite(sqlite_connection, sr_file)
+                    funccsv.write_data(sqlite_connection, "main", sr_file, sx_path, sx_file, s_head)
+                    funccsv.write_data(sqlite_connection, "main", sr_file, sx_path, sx_file_dated, s_head)
                     funcfile.writelog("%t EXPORT DATA: " + sx_path + sx_file)
             else:
                 s_sql = "CREATE TABLE " + sr_file + " (" + """
                 BLANK TEXT
                 );"""
-                so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-                so_curs.execute(s_sql)
-                so_conn.commit()
+                sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
+                sqlite_cursor.execute(s_sql)
+                sqlite_connection.commit()
                 funcfile.writelog("%t BUILD TABLE: " + sr_file)
+
+    """*****************************************************************************
+    TEST CONFLICTING TRANSACTIONS MASTER TABLES
+    *****************************************************************************"""
+
+    # DECLARE TEST VARIABLES
+    test_file_prefix: str = "X200"
+
+    # BUILD A TABLE WITH CLEANED UP VENDOR NAMES AND REGISTRATION NUMBERS
+    if l_debug:
+        print('BUILD A TABLE WITH CLEANED UP VENDOR NAMES AND REGISTRATION NUMBERS')
+
+    # Read the list of words to exclude in the vendor names
+    words_to_remove = funcstat.stat_list(sqlite_cursor,
+                                         "KFS.X000_Own_kfs_lookups",
+                                         "LOOKUP_CODE",
+                                         "LOOKUP='EXCLUDE VENDOR WORD'")
+    if l_debug:
+        # print(words_to_remove)
+        pass
+
+    # Prepare the table to receive cleaned vendors
+    table_name = test_file_prefix + "_a_vendor_cleaned"
+    sqlite_cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+    table_name = test_file_prefix + "a_vendor_cleaned"
+    sqlite_cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+    sqlite_cursor.execute(f"""
+        CREATE TABLE {table_name} (
+        vendor_id TEXT,
+        vendor_name TEXT,
+        vendor_regno TEXT
+        )
+    """)
+
+    # Prepare the insert statement
+    insert_stmt = f"INSERT INTO {table_name} (vendor_id, vendor_name, vendor_regno) VALUES (?, ?, ?)"
+
+    # Execute the SQL query to fetch the data where vendor_type is 'PO' or 'DV'
+    sqlite_cursor.execute("""
+        SELECT VENDOR_ID,
+        PAYEE_NAME,
+        REG_NO
+        FROM KFSCURR.X002aa_Report_payments_summary
+        WHERE VENDOR_TYPE IN ("PO", "DV")
+        ;""")
+    vendors = sqlite_cursor.fetchall()
+
+    # Accumulating vendors for bulk insert
+    modified_vendors = []
+    for vendor in vendors:
+        payee_id, payee_name, vendor_reg_nr = vendor
+        modified_payee_name = funcstr.clean_paragraph(payee_name, words_to_remove, 'b')
+        modified_regno = funcstr.clean_paragraph(vendor_reg_nr, words_to_remove, 'n')
+        modified_vendors.append((payee_id, modified_payee_name, modified_regno))
+
+    # Bulk insert using executemany
+    sqlite_cursor.executemany(insert_stmt, modified_vendors)
+    sqlite_connection.commit()
+
+    # Log the actions performed
+    funcfile.writelog(f"%t BUILD & POPULATE TABLE: {table_name}")
+
+    # VENDOR NAME AND REGISTRATION NUMBER COMPARISON
+    if l_debug:
+        print('VENDOR NAME AND REGISTRATION NUMBER COMPARISON')
+
+    # Build table with directorship and vendor name and registration number comparison
+    if l_debug:
+        print("Build table with directorship and vendor name and registration number comparison...")
+    table_name: str = test_file_prefix + "_b_director_vendor_match"
+    sqlite_cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+    table_name: str = test_file_prefix + "b_director_vendor_match"
+    s_sql = f"CREATE TABLE {table_name} AS " + """
+    Select
+        d.nwu_number,
+        d.company_name As company_name,
+        d.registration_number As company_registration_number,
+        v.vendor_id,
+        v.vendor_name,
+        Case
+          When SubStr(d.registration_number, 1, 4) || SubStr(d.registration_number, 6, 6) = SubStr(v.vendor_regno, 1, 10)
+          Then 1
+          When d.company_name Like (v.vendor_name || '%')
+          Then 3
+          Else 2
+        End As vendor_ratio,
+        SubStr(d.registration_number, 1, 4) || SubStr(d.registration_number, 6, 6) As regno_director,
+        SubStr(v.vendor_regno, 1, 10) As regno_vendor,
+        Case
+          When SubStr(d.registration_number, 1, 4) || SubStr(d.registration_number, 6, 6) = SubStr(v.vendor_regno, 1, 10)
+          Then 1
+          Else 0
+        End As regno_ratio
+    From
+        X004x_searchworks_directors d,
+        X200a_vendor_cleaned v
+    Where
+        (SubStr(d.registration_number, 1, 4) || SubStr(d.registration_number, 6, 6) = SubStr(v.vendor_regno, 1, 10)) Or
+        (d.company_name Like (v.vendor_name || '%')) Or
+        (v.vendor_name Like (d.company_name || '%'))    
+    ;"""
+    sqlite_cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
+    funcfile.writelog(f"%t BUILD TABLE: {table_name}")
+
+    # BUILD A TABLE WITH CLEANED UP EMPLOYEE INTERESTS
+    if l_debug:
+        print('BUILD A TABLE WITH CLEANED UP EMPLOYEE INTERESTS')
+
+    # Read the list of words to exclude in the vendor names
+    words_to_remove = funcstat.stat_list(sqlite_cursor,
+                                         "KFS.X000_Own_kfs_lookups",
+                                         "LOOKUP_CODE",
+                                         "LOOKUP='EXCLUDE VENDOR WORD'")
+    if l_debug:
+        # print(words_to_remove)
+        pass
+
+    # Create SQLite table to receive cleaned vendors
+    table_name = test_file_prefix + "_c_interests_cleaned"
+    sqlite_cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+    table_name = test_file_prefix + "c_interests_cleaned"
+    sqlite_cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+    sqlite_cursor.execute(f"""
+        CREATE TABLE {table_name} (
+        declaration_id INT,
+        interest_id INT,
+        employee_number TEXT,
+        entity_name TEXT,
+        entity_registration_number TEXT        
+        ) """)
+    funcfile.writelog(f"%t BUILD TABLE: {table_name}")
+
+    # Prepare the insert statement
+    insert_stmt = f"INSERT INTO {table_name} (declaration_id, interest_id, employee_number, entity_name, entity_registration_number) VALUES (?, ?, ?, ?, ?)"
+
+    # Execute the SQL query to fetch the data
+    sqlite_cursor.execute("""
+    Select
+        i.DECLARATION_ID As declaration_id,
+        i.INTEREST_ID As interest_id,
+        i.EMPLOYEE_NUMBER As employee_number,
+        i.ENTITY_NAME As entity_name,
+        i.ENTITY_REGISTRATION_NUMBER As entity_registration_number,
+        Max(i.DECLARATION_DATE) As declaration_date
+    From
+        X002_interests_curr i
+    Where
+        i.ENTITY_NAME <> '' And
+        i.INTEREST_STATUS = 'Accepted'
+    Group By
+        i.DECLARATION_ID,
+        i.INTEREST_ID
+    """)
+    # Fetch all the rows returned by the query
+    interests = sqlite_cursor.fetchall()
+
+    # Accumulating vendors for bulk insert
+    modified_interests = []
+    for interest in interests:
+        declaration_id, interest_id, employee_number, entity_name, entity_registration_number, declaration_date = interest
+        modified_entity_name = funcstr.clean_paragraph(entity_name, words_to_remove, 'b')
+        modified_entity_registration_number = funcstr.clean_paragraph(entity_registration_number, words_to_remove, 'n')
+        modified_interests.append(
+            (declaration_id, interest_id, employee_number, modified_entity_name, modified_entity_registration_number))
+
+    # Bulk insert using executemany
+    sqlite_cursor.executemany(insert_stmt, modified_interests)
+    sqlite_connection.commit()
+
+    # Build table which compare conflicting transactions with declarations
+    if l_debug:
+        print("Build table which compare conflicting transactions with declarations...")
+    table_name: str = test_file_prefix + "_d_director_interest_match"
+    sqlite_cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+    table_name: str = test_file_prefix + "d_director_interest_match"
+    s_sql = f"CREATE TABLE {table_name} As " + """
+    Select
+        v.nwu_number,
+        v.company_name,
+        v.company_registration_number,
+        v.vendor_id,
+        v.regno_director,
+        Case
+            When i.employee_number = v.nwu_number And SubStr(i.entity_registration_number, 1, 10) = v.regno_director
+            Then 1
+            When i.employee_number = v.nwu_number And i.entity_name Like (v.company_name || '%')
+            Then 2
+            Else 0        
+        End As match_type,
+        i.declaration_id,
+        i.interest_id,
+        i.entity_name,
+        i.entity_registration_number
+    From
+        X200b_director_vendor_match v Left Join
+        X200c_interests_cleaned i On (i.employee_number = v.nwu_number
+                    And SubStr(i.entity_registration_number, 1, 10) = v.regno_director)
+                Or (i.employee_number = v.nwu_number
+                    And i.entity_name Like (v.company_name || '%'))    
+    ;"""
+    sqlite_cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
+    funcfile.writelog(f"%t BUILD TABLE: {table_name}")
+
+    # Add data from the people and vendor master tables
+    if l_debug:
+        print("Add some data needed to build the test parameters...")
+    table_name: str = test_file_prefix + "_e_master_table"
+    sqlite_cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+    table_name: str = test_file_prefix + "e_master_table"
+    s_sql = f"CREATE TABLE {table_name} As " + """
+    Select
+        i.nwu_number,
+        p.name_address,
+        i.company_name,
+        i.company_registration_number,
+        i.vendor_id,
+        v.VNDR_NM As vendor_name,
+        v.VNDR_TYP_CD As vendor_type,
+        i.match_type,
+        i.declaration_id,
+        i.interest_id,
+        i.entity_name,
+        i.regno_director,        
+        i.entity_registration_number,
+        i.nwu_number || '-' || i.company_registration_number As exclude_combination          
+    From
+        X200d_director_interest_match i Left Join
+        PEOPLE.X000_PEOPLE p On p.employee_number = i.nwu_number Left Join
+        KFS.X000_Vendor v On v.VENDOR_ID = i.vendor_id
+    ;"""
+    sqlite_cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
+    funcfile.writelog(f"%t BUILD TABLE: {table_name}")
 
     """*****************************************************************************
     END OF SCRIPT
@@ -2288,7 +2588,7 @@ def people_test_conflict():
     funcfile.writelog("END OF SCRIPT")
 
     # CLOSE THE DATABASE CONNECTION
-    so_conn.close()
+    sqlite_connection.close()
 
     # CLOSE THE LOG WRITER
     funcfile.writelog("----------------------------------------")
