@@ -57,5 +57,8 @@ V2.0.4 (21 May 2021)
 V2.0.5 (16 Jul 2021)
 01. Add test flag system. Use FUNCTEST.GET_TEST_FLAG to read the variable.
 
+V2.0.6 (21 Nov 2023)
+01. Start using formatted strings and full variable names that provide for better reading.
+
 
 
