@@ -1,21 +1,15 @@
 ﻿Select
-    p.PAYEE_TYPE_DESC,
-    p.VENDOR_TYPE,
-    p.OWNER_TYPE,
-    p.OWNER_TYPE_DESC,
-    Count(p.VENDOR_ID) As Sum_VENDOR_ID
+    v.EDOC,
+    v.VENDOR_ID,
+    v.VENDOR_NAME,
+    v.PMT_DT,
+    v.NET_PMT_AMT,
+    v.APPROVE_EMP_NO,
+    v.APPROVE_EMP_NAME,
+    v.A_COUNT,
+    v.ACC_COST_STRING
 From
-    X002aa_Report_payments_summary p
+    X001ac_Report_payments_approve v
 Where
-    (p.PAYEE_TYPE = 'V' And
-        p.PAYEE_NAME Like '%PTY%') Or
-    (p.PAYEE_TYPE = 'V' And
-        p.PAYEE_NAME Like '%LTD%') Or
-    (p.PAYEE_TYPE = 'V' And
-        p.PAYEE_NAME Like '%EDMS%') Or
-    (p.PAYEE_TYPE = 'V' And
-        p.PAYEE_NAME Like '%BPK%') Or
-    (p.PAYEE_TYPE = 'V' And
-        p.PAYEE_NAME Like '%CC')
-Group By
-    p.PAYEE_TYPE
+    v.VENDOR_TYPE In ('DV', 'PO') And
+    v.PMT_STAT_CD = 'EXTR'
