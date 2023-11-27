@@ -30,8 +30,9 @@ CHILD SUPPORT AND ADVANCES MASTER FILE
 TEST EMPLOYEE VENDOR SHARE BANK ACCOUNT (V1.1.2)
 TEST EMPLOYEE VENDOR SHARE EMAIL ADDRESS (V2.0.3)
 TEST EMPLOYEE NO DECLARATION (V2.0.5)
-TEST DECLARATION PENDING (V2.0.5)
+TEST DECLARATION PENDING (V2.0.6)
 TEST CONFLICTING TRANSACTIONS MASTER TABLES
+TEST ACTIVE CIPC DIRECTOR ACTIVE VENDOR NO DECLARATION (V2.0.6)
 END OF SCRIPT
 *****************************************************************************"""
 
@@ -2364,8 +2365,6 @@ def people_test_conflict():
         pass
 
     # Prepare the table to receive cleaned vendors
-    table_name = test_file_prefix + "_a_vendor_cleaned"
-    sqlite_cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
     table_name = test_file_prefix + "a_vendor_cleaned"
     sqlite_cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
     sqlite_cursor.execute(f"""
@@ -2411,8 +2410,6 @@ def people_test_conflict():
     # Build table with directorship and vendor name and registration number comparison
     if l_debug:
         print("Build table with directorship and vendor name and registration number comparison...")
-    table_name: str = test_file_prefix + "_b_director_vendor_match"
-    sqlite_cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
     table_name: str = test_file_prefix + "b_director_vendor_match"
     s_sql = f"CREATE TABLE {table_name} AS " + """
     Select
@@ -2462,8 +2459,6 @@ def people_test_conflict():
         pass
 
     # Create SQLite table to receive cleaned vendors
-    table_name = test_file_prefix + "_c_interests_cleaned"
-    sqlite_cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
     table_name = test_file_prefix + "c_interests_cleaned"
     sqlite_cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
     sqlite_cursor.execute(f"""
@@ -2516,8 +2511,6 @@ def people_test_conflict():
     # Build table which compare conflicting transactions with declarations
     if l_debug:
         print("Build table which compare conflicting transactions with declarations...")
-    table_name: str = test_file_prefix + "_d_director_interest_match"
-    sqlite_cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
     table_name: str = test_file_prefix + "d_director_interest_match"
     s_sql = f"CREATE TABLE {table_name} As " + """
     Select
@@ -2526,6 +2519,7 @@ def people_test_conflict():
         v.company_registration_number,
         v.vendor_id,
         v.regno_director,
+        v.vendor_ratio As vendor_match_type,
         Case
             When i.employee_number = v.nwu_number And SubStr(i.entity_registration_number, 1, 10) = v.regno_director
             Then 1
@@ -2552,8 +2546,6 @@ def people_test_conflict():
     # Add data from the people and vendor master tables
     if l_debug:
         print("Add some data needed to build the test parameters...")
-    table_name: str = test_file_prefix + "_e_master_table"
-    sqlite_cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
     table_name: str = test_file_prefix + "e_master_table"
     s_sql = f"CREATE TABLE {table_name} As " + """
     Select
@@ -2564,6 +2556,7 @@ def people_test_conflict():
         i.vendor_id,
         v.VNDR_NM As vendor_name,
         v.VNDR_TYP_CD As vendor_type,
+        i.vendor_match_type,
         i.match_type,
         i.declaration_id,
         i.interest_id,
@@ -2580,6 +2573,421 @@ def people_test_conflict():
     sqlite_cursor.execute(s_sql)
     sqlite_connection.commit()
     funcfile.writelog(f"%t BUILD TABLE: {table_name}")
+
+    """*****************************************************************************
+    TEST ACTIVE CIPC DIRECTOR ACTIVE VENDOR NO DECLARATION
+    *****************************************************************************"""
+
+    """ DESCRIPTION
+    """
+
+    """ INDEX
+    """
+
+    """" TABLES USED IN TEST
+    """
+
+    # DECLARE TEST VARIABLES
+    count_findings_after: int = 0
+    test_description = "Active CIPC director active vendor no declaration"
+    test_file_name: str = "active_cipc_vendor_no_declaration"
+    test_file_prefix: str = "X201a"
+    test_finding: str = "ACTIVE CIPC DIRECTOR ACTIVE VENDOR NO DECLARATION"
+    test_report_file: str = "002_reported.txt"
+
+    # OBTAIN TEST RUN FLAG
+    if not functest.get_test_flag(sqlite_cursor, "HR", f"TEST {test_finding}", "RUN"):
+
+        if l_debug:
+            print('TEST DISABLED')
+        funcfile.writelog("TEST " + test_finding + " DISABLED")
+
+    else:
+
+        # OPEN LOG
+        if l_debug:
+            print("TEST " + test_finding)
+        funcfile.writelog("TEST " + test_finding)
+
+        # Fetch initial data from the master table
+        if l_debug:
+            print("Fetch initial data from the master table...")
+        table_name = test_file_prefix + f"a_{test_file_name}"
+        s_sql = f"CREATE TABLE {table_name} As " + """
+        Select
+            m.nwu_number,
+            m.name_address,
+            m.company_name,
+            m.company_registration_number,
+            m.vendor_id,
+            m.vendor_name,
+            m.vendor_type,
+            m.vendor_match_type,
+            Case
+                When m.vendor_match_type = 1 Then 'On registration number'
+                When m.vendor_match_type = 2 Then 'CIPC name in vendor'
+                When m.vendor_match_type = 3 Then 'Vendor name in CIPC'
+                else 'Unknown'
+            End As vendor_match_description,
+            m.match_type As interest_match_type,
+            Case
+                When m.match_type = 1 Then 'On registration number'
+                When m.match_type = 2 Then 'CIPC name in interest'
+                else 'No match'
+            End As interest_match_description,
+            m.declaration_id,
+            m.interest_id,
+            m.entity_name,
+            m.regno_director,
+            m.entity_registration_number,
+            m.exclude_combination
+        From
+            X200e_master_table m    
+        ;"""
+        if l_debug:
+            # print(s_sql)
+            pass
+        sqlite_cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+        sqlite_cursor.execute(s_sql)
+        sqlite_connection.commit()
+        funcfile.writelog(f"%t BUILD TABLE: {table_name}")
+
+        # Read the list employees and companies to exclude from the test
+        exclude_employee_company = funcstat.stat_tuple(sqlite_cursor,
+                                                       "KFS.X000_Own_kfs_lookups",
+                                                       "LOOKUP_CODE",
+                                                       "LOOKUP='EXCLUDE EMPLOYEE COMPANY 34(5)'")
+        if l_debug:
+            print('List of employees and companies to exclude:')
+            print(exclude_employee_company)
+            pass
+
+        # Select the test data
+        # Directorship data match with current active vendor but no declaration
+        # Match types 0 = No match in declaration
+        #             1 = Match on company registration number
+        #             2 = Match on company name
+        if l_debug:
+            print("Identify findings...")
+        table_name = test_file_prefix + "b_finding"
+        s_sql = f"CREATE TABLE {table_name} As " + f"""
+        Select
+            'NWU' As org,
+            f.vendor_type,
+            f.nwu_number,
+            f.name_address,
+            f.company_registration_number,
+            f.company_name,
+            f.vendor_id,
+            f.vendor_match_description
+        From
+            {test_file_prefix}a_{test_file_name} f
+        Where
+            f.interest_match_type = 0 And
+            f.exclude_combination Not In {exclude_employee_company}
+        ;"""
+        if l_debug:
+            # print(s_sql)
+            pass
+        sqlite_cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+        sqlite_cursor.execute(s_sql)
+        sqlite_connection.commit()
+        funcfile.writelog(f"%t BUILD TABLE: {table_name}")
+
+        # Count the number of findings
+        count_findings_before: int = funcsys.tablerowcount(sqlite_cursor, table_name)
+        if l_debug:
+            print("*** Found " + str(count_findings_before) + " exceptions ***")
+        funcfile.writelog("%t FINDING: " + str(count_findings_before) + " " + test_finding + " finding(s)")
+
+        # Get previous findings
+        if count_findings_before > 0:
+            functest.get_previous_finding(sqlite_cursor, external_data_path, test_report_file, test_finding, "TTTTT")
+            sqlite_connection.commit()
+
+        # Set previous findings
+        if count_findings_before > 0:
+            functest.set_previous_finding(sqlite_cursor)
+            sqlite_connection.commit()
+
+        # Add previous findings
+        table_name = test_file_prefix + "d_addprev"
+        sqlite_cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+        if count_findings_before > 0:
+            if l_debug:
+                print("Join previously reported to current findings...")
+            today = funcdate.today()
+            next_test_date = funcdate.cur_monthendnext()
+            s_sql = f"CREATE TABLE {table_name} As" + f"""
+            Select
+                f.*,
+                Lower('{test_finding}') AS PROCESS,
+                '{today}' AS DATE_REPORTED,
+                '{next_test_date}' AS DATE_RETEST,
+                p.PROCESS AS PREV_PROCESS,
+                p.DATE_REPORTED AS PREV_DATE_REPORTED,
+                p.DATE_RETEST AS PREV_DATE_RETEST,
+                p.REMARK
+            From
+                {test_file_prefix}b_finding f Left Join
+                Z001ab_setprev p On
+                p.FIELD1 = f.nwu_number And
+                p.FIELD2 = f.company_registration_number And
+                p.FIELD3 = f.vendor_id
+            ;"""
+            if l_debug:
+                # print(s_sql)
+                pass
+            sqlite_cursor.execute(s_sql)
+            sqlite_connection.commit()
+            funcfile.writelog(f"%t BUILD TABLE: {table_name}")
+
+        # Build table to update findings
+        table_name = test_file_prefix + "e_newprev"
+        sqlite_cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+        if count_findings_before > 0:
+            s_sql = f"CREATE TABLE {table_name} As " + f"""
+            Select
+                p.PROCESS,
+                p.nwu_number AS FIELD1,
+                p.company_registration_number AS FIELD2,
+                p.vendor_id AS FIELD3,
+                p.name_address AS FIELD4,
+                p.company_name AS FIELD5,
+                p.DATE_REPORTED,
+                p.DATE_RETEST,
+                p.REMARK
+            From
+                {test_file_prefix}d_addprev p
+            Where
+                p.PREV_PROCESS Is Null Or
+                p.DATE_REPORTED > p.PREV_DATE_RETEST And p.REMARK = ""        
+            ;"""
+            sqlite_cursor.execute(s_sql)
+            sqlite_connection.commit()
+            funcfile.writelog(f"%t BUILD TABLE: {table_name}")
+            # Export findings to previous reported file
+            count_findings_after = funcsys.tablerowcount(sqlite_cursor, table_name)
+            if count_findings_after > 0:
+                if l_debug:
+                    print("*** " + str(count_findings_after) + " Finding(s) to report ***")
+                sx_path = external_data_path
+                sx_file = test_report_file[:-4]
+                # Read the header data
+                s_head = funccsv.get_colnames_sqlite(sqlite_connection, table_name)
+                # Write the data
+                if l_record:
+                    funccsv.write_data(sqlite_connection, "main", table_name, sx_path, sx_file, s_head, "a", ".txt")
+                    funcfile.writelog("%t FINDING: " + str(count_findings_after) + " new finding(s) to export")
+                    funcfile.writelog(f"%t EXPORT DATA: {table_name}")
+                if l_mess:
+                    funcsms.send_telegram('', 'administrator', '<b>' + str(count_findings_before) + '/' + str(
+                        count_findings_after) + '</b> ' + test_description)
+            else:
+                if l_debug:
+                    print("*** No new findings to report ***")
+                funcfile.writelog("%t FINDING: No new findings to export")
+
+        # Import officers for reporting purposes
+        if count_findings_before > 0 and count_findings_after > 0:
+            functest.get_officer(sqlite_cursor, "HR", f"TEST {test_finding} OFFICER")
+            sqlite_connection.commit()
+
+        # Import supervisors for reporting purposes
+        if count_findings_before > 0 and count_findings_after > 0:
+            functest.get_supervisor(sqlite_cursor, "HR", f"TEST {test_finding} SUPERVISOR")
+            sqlite_connection.commit()
+
+        # Add contact and other details needed to findings
+        table_name = test_file_prefix + "h_detail"
+        sqlite_cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+        if count_findings_before > 0 and count_findings_after > 0:
+            if l_debug:
+                print("Add contact details to findings...")
+            s_sql = f"CREATE TABLE {table_name} As " + f"""
+            Select
+                p.org,
+                p.vendor_type,
+                p.company_registration_number,
+                p.company_name,
+                d.company_status,
+                p.vendor_match_description,
+                p.vendor_id,
+                k.VENDOR_NAME As vendor_name,
+                k.TRAN_COUNT As transaction_count,
+                k.NET_PMT_AMT As total_payment_amount,
+                k.LAST_PMT_DT As last_payment_date,
+                -- Employee                
+                p.nwu_number As emp_number,
+                e.name_address As emp_name,
+                e.user_person_type As emp_person_type,
+                e.position_name As emp_position,
+                Lower(e.email_address) As emp_mail1,
+                p.nwu_number || '@nwu.ac.za' As emp_mail2,
+                -- Supervisor
+                e.supervisor_number As sup_number,
+                s.name_address As sup_name,
+                Lower(s.email_address) As sup_mail1,
+                e.supervisor_number || '@nwu.ac.za' As sup_mail2,
+                -- Next level supervisor
+                s.supervisor_number As sup2_number,
+                n.name_address As sup2_name,
+                Lower(n.email_address) As sup2_mail1,
+                s.supervisor_number || '@nwu.ac.za' As sup2_mail2,
+                -- Campus officer / responsible officer
+                oc.EMPLOYEE_NUMBER As campus_officer_number,
+                oc.NAME_ADDR As campus_officer_name,
+                oc.EMAIL_ADDRESS As campus_officer_mail1,        
+                Case
+                    When  oc.EMPLOYEE_NUMBER != '' Then oc.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                    Else oc.EMAIL_ADDRESS
+                End As campus_officer_mail2,
+                -- Campus supervisor
+                sc.EMPLOYEE_NUMBER As campus_supervisor_number,
+                sc.NAME_ADDR As campus_supervisor_name,
+                sc.EMAIL_ADDRESS As campus_supervisor_mail1,        
+                Case
+                    When sc.EMPLOYEE_NUMBER != '' Then sc.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                    Else sc.EMAIL_ADDRESS
+                End As campus_supervisor_mail2,
+                -- Organization officer
+                oo.EMPLOYEE_NUMBER As organization_officer_number,
+                oo.NAME_ADDR As organization_officer_name,
+                oo.EMAIL_ADDRESS As organization_officer_mail1,        
+                Case
+                    When  oo.EMPLOYEE_NUMBER != '' Then oo.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                    Else oo.EMAIL_ADDRESS
+                End As organization_officer_mail2,
+                -- Campus supervisor
+                so.EMPLOYEE_NUMBER As organization_supervisor_number,
+                so.NAME_ADDR As organization_supervisor_name,
+                so.EMAIL_ADDRESS As organization_supervisor_mail1,        
+                Case
+                    When so.EMPLOYEE_NUMBER != '' Then so.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                    Else so.EMAIL_ADDRESS
+                End As organization_supervisor_mail2,
+                -- Auditor
+                oa.EMPLOYEE_NUMBER As audit_officer_number,
+                oa.NAME_ADDR As audit_officer_name,
+                oa.EMAIL_ADDRESS As audit_officer_mail1,        
+                Case
+                    When  oa.EMPLOYEE_NUMBER != '' Then oa.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                    Else oa.EMAIL_ADDRESS
+                End As audit_officer_mail2,
+                -- Audit supervisor
+                sa.EMPLOYEE_NUMBER As audit_supervisor_number,
+                sa.NAME_ADDR As audit_supervisor_name,
+                sa.EMAIL_ADDRESS As audit_supervisor_mail1,        
+                Case
+                    When sa.EMPLOYEE_NUMBER != '' Then sa.EMPLOYEE_NUMBER||'@nwu.ac.za'
+                    Else sa.EMAIL_ADDRESS
+                End As audit_supervisor_mail2
+            From
+                {test_file_prefix}d_addprev p Left Join
+                X004x_searchworks_directors d On d.nwu_number = p.nwu_number And d.registration_number = p.company_registration_number Left Join
+                PEOPLE.X000_PEOPLE e On e.employee_number = p.nwu_number Left Join
+                PEOPLE.X000_PEOPLE s On s.employee_number = e.supervisor_number Left Join
+                PEOPLE.X000_PEOPLE n On n.employee_number = s.supervisor_number Left Join
+                KFSCURR.X002aa_Report_payments_summary k On k.vendor_id = p.vendor_id Left join
+                Z001af_officer oc On oc.CAMPUS = p.vendor_type Left Join
+                Z001af_officer oo On oo.CAMPUS = p.org Left Join
+                Z001af_officer oa On oa.CAMPUS = 'AUD' Left Join
+                Z001ag_supervisor sc On sc.CAMPUS = p.vendor_type Left Join
+                Z001ag_supervisor so On so.CAMPUS = p.org Left Join
+                Z001ag_supervisor sa On sa.CAMPUS = 'AUD'
+            Where
+                p.PREV_PROCESS Is Null Or
+                p.DATE_REPORTED > p.PREV_DATE_RETEST And p.REMARK = ""
+            ;"""
+            sqlite_cursor.execute(s_sql)
+            sqlite_connection.commit()
+            funcfile.writelog(f"%t BUILD TABLE: {table_name}")
+
+        # Build the final table for export and reporting
+        table_name = test_file_prefix + "x_" + test_file_name
+        sqlite_cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+        if l_debug:
+            print("Build the final report")
+        if count_findings_before > 0 and count_findings_after > 0:
+            s_sql = f"CREATE TABLE {table_name} As " + f"""
+            Select
+                '{test_finding}' As Audit_finding,
+                f.emp_number As Employee_nwu,
+                f.emp_name As Employee,
+                f.emp_person_type As Employee_person_type,
+                f.emp_position As Employee_position,
+                f.emp_mail1 As Employee_mail1,
+                f.emp_mail2 As Employee_mail2,
+                'Active' As CIPC_director,
+                f.company_registration_number As CIPC_regno,
+                f.company_name As CIPC_company,
+                f.company_status As CIPC_company_status,
+                f.org As Organization,
+                f.vendor_match_description As Vendor_match_by,
+                f.vendor_type As NWU_Vendor_type,
+                f.vendor_id As NWU_vendor_id,
+                f.vendor_name As NWU_vendor,
+                f.transaction_count As Transaction_count,
+                f.total_payment_amount As Transaction_total_amount,
+                f.last_payment_date As Transaction_last_date,
+                f.sup_name As Supervisor,
+                f.sup2_name As Supervisor_next,
+                f.campus_officer_name As Responsible_officer,
+                f.campus_supervisor_name As Responsible_supervisor,
+                f.organization_officer_name As Organization_officer,
+                f.organization_supervisor_name As Organization_supervisor,
+                f.audit_officer_name As Audit_officer,
+                f.audit_supervisor_name As Audit_supervisor,
+                f.sup_number As Supervisor_nwu,
+                f.sup_mail1 As Supervisor_mail1,
+                f.sup_mail2 As Supervisor_mail2,
+                f.sup2_number As Supervisor_next_nwu,
+                f.sup2_mail1 As Supervisor_next_mail1,
+                f.sup2_mail2 As Supervisor_next_mail2,
+                f.campus_officer_number As Responsible_officer_nwu,
+                f.campus_officer_mail1 As Responsible_officer_mail1,
+                f.campus_officer_mail2 As Responsible_officer_mail2,
+                f.campus_supervisor_number As Responsible_supervisor_nwu,
+                f.campus_supervisor_mail1 As Responsible_supervisor_mail1,
+                f.campus_supervisor_mail2 As Responsible_supervisor_mail2,
+                f.organization_officer_number As Organization_officer_nwu,
+                f.organization_officer_mail1 As Organization_officer_mail1,
+                f.organization_officer_mail2 As Organization_officer_mail2,
+                f.organization_supervisor_number As Organization_supervisor_nwu,
+                f.organization_supervisor_mail1 As Organization_supervisor_mail1,
+                f.organization_supervisor_mail2 As Organization_supervisor_mail2,
+                f.audit_officer_number As Audit_officer_nwu,
+                f.audit_officer_mail1 As Audit_officer_mail1,
+                f.audit_officer_mail2 As Audit_officer_mail2,
+                f.audit_supervisor_number As Audit_supervisor_nwu,
+                f.audit_supervisor_mail1 As Audit_supervisor_mail1,
+                f.audit_supervisor_mail2 As Audit_supervisor_mail2                
+            From
+                {test_file_prefix}h_detail f
+            ;"""
+            sqlite_cursor.execute(s_sql)
+            sqlite_connection.commit()
+            funcfile.writelog(f"%t BUILD TABLE: {table_name}")
+            # Export findings
+            if l_export and funcsys.tablerowcount(sqlite_cursor, table_name) > 0:
+                print("Export findings...")
+                sx_path = results_path
+                sx_file = test_file_prefix + "_" + test_finding.lower() + "_"
+                sx_file_dated = sx_file + funcdate.today_file()
+                s_head = funccsv.get_colnames_sqlite(sqlite_connection, table_name)
+                funccsv.write_data(sqlite_connection, "main", table_name, sx_path, sx_file, s_head)
+                funccsv.write_data(sqlite_connection, "main", table_name, sx_path, sx_file_dated, s_head)
+                funcfile.writelog(f"%t EXPORT DATA: {sx_path}{sx_file}")
+
+        else:
+
+            s_sql = f"CREATE TABLE {table_name} (" + """
+            BLANK TEXT
+            );"""
+            sqlite_cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+            sqlite_cursor.execute(s_sql)
+            sqlite_connection.commit()
+            funcfile.writelog(f"%t BUILD TABLE: {table_name}")
 
     """*****************************************************************************
     END OF SCRIPT
