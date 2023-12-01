@@ -83,18 +83,7 @@ def group7_functions():
         if funcconf.l_run_people_test and funcconf.l_run_kfs_test and funcconf.l_run_vss_test:
             if funcdate.today_dayname() in "MonTueWedThuFri":
                 try:
-                    # C200_report_studdeb_recon.report_studdeb_recon()
-                    # 2023 balances
-                    # C200_report_studdeb_recon.report_studdeb_recon(0, 0, 0, "curr")
-                    C200_report_studdeb_recon.report_studdeb_recon(43861754.51, 19675773.32, 14658226.87, "curr")
-                    # 2022 balances
-                    # C200_report_studdeb_recon.report_studdeb_recon(0, 0, 0, "curr")
-                    # C200_report_studdeb_recon.report_studdeb_recon(40960505.33, 6573550.30, 29005168.76, "curr")
-                    # 2021 balances
-                    # C200_report_studdeb_recon.report_studdeb_recon(65676774.13, 61655697.80, 41648563.00, "curr")
-                    # 2020 balances
-                    # C200_report_studdeb_recon.report_studdeb_recon(48501952.09, -12454680.98, 49976048.39, "curr")
-                    # 2019 balances C200_report_studdeb_recon.report_studdeb_recon(66561452.48, -18340951.06, 39482933.18, "prev")
+                    C200_report_studdeb_recon.report_studdeb_recon()
                 except Exception as e:
                     funcsys.ErrMessage(e)
 
