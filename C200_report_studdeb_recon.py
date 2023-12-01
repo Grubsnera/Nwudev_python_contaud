@@ -78,19 +78,16 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     so_path: str = "W:/Kfs_vss_studdeb/"  # Source database path
     if s_period == "curr":
         s_year: str = funcdate.cur_year()
+        s_prev_year = funcdate.prev_year()
         so_file: str = "Kfs_vss_studdeb.sqlite"  # Source database
-        s_kfs: str = "KFSCURR"
-        s_vss: str = "VSSCURR"
     elif s_period == "prev":
         s_year = funcdate.prev_year()
+        s_prev_year = str(int(funcdate.prev_year())-1)
         so_file = "Kfs_vss_studdeb_prev.sqlite"  # Source database
-        s_kfs = "KFSPREV"
-        s_vss = "VSSPREV"
     else:
         s_year = s_period
+        s_prev_year = str(int(s_period)-1)
         so_file = "Kfs_vss_studdeb_" + s_year + ".sqlite"  # Source database
-        s_kfs = ""
-        s_vss = ""
     re_path = "R:/Debtorstud/"  # Results
     ed_path = "S:/_external_data/"  # External data
     l_mess: bool = funcconf.l_mess_project
@@ -127,16 +124,25 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     # Attach data sources
     so_curs.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
     funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
-    so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs_curr.sqlite' AS 'KFSCURR'")
-    funcfile.writelog("%t ATTACH DATABASE: KFS_CURR.SQLITE")
-    so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs_prev.sqlite' AS 'KFSPREV'")
-    funcfile.writelog("%t ATTACH DATABASE: KFS_PREV.SQLITE")
     so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss.sqlite' AS 'VSS'")
     funcfile.writelog("%t ATTACH DATABASE: VSS.SQLITE")
-    so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss_curr.sqlite' AS 'VSSCURR'")
-    funcfile.writelog("%t ATTACH DATABASE: VSS_CURR.SQLITE")
-    so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss_prev.sqlite' AS 'VSSPREV'")
-    funcfile.writelog("%t ATTACH DATABASE: VSS_PREV.SQLITE")
+    so_curs.execute(f"ATTACH DATABASE 'W:/Vss/Vss_{s_prev_year}.sqlite' AS 'VSSOLDD'")
+    funcfile.writelog(f"%t ATTACH DATABASE: VSS_{s_prev_year}.SQLITE")
+    if s_period == "curr":
+        so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs_curr.sqlite' AS 'KFSTRAN'")
+        funcfile.writelog("%t ATTACH DATABASE: KFS_CURR.SQLITE")
+        so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss_curr.sqlite' AS 'VSSTRAN'")
+        funcfile.writelog("%t ATTACH DATABASE: VSS_CURR.SQLITE")
+    elif s_period == "prev":
+        so_curs.execute("ATTACH DATABASE 'W:/Kfs/Kfs_prev.sqlite' AS 'KFSTRAN'")
+        funcfile.writelog("%t ATTACH DATABASE: KFS_PREV.SQLITE")
+        so_curs.execute("ATTACH DATABASE 'W:/Vss/Vss_prev.sqlite' AS 'VSSTRAN'")
+        funcfile.writelog("%t ATTACH DATABASE: VSS_PREV.SQLITE")
+    else:
+        so_curs.execute(f"ATTACH DATABASE 'W:/Kfs/Kfs_{s_year}.sqlite' AS 'KFSTRAN'")
+        funcfile.writelog(f"%t ATTACH DATABASE: KFS_{s_year}.SQLITE")
+        so_curs.execute(f"ATTACH DATABASE 'W:/Vss/Vss_{s_year}.sqlite' AS 'VSSTRAN'")
+        funcfile.writelog(f"%t ATTACH DATABASE: VSS_{s_year}.SQLITE")
 
     """*************************************************************************
     LIST VSS TRANSACTIONS ROUND 1
@@ -158,7 +164,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
         ELSE 'Potchefstroom'
       END AS CAMPUS,
       CASE
-        WHEN INSTR('001z031z061',TRANSCODE)>0 THEN '00'
+        WHEN SUBSTR(TRANSDATE,6,5)='01-01' AND INSTR('001z031z061',TRANSCODE)>0 THEN '00'
         WHEN strftime('%Y',TRANSDATE)>strftime('%Y',POSTDATEDTRANSDATE) And
          Strftime('%Y',POSTDATEDTRANSDATE) = '%CYEAR%' THEN strftime('%m',POSTDATEDTRANSDATE)
         ELSE strftime('%m',TRANSDATE)
@@ -172,9 +178,14 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
         ELSE 0.00
       END AS AMOUNT_CR,
       UPPER(TRIM(DESCRIPTION_A)) AS TEMP_DESC_A,
-      UPPER(TRIM(DESCRIPTION_E)) AS TEMP_DESC_E
+      UPPER(TRIM(DESCRIPTION_E)) AS TEMP_DESC_E,
+      CASE
+        WHEN TRANSCODE = '950' THEN 1
+        WHEN TRANSCODE = '098' AND AMOUNT > 0 THEN 1        
+        ELSE 0
+      END AS EXCLUDE
     FROM
-      %VSS%.X010_Studytrans
+      VSSTRAN.X010_Studytrans
     WHERE
       TRANSCODE <> ''
     ;"""
@@ -198,9 +209,17 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
         ELSE strftime('%m',TRANSDATE)
       END AS MONTH,
     """
+
+    # NOTE - Added this to balance the 2022 student debtors
+    """
+      CASE
+        WHEN TRANSCODE = '950' THEN 1
+        WHEN TRANSCODE = '098' AND AMOUNT > 0 THEN 1
+        ELSE 0
+      END AS EXCLUDE
+    """
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
     s_sql = s_sql.replace("%CYEAR%", s_year)
-    s_sql = s_sql.replace("%VSS%", s_vss)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
@@ -296,14 +315,13 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
       Upper(Trim(TRN_LDGR_ENTR_DESC)) AS TEMP,
       '' AS DESCRIPTION
     FROM
-      %KFS%.X000_GL_trans
+      KFSTRAN.X000_GL_trans
     WHERE
       (FIN_OBJECT_CD = '7551') OR
       (FIN_OBJECT_CD = '7552') OR
       (FIN_OBJECT_CD = '7553')
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    s_sql = s_sql.replace("%KFS%", s_kfs)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
@@ -694,7 +712,8 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     FROM
       X002aa_vss_tranlist
     WHERE
-      X002aa_vss_tranlist.TRANSCODE <> ''
+      -- X002aa_vss_tranlist.TRANSCODE <> ''
+      X002aa_vss_tranlist.EXCLUDE = 0
     ORDER BY
       X002aa_vss_tranlist.TRANSDATETIME
     ;"""
@@ -955,7 +974,31 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
             TRAN.FBUSENTID AS STUDENT,  
             Cast(Round(Total(TRAN.AMOUNT),2) AS REAL) AS BALANCE
         From
-            VSSPREV.X010_Studytrans TRAN
+            VSSOLDD.X010_Studytrans TRAN
+        WHERE
+            TRAN.TRANSCODE != ""
+        GROUP BY
+            TRAN.FBUSENTID,
+            TRAN.FDEBTCOLLECTIONSITE
+        ;"""
+        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
+        so_curs.execute(s_sql)
+        so_conn.commit()
+        funcfile.writelog("%t BUILD TABLE: " + sr_file)
+    elif s_period == "prev":
+        print("Sum vss student closing balances per campus...")
+        sr_file = "X002da_vss_student_balance_clos"
+        s_sql = "Create Table " + sr_file + " As " + """
+        Select
+            Case
+                WHEN FDEBTCOLLECTIONSITE = '-9' THEN 'Mahikeng'
+                WHEN FDEBTCOLLECTIONSITE = '-2' THEN 'Vanderbijlpark'
+                ELSE 'Potchefstroom'    
+            End AS CAMPUS,
+            TRAN.FBUSENTID AS STUDENT,  
+            Cast(Round(Total(TRAN.AMOUNT),2) AS REAL) AS BALANCE
+        From
+            VSSOLDD.X010_Studytrans TRAN
         WHERE
             TRAN.TRANSCODE != ""
         GROUP BY
@@ -4120,7 +4163,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
         CAST(STUD.BALANCE_TOTAL As REAL) As BALANCE
     From
         X020ac_Students STUD Left Join
-        %VSS%.X001_Student MAST On MAST.KSTUDBUSENTID = STUD.STUDENT_VSS And
+        VSSTRAN.X001_Student MAST On MAST.KSTUDBUSENTID = STUD.STUDENT_VSS And
             MAST.ISMAINQUALLEVEL = 1 Left Join
         X020aa_Balance_per_campus MAFI On MAFI.STUDENT_VSS = STUD.STUDENT_VSS And
             MAFI.CAMPUS_VSS Like('M%') Left Join
@@ -4133,7 +4176,6 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
         STUD.COUNT,
         STUD.BALANCE_TOTAL
     ;"""
-    s_sql = s_sql.replace("%VSS%", s_vss)
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -4410,9 +4452,12 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
 
 if __name__ == '__main__':
     try:
-        # report_studdeb_recon(0,0,0,"curr")
+        # Current year own gl opening balances
+        report_studdeb_recon(0,0,0,"curr")
+        # Previous year own gl opening balances
+        # report_studdeb_recon(0,0,0,"prev")
         # 2023 balances real values
-        report_studdeb_recon(43861754.51, 19675773.32, 14658226.87, "curr")
+        # report_studdeb_recon(43861754.51, 19675773.32, 14658226.87, "curr")
         # 2022 balances journal test values
         # report_studdeb_recon(40961071.35, 6594337.25, 28983815.79, "curr")
         # 2022 balances real values
