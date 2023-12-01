@@ -1,9 +1,9 @@
 ﻿Select
-    X010_Studytrans.FDEBTCOLLECTIONSITE,
-    Total(X010_Studytrans.AMOUNT) As Total_AMOUNT
+    t.FDEBTCOLLECTIONSITE,
+    Total(t.AMOUNT) As Total_AMOUNT
 From
-    X010_Studytrans
+    X010_Studytrans t
 Where
-    X010_Studytrans.TRANSCODE Is Not Null
+    t.TRANSCODE Is Not Null
 Group By
-    X010_Studytrans.FDEBTCOLLECTIONSITE
+    t.FDEBTCOLLECTIONSITE
