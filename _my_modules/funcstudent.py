@@ -28,22 +28,24 @@ def studentlist(so_conn, re_path, s_period='curr', l_export=False):
     """
 
     # DECLARE VARIABLES
-    if s_period == 'prev':
+    if s_period == 'curr':
+        s_year = funcdate.cur_year()
+    elif s_period == 'prev':
         s_year = funcdate.prev_year()
     else:
-        s_year = funcdate.cur_year()
+        s_year = s_period
     so_curs = so_conn.cursor()
 
     """*************************************************************************
     BUILD STUDENTS
     *************************************************************************"""
-    print("BUILD "+s_year+" STUDENTS")
-    funcfile.writelog("BUILD "+s_year+" YEAR STUDENTS")
+    print(f"BUILD {s_year} STUDENTS")
+    funcfile.writelog(f"BUILD {s_year} YEAR STUDENTS")
 
     # BUILD STUDENT LIST
     print("Build student list...")
     sr_file = "X001_Student"
-    s_sql = "CREATE TABLE " + sr_file + " AS " + """
+    s_sql = "CREATE TABLE " + sr_file + " AS " + f"""
     Select
         STUD.KSTUDBUSENTID,
         STUD.DATEQUALLEVELSTARTED,  
@@ -125,13 +127,13 @@ def studentlist(so_conn, re_path, s_period='curr', l_export=False):
         VSS.X000_Qualifications QUAL On QUAL.KENROLMENTPRESENTATIONID = STUD.FENROLMENTPRESENTATIONID Left Join
         VSS.X000_Student_qualfos_result RESU ON RESU.KBUSINESSENTITYID = STUD.KSTUDBUSENTID And
             RESU.KACADEMICPROGRAMID = QUAL.FOS_KACADEMICPROGRAMID And
-            Strftime('%Y', RESU.DISCONTINUEDATE) = '%YEAR%' Left Join
+            Strftime('%Y', RESU.DISCONTINUEDATE) = '{s_year}' Left Join
         Vss.X000_Gradceremony GRAD On GRAD.KGRADUATIONCEREMONYID = RESU.FGRADUATIONCEREMONYID
     Order By
         STUD.KSTUDBUSENTID
     ;"""
     # s_sql = s_sql.replace("%PERIOD%", s_period)
-    s_sql = s_sql.replace("%YEAR%", s_year)
+    # s_sql = s_sql.replace("%YEAR%", s_year)
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
@@ -155,8 +157,8 @@ def studentlist(so_conn, re_path, s_period='curr', l_export=False):
     """*************************************************************************
     BUILD STUDENT MODULES
     *************************************************************************"""
-    print("BUILD "+s_year+" STUDENT MODULES")
-    funcfile.writelog("BUILD "+s_year+" YEAR STUDENT MODULES")
+    print(f"BUILD {s_year} STUDENT MODULES")
+    funcfile.writelog(f"BUILD {s_year} YEAR STUDENT MODULES")
 
     # BUILD STUDENT LIST
     print("Build student list...")
