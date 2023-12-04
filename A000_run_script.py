@@ -90,7 +90,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
             elif s_script == 'general':
                 A002_log.log_capture(funcdate.yesterday(), True)
             else:
-                A002_log.log_capture(funcdate.today(), False)
+                A002_log.log_capture(funcdatn.get_today_date(), False)
             l_return = True
             if funcconf.l_mail_project:
                 funcmail.send_mail('std_success_nwu',

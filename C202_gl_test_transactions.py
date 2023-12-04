@@ -279,7 +279,7 @@ def gl_test_transactions():
                 PREV.DATE_RETEST >= Date('%TODAY%')
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
         s_sql = s_sql.replace("%DAYS%", funcdate.today_plusdays(366))
         so_curs.execute(s_sql)
         so_conn.commit()
@@ -680,7 +680,7 @@ def gl_test_transactions():
             ;"""
             s_sql = s_sql.replace("%FINDING%", s_finding)
             s_sql = s_sql.replace("%FILEP%", s_file_prefix)
-            s_sql = s_sql.replace("%TODAY%", funcdate.today())
+            s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
             s_sql = s_sql.replace("%DATETEST%", funcdate.cur_monthendnext(0))
             so_curs.execute(s_sql)
             funcfile.writelog("%t BUILD TABLE: " + sr_file)

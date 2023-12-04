@@ -668,7 +668,7 @@ def student_fee(s_period="curr"):
             Z001ab_setprev PREV ON PREV.FIELD1 = FIND.STUDENT
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
         s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
         so_curs.execute(s_sql)
         so_conn.commit()
@@ -1033,7 +1033,7 @@ def student_fee(s_period="curr"):
                 PREV.FIELD2 = FIND.FEE_CALC
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
         s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
         so_curs.execute(s_sql)
         so_conn.commit()
@@ -1394,7 +1394,7 @@ def student_fee(s_period="curr"):
         ;"""
         s_sql = s_sql.replace("%FINDING%", s_finding)
         s_sql = s_sql.replace("%FILEP%", s_fprefix)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
         s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
         so_curs.execute(s_sql)
         so_conn.commit()
@@ -1755,7 +1755,7 @@ def student_fee(s_period="curr"):
                 PREV.FIELD2 = FIND.FEE_CALC
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
         s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
         so_curs.execute(s_sql)
         so_conn.commit()
@@ -2608,7 +2608,7 @@ def student_fee(s_period="curr"):
                 PREV.FIELD5 = FIND.QUALIFICATION
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
         s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
         so_curs.execute(s_sql)
         so_conn.commit()
@@ -3055,7 +3055,7 @@ def student_fee(s_period="curr"):
         ;"""
         s_sql = s_sql.replace("%FINDING%", s_finding)
         s_sql = s_sql.replace("%FILEP%", s_fprefix)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
         s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
         so_curs.execute(s_sql)
         so_conn.commit()
@@ -3933,7 +3933,7 @@ def student_fee(s_period="curr"):
             Z001ab_setprev PREV ON PREV.FIELD1 = FIND.ID And
                 PREV.FIELD2 = FIND.QUALIFICATION
         ;"""
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
         s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
         so_curs.execute(s_sql)
         so_conn.commit()
@@ -4290,7 +4290,7 @@ def student_fee(s_period="curr"):
                 PREV.FIELD3 = FIND.FEE_LEVIED
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
         s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
         so_curs.execute(s_sql)
         so_conn.commit()
@@ -4707,7 +4707,7 @@ def student_fee(s_period="curr"):
                 PREV.FIELD3 = FIND.FEE_LEVIED
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
         s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
         so_curs.execute(s_sql)
         so_conn.commit()
@@ -5112,7 +5112,7 @@ def student_fee(s_period="curr"):
                 PREV.FIELD3 = FIND.FEE_LEVIED
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
         s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
         so_curs.execute(s_sql)
         so_conn.commit()
@@ -5526,7 +5526,7 @@ def student_fee(s_period="curr"):
                 PREV.FIELD3 = FIND.FEE_LEVIED
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
         s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
         so_curs.execute(s_sql)
         so_conn.commit()
@@ -5887,7 +5887,7 @@ def student_fee(s_period="curr"):
         ;"""
         s_sql = s_sql.replace("%FINDING%", s_finding)
         s_sql = s_sql.replace("%FILEP%", s_fprefix)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
         s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
         so_curs.execute(s_sql)
         so_conn.commit()
@@ -6220,7 +6220,7 @@ def student_fee(s_period="curr"):
         ;"""
         s_sql = s_sql.replace("%FINDING%", s_finding)
         s_sql = s_sql.replace("%FILEP%", s_fprefix)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
         s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
         so_curs.execute(s_sql)
         so_conn.commit()
@@ -6854,7 +6854,7 @@ def student_fee(s_period="curr"):
                 PREV.FIELD5 = FIND.MODULE
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
         s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
         so_curs.execute(s_sql)
         so_conn.commit()

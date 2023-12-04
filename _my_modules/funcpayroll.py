@@ -106,7 +106,7 @@ from _my_modules import funcdatn
 
     # NO DATE - TODAY
     if s_date == '':
-        s_date = funcdate.today()
+        s_date = funcdatn.get_today_date()
 
     # BUILD THE ELEMENT LIST
     if l_debug:

@@ -101,7 +101,7 @@ def payroll_lists(s_year: str = 'curr'):
     if s_year == 'curr':
         year_start: str = funcdate.cur_yearbegin()
         year_end: str = funcdate.cur_yearend()
-        calc_today = funcdate.today()
+        calc_today = funcdatn.get_today_date()
         calc_monthend = funcdate.prev_monthend()
         s_table_name: str = 'Payroll history curr'
     elif s_year == 'prev':

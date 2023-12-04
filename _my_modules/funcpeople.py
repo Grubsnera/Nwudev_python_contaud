@@ -27,7 +27,7 @@ Function to build PEOPLE table from different assignments
 def people_detail_list(
         so_conn,
         s_table: str = 'X000_PEOPLE',
-        s_date: str = funcdate.today()
+        s_date: str = funcdatn.get_today_date()
         ) -> int:
     """
     Function to build PEOPLE lists on any given date.
@@ -307,7 +307,7 @@ def people_detail_list(
 def people_detail_list2(
         so_conn,
         s_table: str = 'X000_PEOPLE2',
-        s_date: str = funcdate.today()
+        s_date: str = funcdatn.get_today_date()
         ) -> int:
     """
     Function to build PEOPLE lists on any given date.

@@ -231,7 +231,7 @@ else:
     if count_findings_before > 0:
         if l_debug:
             print("Join previously reported to current findings...")
-        today = funcdate.today()
+        today = funcdatn.get_today_date()
         next_test_date = funcdate.cur_monthendnext()
         s_sql = f"CREATE TABLE {table_name} As" + f"""
         Select

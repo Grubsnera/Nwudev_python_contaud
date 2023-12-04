@@ -574,7 +574,7 @@ def people_test_conflict():
         X003_foreign_payments f On p.EMPLOYEE = f.EMPLOYEE_NUMBER
     ;"""
     sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = s_sql.replace("%TODAY%", funcdate.today())
+    s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
     sqlite_cursor.execute(s_sql)
     sqlite_connection.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -878,7 +878,7 @@ def people_test_conflict():
             Z001ab_setprev PREV ON PREV.FIELD1 = FIND.EMP AND PREV.FIELD2 = FIND.EMP_BANK
         ;"""
         sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
         s_sql = s_sql.replace("%TODAYPLUS%", funcdate.cur_monthendnext())
         sqlite_cursor.execute(s_sql)
         sqlite_connection.commit()
@@ -1403,7 +1403,7 @@ def people_test_conflict():
         ;"""
         s_sql = s_sql.replace("%FINDING%", s_finding)
         s_sql = s_sql.replace("%FILEP%", s_file_prefix)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
         s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
         sqlite_cursor.execute(s_sql)
         sqlite_connection.commit()
@@ -1777,7 +1777,7 @@ def people_test_conflict():
                 ;"""
                 s_sql = s_sql.replace("%FINDING%", s_finding)
                 s_sql = s_sql.replace("%FILEP%", s_file_prefix)
-                s_sql = s_sql.replace("%TODAY%", funcdate.today())
+                s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
                 s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
                 sqlite_cursor.execute(s_sql)
                 sqlite_connection.commit()
@@ -2049,7 +2049,7 @@ def people_test_conflict():
             From
                 X003_dashboard_curr a
             ;"""
-            s_sql = s_sql.replace("%TODAY%", funcdate.today())
+            s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
             sqlite_cursor.execute(s_sql)
             sqlite_connection.commit()
             funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -2122,7 +2122,7 @@ def people_test_conflict():
                 ;"""
                 s_sql = s_sql.replace("%FINDING%", s_finding)
                 s_sql = s_sql.replace("%FILEP%", s_file_prefix)
-                s_sql = s_sql.replace("%TODAY%", funcdate.today())
+                s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
                 s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
                 sqlite_cursor.execute(s_sql)
                 sqlite_connection.commit()
@@ -2717,7 +2717,7 @@ def people_test_conflict():
         if count_findings_before > 0:
             if l_debug:
                 print("Join previously reported to current findings...")
-            today = funcdate.today()
+            today = funcdatn.get_today_date()
             next_test_date = funcdate.cur_monthendnext()
             s_sql = f"CREATE TABLE {table_name} As" + f"""
             Select

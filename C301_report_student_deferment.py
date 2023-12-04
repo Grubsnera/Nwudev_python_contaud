@@ -583,7 +583,7 @@ def studdeb_deferments(s_period="curr"):
         s_sql = s_sql.replace("%YEARE%", funcdate.prev_yearend())
     else:
         s_sql = s_sql.replace("%YEARE%", s_year + "-12-31")
-    s_sql = s_sql.replace("%TODAY%", funcdate.today())
+    s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t ADD COLUMN: DEFER_TYPE")

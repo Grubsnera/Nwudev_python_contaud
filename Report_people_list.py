@@ -120,7 +120,7 @@ def report_people_list(
         print()
         s_date = input("People on which date? (yyyy-mm-dd) ")
         if s_date == '':
-            s_date = funcdate.today()
+            s_date = funcdatn.get_today_date()
 
     # ASSIGNMENT CATEGORY
     if s_assign == '':

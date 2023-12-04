@@ -179,7 +179,7 @@ From
 Where
     strftime('%Y-%m-%d', '%DATE%') between c.contract_from and c.contract_to
 ;"""
-s_sql = s_sql.replace("%DATE%", funcdate.today())
+s_sql = s_sql.replace("%DATE%", funcdatn.get_today_date())
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
 so_curs.execute(s_sql)
 so_conn.commit()

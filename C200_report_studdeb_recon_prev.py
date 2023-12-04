@@ -1738,7 +1738,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
                 PREV.DATE_RETEST >= Date('%TODAY%')
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
         s_sql = s_sql.replace("%DAYS%", funcdate.cur_yearend())
         so_curs.execute(s_sql)
         so_conn.commit()
@@ -2064,7 +2064,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
                 PREV.DATE_RETEST >= Date('%TODAY%')
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
         s_sql = s_sql.replace("%DAYS%", funcdate.cur_yearend())
         so_curs.execute(s_sql)
         so_conn.commit()
@@ -2382,7 +2382,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
                 PREV.DATE_RETEST >= Date('%TODAY%')
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
         s_sql = s_sql.replace("%DAYS%", funcdate.cur_yearend())
         so_curs.execute(s_sql)
         so_conn.commit()
@@ -2707,7 +2707,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
                 PREV.DATE_RETEST >= Date('%TODAY%')
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
         s_sql = s_sql.replace("%DAYS%", funcdate.cur_yearend())
         so_curs.execute(s_sql)
         so_conn.commit()
@@ -3472,7 +3472,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
                 PREV.DATE_RETEST >= Date('%TODAY%')
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
         s_sql = s_sql.replace("%DAYS%", funcdate.cur_yearend())
         so_curs.execute(s_sql)
         so_conn.commit()
@@ -3806,7 +3806,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
                 PREV.DATE_RETEST >= Date('%TODAY%')
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
         s_sql = s_sql.replace("%DAYS%", funcdate.cur_yearend())
         so_curs.execute(s_sql)
         so_conn.commit()
@@ -4208,7 +4208,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
         ;"""
         s_sql = s_sql.replace("%FINDING%", s_finding)
         s_sql = s_sql.replace("%FILEP%", s_fprefix)
-        s_sql = s_sql.replace("%TODAY%", funcdate.today())
+        s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
         s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
         so_curs.execute(s_sql)
         so_conn.commit()

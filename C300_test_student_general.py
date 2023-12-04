@@ -197,7 +197,7 @@ def test_student_general():
         X001ac_impo_reported IMPO ON IMPO.FIELD1 = TRAN.STUDENT AND IMPO.DATE_RETEST >= Date('%TODAY%')
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = s_sql.replace("%TODAY%",funcdate.today())
+    s_sql = s_sql.replace("%TODAY%",funcdatn.get_today_date())
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -209,7 +209,7 @@ def test_student_general():
     so_curs.execute("ALTER TABLE "+sr_file+" ADD COLUMN DATE_RETEST TEXT;")
     so_curs.execute("UPDATE "+sr_file+" SET PROCESS = 'idno_list'")
     s_sql = "UPDATE "+sr_file+" SET DATE_REPORTED = '%TODAY%'"
-    s_sql = s_sql.replace("%TODAY%",funcdate.today())
+    s_sql = s_sql.replace("%TODAY%",funcdatn.get_today_date())
     so_curs.execute(s_sql)
     s_sql = "UPDATE "+sr_file+" SET DATE_RETEST = '%NYEARB%'"
     s_sql = s_sql.replace("%NYEARB%",funcdate.next_yearbegin())

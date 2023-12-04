@@ -1766,7 +1766,7 @@ def people_lists():
 
     # Build current year assignment round 1 ******************************************
     funcpeople.assign01(so_conn, "X001_ASSIGNMENT_CURR_01", funcdate.cur_yearbegin(), funcdate.cur_yearend(),
-                        funcdate.today(), "Build current year assignments 1...")
+                        funcdatn.get_today_date(), "Build current year assignments 1...")
     # Build current year assignment round 2 ******************************************
     funcpeople.assign02(so_conn, "X001_ASSIGNMENT_CURR", "X001_ASSIGNMENT_CURR_01",
                         "Build current year assignments 2...")
@@ -2080,7 +2080,7 @@ def people_lists():
     Where
         ppei.INFORMATION_TYPE = "NWU_SPOUSE"
     ;"""
-    s_sql = s_sql.replace("%DATE%", funcdate.today())
+    s_sql = s_sql.replace("%DATE%", funcdatn.get_today_date())
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()

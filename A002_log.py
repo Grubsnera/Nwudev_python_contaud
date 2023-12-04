@@ -312,7 +312,7 @@ def log_capture(s_date=funcdate.yesterday(), l_history=False):
 
 if __name__ == '__main__':
     try:
-        log_capture(funcdate.today(), False)
+        log_capture(funcdatn.get_today_date(), False)
         # log_capture(funcdate.yesterday(), True)
     except Exception as e:
         funcsys.ErrMessage(e)

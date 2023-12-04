@@ -1288,7 +1288,7 @@ def vss_lists():
       X005aa_Party_extref.KEXTERNALREFERENCECODEID = '6525'
     ;"""
     so_curs.execute("DROP VIEW IF EXISTS "+sr_file)
-    s_sql = s_sql.replace("%TODAY%", funcdate.today())
+    s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD VIEW: "+sr_file)
@@ -1310,7 +1310,7 @@ def vss_lists():
       X005aa_Party_extref.KEXTERNALREFERENCECODEID = '6526'
     ;"""
     so_curs.execute("DROP VIEW IF EXISTS "+sr_file)
-    s_sql = s_sql.replace("%TODAY%", funcdate.today())
+    s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD VIEW: "+sr_file)
@@ -1332,7 +1332,7 @@ def vss_lists():
       X005aa_Party_extref.KEXTERNALREFERENCECODEID = '9690'
     ;"""
     so_curs.execute("DROP VIEW IF EXISTS "+sr_file)
-    s_sql = s_sql.replace("%TODAY%", funcdate.today())
+    s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD VIEW: "+sr_file)

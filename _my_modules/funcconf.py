@@ -35,30 +35,30 @@ l_run_group7: bool = False
 
 # VACUUM SCHEDULE PROCESS
 if time.strftime("%R", time.localtime()) <= "16:45":
-    d_run_vacuum: datetime = datetime.datetime.strptime(funcdate.today() + " 17:00:00", "%Y-%m-%d %H:%M:%S")
+    d_run_vacuum: datetime = datetime.datetime.strptime(funcdatn.get_today_date() + " 17:00:00", "%Y-%m-%d %H:%M:%S")
 else:
-    d_run_vacuum: datetime = datetime.datetime.strptime(funcdate.today() + " 17:00:00", "%Y-%m-%d %H:%M:%S") + \
+    d_run_vacuum: datetime = datetime.datetime.strptime(funcdatn.get_today_date() + " 17:00:00", "%Y-%m-%d %H:%M:%S") + \
                              datetime.timedelta(days=1)
 
 # LARGE SCHEDULE PROCESS
 if time.strftime("%R", time.localtime()) <= "19:55":
-    d_run_large: datetime = datetime.datetime.strptime(funcdate.today() + " 21:00:00", "%Y-%m-%d %H:%M:%S")
+    d_run_large: datetime = datetime.datetime.strptime(funcdatn.get_today_date() + " 21:00:00", "%Y-%m-%d %H:%M:%S")
 else:
-    d_run_large: datetime = datetime.datetime.strptime(funcdate.today() + " 21:00:00", "%Y-%m-%d %H:%M:%S") + \
+    d_run_large: datetime = datetime.datetime.strptime(funcdatn.get_today_date() + " 21:00:00", "%Y-%m-%d %H:%M:%S") + \
                             datetime.timedelta(days=1)
 
 # SMALL SCHEDULE PROCESS
 if time.strftime("%R", time.localtime()) <= "23:59":
-    d_run_small: datetime = datetime.datetime.strptime(funcdate.today() + " 23:02:00", "%Y-%m-%d %H:%M:%S") + \
+    d_run_small: datetime = datetime.datetime.strptime(funcdatn.get_today_date() + " 23:02:00", "%Y-%m-%d %H:%M:%S") + \
                            datetime.timedelta(hours=2)
 else:
-    d_run_small: datetime = datetime.datetime.strptime(funcdate.today() + " 23:02:00", "%Y-%m-%d %H:%M:%S") + \
+    d_run_small: datetime = datetime.datetime.strptime(funcdatn.get_today_date() + " 23:02:00", "%Y-%m-%d %H:%M:%S") + \
                              datetime.timedelta(days=1, hours=2)
 
 # TEST SCHEDULE PROCESS
 if time.strftime("%R", time.localtime()) <= "23:59":
-    d_run_test: datetime = datetime.datetime.strptime(funcdate.today() + " 23:00:00", "%Y-%m-%d %H:%M:%S") + \
+    d_run_test: datetime = datetime.datetime.strptime(funcdatn.get_today_date() + " 23:00:00", "%Y-%m-%d %H:%M:%S") + \
                            datetime.timedelta(hours=7)
 else:
-    d_run_test: datetime = datetime.datetime.strptime(funcdate.today() + " 23:00:00", "%Y-%m-%d %H:%M:%S") + \
+    d_run_test: datetime = datetime.datetime.strptime(funcdatn.get_today_date() + " 23:00:00", "%Y-%m-%d %H:%M:%S") + \
                              datetime.timedelta(days=1, hours=7)

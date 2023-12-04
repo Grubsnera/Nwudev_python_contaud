@@ -91,7 +91,7 @@ def group7_functions():
         # VSS STUDENT MASTER FILE TESTS ********************************
         s_function: str = "C300_test_student_general"
         if funcconf.l_run_vss_test:
-            if funcdate.today() in "01z13":
+            if funcdatn.get_today_date() in "01z13":
                 try:
                     C300_test_student_general.test_student_general()
                 except Exception as e:

@@ -49,7 +49,7 @@ s_year: str = 'curr'
 if s_year == 'curr':
     year_start: str = funcdate.cur_yearbegin()
     year_end: str = funcdate.cur_yearend()
-    calc_today = funcdate.today()
+    calc_today = funcdatn.get_today_date()
     calc_monthend = funcdate.prev_monthend()
     s_table_name: str = 'Payroll history curr'
 elif s_year == 'prev':
@@ -135,7 +135,7 @@ Order By
     per.employee_number    
 ;"""
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-s_sql = s_sql.replace("%TODAY%",funcdate.today())
+s_sql = s_sql.replace("%TODAY%",funcdatn.get_today_date())
 so_curs.execute(s_sql)
 so_conn.commit()
 funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -194,14 +194,14 @@ WHERE
   X000aa_element_list_curr.EFFECTIVE_END_DATE >= Date('%TODAY%')
 ;"""
 so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-s_sql = s_sql.replace("%TODAY%", funcdate.today())
+s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
 so_curs.execute(s_sql)
 so_conn.commit()
 funcfile.writelog("%t BUILD TABLE: " + sr_file)
 
 """
 # BUILD GROUP INSURANCE INFORMATION SPOUSE
-s_date = funcdate.today()
+s_date = funcdatn.get_today_date()
 i_records = funcpayroll.payroll_element_screen_value(
     so_conn,
     'X000_NWU_ALLOWANCE_FUNCTIONAL',
@@ -214,7 +214,7 @@ if l_debug:
 
 """
 # BUILD GROUP INSURANCE INFORMATION SPOUSE
-s_date = funcdate.today()
+s_date = funcdatn.get_today_date()
 i_records = funcpayroll.payroll_element_screen_value(
     so_conn,
     'X000_NWU_ALLOWANCE_FUNCTIONAL_TYPE',
