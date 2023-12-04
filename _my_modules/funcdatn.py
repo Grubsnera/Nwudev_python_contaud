@@ -160,13 +160,13 @@ def get_current_year():
 def get_current_year_begin():
     today = date.today()
     first_day_of_year = date(today.year, 1, 1)
-    return first_day_of_year
+    return first_day_of_year.strftime("%Y-%m-%d")
 
 
 def get_current_year_end():
     today = date.today()
     first_day_of_year = date(today.year, 12, 31)
-    return first_day_of_year
+    return first_day_of_year.strftime("%Y-%m-%d")
 
 
 def get_yesterday_date():
@@ -246,14 +246,14 @@ def get_previous_year_begin():
     """Return the first day of the previous year as a string in YYYY-MM-DD format."""
     last_year = date.today().year - 1
     first_day_of_year = date(last_year, 1, 1)
-    return first_day_of_year
+    return first_day_of_year.strftime("%Y-%m-%d")
 
 
 def get_previous_year_end():
     """Return the last day of the previous year as a string in YYYY-MM-DD format."""
     last_year = date.today().year - 1
     first_day_of_year = date(last_year, 12, 31)
-    return first_day_of_year
+    return first_day_of_year.strftime("%Y-%m-%d")
 
 
 def get_next_year():
@@ -266,7 +266,7 @@ def get_next_year_begin():
     """Return the first day of the previous year as a string in YYYY-MM-DD format."""
     last_year = date.today().year + 1
     first_day_of_year = date(last_year, 1, 1)
-    return first_day_of_year
+    return first_day_of_year.strftime("%Y-%m-%d")
 
 
 if __name__ == '__main__':
