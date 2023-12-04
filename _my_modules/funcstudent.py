@@ -32,7 +32,7 @@ def studentlist(so_conn, re_path, s_period='curr', l_export=False):
     if s_period == 'curr':
         s_year = funcdatn.get_current_year()
     elif s_period == 'prev':
-        s_year = funcdatn.funcdatn.get_previous_year(
+        s_year = funcdatn.get_previous_year()
     else:
         s_year = s_period
     so_curs = so_conn.cursor()
