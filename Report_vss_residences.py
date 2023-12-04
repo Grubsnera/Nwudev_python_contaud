@@ -153,7 +153,7 @@ sr_file = "X001_active_residence"
 sr_filet = sr_file
 sx_path = "O:/Nwudata/Debtorstud/" + funcdate.cur_year() + "/"
 sx_file = "Residence_001_residence_"
-sx_filet = sx_file + funcdate.today_file()
+sx_filet = sx_file + funcdatn.get_today_date_file()
 
 print("Export active residences..." + sx_path + sx_filet)
 
@@ -258,7 +258,7 @@ sr_file = "X002_Current_rate"
 sr_filet = sr_file
 sx_path = "O:/Nwudata/Debtorstud/" + funcdate.cur_year() + "/"
 sx_file = "Residence_002_rate_"
-sx_filet = sx_file + funcdate.today_file()
+sx_filet = sx_file + funcdatn.get_today_date_file()
 
 print("Export data..." + sx_path + sx_filet)
 
@@ -369,7 +369,7 @@ sr_file = "X003_Current_accom_log"
 sr_filet = sr_file
 sx_path = "O:/Nwudata/Debtorstud/" + funcdate.cur_year() + "/"
 sx_file = "Residence_003_log_"
-sx_filet = sx_file + funcdate.today_file()
+sx_filet = sx_file + funcdatn.get_today_date_file()
 
 print("Export data..." + sx_path + sx_filet)
 

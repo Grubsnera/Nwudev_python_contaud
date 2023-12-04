@@ -141,7 +141,7 @@ from _my_modules import funcdatn
         PAYMENT.PMT_STAT_CD = 'EXTR'
     """
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    if funcdate.today_dayname() == "Mon":
+    if funcdatn.get_today_name() == "Mon":
         s_sql = s_sql.replace('%DAYS%','-3 day')
     else:
         s_sql = s_sql.replace('%DAYS%','-1 day')
@@ -826,7 +826,7 @@ from _my_modules import funcdatn
             sr_filet = sr_file
             sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = "Creditor_test_001ax_paym_duplicate_"
-            sx_filet = sx_file + funcdate.today_file()
+            sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
@@ -1280,7 +1280,7 @@ from _my_modules import funcdatn
                 print("Export findings...")
             sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -1323,7 +1323,7 @@ from _my_modules import funcdatn
         print("Export findings...")
         sx_path = re_path + funcdate.cur_year() + "/"
         sx_file = "Creditor_test_001ca_paym_same_init_fiscal_"
-        sx_file_dated = sx_file + funcdate.today_file()
+        sx_file_dated = sx_file + funcdatn.get_today_date_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
         funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
         # funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -1612,7 +1612,7 @@ from _my_modules import funcdatn
             print("Export findings...")
             sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = "Student_fee_test_021dx_qual_fee_negative_transaction_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -2015,7 +2015,7 @@ from _my_modules import funcdatn
                 print("Export findings...")
             sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -2469,7 +2469,7 @@ from _my_modules import funcdatn
                 print("Export findings...")
             sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -2927,7 +2927,7 @@ from _my_modules import funcdatn
                 print("Export findings...")
             sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -2968,7 +2968,7 @@ from _my_modules import funcdatn
         VEND.VEND_BANK <> ''
     """
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    if funcdate.today_dayname() == "Mon":
+    if funcdatn.get_today_name() == "Mon":
         s_sql = s_sql.replace('%DAYS%','-3 day')
     else:
         s_sql = s_sql.replace('%DAYS%','-1 day')
@@ -3293,7 +3293,7 @@ from _my_modules import funcdatn
             sr_filet = sr_file
             sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = "Creditor_test_002ax_vendor_bank_verify_"
-            sx_filet = sx_file + funcdate.today_file()
+            sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
@@ -3600,7 +3600,7 @@ from _my_modules import funcdatn
             print("Export findings...")
             sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = "Creditor_test_003ax_empl_approve_own_"
-            sx_file_date = sx_file + funcdate.today_file()
+            sx_file_date = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_date, s_head)
@@ -3913,7 +3913,7 @@ from _my_modules import funcdatn
             print("Export findings...")
             sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = "Creditor_test_003bx_empl_initiate_own_"
-            sx_file_date = sx_file + funcdate.today_file()
+            sx_file_date = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_date, s_head)
@@ -4243,7 +4243,7 @@ from _my_modules import funcdatn
                     print("Export findings...")
                 sx_path = re_path + funcdate.cur_year() + "/"
                 sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
-                sx_file_dated = sx_file + funcdate.today_file()
+                sx_file_dated = sx_file + funcdatn.get_today_date_file()
                 s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)

@@ -121,7 +121,7 @@ sr_file = "X103_Per_absence_attendances_curr"
 sr_filet = sr_file
 sx_path = "R:/People/" + funcdate.cur_year() + "/"
 sx_file = "Leave_103_lst_transact_" + funcdate.cur_year() + "_"
-sx_filet = sx_file + funcdate.today_file() #Today
+sx_filet = sx_file + funcdatn.get_today_date_file() #Today
 
 print("Export data..." + sx_path + sx_filet)
 
@@ -154,7 +154,7 @@ sr_file = "X103_Per_absence_attendances_prev"
 sr_filet = sr_file
 sx_path = "R:/People/" + funcdate.prev_year() + "/"
 sx_file = "Leave_103_lst_transact_" + funcdate.prev_year() + "_"
-sx_filet = sx_file + funcdate.today_file() #Today
+sx_filet = sx_file + funcdatn.get_today_date_file() #Today
 
 print("Export data..." + sx_path + sx_filet)
 

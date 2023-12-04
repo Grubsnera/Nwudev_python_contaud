@@ -605,7 +605,7 @@ def student_fee(s_period="curr"):
             print("Export findings...")
         sx_path = re_path + "/"
         sx_file = "Student_fee_test_010aa_reg_fee_contact_null_"
-        sx_file_dated = sx_file + funcdate.today_file()
+        sx_file_dated = sx_file + funcdatn.get_today_date_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
         funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
         funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -862,7 +862,7 @@ def student_fee(s_period="curr"):
                 print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Student_fee_test_010ex_reg_fee_contact_null_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -914,7 +914,7 @@ def student_fee(s_period="curr"):
             print("Export findings...")
         sx_path = re_path + "/"
         sx_file = "Student_fee_test_010ba_reg_fee_contact_negative_"
-        sx_file_dated = sx_file + funcdate.today_file()
+        sx_file_dated = sx_file + funcdatn.get_today_date_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
         funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
         funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -1265,7 +1265,7 @@ def student_fee(s_period="curr"):
                 print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Student_fee_test_010ex_reg_fee_contact_negative_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -1325,7 +1325,7 @@ def student_fee(s_period="curr"):
             print("Export findings...")
         sx_path = re_path + "/"
         sx_file = "Student_fee_test_" + s_fprefix + "_" + s_finding + "_studentlist_"
-        sx_file_dated = sx_file + funcdate.today_file()
+        sx_file_dated = sx_file + funcdatn.get_today_date_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
         funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
         # funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -1589,7 +1589,7 @@ def student_fee(s_period="curr"):
                 print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Registration_test_" + s_fprefix + "_" + s_finding.lower() + "_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -1636,7 +1636,7 @@ def student_fee(s_period="curr"):
             print("Export findings...")
         sx_path = re_path + "/"
         sx_file = "Student_fee_test_010ea_reg_fee_contact_abnormal_"
-        sx_file_dated = sx_file + funcdate.today_file()
+        sx_file_dated = sx_file + funcdatn.get_today_date_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
         funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
         funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -1987,7 +1987,7 @@ def student_fee(s_period="curr"):
                 print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Student_fee_test_010ex_reg_fee_contact_abnormal_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -2539,7 +2539,7 @@ def student_fee(s_period="curr"):
             print("Export findings...")
         sx_path = re_path + "/"
         sx_file = "Student_fee_test_021ax_qual_fee_not_loaded_studentlist_"  # File X021_findings_list
-        sx_file_dated = sx_file + funcdate.today_file()
+        sx_file_dated = sx_file + funcdatn.get_today_date_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
         funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
         # funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -2779,7 +2779,7 @@ def student_fee(s_period="curr"):
                 print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Student_fee_test_021ax_qual_fee_not_loaded_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -3208,7 +3208,7 @@ def student_fee(s_period="curr"):
                 print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Qualification_test_" + s_fprefix + "_" + s_finding.lower() + "_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -3659,7 +3659,7 @@ def student_fee(s_period="curr"):
             print("Export findings...")
         sx_path = re_path + "/"
         sx_file = "Student_fee_test_020bx_qual_fee_studentlist_"
-        sx_file_dated = sx_file + funcdate.today_file()
+        sx_file_dated = sx_file + funcdatn.get_today_date_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
         funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
         # funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -3730,7 +3730,7 @@ def student_fee(s_period="curr"):
             print("Export findings...")
         sx_path = re_path + "/"
         sx_file = "Student_fee_test_020bx_qual_fee_invalid_studentlist_"
-        sx_file_dated = sx_file + funcdate.today_file()
+        sx_file_dated = sx_file + funcdatn.get_today_date_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
         funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
         # funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -3870,7 +3870,7 @@ def student_fee(s_period="curr"):
             print("Export findings...")
         sx_path = re_path + "/"
         sx_file = "Student_fee_test_021bx_qual_fee_no_transaction_studentlist_"
-        sx_file_dated = sx_file + funcdate.today_file()
+        sx_file_dated = sx_file + funcdatn.get_today_date_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
         funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
         # funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -4114,7 +4114,7 @@ def student_fee(s_period="curr"):
                 print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Student_fee_test_021bx_qual_fee_no_transaction_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -4168,7 +4168,7 @@ def student_fee(s_period="curr"):
             print("Export findings...")
         sx_path = re_path + "/"
         sx_file = "Student_fee_test_021dx_qual_fee_negative_transaction_studentlist_"
-        sx_file_dated = sx_file + funcdate.today_file()
+        sx_file_dated = sx_file + funcdatn.get_today_date_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
         funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
         # funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -4528,7 +4528,7 @@ def student_fee(s_period="curr"):
                 print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Student_fee_test_021dx_qual_fee_negative_transaction_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -4583,7 +4583,7 @@ def student_fee(s_period="curr"):
             print("Export findings...")
         sx_path = re_path + "/"
         sx_file = "Student_fee_test_021cx_qual_fee_zero_transaction_studentlist_"
-        sx_file_dated = sx_file + funcdate.today_file()
+        sx_file_dated = sx_file + funcdatn.get_today_date_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
         funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
         # funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -4942,7 +4942,7 @@ def student_fee(s_period="curr"):
                 print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Student_fee_test_021cx_qual_fee_zero_transaction_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -5347,7 +5347,7 @@ def student_fee(s_period="curr"):
                 print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Student_fee_test_021ex_qual_fee_half_transaction_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -5402,7 +5402,7 @@ def student_fee(s_period="curr"):
             print("Export findings...")
         sx_path = re_path + "/"
         sx_file = "Student_fee_test_021fx_qual_fee_abnormal_transaction_studentlist_"
-        sx_file_dated = sx_file + funcdate.today_file()
+        sx_file_dated = sx_file + funcdatn.get_today_date_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
         funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
         # funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -5758,7 +5758,7 @@ def student_fee(s_period="curr"):
                 print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Student_fee_test_021fx_qual_fee_abnormal_transaction_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -5816,7 +5816,7 @@ def student_fee(s_period="curr"):
             print("Export findings...")
         sx_path = re_path + "/"
         sx_file = "Student_fee_test_" + s_fprefix + "_" + s_finding + "_studentlist_"
-        sx_file_dated = sx_file + funcdate.today_file()
+        sx_file_dated = sx_file + funcdatn.get_today_date_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
         funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
         # funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -6089,7 +6089,7 @@ def student_fee(s_period="curr"):
                 print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Qualification_test_" + s_fprefix + "_" + s_finding.lower() + "_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -6148,7 +6148,7 @@ def student_fee(s_period="curr"):
             print("Export findings...")
         sx_path = re_path + "/"
         sx_file = "Student_fee_test_" + s_fprefix + "_" + s_finding + "_studentlist_"
-        sx_file_dated = sx_file + funcdate.today_file()
+        sx_file_dated = sx_file + funcdatn.get_today_date_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
         funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
         # funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -6423,7 +6423,7 @@ def student_fee(s_period="curr"):
                 print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Qualification_test_" + s_fprefix + "_" + s_finding.lower() + "_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -7020,7 +7020,7 @@ def student_fee(s_period="curr"):
                 print("Export findings...")
             sx_path = re_path + "/"
             sx_file = "Student_fee_test_031ax_modu_fee_not_loaded_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)

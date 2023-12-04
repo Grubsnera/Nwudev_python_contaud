@@ -44,7 +44,7 @@ def group5_functions():
         # IMPORT PEOPLE *******************************************************
         s_function: str = "A001_oracle_to_sqlite(people)"
         if funcconf.l_run_people_test:
-            if funcdate.today_dayname() in "MonTueWedThuFri":
+            if funcdatn.get_today_name() in "MonTueWedThuFri":
                 try:
                     A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - people.csv", "PEOPLE")
                 except Exception as e:
@@ -55,7 +55,7 @@ def group5_functions():
         # PEOPLE LISTS ********************************************************
         s_function: str = "B001_people_lists"
         if funcconf.l_run_people_test:
-            if funcdate.today_dayname() in "MonTueWedThuFri":
+            if funcdatn.get_today_name() in "MonTueWedThuFri":
                 try:
                     B001_people_lists.people_lists()
                 except Exception as e:
@@ -66,7 +66,7 @@ def group5_functions():
         # PEOPLE LIST MASTER FILE *********************************************
         s_function: str = "C003_people_list_masterfile"
         if funcconf.l_run_people_test:
-            if funcdate.today_dayname() in "MonTueWedThuFri":
+            if funcdatn.get_today_name() in "MonTueWedThuFri":
                 try:
                     C003_people_list_masterfile.people_list_masterfile()
                 except Exception as e:
@@ -75,7 +75,7 @@ def group5_functions():
         # PEOPLE BACKUP TO NEW WEB SERVER *************************************
         s_function: str = "A007_backup_people"
         if funcconf.l_run_people_test:
-            if funcdate.today_dayname() in "MonTueWedThuFri":
+            if funcdatn.get_today_name() in "MonTueWedThuFri":
                 try:
                     A007_backup_people.ia_mysql_backup_people()
                 except Exception as e:
@@ -84,7 +84,7 @@ def group5_functions():
         # PEOPLE PAYROLL LISTS ************************************************
         s_function: str = "B004_payroll_lists"
         if funcconf.l_run_people_test:
-            if funcdate.today_dayname() in "MonTueWedThuFri":
+            if funcdatn.get_today_name() in "MonTueWedThuFri":
                 try:
                     B004_payroll_lists.payroll_lists()
                 except Exception as e:
@@ -93,7 +93,7 @@ def group5_functions():
         # IMPORT VSS **********************************************************
         s_function: str = "A001_oracle_to_sqlite(vss)"
         if funcconf.l_run_vss_test:
-            if funcdate.today_dayname() in "MonTueWedThuFri":
+            if funcdatn.get_today_name() in "MonTueWedThuFri":
                 try:
                     A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - vss.csv", "VSS")
                 except Exception as e:
@@ -104,7 +104,7 @@ def group5_functions():
         # VSS LISTS ***********************************************************
         s_function: str = "B003_vss_lists"
         if funcconf.l_run_vss_test:
-            if funcdate.today_dayname() in "MonTueWedThuFri":
+            if funcdatn.get_today_name() in "MonTueWedThuFri":
                 try:
                     B003_vss_lists.vss_lists()
                 except Exception as e:
@@ -115,7 +115,7 @@ def group5_functions():
         # VSS PERIOD LIST CURR ************************************************
         s_function: str = "B007_vss_period_list(curr)"
         if funcconf.l_run_vss_test:
-            if funcdate.today_dayname() in "MonTueWedThuFri":
+            if funcdatn.get_today_name() in "MonTueWedThuFri":
                 try:
                     B007_vss_period_list.vss_period_list("curr")
                 except Exception as e:
@@ -126,7 +126,7 @@ def group5_functions():
         # VSS STUDENT DEFERMENT MASTER FILE ***********************************
         s_function: str = "C301_report_student_deferment"
         if funcconf.l_run_vss_test:
-            if funcdate.today_dayname() in "MonTueWedThuFri":
+            if funcdatn.get_today_name() in "MonTueWedThuFri":
                 try:
                     C301_report_student_deferment.studdeb_deferments()
                 except Exception as e:

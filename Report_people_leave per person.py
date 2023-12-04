@@ -130,7 +130,7 @@ sr_file = "X104_Per_absence_attendances_empl"
 sr_filet = sr_file
 sx_path = "R:/People/" + funcdate.cur_year() + "/"
 sx_file = "Leave_104_lst_transact_" + s_em + "_"
-sx_filet = sx_file + funcdate.today_file() #Today
+sx_filet = sx_file + funcdatn.get_today_date_file() #Today
 
 print("Export data..." + sx_path + sx_filet)
 

@@ -253,7 +253,7 @@ def people_test_masterfile():
         PEOPLE.X002_PEOPLE_CURR.NAME_LIST
     """
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    if funcdate.today_dayname() == "Fri":
+    if funcdatn.get_today_name() == "Fri":
         s_sql = s_sql.replace("%WHERE%","StrfTime('%m-%d',PEOPLE.X002_PEOPLE_CURR.DATE_OF_BIRTH)>=StrfTime('%m-%d','now') AND StrfTime('%m-%d',PEOPLE.X002_PEOPLE_CURR.DATE_OF_BIRTH)<=StrfTime('%m-%d','now','+2 day')")
     else:
         s_sql = s_sql.replace("%WHERE%","StrfTime('%m-%d',PEOPLE.X002_PEOPLE_CURR.DATE_OF_BIRTH)>=StrfTime('%m-%d','now') AND StrfTime('%m-%d',PEOPLE.X002_PEOPLE_CURR.DATE_OF_BIRTH)<=StrfTime('%m-%d','now')")
@@ -603,7 +603,7 @@ def people_test_masterfile():
             sr_filet = sr_file
             sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = "People_test_002ax_id_blank_"
-            sx_filet = sx_file + funcdate.today_file()
+            sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
@@ -935,7 +935,7 @@ def people_test_masterfile():
             sr_filet = sr_file
             sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = "People_test_002bx_id_invalid_"
-            sx_filet = sx_file + funcdate.today_file()
+            sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
@@ -1195,7 +1195,7 @@ def people_test_masterfile():
             sr_filet = sr_file
             sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = "Peoplemaster_test_" + s_fprefix + "_" + s_finding.lower() + "_"
-            sx_filet = sx_file + funcdate.today_file()
+            sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
@@ -1526,7 +1526,7 @@ def people_test_masterfile():
             sr_filet = sr_file
             sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = "People_test_002cx_sex_invalid_"
-            sx_filet = sx_file + funcdate.today_file()
+            sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
@@ -1847,7 +1847,7 @@ def people_test_masterfile():
             sr_filet = sr_file
             sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = "People_test_002ex_id_duplicate_"
-            sx_filet = sx_file + funcdate.today_file()
+            sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
@@ -2307,7 +2307,7 @@ def people_test_masterfile():
             sr_filet = sr_file
             sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = "People_test_005ax_pass_blank_"
-            sx_filet = sx_file + funcdate.today_file()
+            sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
@@ -2627,7 +2627,7 @@ def people_test_masterfile():
             sr_filet = sr_file
             sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = "People_test_003bx_pass_duplicate_"
-            sx_filet = sx_file + funcdate.today_file()
+            sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
@@ -3011,7 +3011,7 @@ def people_test_masterfile():
                     print("Export findings...")
                 sx_path = re_path + funcdate.cur_year() + "/"
                 sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
-                sx_file_dated = sx_file + funcdate.today_file()
+                sx_file_dated = sx_file + funcdatn.get_today_date_file()
                 s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -3364,7 +3364,7 @@ def people_test_masterfile():
             sr_filet = sr_file
             sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = "People_test_004ax_bank_duplicate_"
-            sx_filet = sx_file + funcdate.today_file()
+            sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
@@ -3676,7 +3676,7 @@ def people_test_masterfile():
             print("Export findings...")
             sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = "People_test_004cx_bank_sars_verify_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -3734,7 +3734,7 @@ def people_test_masterfile():
         LAST_UPDATE_DATE
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    if funcdate.today_dayname() == "Mon":
+    if funcdatn.get_today_name() == "Mon":
         s_sql = s_sql.replace("%WHERE%",
                               "StrfTime('%Y-%m-%d',PEOP.LAST_UPDATE_DATE)>=StrfTime('%Y-%m-%d','now','-3 day') AND StrfTime('%Y-%m-%d',PEOP.CREATION_DATE)<StrfTime('%Y-%m-%d','now','-3 day')")
     else:
@@ -4112,7 +4112,7 @@ def people_test_masterfile():
             print("Export findings...")
             sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = "People_test_004bx_bank_verify_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -4434,7 +4434,7 @@ def people_test_masterfile():
             sr_filet = sr_file
             sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = "People_test_005ax_paye_blank_"
-            sx_filet = sx_file + funcdate.today_file()
+            sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
@@ -4770,7 +4770,7 @@ def people_test_masterfile():
             sr_filet = sr_file
             sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = "People_test_005bx_paye_invalid_"
-            sx_filet = sx_file + funcdate.today_file()
+            sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
@@ -5062,7 +5062,7 @@ def people_test_masterfile():
             sr_filet = sr_file
             sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = "People_test_005cx_paye_duplicate_"
-            sx_filet = sx_file + funcdate.today_file()
+            sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
@@ -5385,7 +5385,7 @@ def people_test_masterfile():
             sr_filet = sr_file
             sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = "People_test_006ax_name_duplicate_"
-            sx_filet = sx_file + funcdate.today_file()
+            sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
@@ -5945,7 +5945,7 @@ def people_test_masterfile():
                     print("Export findings...")
                 sx_path = re_path + funcdate.cur_year() + "/"
                 sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
-                sx_file_dated = sx_file + funcdate.today_file()
+                sx_file_dated = sx_file + funcdatn.get_today_date_file()
                 s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -6296,7 +6296,7 @@ def people_test_masterfile():
                     print("Export findings...")
                 sx_path = re_path + funcdate.cur_year() + "/"
                 sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
-                sx_file_dated = sx_file + funcdate.today_file()
+                sx_file_dated = sx_file + funcdatn.get_today_date_file()
                 s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -6679,7 +6679,7 @@ def people_test_masterfile():
                     print("Export findings...")
                 sx_path = re_path + funcdate.cur_year() + "/"
                 sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
-                sx_file_dated = sx_file + funcdate.today_file()
+                sx_file_dated = sx_file + funcdatn.get_today_date_file()
                 s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -7172,7 +7172,7 @@ def people_test_masterfile():
                     print("Export findings...")
                 sx_path = re_path + funcdate.cur_year() + "/"
                 sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
-                sx_file_dated = sx_file + funcdate.today_file()
+                sx_file_dated = sx_file + funcdatn.get_today_date_file()
                 s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -7520,7 +7520,7 @@ def people_test_masterfile():
             print("Export findings...")
             sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = "People_test_008ax_phone_work_invalid_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -7809,7 +7809,7 @@ def people_test_masterfile():
             print("Export findings...")
             sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = "People_test_008ax_phone_work_invalid_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -8237,7 +8237,7 @@ def people_test_masterfile():
                     print("Export findings...")
                 sx_path = re_path + funcdate.cur_year() + "/"
                 sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
-                sx_file_dated = sx_file + funcdate.today_file()
+                sx_file_dated = sx_file + funcdatn.get_today_date_file()
                 s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -8560,7 +8560,7 @@ def people_test_masterfile():
                     print("Export findings...")
                 sx_path = re_path + funcdate.cur_year() + "/"
                 sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
-                sx_file_dated = sx_file + funcdate.today_file()
+                sx_file_dated = sx_file + funcdatn.get_today_date_file()
                 s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -8898,7 +8898,7 @@ def people_test_masterfile():
                     print("Export findings...")
                 sx_path = re_path + funcdate.cur_year() + "/"
                 sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
-                sx_file_dated = sx_file + funcdate.today_file()
+                sx_file_dated = sx_file + funcdatn.get_today_date_file()
                 s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -9223,7 +9223,7 @@ def people_test_masterfile():
                     print("Export findings...")
                 sx_path = re_path + funcdate.cur_year() + "/"
                 sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
-                sx_file_dated = sx_file + funcdate.today_file()
+                sx_file_dated = sx_file + funcdatn.get_today_date_file()
                 s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -9548,7 +9548,7 @@ def people_test_masterfile():
                     print("Export findings...")
                 sx_path = re_path + funcdate.cur_year() + "/"
                 sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
-                sx_file_dated = sx_file + funcdate.today_file()
+                sx_file_dated = sx_file + funcdatn.get_today_date_file()
                 s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)

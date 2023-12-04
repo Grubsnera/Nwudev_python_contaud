@@ -130,7 +130,7 @@ print("Export findings...")
 sr_filet = sr_file
 sx_path = re_path + funcdate.cur_year() + "/"
 sx_file = "People_payroll_hours_"
-sx_filet = sx_file + funcdate.today_file()
+sx_filet = sx_file + funcdatn.get_today_date_file()
 s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
 funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
 funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)

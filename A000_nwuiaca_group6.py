@@ -40,7 +40,7 @@ def group6_functions():
         # IMPORT KFS **********************************************************
         s_function: str = "A001_oracle_to_sqlite(kfs)"
         if funcconf.l_run_kfs_test:
-            if funcdate.today_dayname() in "TueWedThuFriSat":
+            if funcdatn.get_today_name() in "TueWedThuFriSat":
                 try:
                     A001_oracle_to_sqlite.oracle_to_sqlite("000b_Table - kfs.csv", "KFS")
                 except Exception as e:
@@ -51,7 +51,7 @@ def group6_functions():
         # KFS LISTS ***********************************************************
         s_function: str = "B002_kfs_lists"
         if funcconf.l_run_kfs_test:
-            if funcdate.today_dayname() in "TueWedThuFriSat":
+            if funcdatn.get_today_name() in "TueWedThuFriSat":
                 try:
                     B002_kfs_lists.kfs_lists()
                 except Exception as e:
@@ -62,7 +62,7 @@ def group6_functions():
         # KFS PERIOD LISTS CURR ***********************************************
         s_function: str = "B006_kfs_period_list(curr)"
         if funcconf.l_run_kfs_test:
-            if funcdate.today_dayname() in "TueWedThuFriSat":
+            if funcdatn.get_today_name() in "TueWedThuFriSat":
                 try:
                     B006_kfs_period_list.kfs_period_list("curr")
                 except Exception as e:
@@ -74,7 +74,7 @@ def group6_functions():
         # KFS PERIOD LISTS PREV ***********************************************
         s_function: str = "B006_kfs_period_list(prev)"
         if funcconf.l_run_kfs_test:
-            if funcdate.today_dayname() in "TueWedThuFriSat":
+            if funcdatn.get_today_name() in "TueWedThuFriSat":
                 try:
                     B006_kfs_period_list.kfs_period_list("prev")
                 except Exception as e:
@@ -88,7 +88,7 @@ def group6_functions():
         '''
         s_function: str = "B005_mysql_lists(web)"
         if funcconf.l_run_people_test:
-            if funcdate.today_dayname() in "TueWedThuFriSat":
+            if funcdatn.get_today_name() in "TueWedThuFriSat":
                 try:
                     B005_mysql_lists.mysql_lists("Web_ia_nwu")
                 except Exception as e:

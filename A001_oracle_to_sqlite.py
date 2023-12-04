@@ -151,7 +151,7 @@ def oracle_to_sqlite(s_table="000b_Table - temp.csv", s_tables="TEMP"):
                     if row[7] == "X":
                         # Do not do
                         continue
-                    elif row[7] == funcdate.today_dayname():
+                    elif row[7] == funcdatn.get_today_name():
                         # Do if table schedule = day of week
                         tb_extract = True
                     elif row[7] == funcdate.cur_daystrip():

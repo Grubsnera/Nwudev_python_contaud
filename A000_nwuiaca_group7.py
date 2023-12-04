@@ -45,7 +45,7 @@ def group7_functions():
 
         # UPDATE LOG ***************************************************
         s_function: str = "A002_log"
-        if funcdate.today_dayname() in "MonTueWedThuFriSatSun":
+        if funcdatn.get_today_name() in "MonTueWedThuFriSatSun":
             try:
                 A002_log.log_capture(funcdate.yesterday(), True)
                 # pass
@@ -55,7 +55,7 @@ def group7_functions():
         # PEOPLE TEST MASTER FILE **************************************
         s_function: str = "C001_people_test_masterfile"
         if funcconf.l_run_people_test:
-            if funcdate.today_dayname() in "MonTueWedThuFri":
+            if funcdatn.get_today_name() in "MonTueWedThuFri":
                 try:
                     C001_people_test_masterfile.people_test_masterfile()
                 except Exception as e:
@@ -64,7 +64,7 @@ def group7_functions():
         # SEARCHWORKS SUBMISSION **********************************************
         s_function: str = "B011_searchworks"
         if funcconf.l_run_people_test:
-            if funcdate.today_dayname() in "MonTueWedThuFri":
+            if funcdatn.get_today_name() in "MonTueWedThuFri":
                 try:
                     B011_searchworks.searchworks_submit()
                 except Exception as e:
@@ -73,7 +73,7 @@ def group7_functions():
         # PEOPLE TEST CONFLICT *****************************************
         s_function: str = "C002_people_test_conflict"
         if funcconf.l_run_people_test:
-            if funcdate.today_dayname() in "MonTueWedThuFri":
+            if funcdatn.get_today_name() in "MonTueWedThuFri":
                 try:
                     C002_people_test_conflict.people_test_conflict()
                 except Exception as e:
@@ -82,7 +82,7 @@ def group7_functions():
         # VSS STUDENT DEBTOR RECON *************************************
         s_function: str = "C200_report_studdeb_recon"
         if funcconf.l_run_people_test and funcconf.l_run_kfs_test and funcconf.l_run_vss_test:
-            if funcdate.today_dayname() in "MonTueWedThuFri":
+            if funcdatn.get_today_name() in "MonTueWedThuFri":
                 try:
                     C200_report_studdeb_recon.report_studdeb_recon()
                 except Exception as e:
@@ -100,7 +100,7 @@ def group7_functions():
         # VSS STUDENT FEE TESTS AND REPORTS ****************************
         s_function: str = "C302_test_student_fee"
         if funcconf.l_run_vss_test:
-            if funcdate.today_dayname() in "MonTueWedThuFri":
+            if funcdatn.get_today_name() in "MonTueWedThuFri":
                 try:
                     C302_test_student_fee.student_fee()
                 except Exception as e:
@@ -109,7 +109,7 @@ def group7_functions():
         # KFS CREDITOR PAYMENT TESTS ***********************************
         s_function: str = "C201_creditor_test_payments"
         if funcconf.l_run_kfs_test:
-            if funcdate.today_dayname() in "MonTueWedThuFri":
+            if funcdatn.get_today_name() in "MonTueWedThuFri":
                 try:
                     C201_creditor_test_payments.creditor_test_payments()
                 except Exception as e:
@@ -118,7 +118,7 @@ def group7_functions():
         # KFS GL TRANSACTION TESTS *************************************
         s_function: str = "C202_gl_test_transactions"
         if funcconf.l_run_kfs_test:
-            if funcdate.today_dayname() in "MonTueWedThuFri":
+            if funcdatn.get_today_name() in "MonTueWedThuFri":
                 try:
                     C202_gl_test_transactions.gl_test_transactions()
                 except Exception as e:
@@ -127,7 +127,7 @@ def group7_functions():
         # VSS STUDENT BURSARY TESTS *******************************
         s_function: str = "C303_test_student_bursary(curr)"
         if funcconf.l_run_vss_test:
-            if funcdate.today_dayname() in "MonTueWedThuFri":
+            if funcdatn.get_today_name() in "MonTueWedThuFri":
                 try:
                     C303_test_student_bursary.student_bursary("curr")
                 except Exception as e:

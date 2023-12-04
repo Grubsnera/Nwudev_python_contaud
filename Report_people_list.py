@@ -209,7 +209,7 @@ def report_people_list(
         sr_file = s_file_name + '_SELECTED'
         sx_path = re_path + funcdate.cur_year() + "/"
         sx_file = "People_000_all_selected_"
-        sx_file_dated = sx_file + s_date.replace('-', '') + '_' + funcdate.today_file()
+        sx_file_dated = sx_file + s_date.replace('-', '') + '_' + funcdatn.get_today_date_file()
         if l_debug:
             print("Export selected people..." + sx_path + sx_file)
         # Read the header data

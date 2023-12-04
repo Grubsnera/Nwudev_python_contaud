@@ -1972,7 +1972,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
             print("Export findings...")
             sx_path = re_path + s_year + "/"
             sx_file = "Vssgl_test_004bx_vss_gl_difference_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -2294,7 +2294,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
             print("Export findings...")
             sx_path = re_path + s_year + "/"
             sx_file = "Vssgl_test_004cx_invss_nogl_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -2614,7 +2614,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
             print("Export findings...")
             sx_path = re_path + s_year + "/"
             sx_file = "Vssgl_test_004dx_ingl_novss_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -2941,7 +2941,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
             print("Export findings...")
             sx_path = re_path + s_year + "/"
             sx_file = "Vssgl_test_004ex_vss_gl_burs_difference_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -3710,7 +3710,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
             print("Export findings...")
             sx_path = re_path + s_year + "/"
             sx_file = "Vssgl_test_010ex_bursary_invss_nogl_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -4048,7 +4048,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
             print("Export findings...")
             sx_path = re_path + s_year + "/"
             sx_file = "Vssgl_test_010fx_burs_gl_diffcampus_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -4184,7 +4184,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
         print("Export findings...")
         sx_path = re_path + s_year + "/"
         sx_file = "Student_balance_test_" + s_fprefix + "_" + s_finding.lower() + "_studentlist_"
-        # sx_file_dated = sx_file + funcdate.today_file()
+        # sx_file_dated = sx_file + funcdatn.get_today_date_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
         funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
         # funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -4414,7 +4414,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
             print("Export findings...")
             sx_path = re_path + s_year + "/"
             sx_file = "Student_balance_test_" + s_fprefix + "_" + s_finding.lower() + "_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)

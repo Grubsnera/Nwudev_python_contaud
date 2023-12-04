@@ -1060,7 +1060,7 @@ def people_test_conflict():
             sr_filet = sr_file
             sx_path = results_path
             sx_file = "People_test_100ax_bank_emp_vend_"
-            sx_filet = sx_file + funcdate.today_file()
+            sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(sqlite_connection, sr_filet)
             funccsv.write_data(sqlite_connection, "main", sr_filet, sx_path, sx_file, s_head)
             funccsv.write_data(sqlite_connection, "main", sr_filet, sx_path, sx_filet, s_head)
@@ -1600,7 +1600,7 @@ def people_test_conflict():
                 print("Export findings...")
             sx_path = results_path
             sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(sqlite_connection, sr_file)
             funccsv.write_data(sqlite_connection, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(sqlite_connection, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -1976,7 +1976,7 @@ def people_test_conflict():
                         print("Export findings...")
                     sx_path = results_path
                     sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
-                    sx_file_dated = sx_file + funcdate.today_file()
+                    sx_file_dated = sx_file + funcdatn.get_today_date_file()
                     s_head = funccsv.get_colnames_sqlite(sqlite_connection, sr_file)
                     funccsv.write_data(sqlite_connection, "main", sr_file, sx_path, sx_file, s_head)
                     funccsv.write_data(sqlite_connection, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -2331,7 +2331,7 @@ def people_test_conflict():
                         print("Export findings...")
                     sx_path = results_path
                     sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
-                    sx_file_dated = sx_file + funcdate.today_file()
+                    sx_file_dated = sx_file + funcdatn.get_today_date_file()
                     s_head = funccsv.get_colnames_sqlite(sqlite_connection, sr_file)
                     funccsv.write_data(sqlite_connection, "main", sr_file, sx_path, sx_file, s_head)
                     funccsv.write_data(sqlite_connection, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -2974,7 +2974,7 @@ def people_test_conflict():
                 print("Export findings...")
                 sx_path = results_path
                 sx_file = test_file_prefix + "_" + test_finding.lower() + "_"
-                sx_file_dated = sx_file + funcdate.today_file()
+                sx_file_dated = sx_file + funcdatn.get_today_date_file()
                 s_head = funccsv.get_colnames_sqlite(sqlite_connection, table_name)
                 funccsv.write_data(sqlite_connection, "main", table_name, sx_path, sx_file, s_head)
                 funccsv.write_data(sqlite_connection, "main", table_name, sx_path, sx_file_dated, s_head)

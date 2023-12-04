@@ -66,12 +66,12 @@ def searchworks_submit(i_day_to_run: int = 2, l_override_date: bool = False):
     so_file: str = "People_conflict.sqlite"  # Source database
     sw_path: str = "S:/searchworks/"
     csv_master_name: str = "01_master_submit.csv"
-    csv_send_name: str = "02_nwu_submit_" + funcdate.today_file() + ".csv"
+    csv_send_name: str = "02_nwu_submit_" + funcdatn.get_today_date_file() + ".csv"
     csv_watchlist_name: str = "03_searchworks_watchlist.csv"
-    csv_watchlist_new: str = "03_searchworks_watchlist_" + funcdate.today_file() + ".csv"
+    csv_watchlist_new: str = "03_searchworks_watchlist_" + funcdatn.get_today_date_file() + ".csv"
     xls_results: str = "NWU CIPC Results.xlsx"
-    csv_results: str = "04_cipc_results_" + funcdate.today_file() + ".csv"
-    csv_history: str = "05_cipc_history_" + funcdate.today_file() + ".csv"
+    csv_results: str = "04_cipc_results_" + funcdatn.get_today_date_file() + ".csv"
+    csv_history: str = "05_cipc_history_" + funcdatn.get_today_date_file() + ".csv"
 
     # LOG
     funcfile.writelog("Now")

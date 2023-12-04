@@ -167,7 +167,7 @@ sr_file = "X001_DECLARATIONS_PREV"
 sr_filet = sr_file
 sx_path = "R:/People/" + funcdate.prev_year() + "/"
 sx_file = "Conflict_001_lst_declarations_"
-sx_filet = sx_file + funcdate.today_file() #Today
+sx_filet = sx_file + funcdatn.get_today_date_file() #Today
 
 
 print("Export data..." + sx_path + sx_filet)
@@ -220,7 +220,7 @@ sr_file = "X001_DECLARATIONS_CURR"
 sr_filet = sr_file
 sx_path = "R:/People/" + funcdate.cur_year() + "/"
 sx_file = "Conflict_001_lst_declarations_"
-sx_filet = sx_file + funcdate.today_file() #Today
+sx_filet = sx_file + funcdatn.get_today_date_file() #Today
 
 print("Export data..." + sx_path + sx_filet)
 
@@ -283,7 +283,7 @@ sr_file = "X002_INTERESTS_PREV"
 sr_filet = sr_file
 sx_path = "R:/People/" + funcdate.prev_year() + "/"
 sx_file = "Conflict_002_lst_interests_"
-sx_filet = sx_file + funcdate.today_file() #Today
+sx_filet = sx_file + funcdatn.get_today_date_file() #Today
 
 print("Export data..." + sx_path + sx_filet)
 
@@ -348,7 +348,7 @@ sr_file = "X002_INTERESTS_CURR"
 sr_filet = sr_file
 sx_path = "R:/People/" + funcdate.cur_year() + "/"
 sx_file = "Conflict_002_lst_interests_"
-sx_filet = sx_file + funcdate.today_file() #Today
+sx_filet = sx_file + funcdatn.get_today_date_file() #Today
 
 print("Export data..." + sx_path + sx_filet)
 

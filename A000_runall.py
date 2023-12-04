@@ -66,7 +66,7 @@ funcfile.writelog("--------------------")
 ORACLE TO SQLITE
 ****************************************************************************"""
 
-if funcdate.today_dayname() in "TueWedThuFriSat":
+if funcdatn.get_today_name() in "TueWedThuFriSat":
     import A001_oracle_to_sqlite
     try:
         A001_oracle_to_sqlite.oracle_to_sqlite()
@@ -84,7 +84,7 @@ else:
 LOGS
 ****************************************************************************"""
 
-if funcdate.today_dayname() in "MonTueWedThuFriSatSun":
+if funcdatn.get_today_name() in "MonTueWedThuFriSatSun":
     import A002_log
     try:
         A002_log.log_capture(funcdate.yesterday(), True)
@@ -102,7 +102,7 @@ else:
 PEOPLE LISTS
 ****************************************************************************"""
 
-if funcdate.today_dayname() in "TueWedThuFriSat":
+if funcdatn.get_today_name() in "TueWedThuFriSat":
     import B001_people_lists
     try:
         B001_people_lists.people_lists()
@@ -120,7 +120,7 @@ else:
 KFS LISTS
 ****************************************************************************"""
 
-if funcdate.today_dayname() in "TueWedThuFriSat":
+if funcdatn.get_today_name() in "TueWedThuFriSat":
     import B002_kfs_lists
     try:
         B002_kfs_lists.kfs_lists()
@@ -139,7 +139,7 @@ KFS GL AND PAYMENT LISTS
 ****************************************************************************"""
 
 # CURRENT YEAR
-if funcdate.today_dayname() in "TueWedThuFriSat":
+if funcdatn.get_today_name() in "TueWedThuFriSat":
     import B006_kfs_period_list
     try:
         B006_kfs_period_list.kfs_period_list("curr")
@@ -154,7 +154,7 @@ else:
     funcfile.writelog("SCRIPT: B006_KFS_PERIOD_LIST: DO NOT RUN ON SUNDAYS AND MONDAYS")
 
 # PREVIOUS YEAR
-if funcdate.today_dayname() in "TueWedThuFriSat":
+if funcdatn.get_today_name() in "TueWedThuFriSat":
     import B006_kfs_period_list
     try:
         B006_kfs_period_list.kfs_period_list("prev")
@@ -172,7 +172,7 @@ else:
 VSS LISTS
 ****************************************************************************"""
 
-if funcdate.today_dayname() in "TueWedThuFriSat":
+if funcdatn.get_today_name() in "TueWedThuFriSat":
     import B003_vss_lists
     try:
         B003_vss_lists.vss_lists()
@@ -190,7 +190,7 @@ else:
 VSS PERIOD LISTS
 ****************************************************************************"""
 
-if funcdate.today_dayname() in "TueWedThuFriSat":
+if funcdatn.get_today_name() in "TueWedThuFriSat":
     import B007_vss_period_list
     try:
         B007_vss_period_list.vss_period_list("curr")
@@ -208,7 +208,7 @@ else:
 PEOPLE LIST MASTERFILE
 ****************************************************************************"""
 
-if funcdate.today_dayname() in "MonTueWedThuFri":
+if funcdatn.get_today_name() in "MonTueWedThuFri":
     import C003_people_list_masterfile
     try:
         C003_people_list_masterfile.people_list_masterfile()
@@ -226,7 +226,7 @@ else:
 PEOPLE MASTER FILE TESTS
 ****************************************************************************"""
 
-if funcdate.today_dayname() in "MonTueWedThuFri":
+if funcdatn.get_today_name() in "MonTueWedThuFri":
     import C001_people_test_masterfile
     try:
         C001_people_test_masterfile.people_test_masterfile()
@@ -244,7 +244,7 @@ else:
 PEOPLE CONFLICT TESTS
 ****************************************************************************"""
 
-if funcdate.today_dayname() in "MonTueWedThuFri":
+if funcdatn.get_today_name() in "MonTueWedThuFri":
     import C002_people_test_conflict
     try:
         C002_people_test_conflict.people_test_conflict()
@@ -262,7 +262,7 @@ else:
 KFS CREDITOR PAYMENT TESTS
 ****************************************************************************"""
 
-if funcdate.today_dayname() in "MonTueWedThuFri":
+if funcdatn.get_today_name() in "MonTueWedThuFri":
     import C201_creditor_test_payments
     try:
         C201_creditor_test_payments.creditor_test_payments()
@@ -280,7 +280,7 @@ else:
 KFS GL TEST TRANSACTIONS TESTS
 ****************************************************************************"""
 
-if funcdate.today_dayname() in "MonTueWedThuFri":
+if funcdatn.get_today_name() in "MonTueWedThuFri":
     import C202_gl_test_transactions
     try:
         C202_gl_test_transactions.gl_test_transactions()
@@ -296,7 +296,7 @@ else:
 KFS VSS STUDENT DEBTOR RECONCILIATION AND TESTS
 ****************************************************************************"""
 
-if funcdate.today_dayname() in "MonTueWedThuFri":
+if funcdatn.get_today_name() in "MonTueWedThuFri":
     import C200_report_studdeb_recon
     try:
         C200_report_studdeb_recon.report_studdeb_recon('48501952.09', '-12454680.98', '49976048.39', "curr")
@@ -335,7 +335,7 @@ else:
 VSS STUDENT FEE TESTS AND REPORTS
 ****************************************************************************"""
 
-if funcdate.today_dayname() in "MonTueWedThuFri":
+if funcdatn.get_today_name() in "MonTueWedThuFri":
     import C302_test_student_fee
     try:
         C302_test_student_fee.student_fee()
@@ -353,7 +353,7 @@ else:
 VSS STUDENT DEFERMENT MASTER FILE
 ****************************************************************************"""
 
-if funcdate.today_dayname() in "MonTueWedThuFri":
+if funcdatn.get_today_name() in "MonTueWedThuFri":
     import C301_report_student_deferment
     try:
         C301_report_student_deferment.studdeb_deferments('curr', funcdate.cur_year())
@@ -371,7 +371,7 @@ else:
 MYSQL LISTS WEB SERVER
 ****************************************************************************"""
 
-if funcdate.today_dayname() in "TueWedThuFriSat":
+if funcdatn.get_today_name() in "TueWedThuFriSat":
     import B005_mysql_lists
     try:
         B005_mysql_lists.mysql_lists("Web_ia_nwu")
@@ -389,7 +389,7 @@ else:
 MYSQL LISTS ACL SERVER
 ****************************************************************************"""
 
-if funcdate.today_dayname() in "TueWedThuFriSat":
+if funcdatn.get_today_name() in "TueWedThuFriSat":
     import B005_mysql_lists
     try:
         B005_mysql_lists.mysql_lists("Mysql_ia_server")

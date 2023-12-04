@@ -514,7 +514,7 @@ def gl_test_transactions():
                 print("Export findings...")
             sx_path = re_path + funcdate.cur_year() + "/"
             sx_file = "Gltran_test_001ax_professional_fee_student_"
-            sx_file_dated = sx_file + funcdate.today_file()
+            sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
             funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
@@ -867,7 +867,7 @@ def gl_test_transactions():
                     print("Export findings...")
                 sx_path = re_path + funcdate.cur_year() + "/"
                 sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
-                sx_file_dated = sx_file + funcdate.today_file()
+                sx_file_dated = sx_file + funcdatn.get_today_date_file()
                 s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file, s_head)
                 funccsv.write_data(so_conn, "main", sr_file, sx_path, sx_file_dated, s_head)
