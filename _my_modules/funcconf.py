@@ -7,7 +7,9 @@ import time
 import datetime
 
 # IMPORT OWN MODULES
-from _my_modules import funcdate  # Own modules
+from _my_modules import funcdate
+from _my_modules import funcdatn
+from _my_modules import funcdatn  # Own modules
 
 # DECLARE GLOBAL VARIABLES
 

@@ -10,6 +10,8 @@ Author: Albert J v Rensburg (NWU21162395)
 # Import own functions
 from _my_modules import funccsv
 from _my_modules import funcdate
+from _my_modules import funcdatn
+from _my_modules import funcdatn
 from _my_modules import funcfile
 from _my_modules import funcsys
 

@@ -4,6 +4,7 @@ import sys
 
 # Import own modules
 from _my_modules import funcdate
+from _my_modules import funcdatn
 from _my_modules import funccsv
 from _my_modules import funcfile
 

@@ -40,6 +40,7 @@ def robot_report_person_leave(s_nwu: str = "", s_name: str = "", s_mail: str = "
     # IMPORT OWN MODULES
     from _my_modules import funccsv
     from _my_modules import funcdate
+from _my_modules import funcdatn
     from _my_modules import funcfile
     from _my_modules import funcmail
     from _my_modules import funcsms
