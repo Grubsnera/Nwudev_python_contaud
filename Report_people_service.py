@@ -69,7 +69,7 @@ if s_export == "True":
     # Data export
     sr_file = "X001_ASSIGNMENT_PERI"
     sr_filet = sr_file
-    sx_path = "R:/People/" + funcdate.cur_year() + "/"
+    sx_path = "R:/People/" + funcdatn.get_current_year() + "/"
     sx_file = "Assignment_001_period_"
     sx_filet = sx_file + s_fr + "_" + s_to
 
@@ -251,7 +251,7 @@ if s_export == "True":
     # Data export
     sr_file = "X002_PEOPLE_PERI"
     sr_filet = sr_file
-    sx_path = "R:/People/" + funcdate.cur_year() + "/"
+    sx_path = "R:/People/" + funcdatn.get_current_year() + "/"
     sx_file = "People_002_period_"
     sx_filet = sx_file + s_on
 

@@ -78,12 +78,12 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     l_debug: bool = True
     so_path: str = "W:/Kfs_vss_studdeb/"  # Source database path
     if s_period == "curr":
-        s_year: str = funcdate.cur_year()
-        s_prev_year = funcdate.prev_year()
+        s_year: str = funcdatn.get_current_year()
+        s_prev_year = funcdatn.get_previous_year()
         so_file: str = "Kfs_vss_studdeb.sqlite"  # Source database
     elif s_period == "prev":
-        s_year = funcdate.prev_year()
-        s_prev_year = str(int(funcdate.prev_year())-1)
+        s_year = funcdatn.get_previous_year()
+        s_prev_year = str(int(funcdatn.get_previous_year())-1)
         so_file = "Kfs_vss_studdeb_prev.sqlite"  # Source database
     else:
         s_year = s_period
@@ -651,13 +651,13 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
       X001cc_gl_summtype.DESC_VSS = 'RECEIPTTUITIONFEES')
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = s_sql.replace("%PMONTH%", funcdate.prev_month())
+    s_sql = s_sql.replace("%PMONTH%", funcdatn.get_previous_month())
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     # Export the data
     if funcsys.tablerowcount(so_curs, sr_file) == 3:
-        gl_month = funcdate.prev_month()
+        gl_month = funcdatn.get_previous_month()
         """
         # Export the data
         print("Export gl post month...")
@@ -671,7 +671,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
         #print(gl_month)
         """
     else:
-        p_month = str(int(funcdate.prev_month())-1)
+        p_month = str(int(funcdatn.get_previous_month())-1)
         if int(p_month) < 10:
             p_month = "0" + p_month
         gl_month = p_month
@@ -1292,7 +1292,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     # WHERE
     #  X002ce_vss_balmonth_calc_runbal.MONTH_VSS <= '%PMONTH%'
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    s_sql = s_sql.replace("%CMONTH%", funcdate.cur_month())
+    s_sql = s_sql.replace("%CMONTH%", funcdatn.get_current_month())
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)
@@ -1610,7 +1610,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
       TRANCODE
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    s_sql = s_sql.replace("%CMONTH%", funcdate.cur_month())
+    s_sql = s_sql.replace("%CMONTH%", funcdatn.get_current_month())
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: "+sr_file)

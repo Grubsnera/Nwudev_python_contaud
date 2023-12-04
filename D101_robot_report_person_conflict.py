@@ -60,7 +60,7 @@ from _my_modules import funcdatn
     s_description: str = "Conflict of interest reports"
     so_path: str = "W:/People_conflict/"  # Source database path
     so_file: str = "People_conflict.sqlite"  # Source database
-    re_path: str = "R:/People/" + funcdate.cur_year() + "/"  # Results
+    re_path: str = "R:/People/" + funcdatn.get_current_year() + "/"  # Results
     l_mess: bool = funcconf.l_mess_project
     # l_mess: bool = False
     l_mailed: bool = False

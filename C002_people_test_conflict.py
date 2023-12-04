@@ -53,7 +53,7 @@ def people_test_conflict():
     source_database_name: str = "People_conflict.sqlite"  # Source database
     source_database: str = source_database_path + source_database_name
     external_data_path: str = "S:/_external_data/"  # external data path
-    results_path: str = "R:/People/" + funcdate.cur_year() + "/"  # Results path
+    results_path: str = "R:/People/" + funcdatn.get_current_year() + "/"  # Results path
     l_debug: bool = False
     l_export: bool = False
     l_mail: bool = False
@@ -1636,7 +1636,7 @@ def people_test_conflict():
     # PEOPLE.X002_PEOPLE_CURR
 
     # TEST WILL ONLY RUN FROM MAY TO NOVEMBER
-    if funcdate.cur_month() in ("05", "06", "07", "08", "09", "10", "11"):
+    if funcdatn.get_current_month() in ("05", "06", "07", "08", "09", "10", "11"):
 
         # DECLARE TEST VARIABLES
         i_finding_after: int = 0
@@ -2007,7 +2007,7 @@ def people_test_conflict():
     # PEOPLE.X002_PEOPLE_CURR
 
     # TEST WILL ONLY RUN FROM MAY TO NOVEMBER
-    if funcdate.cur_month() in ("04", "05", "06", "07", "08", "09", "10", "11", "12"):
+    if funcdatn.get_current_month() in ("04", "05", "06", "07", "08", "09", "10", "11", "12"):
 
         # DECLARE TEST VARIABLES
         i_finding_after: int = 0

@@ -382,7 +382,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
         if s_script in "b007|all|vss":
             if s_script != "b007":
                 s_parameter1 = "curr"
-            if (s_parameter1 in "curr|prev") or (2015 <= int(s_parameter1) <= int(funcdate.cur_year())-2):
+            if (s_parameter1 in "curr|prev") or (2015 <= int(s_parameter1) <= int(funcdatn.get_current_year())-2):
                 import B007_vss_period_list
                 try:
                     B007_vss_period_list.vss_period_list(s_parameter1)
@@ -404,7 +404,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
         if s_script in "c301|all|vss":
             if s_script != "c301":
                 s_parameter1 = "curr"
-            if (s_parameter1 in "curr|prev") or (2015 <= int(s_parameter1) <= int(funcdate.cur_year())-2):
+            if (s_parameter1 in "curr|prev") or (2015 <= int(s_parameter1) <= int(funcdatn.get_current_year())-2):
                 import C301_report_student_deferment
                 try:
                     C301_report_student_deferment.studdeb_deferments(s_parameter1)
@@ -427,7 +427,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
         if s_script in "c301|all|vss":
             if s_script != "c301":
                 s_parameter1 = "curr"
-            if (s_parameter1 in "curr|prev") or (2015 <= int(s_parameter1) <= int(funcdate.cur_year())-2):
+            if (s_parameter1 in "curr|prev") or (2015 <= int(s_parameter1) <= int(funcdatn.get_current_year())-2):
                 import C301_report_student_deferment
                 try:
                     C301_report_student_deferment.studdeb_deferments(s_parameter1)
@@ -449,7 +449,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
         if s_script in "c301|all|vss":
             if s_script != "c301":
                 s_parameter1 = "curr"
-            if (s_parameter1 in "curr|prev") or (2015 <= int(s_parameter1) <= int(funcdate.cur_year())-2):
+            if (s_parameter1 in "curr|prev") or (2015 <= int(s_parameter1) <= int(funcdatn.get_current_year())-2):
                 import C301_report_student_deferment
                 try:
                     C301_report_student_deferment.studdeb_deferments(s_parameter1)
@@ -623,7 +623,7 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
         if s_script in "b006|all|kfs":
             if s_script != "b006":
                 s_parameter1 = "curr"
-            if (s_parameter1 in "curr|prev") or (2015 <= int(s_parameter1) <= int(funcdate.cur_year())-2):
+            if (s_parameter1 in "curr|prev") or (2015 <= int(s_parameter1) <= int(funcdatn.get_current_year())-2):
                 import B006_kfs_period_list
                 try:
                     B006_kfs_period_list.kfs_period_list(s_parameter1)

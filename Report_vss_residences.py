@@ -96,9 +96,9 @@ funcfile.writelog("%t BUILD TABLE: X001_Previous_residence")
 # Data export
 sr_file = "X001_Previous_residence"
 sr_filet = sr_file
-sx_path = "O:/Nwudata/Debtorstud/" + funcdate.prev_year() + "/"
+sx_path = "O:/Nwudata/Debtorstud/" + funcdatn.get_previous_year() + "/"
 sx_file = "Residence_001_residence_"
-sx_filet = sx_file + funcdate.prev_year()
+sx_filet = sx_file + funcdatn.get_previous_year()
 
 print("Export previous residences..." + sx_path + sx_filet)
 
@@ -151,7 +151,7 @@ funcfile.writelog("%t BUILD TABLE: X001_Active_residence")
 # Data export
 sr_file = "X001_active_residence"
 sr_filet = sr_file
-sx_path = "O:/Nwudata/Debtorstud/" + funcdate.cur_year() + "/"
+sx_path = "O:/Nwudata/Debtorstud/" + funcdatn.get_current_year() + "/"
 sx_file = "Residence_001_residence_"
 sx_filet = sx_file + funcdatn.get_today_date_file()
 
@@ -204,9 +204,9 @@ funcfile.writelog("%t BUILD TABLE: X002_Previous_rate")
 # Data export
 sr_file = "X002_Previous_rate"
 sr_filet = sr_file
-sx_path = "O:/Nwudata/Debtorstud/" + funcdate.prev_year() + "/"
+sx_path = "O:/Nwudata/Debtorstud/" + funcdatn.get_previous_year() + "/"
 sx_file = "Residence_002_rate_"
-sx_filet = sx_file + funcdate.prev_year()
+sx_filet = sx_file + funcdatn.get_previous_year()
 
 print("Export data..." + sx_path + sx_filet)
 
@@ -256,7 +256,7 @@ funcfile.writelog("%t BUILD TABLE: X002_Current_rate")
 # Data export
 sr_file = "X002_Current_rate"
 sr_filet = sr_file
-sx_path = "O:/Nwudata/Debtorstud/" + funcdate.cur_year() + "/"
+sx_path = "O:/Nwudata/Debtorstud/" + funcdatn.get_current_year() + "/"
 sx_file = "Residence_002_rate_"
 sx_filet = sx_file + funcdatn.get_today_date_file()
 
@@ -312,9 +312,9 @@ funcfile.writelog("%t BUILD TABLE: X003_Previous_accom_log")
 # Data export
 sr_file = "X003_Previous_accom_log"
 sr_filet = sr_file
-sx_path = "O:/Nwudata/Debtorstud/" + funcdate.prev_year() + "/"
+sx_path = "O:/Nwudata/Debtorstud/" + funcdatn.get_previous_year() + "/"
 sx_file = "Residence_003_log_"
-sx_filet = sx_file + funcdate.prev_year()
+sx_filet = sx_file + funcdatn.get_previous_year()
 
 print("Export data..." + sx_path + sx_filet)
 
@@ -367,7 +367,7 @@ funcfile.writelog("%t BUILD TABLE: X003_Current_accom_log")
 # Data export
 sr_file = "X003_Current_accom_log"
 sr_filet = sr_file
-sx_path = "O:/Nwudata/Debtorstud/" + funcdate.cur_year() + "/"
+sx_path = "O:/Nwudata/Debtorstud/" + funcdatn.get_current_year() + "/"
 sx_file = "Residence_003_log_"
 sx_filet = sx_file + funcdatn.get_today_date_file()
 

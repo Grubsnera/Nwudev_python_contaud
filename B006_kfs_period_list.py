@@ -71,10 +71,10 @@ def kfs_period_list(s_period="curr"):
     re_path = "R:/Kfs/"  # Results path
     # ed_path = "S:/_external_data/"  # external data path
     if s_period == "curr":
-        s_year = funcdate.cur_year()
+        s_year = funcdatn.get_current_year()
         so_file = "Kfs_curr.sqlite"  # Source database
     elif s_period == "prev":
-        s_year = funcdate.prev_year()
+        s_year = funcdatn.get_previous_year()
         so_file = "Kfs_prev.sqlite"  # Source database
     else:
         s_year = s_period
@@ -1000,8 +1000,8 @@ def kfs_period_list(s_period="curr"):
     Order By
         TRAN_TOTAL Desc
     """
-    s_sql = s_sql.replace("%PMONTH%", funcdate.prev_month())
-    funcdate.prev_month()
+    s_sql = s_sql.replace("%PMONTH%", funcdatn.get_previous_month())
+    funcdatn.get_previous_month()
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -1009,7 +1009,7 @@ def kfs_period_list(s_period="curr"):
         # Data export
         sx_path = re_path + s_year + "/"
         sx_file = "Creditor_report_002ad_doc_type_summ_"
-        sx_file_dated = sx_file + funcdate.prev_month()
+        sx_file_dated = sx_file + funcdatn.get_previous_month()
         if l_debug:
             print("Export current year assignments..." + sx_path + sx_file_dated)
         # Read the header data

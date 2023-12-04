@@ -49,11 +49,11 @@ def studdeb_deferments(s_period="curr"):
     l_debug: bool = True
     so_path = "W:/Vss_deferment/"  # Source database path
     if s_period == "curr":
-        s_year = funcdate.cur_year()
+        s_year = funcdatn.get_current_year()
         #so_file = "Vss_deferment_curr.sqlite"  # Source database
         so_file = "Vss_deferment.sqlite"  # Source database
     elif s_period == "prev":
-        s_year = funcdate.prev_year()
+        s_year = funcdatn.get_previous_year()
         #so_file = "Vss_deferment_prev.sqlite"  # Source database
         so_file = "Vss_deferment.sqlite"  # Source database
     else:
@@ -212,9 +212,9 @@ def studdeb_deferments(s_period="curr"):
     # Export the declaration data
     if l_export:
         if s_period == "curr":
-            sx_path = "R:/Debtorstud/" + funcdate.cur_year() + "/"
+            sx_path = "R:/Debtorstud/" + funcdatn.get_current_year() + "/"
         elif s_period == "prev":
-            sx_path = "R:/Debtorstud/" + funcdate.prev_year() + "/"
+            sx_path = "R:/Debtorstud/" + funcdatn.get_previous_year() + "/"
         else:
             sx_path = "R:/Debtorstud/" + s_year + "/"
         sx_file = "Deferment_000_list_"
@@ -685,9 +685,9 @@ def studdeb_deferments(s_period="curr"):
     # Export the declaration data
     if l_export:
         if s_period == "curr":
-            sx_path = "R:/Debtorstud/" + funcdate.cur_year() + "/"
+            sx_path = "R:/Debtorstud/" + funcdatn.get_current_year() + "/"
         elif s_period == "prev":
-            sx_path = "R:/Debtorstud/" + funcdate.prev_year() + "/"
+            sx_path = "R:/Debtorstud/" + funcdatn.get_previous_year() + "/"
         else:
             sx_path = "R:/Debtorstud/" + s_year + "/"
         sx_file = "Deferment_001_student_"
@@ -727,9 +727,9 @@ def studdeb_deferments(s_period="curr"):
     # Export the summary
     if l_export:
         if s_period == "curr":
-            sx_path = "R:/Debtorstud/" + funcdate.cur_year() + "/"
+            sx_path = "R:/Debtorstud/" + funcdatn.get_current_year() + "/"
         elif s_period == "prev":
-            sx_path = "R:/Debtorstud/" + funcdate.prev_year() + "/"
+            sx_path = "R:/Debtorstud/" + funcdatn.get_previous_year() + "/"
         else:
             sx_path = "R:/Debtorstud/" + s_year + "/"
         sx_file = "Deferment_001_summary_"

@@ -78,12 +78,12 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     l_debug: bool = True
     so_path: str = "W:/Kfs_vss_studdeb/"  # Source database path
     if s_period == "curr":
-        s_year: str = funcdate.cur_year()
+        s_year: str = funcdatn.get_current_year()
         so_file: str = "Kfs_vss_studdeb.sqlite"  # Source database
         s_kfs: str = "KFSCURR"
         s_vss: str = "VSSCURR"
     elif s_period == "prev":
-        s_year = funcdate.prev_year()
+        s_year = funcdatn.get_previous_year()
         so_file = "Kfs_vss_studdeb_prev.sqlite"  # Source database
         s_kfs = "KFSPREV"
         s_vss = "VSSPREV"

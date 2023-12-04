@@ -122,13 +122,13 @@ def robot_report_audit_finding(s_year: str = "", s_type: str = "", s_name: str =
         s_where += " and "
         s_where += "user.ia_user_active = '1' and cate.ia_assicate_private = '0' and type.ia_assitype_private = '0' and find.ia_find_private = '0' and fist.ia_findstat_private = '0'"
     else:
-        s_where = "ia_assi_year = " + funcdate.cur_year() + " and user.ia_user_active = '1' and cate.ia_assicate_private = '0' and type.ia_assitype_private = '0' and find.ia_find_private = '0' and fist.ia_findstat_private = '0'"
+        s_where = "ia_assi_year = " + funcdatn.get_current_year() + " and user.ia_user_active = '1' and cate.ia_assicate_private = '0' and type.ia_assitype_private = '0' and find.ia_find_private = '0' and fist.ia_findstat_private = '0'"
         s_where += " or "
-        s_where += "ia_assi_year < " + funcdate.cur_year() + " and ia_assi_priority < 9 and user.ia_user_active = '1' and cate.ia_assicate_private = '0' and type.ia_assitype_private = '0' and find.ia_find_private = '0' and fist.ia_findstat_private = '0'"
+        s_where += "ia_assi_year < " + funcdatn.get_current_year() + " and ia_assi_priority < 9 and user.ia_user_active = '1' and cate.ia_assicate_private = '0' and type.ia_assitype_private = '0' and find.ia_find_private = '0' and fist.ia_findstat_private = '0'"
         s_where += " or "
-        s_where += "ia_assi_finishdate >= '" + funcdate.prev_year() + "-10-01'"
+        s_where += "ia_assi_finishdate >= '" + funcdatn.get_previous_year() + "-10-01'"
         s_where += " and "
-        s_where += "ia_assi_finishdate <= '" + funcdate.cur_year() + "-09-30'"
+        s_where += "ia_assi_finishdate <= '" + funcdatn.get_current_year() + "-09-30'"
         s_where += " and "
         s_where += "user.ia_user_active = '1' and cate.ia_assicate_private = '0' and type.ia_assitype_private = '0' and find.ia_find_private = '0' and fist.ia_findstat_private = '0'"
 

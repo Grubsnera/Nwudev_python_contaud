@@ -1745,9 +1745,9 @@ def people_lists():
     if l_export:
         # EXPORT TABLE
         sr_file = "X000_PEOPLE"
-        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_path = re_path + funcdatn.get_current_year() + "/"
         sx_file = "People_000_all_"
-        # sx_file_dated = sx_file + funcdate.cur_year()
+        # sx_file_dated = sx_file + funcdatn.get_current_year()
         if l_debug:
             print("Export current people..." + sx_path + sx_file)
         # Read the header data

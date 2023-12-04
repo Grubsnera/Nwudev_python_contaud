@@ -252,7 +252,7 @@ def test_student_general():
     if l_export == True and funcsys.tablerowcount(so_curs,sr_file) > 0:
         print("IDNo list export ytd ID list...")
         sr_filet = sr_file
-        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_path = re_path + funcdatn.get_current_year() + "/"
         sx_file = "Idno_001a_list_ytd_"
         sx_filet = sx_file + funcdate.prev_monthendfile()
         # Read the header data
@@ -296,9 +296,9 @@ def test_student_general():
     if l_export == True and funcsys.tablerowcount(so_curs,sr_file) > 0:
         print("IDNo list export current ID lists...")
         sr_filet = sr_file
-        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_path = re_path + funcdatn.get_current_year() + "/"
         sx_file = "Idno_001b_list_curr_"
-        sx_filet = sx_file + funcdate.cur_month()
+        sx_filet = sx_file + funcdatn.get_current_month()
         # Read the header data
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
         # Write the data

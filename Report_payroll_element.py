@@ -128,7 +128,7 @@ so_conn.commit()
 funcfile.writelog("%t BUILD TABLE: " + sr_file)
 print("Export findings...")
 sr_filet = sr_file
-sx_path = re_path + funcdate.cur_year() + "/"
+sx_path = re_path + funcdatn.get_current_year() + "/"
 sx_file = "People_payroll_hours_"
 sx_filet = sx_file + funcdatn.get_today_date_file()
 s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)

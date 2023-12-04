@@ -73,9 +73,9 @@ def student_fee(s_period="curr"):
 
     # DECLARE VARIABLES
     if s_period == "prev":
-        s_year = funcdate.prev_year()
+        s_year = funcdatn.get_previous_year()
     else:
-        s_year = funcdate.cur_year()
+        s_year = funcdatn.get_current_year()
 
     ed_path = "S:/_external_data/"  # External data path
     so_path = "W:/Vss_fee/"  # Source database path
@@ -3402,7 +3402,7 @@ def student_fee(s_period="curr"):
     if l_debug:
         print("Update test 53_54_period_a_ind column...")
     d1 = (int(d_test_overcharge[5:7]), int(d_test_overcharge[-2:]))  # Begin date
-    d2 = (int(funcdate.cur_month()), int(funcdate.cur_day()))  # Now
+    d2 = (int(funcdatn.get_current_month()), int(funcdatn.get_today_day()))  # Now
     d3 = (12, 31)  # End date
     if d1 <= d2 <= d3:
         s_sql = "UPDATE " + sr_file + " SET PERIOD_A_IND = 1;"

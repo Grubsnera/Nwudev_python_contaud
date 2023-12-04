@@ -211,9 +211,9 @@ print("Export student debtor gl transactions...")
 
 sr_file = "X011_Studdeb_transort"
 sr_filet = sr_file
-sx_path = "O:/Nwudata/Debtorstud/" + funcdate.cur_year() + "/"
+sx_path = "O:/Nwudata/Debtorstud/" + funcdatn.get_current_year() + "/"
 sx_file = "Debtor_011_gltran_"
-sx_filet = sx_file + funcdate.prev_year()
+sx_filet = sx_file + funcdatn.get_previous_year()
 
 # Read the header data
 s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -252,9 +252,9 @@ print("Export student debtor gl vss transactions...")
 
 sr_file = "X012_Studdeb_tranvss"
 sr_filet = sr_file
-sx_path = "O:/Nwudata/Debtorstud/" + funcdate.cur_year() + "/"
+sx_path = "O:/Nwudata/Debtorstud/" + funcdatn.get_current_year() + "/"
 sx_file = "Debtor_012_gltran_vss_"
-sx_filet = sx_file + funcdate.prev_year()
+sx_filet = sx_file + funcdatn.get_previous_year()
 
 # Read the header data
 s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -288,9 +288,9 @@ print("Export student debtor gl balances...")
 
 sr_file = "X013_Studdeb_glbal"
 sr_filet = sr_file
-sx_path = "O:/Nwudata/Debtorstud/" + funcdate.cur_year() + "/"
+sx_path = "O:/Nwudata/Debtorstud/" + funcdatn.get_current_year() + "/"
 sx_file = "Debtor_013_glbal_"
-sx_filet = sx_file + funcdate.prev_year()
+sx_filet = sx_file + funcdatn.get_previous_year()
 
 # Read the header data
 s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -326,9 +326,9 @@ print("Export student debtor gl per month balances...")
 
 sr_file = "X014_Studdeb_glbalmonth"
 sr_filet = sr_file
-sx_path = "O:/Nwudata/Debtorstud/" + funcdate.cur_year() + "/"
+sx_path = "O:/Nwudata/Debtorstud/" + funcdatn.get_current_year() + "/"
 sx_file = "Debtor_014_glbalmonth_"
-sx_filet = sx_file + funcdate.prev_year()
+sx_filet = sx_file + funcdatn.get_previous_year()
 
 # Read the header data
 s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -368,9 +368,9 @@ print("Export student debtor gl summary per type...")
 
 sr_file = "X015_Studdeb_glsummtype"
 sr_filet = sr_file
-sx_path = "O:/Nwudata/Debtorstud/" + funcdate.cur_year() + "/"
+sx_path = "O:/Nwudata/Debtorstud/" + funcdatn.get_current_year() + "/"
 sx_file = "Debtor_015_glsummtype_"
-sx_filet = sx_file + funcdate.prev_year()
+sx_filet = sx_file + funcdatn.get_previous_year()
 
 # Read the header data
 s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)

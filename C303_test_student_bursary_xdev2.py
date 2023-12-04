@@ -46,9 +46,9 @@ def student_bursary(s_period: str = "curr"):
     # FUNCTION WIDE VARIABLES
     """
     if s_period == "prev":
-        s_year = funcdate.prev_year()
+        s_year = funcdatn.get_previous_year()
     else:
-        s_year = funcdate.cur_year()
+        s_year = funcdatn.get_current_year()
     """
     # ed_path: str = "S:/_external_data/"  # External data path
     # re_path: str = "R:/Vss/" + s_year

@@ -42,10 +42,10 @@ def vss_period_list(s_period="curr"):
     l_debug: bool = True
     so_path: str = "W:/Vss/"  # Source database path
     if s_period == "curr":
-        s_year = funcdate.cur_year()
+        s_year = funcdatn.get_current_year()
         so_file = "Vss_curr.sqlite"  # Source database
     elif s_period == "prev":
-        s_year = funcdate.prev_year()
+        s_year = funcdatn.get_previous_year()
         so_file = "Vss_prev.sqlite"  # Source database
     else:
         s_year = s_period

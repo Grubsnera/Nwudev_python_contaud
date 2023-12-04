@@ -273,13 +273,13 @@ def oracle_to_sqlite(s_table="000b_Table - temp.csv", s_tables="TEMP"):
 
             if tb_alt != "":
                 if "%CYEAR%" in tb_alt:
-                    tb_alt = tb_alt.replace("%CYEAR%", funcdate.cur_year())
+                    tb_alt = tb_alt.replace("%CYEAR%", funcdatn.get_current_year())
                 if "%CMONTH%" in tb_alt:
-                    tb_alt = tb_alt.replace("%CMONTH%", funcdate.cur_month())
+                    tb_alt = tb_alt.replace("%CMONTH%", funcdatn.get_current_month())
                 if "%PYEAR%" in tb_alt:
-                    tb_alt = tb_alt.replace("%PYEAR%", funcdate.prev_year())
+                    tb_alt = tb_alt.replace("%PYEAR%", funcdatn.get_previous_year())
                 if "%PMONTH%" in tb_alt:
-                    tb_alt = tb_alt.replace("%PMONTH%", funcdate.prev_month())
+                    tb_alt = tb_alt.replace("%PMONTH%", funcdatn.get_previous_month())
                 ssql_dro = "DROP TABLE IF EXISTS " + tb_alt
                 ssql_create = "CREATE TABLE " + tb_alt + "(" + sco_ana + ")"
             else:
@@ -308,7 +308,7 @@ def oracle_to_sqlite(s_table="000b_Table - temp.csv", s_tables="TEMP"):
                 ssql_str += tb_own + "." + tb_nam
             if tb_whe != "":
                 if "%CYEAR%" in tb_whe:
-                    tb_whe = tb_whe.replace("%CYEAR%", funcdate.cur_year())
+                    tb_whe = tb_whe.replace("%CYEAR%", funcdatn.get_current_year())
                 if "%CYEARB%" in tb_whe:
                     tb_whe = tb_whe.replace("%CYEARB%", funcdate.cur_yearbegin())
                 if "%CYEARE%" in tb_whe:
@@ -318,7 +318,7 @@ def oracle_to_sqlite(s_table="000b_Table - temp.csv", s_tables="TEMP"):
                 if "%CMONTHE%" in tb_whe:
                     tb_whe = tb_whe.replace("%CMONTHE%", funcdate.cur_monthend())
                 if "%PYEAR%" in tb_whe:
-                    tb_whe = tb_whe.replace("%PYEAR%", funcdate.prev_year())
+                    tb_whe = tb_whe.replace("%PYEAR%", funcdatn.get_previous_year())
                 if "%PMONTHB%" in tb_whe:
                     tb_whe = tb_whe.replace("%PMONTHB%", funcdate.prev_monthbegin())
                 if "%PMONTHE%" in tb_whe:

@@ -34,7 +34,7 @@ ENVIRONMENT
 
 # DECLARE VARIABLES
 so_path: str = "W:/People_conflict/"  # Source database path
-re_path: str = "R:/Kfs/" + funcdate.cur_year() + "/"  # Results path
+re_path: str = "R:/Kfs/" + funcdatn.get_current_year() + "/"  # Results path
 ed_path: str = "S:/_external_data/"  # external data path
 so_file: str = "People_conflict.sqlite"  # Source database
 s_sql: str = ""  # SQL statements

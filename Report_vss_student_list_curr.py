@@ -64,7 +64,7 @@ funcfile.writelog("%t BUILD TABLE: " + sr_file)
 # Export the data
 print("Export list of students on specific date...")
 sr_filet = sr_file
-sx_path = re_path + funcdate.cur_year() + "/"
+sx_path = re_path + funcdatn.get_current_year() + "/"
 sx_file = "Student_001_list_" + s_date.replace("-","") + "_"
 s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
 funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)

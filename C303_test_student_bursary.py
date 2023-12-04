@@ -52,9 +52,9 @@ def student_bursary(s_period: str = "curr"):
 
     # FUNCTION WIDE VARIABLES
     if s_period == "prev":
-        s_year = funcdate.prev_year()
+        s_year = funcdatn.get_previous_year()
     else:
-        s_year = funcdate.cur_year()
+        s_year = funcdatn.get_current_year()
     ed_path: str = "S:/_external_data/"  # External data path
     re_path: str = "R:/Vss/"
     so_path: str = "W:/Vss_fee/"  # Source database path
@@ -763,7 +763,7 @@ def student_bursary(s_period: str = "curr"):
             if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
                 if l_debug:
                     print("Export findings...")
-                sx_path = re_path + funcdate.cur_year() + "/"
+                sx_path = re_path + funcdatn.get_current_year() + "/"
                 sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
                 sx_file_dated = sx_file + funcdatn.get_today_date_file()
                 s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)

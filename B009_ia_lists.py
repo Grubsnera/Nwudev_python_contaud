@@ -53,14 +53,14 @@ def ia_lists(s_period: str = "curr"):
     *****************************************************************************"""
 
     # FUNCTION WIDE VARIABLES
-    if s_period == "prev" and funcdate.cur_month() >= "10":
-        s_year: str = str(int(funcdate.prev_year()) + 1)
+    if s_period == "prev" and funcdatn.get_current_month() >= "10":
+        s_year: str = str(int(funcdatn.get_previous_year()) + 1)
     elif s_period == "prev":
-        s_year: str = funcdate.prev_year()
-    elif s_period == "curr" and funcdate.cur_month() >= "10":
-        s_year: str = str(int(funcdate.cur_year())+1)
+        s_year: str = funcdatn.get_previous_year()
+    elif s_period == "curr" and funcdatn.get_current_month() >= "10":
+        s_year: str = str(int(funcdatn.get_current_year())+1)
     elif s_period == "curr":
-        s_year: str = funcdate.cur_year()
+        s_year: str = funcdatn.get_current_year()
     else:
         s_year: str = s_period
     s_from: str = str(int(s_year) - 1) + '-10-01'

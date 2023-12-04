@@ -32,10 +32,10 @@ s_year: str = s_period
 so_path = "W:/Kfs/"  # Source database path
 if s_period == "curr":
     so_file = "Kfs_curr.sqlite"  # Source database
-    s_year = funcdate.cur_year()
+    s_year = funcdatn.get_current_year()
 elif s_period == "prev":
     so_file = "Kfs_prev.sqlite"  # Source database
-    s_year = funcdate.prev_year()
+    s_year = funcdatn.get_previous_year()
 else:
     so_file = "Kfs_" + s_year + ".sqlite"  # Source database
 re_path = "R:/Kfs/"  # Results path

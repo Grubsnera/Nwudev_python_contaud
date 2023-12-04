@@ -43,9 +43,9 @@ def student_fee(s_period: str = "curr"):
 
     # DECLARE VARIABLES
     if s_period == "prev":
-        s_year = funcdate.prev_year()
+        s_year = funcdatn.get_previous_year()
     else:
-        s_year = funcdate.cur_year()
+        s_year = funcdatn.get_current_year()
 
     ed_path = "S:/_external_data/"  # External data path
     so_path = "W:/Vss_fee/"  # Source database path

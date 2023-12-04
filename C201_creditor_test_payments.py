@@ -824,7 +824,7 @@ from _my_modules import funcdatn
         if l_export == True and funcsys.tablerowcount(so_curs,sr_file) > 0:
             print("Export findings...")
             sr_filet = sr_file
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + funcdatn.get_current_year() + "/"
             sx_file = "Creditor_test_001ax_paym_duplicate_"
             sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -1278,7 +1278,7 @@ from _my_modules import funcdatn
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             if l_debug:
                 print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + funcdatn.get_current_year() + "/"
             sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
             sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -1321,7 +1321,7 @@ from _my_modules import funcdatn
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
         print("Export findings...")
-        sx_path = re_path + funcdate.cur_year() + "/"
+        sx_path = re_path + funcdatn.get_current_year() + "/"
         sx_file = "Creditor_test_001ca_paym_same_init_fiscal_"
         sx_file_dated = sx_file + funcdatn.get_today_date_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -1610,7 +1610,7 @@ from _my_modules import funcdatn
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + funcdatn.get_current_year() + "/"
             sx_file = "Student_fee_test_021dx_qual_fee_negative_transaction_"
             sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -2013,7 +2013,7 @@ from _my_modules import funcdatn
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             if l_debug:
                 print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + funcdatn.get_current_year() + "/"
             sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
             sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -2467,7 +2467,7 @@ from _my_modules import funcdatn
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             if l_debug:
                 print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + funcdatn.get_current_year() + "/"
             sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
             sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -2925,7 +2925,7 @@ from _my_modules import funcdatn
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             if l_debug:
                 print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + funcdatn.get_current_year() + "/"
             sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
             sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -3291,7 +3291,7 @@ from _my_modules import funcdatn
         if l_export == True and funcsys.tablerowcount(so_curs,sr_file) > 0:
             print("Export findings...")
             sr_filet = sr_file
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + funcdatn.get_current_year() + "/"
             sx_file = "Creditor_test_002ax_vendor_bank_verify_"
             sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -3598,7 +3598,7 @@ from _my_modules import funcdatn
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + funcdatn.get_current_year() + "/"
             sx_file = "Creditor_test_003ax_empl_approve_own_"
             sx_file_date = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -3911,7 +3911,7 @@ from _my_modules import funcdatn
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + funcdatn.get_current_year() + "/"
             sx_file = "Creditor_test_003bx_empl_initiate_own_"
             sx_file_date = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -4241,7 +4241,7 @@ from _my_modules import funcdatn
             if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
                 if l_debug:
                     print("Export findings...")
-                sx_path = re_path + funcdate.cur_year() + "/"
+                sx_path = re_path + funcdatn.get_current_year() + "/"
                 sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
                 sx_file_dated = sx_file + funcdatn.get_today_date_file()
                 s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)

@@ -263,9 +263,9 @@ def people_test_masterfile():
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
     # Export the birthdays
     sr_filet = sr_file
-    sx_path = re_path + funcdate.cur_year() + "/"
+    sx_path = re_path + funcdatn.get_current_year() + "/"
     sx_file = "People_003_birthday_"
-    sx_filet = sx_file + funcdate.cur_month()
+    sx_filet = sx_file + funcdatn.get_current_month()
     print("Export people birthday..." + sx_path + sx_filet)
     # Read the header data
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -601,7 +601,7 @@ def people_test_masterfile():
         if l_export == True and funcsys.tablerowcount(so_curs,sr_file) > 0:
             print("Export findings...")
             sr_filet = sr_file
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + funcdatn.get_current_year() + "/"
             sx_file = "People_test_002ax_id_blank_"
             sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -933,7 +933,7 @@ def people_test_masterfile():
         if l_export == True and funcsys.tablerowcount(so_curs,sr_file) > 0:
             print("Export findings...")
             sr_filet = sr_file
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + funcdatn.get_current_year() + "/"
             sx_file = "People_test_002bx_id_invalid_"
             sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -1193,7 +1193,7 @@ def people_test_masterfile():
         if l_export == True and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
             sr_filet = sr_file
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + funcdatn.get_current_year() + "/"
             sx_file = "Peoplemaster_test_" + s_fprefix + "_" + s_finding.lower() + "_"
             sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -1524,7 +1524,7 @@ def people_test_masterfile():
         if l_export == True and funcsys.tablerowcount(so_curs,sr_file) > 0:
             print("Export findings...")
             sr_filet = sr_file
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + funcdatn.get_current_year() + "/"
             sx_file = "People_test_002cx_sex_invalid_"
             sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -1845,7 +1845,7 @@ def people_test_masterfile():
         if l_export == True and funcsys.tablerowcount(so_curs,sr_file) > 0:
             print("Export findings...")
             sr_filet = sr_file
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + funcdatn.get_current_year() + "/"
             sx_file = "People_test_002ex_id_duplicate_"
             sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -2305,7 +2305,7 @@ def people_test_masterfile():
         if l_export == True and funcsys.tablerowcount(so_curs,sr_file) > 0:
             print("Export findings...")
             sr_filet = sr_file
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + funcdatn.get_current_year() + "/"
             sx_file = "People_test_005ax_pass_blank_"
             sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -2625,7 +2625,7 @@ def people_test_masterfile():
         if l_export == True and funcsys.tablerowcount(so_curs,sr_file) > 0:
             print("Export findings...")
             sr_filet = sr_file
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + funcdatn.get_current_year() + "/"
             sx_file = "People_test_003bx_pass_duplicate_"
             sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -3009,7 +3009,7 @@ def people_test_masterfile():
             if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
                 if l_debug:
                     print("Export findings...")
-                sx_path = re_path + funcdate.cur_year() + "/"
+                sx_path = re_path + funcdatn.get_current_year() + "/"
                 sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
                 sx_file_dated = sx_file + funcdatn.get_today_date_file()
                 s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -3362,7 +3362,7 @@ def people_test_masterfile():
         if l_export == True and funcsys.tablerowcount(so_curs,sr_file) > 0:
             print("Export findings...")
             sr_filet = sr_file
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + funcdatn.get_current_year() + "/"
             sx_file = "People_test_004ax_bank_duplicate_"
             sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -3674,7 +3674,7 @@ def people_test_masterfile():
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + funcdatn.get_current_year() + "/"
             sx_file = "People_test_004cx_bank_sars_verify_"
             sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -4110,7 +4110,7 @@ def people_test_masterfile():
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + funcdatn.get_current_year() + "/"
             sx_file = "People_test_004bx_bank_verify_"
             sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -4432,7 +4432,7 @@ def people_test_masterfile():
         if l_export == True and funcsys.tablerowcount(so_curs,sr_file) > 0:
             print("Export findings...")
             sr_filet = sr_file
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + funcdatn.get_current_year() + "/"
             sx_file = "People_test_005ax_paye_blank_"
             sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -4768,7 +4768,7 @@ def people_test_masterfile():
         if l_export == True and funcsys.tablerowcount(so_curs,sr_file) > 0:
             print("Export findings...")
             sr_filet = sr_file
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + funcdatn.get_current_year() + "/"
             sx_file = "People_test_005bx_paye_invalid_"
             sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -5060,7 +5060,7 @@ def people_test_masterfile():
         if l_export == True and funcsys.tablerowcount(so_curs,sr_file) > 0:
             print("Export findings...")
             sr_filet = sr_file
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + funcdatn.get_current_year() + "/"
             sx_file = "People_test_005cx_paye_duplicate_"
             sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -5383,7 +5383,7 @@ def people_test_masterfile():
         if l_export == True and funcsys.tablerowcount(so_curs,sr_file) > 0:
             print("Export findings...")
             sr_filet = sr_file
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + funcdatn.get_current_year() + "/"
             sx_file = "People_test_006ax_name_duplicate_"
             sx_filet = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
@@ -5943,7 +5943,7 @@ def people_test_masterfile():
             if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
                 if l_debug:
                     print("Export findings...")
-                sx_path = re_path + funcdate.cur_year() + "/"
+                sx_path = re_path + funcdatn.get_current_year() + "/"
                 sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
                 sx_file_dated = sx_file + funcdatn.get_today_date_file()
                 s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -6294,7 +6294,7 @@ def people_test_masterfile():
             if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
                 if l_debug:
                     print("Export findings...")
-                sx_path = re_path + funcdate.cur_year() + "/"
+                sx_path = re_path + funcdatn.get_current_year() + "/"
                 sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
                 sx_file_dated = sx_file + funcdatn.get_today_date_file()
                 s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -6677,7 +6677,7 @@ def people_test_masterfile():
             if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
                 if l_debug:
                     print("Export findings...")
-                sx_path = re_path + funcdate.cur_year() + "/"
+                sx_path = re_path + funcdatn.get_current_year() + "/"
                 sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
                 sx_file_dated = sx_file + funcdatn.get_today_date_file()
                 s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -7170,7 +7170,7 @@ def people_test_masterfile():
             if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
                 if l_debug:
                     print("Export findings...")
-                sx_path = re_path + funcdate.cur_year() + "/"
+                sx_path = re_path + funcdatn.get_current_year() + "/"
                 sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
                 sx_file_dated = sx_file + funcdatn.get_today_date_file()
                 s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -7518,7 +7518,7 @@ def people_test_masterfile():
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + funcdatn.get_current_year() + "/"
             sx_file = "People_test_008ax_phone_work_invalid_"
             sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -7807,7 +7807,7 @@ def people_test_masterfile():
         # Export findings
         if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
             print("Export findings...")
-            sx_path = re_path + funcdate.cur_year() + "/"
+            sx_path = re_path + funcdatn.get_current_year() + "/"
             sx_file = "People_test_008ax_phone_work_invalid_"
             sx_file_dated = sx_file + funcdatn.get_today_date_file()
             s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -8235,7 +8235,7 @@ def people_test_masterfile():
             if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
                 if l_debug:
                     print("Export findings...")
-                sx_path = re_path + funcdate.cur_year() + "/"
+                sx_path = re_path + funcdatn.get_current_year() + "/"
                 sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
                 sx_file_dated = sx_file + funcdatn.get_today_date_file()
                 s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -8558,7 +8558,7 @@ def people_test_masterfile():
             if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
                 if l_debug:
                     print("Export findings...")
-                sx_path = re_path + funcdate.cur_year() + "/"
+                sx_path = re_path + funcdatn.get_current_year() + "/"
                 sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
                 sx_file_dated = sx_file + funcdatn.get_today_date_file()
                 s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -8896,7 +8896,7 @@ def people_test_masterfile():
             if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
                 if l_debug:
                     print("Export findings...")
-                sx_path = re_path + funcdate.cur_year() + "/"
+                sx_path = re_path + funcdatn.get_current_year() + "/"
                 sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
                 sx_file_dated = sx_file + funcdatn.get_today_date_file()
                 s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -9221,7 +9221,7 @@ def people_test_masterfile():
             if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
                 if l_debug:
                     print("Export findings...")
-                sx_path = re_path + funcdate.cur_year() + "/"
+                sx_path = re_path + funcdatn.get_current_year() + "/"
                 sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
                 sx_file_dated = sx_file + funcdatn.get_today_date_file()
                 s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)
@@ -9546,7 +9546,7 @@ def people_test_masterfile():
             if l_export and funcsys.tablerowcount(so_curs, sr_file) > 0:
                 if l_debug:
                     print("Export findings...")
-                sx_path = re_path + funcdate.cur_year() + "/"
+                sx_path = re_path + funcdatn.get_current_year() + "/"
                 sx_file = s_file_prefix + "_" + s_finding.lower() + "_"
                 sx_file_dated = sx_file + funcdatn.get_today_date_file()
                 s_head = funccsv.get_colnames_sqlite(so_conn, sr_file)

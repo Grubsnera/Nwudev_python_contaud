@@ -17,7 +17,7 @@ funcfile.writelog("------------------------------------------")
 
 import C301_report_student_deferment
 try:
-    C301_report_student_deferment.Studdeb_deferments('prev',funcdate.prev_year())
+    C301_report_student_deferment.Studdeb_deferments('prev',funcdatn.get_previous_year())
 except Exception as e:
     funcsys.ErrMessage(e)
 

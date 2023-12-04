@@ -118,7 +118,7 @@ def people_list_masterfile():
         Strftime('%Y', PEOP.EMP_START) = '%CYEAR%'
     """
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = s_sql.replace("%CYEAR%", funcdate.cur_year())
+    s_sql = s_sql.replace("%CYEAR%", funcdatn.get_current_year())
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: X001_People_start_end_master")
@@ -163,7 +163,7 @@ def people_list_masterfile():
         Strftime('%Y', PEOP.EMP_END) = '%CYEAR%' And
         PEOP.EMP_END < Date('%TODAY%')
     """
-    s_sql = s_sql.replace("%CYEAR%", funcdate.cur_year())
+    s_sql = s_sql.replace("%CYEAR%", funcdatn.get_current_year())
     s_sql = s_sql.replace("%TODAY%", funcdate.cur_monthend())
     so_curs.execute(s_sql)
     so_conn.commit()

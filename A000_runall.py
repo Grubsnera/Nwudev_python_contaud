@@ -316,7 +316,7 @@ else:
 VSS STUDENT MASTER FILE TESTS
 ****************************************************************************"""
 
-if funcdate.cur_day() in "01z13":
+if funcdatn.get_today_day() in "01z13":
     import C300_test_student_general
     try:
         C300_test_student_general.test_student_general()
@@ -356,7 +356,7 @@ VSS STUDENT DEFERMENT MASTER FILE
 if funcdatn.get_today_name() in "MonTueWedThuFri":
     import C301_report_student_deferment
     try:
-        C301_report_student_deferment.studdeb_deferments('curr', funcdate.cur_year())
+        C301_report_student_deferment.studdeb_deferments('curr', funcdatn.get_current_year())
         if l_mail:
             funcmail.send_mail('std_success_nwu', 'NWUIAPython:Success:C301_report_student_deferment',
                           'NWUIAPython: Success: C301_report_student_deferment')

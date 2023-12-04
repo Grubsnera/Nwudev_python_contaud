@@ -165,7 +165,7 @@ funcfile.writelog("%t BUILD TABLE: X001 Previous year declarations")
 
 sr_file = "X001_DECLARATIONS_PREV"
 sr_filet = sr_file
-sx_path = "R:/People/" + funcdate.prev_year() + "/"
+sx_path = "R:/People/" + funcdatn.get_previous_year() + "/"
 sx_file = "Conflict_001_lst_declarations_"
 sx_filet = sx_file + funcdatn.get_today_date_file() #Today
 
@@ -218,7 +218,7 @@ funcfile.writelog("%t BUILD TABLE: X001 Current year declarations")
 
 sr_file = "X001_DECLARATIONS_CURR"
 sr_filet = sr_file
-sx_path = "R:/People/" + funcdate.cur_year() + "/"
+sx_path = "R:/People/" + funcdatn.get_current_year() + "/"
 sx_file = "Conflict_001_lst_declarations_"
 sx_filet = sx_file + funcdatn.get_today_date_file() #Today
 
@@ -281,7 +281,7 @@ funcfile.writelog("%t BUILD TABLE: X002 Previous interests")
 
 sr_file = "X002_INTERESTS_PREV"
 sr_filet = sr_file
-sx_path = "R:/People/" + funcdate.prev_year() + "/"
+sx_path = "R:/People/" + funcdatn.get_previous_year() + "/"
 sx_file = "Conflict_002_lst_interests_"
 sx_filet = sx_file + funcdatn.get_today_date_file() #Today
 
@@ -346,7 +346,7 @@ funcfile.writelog("%t BUILD TABLE: X002 Current interests")
 
 sr_file = "X002_INTERESTS_CURR"
 sr_filet = sr_file
-sx_path = "R:/People/" + funcdate.cur_year() + "/"
+sx_path = "R:/People/" + funcdatn.get_current_year() + "/"
 sx_file = "Conflict_002_lst_interests_"
 sx_filet = sx_file + funcdatn.get_today_date_file() #Today
 

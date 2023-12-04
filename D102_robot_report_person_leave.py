@@ -59,7 +59,7 @@ from _my_modules import funcdatn
     s_description: str = "Leave report"
     so_path: str = "W:/People_leave/"  # Source database path
     so_file: str = "People_leave.sqlite"  # Source database
-    re_path: str = "R:/People/" + funcdate.cur_year() + "/"  # Results
+    re_path: str = "R:/People/" + funcdatn.get_current_year() + "/"  # Results
     l_mess: bool = funcconf.l_mess_project
     # l_mess: bool = False
     l_mailed: bool = False
@@ -186,8 +186,8 @@ from _my_modules import funcdatn
             for element in item:
                 s_data += element
             print(s_data)
-            print(funcdate.cur_year())
-            if funcdate.cur_year() in s_data or  funcdate.prev_year() in s_data:
+            print(funcdatn.get_current_year())
+            if funcdatn.get_current_year() in s_data or  funcdatn.get_previous_year() in s_data:
                 s_message += '\n'
                 s_message += s_data
 

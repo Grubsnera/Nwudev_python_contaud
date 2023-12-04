@@ -60,7 +60,7 @@ from _my_modules import funcdatn
     s_description: str = "Payroll report"
     so_path: str = "W:/People_payroll/"  # Source database path
     so_file: str = "People_payroll.sqlite"  # Source database
-    re_path: str = "R:/People/" + funcdate.cur_year() + "/"  # Results
+    re_path: str = "R:/People/" + funcdatn.get_current_year() + "/"  # Results
     l_mess: bool = funcconf.l_mess_project
     l_mess: bool = False
     l_mailed: bool = False
@@ -110,7 +110,7 @@ from _my_modules import funcdatn
 
     # For which year
     year_start: str = '2000-01-01'
-    year_end: str = funcdate.cur_year() + '-12-31'
+    year_end: str = funcdatn.get_current_year() + '-12-31'
     calc_today: str = year_end
     calc_month_end: str = year_end
     s_table_name: str = 'Payroll history report'

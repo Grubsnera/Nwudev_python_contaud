@@ -22,9 +22,9 @@ print("")
 s_year = input("For which period? (yyyy) ")
 print("")
 s_period: str = ""
-if s_year == funcdate.cur_year():
+if s_year == funcdatn.get_current_year():
     s_period = "curr"
-elif s_year == funcdate.prev_year():
+elif s_year == funcdatn.get_previous_year():
     s_period = "prev"
 else:
     s_period = s_year
@@ -85,9 +85,9 @@ else:
     sx_file = "Creditor_report_payments_001aa_"
 if l_export == True:
     if s_period == "curr":
-        sx_path = "R:/Kfs/" + funcdate.cur_year() + "/"
+        sx_path = "R:/Kfs/" + funcdatn.get_current_year() + "/"
     elif s_period == "prev":
-        sx_path = "R:/Kfs/" + funcdate.prev_year() + "/"
+        sx_path = "R:/Kfs/" + funcdatn.get_previous_year() + "/"
     else:
         sx_path = "R:/Kfs/" + s_period + "/"
     print("Export data..." + sx_path + sx_file)
