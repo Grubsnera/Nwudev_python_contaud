@@ -11,7 +11,6 @@ import sqlite3
 
 # IMPORT OWN MODULES
 from _my_modules import funcconf
-from _my_modules import funcdate
 from _my_modules import funcdatn
 from _my_modules import funccsv
 from _my_modules import funcfile
@@ -197,8 +196,8 @@ def studdeb_deferments(s_period="curr"):
         s_sql = s_sql.replace("%YEARB%", funcdatn.get_current_year_begin())
         s_sql = s_sql.replace("%YEARE%", funcdatn.get_current_year_end())
     elif s_period == "prev":
-        s_sql = s_sql.replace("%YEARB%", funcdate.prev_yearbegin())
-        s_sql = s_sql.replace("%YEARE%", funcdate.prev_yearend())
+        s_sql = s_sql.replace("%YEARB%", funcdatn.get_previous_year_begin())
+        s_sql = s_sql.replace("%YEARE%", funcdatn.get_previous_year_end())
     else:
         s_sql = s_sql.replace("%YEARB%", s_year + "-01-01")
         s_sql = s_sql.replace("%YEARE%", s_year + "-12-31")
@@ -580,7 +579,7 @@ def studdeb_deferments(s_period="curr"):
     if s_period == "curr":
         s_sql = s_sql.replace("%YEARE%", funcdatn.get_current_year_end())
     elif s_period == "prev":
-        s_sql = s_sql.replace("%YEARE%", funcdate.prev_yearend())
+        s_sql = s_sql.replace("%YEARE%", funcdatn.get_previous_year_end())
     else:
         s_sql = s_sql.replace("%YEARE%", s_year + "-12-31")
     s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())

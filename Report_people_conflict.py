@@ -13,7 +13,7 @@ import sys
 sys.path.append('S:/_my_modules')
 
 # Import own modules
-import funcdate
+import funcdatn
 import funccsv
 import funcfile
 
@@ -154,8 +154,8 @@ WHERE
   X000_ALL_DECLARATIONS.DECLARATION_DATE >= Date("%PYEARB%") AND
   X000_ALL_DECLARATIONS.DECLARATION_DATE <= Date("%PYEARE%")
 """
-s_sql = s_sql.replace("%PYEARB%",funcdate.prev_yearbegin())
-s_sql = s_sql.replace("%PYEARE%",funcdate.prev_yearend())
+s_sql = s_sql.replace("%PYEARB%",funcdatn.get_previous_year_begin())
+s_sql = s_sql.replace("%PYEARE%",funcdatn.get_previous_year_end())
 so_curs.execute("DROP TABLE IF EXISTS X001_DECLARATIONS_PREV")
 so_curs.execute(s_sql)
 

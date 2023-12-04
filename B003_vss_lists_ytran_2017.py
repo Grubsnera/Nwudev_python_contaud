@@ -9,7 +9,7 @@ sys.path.append('S:/_my_modules')
 #print(sys.path)
 
 # Import own modules
-import funcdate
+import funcdatn
 import funccsv
 import funcfile
 

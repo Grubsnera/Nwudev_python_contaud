@@ -14,7 +14,7 @@ import sys
 sys.path.append('S:/_my_modules')
 
 # Import own modules
-import funcdate
+import funcdatn
 import funccsv
 import funcfile
 import funcmail

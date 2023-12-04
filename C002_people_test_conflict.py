@@ -10,7 +10,6 @@ import sqlite3
 
 # IMPORT OWN MODULES
 from _my_modules import funccsv
-from _my_modules import funcdate
 from _my_modules import funcdatn
 from _my_modules import funcfile
 from _my_modules import funcsms
@@ -292,8 +291,8 @@ def people_test_conflict():
     s_sql = s_sqlp
     s_sql = s_sql.replace("X001_declarations_curr", sr_file)
     s_sql = s_sql.replace("X002_PEOPLE_CURR_YEAR", "X002_PEOPLE_PREV_YEAR")
-    s_sql = s_sql.replace("%CYEARB%", funcdate.prev_yearbegin())
-    s_sql = s_sql.replace("%CYEARE%", funcdate.prev_yearend())
+    s_sql = s_sql.replace("%CYEARB%", funcdatn.get_previous_year_begin())
+    s_sql = s_sql.replace("%CYEARE%", funcdatn.get_previous_year_end())
     sqlite_cursor.execute("DROP TABLE IF EXISTS "+sr_file)
     sqlite_cursor.execute(s_sql)
     sqlite_connection.commit()
@@ -413,8 +412,8 @@ def people_test_conflict():
         pfp.EMPLOYEE_NUMBER    
     ;"""
     sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = s_sql.replace("%PREVMONTH%", funcdate.prev_monthend()[0:7])
-    if funcdate.prev_monthend()[0:4] == funcdate.prev_year:
+    s_sql = s_sql.replace("%PREVMONTH%", funcdatn.get_previous_month_end()[0:7])
+    if funcdatn.get_previous_month_end()[0:4] == funcdatn.get_previous_year:
         s_sql = s_sql.replace("%PERIOD%", 'prev')
     else:
         s_sql = s_sql.replace("%PERIOD%", 'curr')
@@ -443,8 +442,8 @@ def people_test_conflict():
         pfp.EMPLOYEE_NUMBER    
     ;"""
     sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = s_sql.replace("%PREVMONTH%", funcdate.prev_monthend()[0:7])
-    if funcdate.prev_monthend()[0:4] == funcdate.prev_year:
+    s_sql = s_sql.replace("%PREVMONTH%", funcdatn.get_previous_month_end()[0:7])
+    if funcdatn.get_previous_month_end()[0:4] == funcdatn.get_previous_year:
         s_sql = s_sql.replace("%PERIOD%", 'prev')
     else:
         s_sql = s_sql.replace("%PERIOD%", 'curr')
@@ -750,8 +749,8 @@ def people_test_conflict():
         pfp.EMPLOYEE_NUMBER    
     ;"""
     sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = s_sql.replace("%PREVMONTH%", funcdate.prev_monthend()[0:7])
-    if funcdate.prev_monthend()[0:4] == funcdate.prev_year:
+    s_sql = s_sql.replace("%PREVMONTH%", funcdatn.get_previous_month_end()[0:7])
+    if funcdatn.get_previous_month_end()[0:4] == funcdatn.get_previous_year:
         s_sql = s_sql.replace("%PERIOD%", 'prev')
     else:
         s_sql = s_sql.replace("%PERIOD%", 'curr')
@@ -879,7 +878,7 @@ def people_test_conflict():
         ;"""
         sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
-        s_sql = s_sql.replace("%TODAYPLUS%", funcdate.cur_monthendnext())
+        s_sql = s_sql.replace("%TODAYPLUS%", funcdatn.get_current_month_end_next())
         sqlite_cursor.execute(s_sql)
         sqlite_connection.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -1404,7 +1403,7 @@ def people_test_conflict():
         s_sql = s_sql.replace("%FINDING%", s_finding)
         s_sql = s_sql.replace("%FILEP%", s_file_prefix)
         s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
-        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
+        s_sql = s_sql.replace("%DAYS%", funcdatn.get_current_month_end_next())
         sqlite_cursor.execute(s_sql)
         sqlite_connection.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -1730,7 +1729,7 @@ def people_test_conflict():
             """
             s_sql = s_sql.replace("%FILEP%", s_file_prefix)
             s_sql = s_sql.replace("%FILEN%", "a_" + s_file_name)
-            s_sql = s_sql.replace("%PREVMONTH%", funcdate.prev_monthend()[0:7])
+            s_sql = s_sql.replace("%PREVMONTH%", funcdatn.get_previous_month_end()[0:7])
             if l_debug:
                 print(s_sql)
             sqlite_cursor.execute(s_sql)
@@ -1778,7 +1777,7 @@ def people_test_conflict():
                 s_sql = s_sql.replace("%FINDING%", s_finding)
                 s_sql = s_sql.replace("%FILEP%", s_file_prefix)
                 s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
-                s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
+                s_sql = s_sql.replace("%DAYS%", funcdatn.get_current_month_end_next())
                 sqlite_cursor.execute(s_sql)
                 sqlite_connection.commit()
                 funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -2123,7 +2122,7 @@ def people_test_conflict():
                 s_sql = s_sql.replace("%FINDING%", s_finding)
                 s_sql = s_sql.replace("%FILEP%", s_file_prefix)
                 s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
-                s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
+                s_sql = s_sql.replace("%DAYS%", funcdatn.get_current_month_end_next())
                 sqlite_cursor.execute(s_sql)
                 sqlite_connection.commit()
                 funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -2718,7 +2717,7 @@ def people_test_conflict():
             if l_debug:
                 print("Join previously reported to current findings...")
             today = funcdatn.get_today_date()
-            next_test_date = funcdate.cur_monthendnext()
+            next_test_date = funcdatn.get_current_month_end_next()
             s_sql = f"CREATE TABLE {table_name} As" + f"""
             Select
                 f.*,

@@ -12,7 +12,6 @@ import sqlite3
 # IMPORT OWN MODULES
 from _my_modules import funcconf
 from _my_modules import funccsv
-from _my_modules import funcdate
 from _my_modules import funcdatn
 from _my_modules import funcfile
 from _my_modules import funcmail
@@ -1772,8 +1771,8 @@ def people_lists():
                         "Build current year assignments 2...")
 
     # Build previous year assignment round 1 ******************************************
-    funcpeople.assign01(so_conn, "X001_ASSIGNMENT_PREV_01", funcdate.prev_yearbegin(), funcdate.prev_yearend(),
-                        funcdate.prev_yearend(), "Build previous year assignments 1...")
+    funcpeople.assign01(so_conn, "X001_ASSIGNMENT_PREV_01", funcdatn.get_previous_year_begin(), funcdatn.get_previous_year_end(),
+                        funcdatn.get_previous_year_end(), "Build previous year assignments 1...")
     # Build previous year assignment round 2 ******************************************
     funcpeople.assign02(so_conn, "X001_ASSIGNMENT_PREV", "X001_ASSIGNMENT_PREV_01",
                         "Build previous year assignments 2...")

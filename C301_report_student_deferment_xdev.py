@@ -27,7 +27,7 @@ import datetime
 import sqlite3
 
 # IMPORT OWN MODULES
-import funcdate
+import funcdatn
 import funccsv
 import funcfile
 

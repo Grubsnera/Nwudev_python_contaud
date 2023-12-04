@@ -9,7 +9,6 @@ Created: 20 November 2022
 import sqlite3
 
 # IMPORT OWN MODULES
-from _my_modules import funcdate
 from _my_modules import funcdatn
 from _my_modules import funcsys
 from _my_modules import funcconf

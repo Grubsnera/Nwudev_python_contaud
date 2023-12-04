@@ -12,7 +12,6 @@ import sqlite3
 # IMPORT OWN MODULES
 from _my_modules import funcconf
 from _my_modules import funccsv
-from _my_modules import funcdate
 from _my_modules import funcdatn
 from _my_modules import funcfile
 from _my_modules import funcmail
@@ -430,7 +429,7 @@ def people_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
-        s_sql = s_sql.replace("%TODAYPLUS%", funcdate.cur_monthendnext())
+        s_sql = s_sql.replace("%TODAYPLUS%", funcdatn.get_current_month_end_next())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -761,7 +760,7 @@ def people_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdatn.get_today_date())
-        s_sql = s_sql.replace("%TODAYPLUS%",  funcdate.cur_monthendnext())
+        s_sql = s_sql.replace("%TODAYPLUS%",  funcdatn.get_current_month_end_next())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -1052,7 +1051,7 @@ def people_test_masterfile():
         s_sql = s_sql.replace("%FINDING%", s_finding)
         s_sql = s_sql.replace("%FILEP%", s_fprefix)
         s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
-        s_sql = s_sql.replace("%TODAYPLUS%", funcdate.cur_monthendnext())
+        s_sql = s_sql.replace("%TODAYPLUS%", funcdatn.get_current_month_end_next())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -1348,7 +1347,7 @@ def people_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdatn.get_today_date())
-        s_sql = s_sql.replace("%TODAYPLUS%", funcdate.cur_monthendnext())
+        s_sql = s_sql.replace("%TODAYPLUS%", funcdatn.get_current_month_end_next())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -1670,7 +1669,7 @@ def people_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdatn.get_today_date())
-        s_sql = s_sql.replace("%TODAYPLUS%", funcdate.cur_monthendnext())
+        s_sql = s_sql.replace("%TODAYPLUS%", funcdatn.get_current_month_end_next())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -1914,8 +1913,8 @@ def people_test_masterfile():
         pfp.EMPLOYEE_NUMBER    
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    s_sql = s_sql.replace("%PREVMONTH%", funcdate.prev_monthend()[0:7])
-    if funcdate.prev_monthend()[0:4] == funcdate.prev_year:
+    s_sql = s_sql.replace("%PREVMONTH%", funcdatn.get_previous_month_end()[0:7])
+    if funcdatn.get_previous_month_end()[0:4] == funcdatn.get_previous_year:
         s_sql = s_sql.replace("%PERIOD%", 'prev')
     else:
         s_sql = s_sql.replace("%PERIOD%", 'curr')
@@ -1943,7 +1942,7 @@ def people_test_masterfile():
         pfp.EMPLOYEE_NUMBER
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    if funcdate.prev_monthend()[0:4] == funcdate.prev_year:
+    if funcdatn.get_previous_month_end()[0:4] == funcdatn.get_previous_year:
         s_sql = s_sql.replace("%PERIOD%", 'prev')
     else:
         s_sql = s_sql.replace("%PERIOD%", 'curr')
@@ -1970,7 +1969,7 @@ def people_test_masterfile():
         pfp.EMPLOYEE_NUMBER
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS "+sr_file)
-    if funcdate.prev_monthend()[0:4] == funcdate.prev_year:
+    if funcdatn.get_previous_month_end()[0:4] == funcdatn.get_previous_year:
         s_sql = s_sql.replace("%PERIOD%", 'prev')
     else:
         s_sql = s_sql.replace("%PERIOD%", 'curr')
@@ -2132,7 +2131,7 @@ def people_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdatn.get_today_date())
-        s_sql = s_sql.replace("%TODAYPLUS%", funcdate.cur_monthendnext())
+        s_sql = s_sql.replace("%TODAYPLUS%", funcdatn.get_current_month_end_next())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -2448,7 +2447,7 @@ def people_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdatn.get_today_date())
-        s_sql = s_sql.replace("%TODAYPLUS%", funcdate.cur_monthendnext())
+        s_sql = s_sql.replace("%TODAYPLUS%", funcdatn.get_current_month_end_next())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -2731,7 +2730,7 @@ def people_test_masterfile():
             EMPLOYEE_NUMBER                        
         ;"""
         s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
-        s_sql = s_sql.replace("%MONTH%", funcdate.cur_monthendnext())
+        s_sql = s_sql.replace("%MONTH%", funcdatn.get_current_month_end_next())
         so_curs.execute(s_sql)
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
         if l_debug:
@@ -2807,7 +2806,7 @@ def people_test_masterfile():
             s_sql = s_sql.replace("%FINDING%", s_finding)
             s_sql = s_sql.replace("%FILEP%", s_file_prefix)
             s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
-            s_sql = s_sql.replace("%DATETEST%", funcdate.cur_monthendnext())
+            s_sql = s_sql.replace("%DATETEST%", funcdatn.get_current_month_end_next())
             so_curs.execute(s_sql)
             funcfile.writelog("%t BUILD TABLE: " + sr_file)
             if l_debug:
@@ -3182,7 +3181,7 @@ def people_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdatn.get_today_date())
-        s_sql = s_sql.replace("%TODAYPLUS%", funcdate.cur_monthendnext())
+        s_sql = s_sql.replace("%TODAYPLUS%", funcdatn.get_current_month_end_next())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -3497,7 +3496,7 @@ def people_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
-        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
+        s_sql = s_sql.replace("%DAYS%", funcdatn.get_current_month_end_next())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -3912,7 +3911,7 @@ def people_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
-        s_sql = s_sql.replace("%TODAYPLUS%", funcdate.cur_monthendnext())
+        s_sql = s_sql.replace("%TODAYPLUS%", funcdatn.get_current_month_end_next())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -4262,7 +4261,7 @@ def people_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdatn.get_today_date())
-        s_sql = s_sql.replace("%TODAYPLUS%", funcdate.cur_monthendnext())
+        s_sql = s_sql.replace("%TODAYPLUS%", funcdatn.get_current_month_end_next())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -4595,7 +4594,7 @@ def people_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdatn.get_today_date())
-        s_sql = s_sql.replace("%TODAYPLUS%", funcdate.cur_monthendnext())
+        s_sql = s_sql.replace("%TODAYPLUS%", funcdatn.get_current_month_end_next())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -4886,7 +4885,7 @@ def people_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdatn.get_today_date())
-        s_sql = s_sql.replace("%TODAYPLUS%", funcdate.cur_monthendnext())
+        s_sql = s_sql.replace("%TODAYPLUS%", funcdatn.get_current_month_end_next())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -5207,7 +5206,7 @@ def people_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdatn.get_today_date())
-        s_sql = s_sql.replace("%TODAYPLUS%", funcdate.cur_monthendnext())
+        s_sql = s_sql.replace("%TODAYPLUS%", funcdatn.get_current_month_end_next())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -5755,7 +5754,7 @@ def people_test_masterfile():
             s_sql = s_sql.replace("%FINDING%", s_finding)
             s_sql = s_sql.replace("%FILEP%", s_file_prefix)
             s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
-            s_sql = s_sql.replace("%DATETEST%", funcdate.cur_monthendnext())
+            s_sql = s_sql.replace("%DATETEST%", funcdatn.get_current_month_end_next())
             so_curs.execute(s_sql)
             funcfile.writelog("%t BUILD TABLE: " + sr_file)
             if l_debug:
@@ -6101,7 +6100,7 @@ def people_test_masterfile():
             s_sql = s_sql.replace("%FINDING%", s_finding)
             s_sql = s_sql.replace("%FILEP%", s_file_prefix)
             s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
-            s_sql = s_sql.replace("%DATETEST%", funcdate.cur_monthendnext())
+            s_sql = s_sql.replace("%DATETEST%", funcdatn.get_current_month_end_next())
             so_curs.execute(s_sql)
             funcfile.writelog("%t BUILD TABLE: " + sr_file)
             if l_debug:
@@ -6482,7 +6481,7 @@ def people_test_masterfile():
             s_sql = s_sql.replace("%FINDING%", s_finding)
             s_sql = s_sql.replace("%FILEP%", s_file_prefix)
             s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
-            s_sql = s_sql.replace("%DATETEST%", funcdate.cur_monthendnext())
+            s_sql = s_sql.replace("%DATETEST%", funcdatn.get_current_month_end_next())
             so_curs.execute(s_sql)
             funcfile.writelog("%t BUILD TABLE: " + sr_file)
             if l_debug:
@@ -6966,7 +6965,7 @@ def people_test_masterfile():
             s_sql = s_sql.replace("%FINDING%", s_finding)
             s_sql = s_sql.replace("%FILEP%", s_file_prefix)
             s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
-            s_sql = s_sql.replace("%DATETEST%", funcdate.cur_monthendnext())
+            s_sql = s_sql.replace("%DATETEST%", funcdatn.get_current_month_end_next())
             so_curs.execute(s_sql)
             funcfile.writelog("%t BUILD TABLE: " + sr_file)
             if l_debug:
@@ -7320,7 +7319,7 @@ def people_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
-        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
+        s_sql = s_sql.replace("%DAYS%", funcdatn.get_current_month_end_next())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -7634,7 +7633,7 @@ def people_test_masterfile():
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
-        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthendnext())
+        s_sql = s_sql.replace("%DAYS%", funcdatn.get_current_month_end_next())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -8051,7 +8050,7 @@ def people_test_masterfile():
             s_sql = s_sql.replace("%FINDING%", s_finding)
             s_sql = s_sql.replace("%FILEP%", s_file_prefix)
             s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
-            s_sql = s_sql.replace("%DATETEST%", funcdate.cur_monthendnext())
+            s_sql = s_sql.replace("%DATETEST%", funcdatn.get_current_month_end_next())
             so_curs.execute(s_sql)
             funcfile.writelog("%t BUILD TABLE: " + sr_file)
             if l_debug:
@@ -8380,7 +8379,7 @@ def people_test_masterfile():
             s_sql = s_sql.replace("%FINDING%", s_finding)
             s_sql = s_sql.replace("%FILEP%", s_file_prefix)
             s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
-            s_sql = s_sql.replace("%DATETEST%", funcdate.cur_monthendnext())
+            s_sql = s_sql.replace("%DATETEST%", funcdatn.get_current_month_end_next())
             so_curs.execute(s_sql)
             funcfile.writelog("%t BUILD TABLE: " + sr_file)
             if l_debug:
@@ -8716,7 +8715,7 @@ def people_test_masterfile():
             s_sql = s_sql.replace("%FINDING%", s_finding)
             s_sql = s_sql.replace("%FILEP%", s_file_prefix)
             s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
-            s_sql = s_sql.replace("%DATETEST%", funcdate.cur_monthendnext())
+            s_sql = s_sql.replace("%DATETEST%", funcdatn.get_current_month_end_next())
             so_curs.execute(s_sql)
             funcfile.writelog("%t BUILD TABLE: " + sr_file)
             if l_debug:
@@ -9042,7 +9041,7 @@ def people_test_masterfile():
             s_sql = s_sql.replace("%FINDING%", s_finding)
             s_sql = s_sql.replace("%FILEP%", s_file_prefix)
             s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
-            s_sql = s_sql.replace("%DATETEST%", funcdate.cur_monthendnext())
+            s_sql = s_sql.replace("%DATETEST%", funcdatn.get_current_month_end_next())
             so_curs.execute(s_sql)
             funcfile.writelog("%t BUILD TABLE: " + sr_file)
             if l_debug:
@@ -9368,7 +9367,7 @@ def people_test_masterfile():
             s_sql = s_sql.replace("%FINDING%", s_finding)
             s_sql = s_sql.replace("%FILEP%", s_file_prefix)
             s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
-            s_sql = s_sql.replace("%DATETEST%", funcdate.cur_monthendnext())
+            s_sql = s_sql.replace("%DATETEST%", funcdatn.get_current_month_end_next())
             so_curs.execute(s_sql)
             funcfile.writelog("%t BUILD TABLE: " + sr_file)
             if l_debug:

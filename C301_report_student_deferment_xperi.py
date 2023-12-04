@@ -6,7 +6,7 @@ sys.path.append('S:/_my_modules')
 sys.path.append('S:/')
 
 # IMPORT MODULES
-import funcdate
+import funcdatn
 import funcfile
 import funcsys
 

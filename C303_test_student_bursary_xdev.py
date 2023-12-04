@@ -11,7 +11,6 @@ import csv
 # IMPORT OWN MODULES
 from _my_modules import funcconf
 from _my_modules import funccsv
-from _my_modules import funcdate
 from _my_modules import funcdatn
 from _my_modules import funcfile
 from _my_modules import funcstat

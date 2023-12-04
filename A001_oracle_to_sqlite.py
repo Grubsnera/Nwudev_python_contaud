@@ -10,7 +10,6 @@ import sqlite3
 
 # Import own modules ***********************************************************
 from _my_modules import funcconf
-from _my_modules import funcdate
 from _my_modules import funcdatn
 from _my_modules import funcfile
 from _my_modules import funcstr
@@ -314,19 +313,19 @@ def oracle_to_sqlite(s_table="000b_Table - temp.csv", s_tables="TEMP"):
                 if "%CYEARE%" in tb_whe:
                     tb_whe = tb_whe.replace("%CYEARE%", funcdatn.get_current_year_end())
                 if "%CMONTHB%" in tb_whe:
-                    tb_whe = tb_whe.replace("%CMONTHB%", funcdate.cur_monthbegin())
+                    tb_whe = tb_whe.replace("%CMONTHB%", funcdatn.get_current_month_begin())
                 if "%CMONTHE%" in tb_whe:
-                    tb_whe = tb_whe.replace("%CMONTHE%", funcdate.cur_monthend())
+                    tb_whe = tb_whe.replace("%CMONTHE%", funcdatn.get_current_month_end())
                 if "%PYEAR%" in tb_whe:
                     tb_whe = tb_whe.replace("%PYEAR%", funcdatn.get_previous_year())
                 if "%PMONTHB%" in tb_whe:
-                    tb_whe = tb_whe.replace("%PMONTHB%", funcdate.prev_monthbegin())
+                    tb_whe = tb_whe.replace("%PMONTHB%", funcdatn.get_previous_month_begin())
                 if "%PMONTHE%" in tb_whe:
-                    tb_whe = tb_whe.replace("%PMONTHE%", funcdate.prev_monthend())
+                    tb_whe = tb_whe.replace("%PMONTHE%", funcdatn.get_previous_month_end())
                 if "%PYEARB%" in tb_whe:
-                    tb_whe = tb_whe.replace("%PYEARB%", funcdate.prev_yearbegin())
+                    tb_whe = tb_whe.replace("%PYEARB%", funcdatn.get_previous_year_begin())
                 if "%PYEARE%" in tb_whe:
-                    tb_whe = tb_whe.replace("%PYEARE%", funcdate.prev_yearend())
+                    tb_whe = tb_whe.replace("%PYEARE%", funcdatn.get_previous_year_end())
                     
                 ssql_str = ssql_str + " " + tb_whe        
             if tb_ord != "":

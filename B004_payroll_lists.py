@@ -9,7 +9,6 @@ import sqlite3
 
 # Import own modules
 from _my_modules import funcconf
-from _my_modules import funcdate
 from _my_modules import funcdatn
 from _my_modules import funccsv
 from _my_modules import funcfile
@@ -102,11 +101,11 @@ def payroll_lists(s_year: str = 'curr'):
         year_start: str = funcdatn.get_current_year_begin()
         year_end: str = funcdatn.get_current_year_end()
         calc_today = funcdatn.get_today_date()
-        calc_monthend = funcdate.prev_monthend()
+        calc_monthend = funcdatn.get_previous_month_end()
         s_table_name: str = 'Payroll history curr'
     elif s_year == 'prev':
-        year_start: str = funcdate.prev_yearbegin()
-        year_end: str = funcdate.prev_yearend()
+        year_start: str = funcdatn.get_previous_year_begin()
+        year_end: str = funcdatn.get_previous_year_end()
         calc_today = year_end
         calc_monthend = year_end
         s_table_name: str = 'Payroll history prev'
@@ -363,7 +362,7 @@ def payroll_lists(s_year: str = 'curr'):
         sr_filet = sr_file
         sx_path = re_path + s_year + "/"
         sx_file = "Payroll_001ax_package_"
-        sx_filet = sx_file + funcdate.cur_monthendfile()
+        sx_filet = sx_file + funcdatn.get_current_month_end_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
         funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
         funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
@@ -497,7 +496,7 @@ def payroll_lists(s_year: str = 'curr'):
         sr_filet = sr_file
         sx_path = re_path + s_year + "/"
         sx_file = "Payroll_002ax_income_total_"
-        sx_filet = sx_file + funcdate.prev_monthendfile()
+        sx_filet = sx_file + funcdatn.get_previous_month_end_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
         funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
         funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)

@@ -29,6 +29,7 @@ get_today_date_file(): Return today's date in YYYYMMDD format.
 get_today_name(): Return today's weekday name.
 get_today_day(): Return today's day as a string in DD format.
 get_today_day_strip(): Return today's day as a string in 'D' format.
+get_today_plusdays(i_days=14): Return today's date plus the number of days.
 get_current_month(): Return today's month as a string in DD format.
 get_current_month_begin(): Return the first day of the current month in YYYY-MM-DD format
 get_current_month_end(): Return the last day of the current month in YYYY-MM-DD format.
@@ -47,6 +48,9 @@ get_previous_month_file(): Return the last day of the previous month as a string
 get_previous_year(): Return previous year as a string in YYYY format.
 get_previous_year_begin(): Return the first day of the previous year as a string in YYYY-MM-DD format.
 get_previous_year_end(): Return the last day of the previous year as a string in YYYY-MM-DD format.
+get_next_year(): Return next year as a string in YYYY format.
+get_next_year_begin(): Return first day of next year as a string in YYYY-MM-DD format.
+
 """
 
 
@@ -74,6 +78,11 @@ def get_today_day():
 def get_today_day_strip():
     """Return today's day as a string in 'D' format, e.g., '1' for the first day of the month."""
     return str(date.today().day)
+
+
+def get_today_plusdays(i_days=14):
+    future_date = datetime.today() + timedelta(days=i_days)
+    return future_date.strftime("%Y-%m-%d")
 
 
 def get_current_month():
@@ -247,12 +256,27 @@ def get_previous_year_end():
     return first_day_of_year
 
 
+def get_next_year():
+    """Return next year as a string in YYYY format."""
+    last_year = date.today().year + 1
+    return str(last_year)
+
+
+def get_next_year_begin():
+    """Return the first day of the previous year as a string in YYYY-MM-DD format."""
+    last_year = date.today().year + 1
+    first_day_of_year = date(last_year, 1, 1)
+    return first_day_of_year
+
+
 if __name__ == '__main__':
     print(get_today_date())
     print(get_today_date_file())
     print(get_today_name())
     print(get_today_day())
     print(get_today_day_strip())
+    print(get_today_plusdays(10))
+    print(get_today_plusdays(100))
     print(get_current_month())
     print(get_current_month_begin())
     print(get_current_month_end())
@@ -272,3 +296,5 @@ if __name__ == '__main__':
     print(get_previous_year())
     print(get_previous_year_begin())
     print(get_previous_year_end())
+    print(get_next_year())
+    print(get_next_year_begin())

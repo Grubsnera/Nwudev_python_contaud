@@ -12,7 +12,7 @@ import sys
 sys.path.append('S:/_my_modules')
 
 # Import own modules
-import funcdate
+import funcdatn
 import funccsv
 
 # Open the script log file ******************************************************

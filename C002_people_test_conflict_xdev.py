@@ -12,7 +12,6 @@ import sqlite3
 
 # IMPORT OWN MODULES
 from _my_modules import funccsv
-from _my_modules import funcdate
 from _my_modules import funcdatn
 from _my_modules import funcfile
 from _my_modules import funcsms
@@ -232,7 +231,7 @@ else:
         if l_debug:
             print("Join previously reported to current findings...")
         today = funcdatn.get_today_date()
-        next_test_date = funcdate.cur_monthendnext()
+        next_test_date = funcdatn.get_current_month_end_next()
         s_sql = f"CREATE TABLE {table_name} As" + f"""
         Select
             f.*,

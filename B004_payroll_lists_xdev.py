@@ -11,7 +11,6 @@ import sqlite3
 
 # IMPORT OWN MODULES
 from _my_modules import funcconf
-from _my_modules import funcdate
 from _my_modules import funcdatn
 from _my_modules import funccsv
 from _my_modules import funcfile
@@ -50,11 +49,11 @@ if s_year == 'curr':
     year_start: str = funcdatn.get_current_year_begin()
     year_end: str = funcdatn.get_current_year_end()
     calc_today = funcdatn.get_today_date()
-    calc_monthend = funcdate.prev_monthend()
+    calc_monthend = funcdatn.get_previous_month_end()
     s_table_name: str = 'Payroll history curr'
 elif s_year == 'prev':
-    year_start: str = funcdate.prev_yearbegin()
-    year_end: str = funcdate.prev_yearend()
+    year_start: str = funcdatn.get_previous_year_begin()
+    year_end: str = funcdatn.get_previous_year_end()
     calc_today = year_end
     calc_monthend = year_end
     s_table_name: str = 'Payroll history prev'

@@ -29,7 +29,7 @@ import sys
 sys.path.append('X:\\Python\\_my_modules')
 
 # Import own modules
-import funcdate
+import funcdatn
 import funccsv
 import funcfile
 
@@ -85,8 +85,8 @@ WHERE
 ORDER BY
   RESIDENCEID
 """
-s_sql = s_sql.replace("%PYEARB%",funcdate.prev_yearbegin())
-s_sql = s_sql.replace("%PYEARE%",funcdate.prev_yearend())
+s_sql = s_sql.replace("%PYEARB%",funcdatn.get_previous_year_begin())
+s_sql = s_sql.replace("%PYEARE%",funcdatn.get_previous_year_end())
 so_curs.execute("DROP TABLE IF EXISTS X001_Previous_residence")
 so_curs.execute(s_sql)
 so_conn.commit()
@@ -193,8 +193,8 @@ WHERE
   (TRANSINST.STARTDATE <= Date("%PYEARB%") AND
   TRANSINST.ENDDATE >= Date("%PYEARE%"))
 """
-s_sql = s_sql.replace("%PYEARB%",funcdate.prev_yearbegin())
-s_sql = s_sql.replace("%PYEARE%",funcdate.prev_yearend())
+s_sql = s_sql.replace("%PYEARB%",funcdatn.get_previous_year_begin())
+s_sql = s_sql.replace("%PYEARE%",funcdatn.get_previous_year_end())
 so_curs.execute("DROP TABLE IF EXISTS X002_Previous_rate")
 so_curs.execute(s_sql)
 so_conn.commit()
@@ -301,8 +301,8 @@ ORDER BY
   STUDENT,
   ACCOMMRESIDENCY.AUDITDATETIME
 """
-s_sql = s_sql.replace("%PYEARB%",funcdate.prev_yearbegin())
-s_sql = s_sql.replace("%PYEARE%",funcdate.prev_yearend())
+s_sql = s_sql.replace("%PYEARB%",funcdatn.get_previous_year_begin())
+s_sql = s_sql.replace("%PYEARE%",funcdatn.get_previous_year_end())
 so_curs.execute("DROP TABLE IF EXISTS X003_Previous_accom_log")
 so_curs.execute(s_sql)
 so_conn.commit()

@@ -13,7 +13,7 @@ import sys
 sys.path.append('S:/_my_modules')
 
 # Import own modules
-import funcdate
+import funcdatn
 import funccsv
 import funcfile
 
@@ -141,8 +141,8 @@ print("Build previous absence attendances...")
 s_sql = s_sql_prev
 so_curs.execute("DROP TABLE IF EXISTS X103_PER_ABSENCE_ATTENDANCES_PREV")
 s_sql = s_sql.replace("X103_PER_ABSENCE_ATTENDANCES_CURR","X103_PER_ABSENCE_ATTENDANCES_PREV")
-s_sql = s_sql.replace("%CYEARB%",funcdate.prev_yearbegin())
-s_sql = s_sql.replace("%CYEARE%",funcdate.prev_yearend())
+s_sql = s_sql.replace("%CYEARB%",funcdatn.get_previous_year_begin())
+s_sql = s_sql.replace("%CYEARE%",funcdatn.get_previous_year_end())
 so_curs.execute(s_sql)
 so_conn.commit()
 

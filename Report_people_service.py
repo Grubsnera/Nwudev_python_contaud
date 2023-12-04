@@ -12,7 +12,7 @@ import sys
 sys.path.append('S:/_my_modules')
 
 # Import own modules
-import funcdate
+import funcdatn
 import funccsv
 import funcfile
 import funcpeople
@@ -42,11 +42,11 @@ funcfile.writelog("OPEN DATABASE: " + so_file)
 # Ask the questions
 
 print("")
-s_fr = funcdate.prev_monthbegin()
+s_fr = funcdatn.get_previous_month_begin()
 s_fr = input("From which date? (yyyy-mm-dd) ")
-s_to = funcdate.prev_monthend()
+s_to = funcdatn.get_previous_month_end()
 s_to = input("  To which date? (yyyy-mm-dd) ")
-s_on = funcdate.prev_monthend()
+s_on = funcdatn.get_previous_month_end()
 s_on = input("  On which date? (yyyy-mm-dd) ")
 # Input active or not
 print("")

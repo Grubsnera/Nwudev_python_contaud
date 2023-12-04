@@ -11,7 +11,6 @@ import csv
 # IMPORT OWN MODULES
 from _my_modules import funcconf
 from _my_modules import funccsv
-from _my_modules import funcdate
 from _my_modules import funcdatn
 from _my_modules import funcfile
 from _my_modules import funcstat
@@ -568,7 +567,7 @@ def student_bursary(s_period: str = "curr"):
             s_sql = s_sql.replace("%FINDING%", s_finding)
             s_sql = s_sql.replace("%FILEP%", s_file_prefix)
             s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
-            s_sql = s_sql.replace("%DATETEST%", funcdate.cur_monthendnext())
+            s_sql = s_sql.replace("%DATETEST%", funcdatn.get_current_month_end_next())
             so_curs.execute(s_sql)
             funcfile.writelog("%t BUILD TABLE: " + sr_file)
             if l_debug:

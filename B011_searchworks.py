@@ -17,7 +17,6 @@ import pandas as pd
 # IMPORT OWN MODULES
 # sys.path.append('_my_modules')
 from _my_modules import funcconf
-from _my_modules import funcdate
 from _my_modules import funcdatn
 from _my_modules import funcsys
 from _my_modules import funcfile

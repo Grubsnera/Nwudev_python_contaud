@@ -45,8 +45,7 @@ def creditor_test_payments():
     # IMPORT OWN MODULES
     from _my_modules import funcfile
     from _my_modules import funccsv
-    from _my_modules import funcdate
-from _my_modules import funcdatn
+    from _my_modules import funcdatn
     from _my_modules import funcstat
     from _my_modules import funcsms
     from _my_modules import functest
@@ -624,7 +623,7 @@ from _my_modules import funcdatn
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdatn.get_today_date())
-        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(10))
+        s_sql = s_sql.replace("%TODAYPLUS%",funcdatn.get_today_plusdays(10))
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
@@ -1823,7 +1822,7 @@ from _my_modules import funcdatn
         s_sql = s_sql.replace("%FINDING%", s_finding)
         s_sql = s_sql.replace("%FILEP%", s_file_prefix)
         s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
-        s_sql = s_sql.replace("%DATETEST%", funcdate.cur_monthendnext())
+        s_sql = s_sql.replace("%DATETEST%", funcdatn.get_current_month_end_next())
         so_curs.execute(s_sql)
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
         if l_debug:
@@ -3104,7 +3103,7 @@ from _my_modules import funcdatn
         ;"""
         so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
         s_sql = s_sql.replace("%TODAY%",funcdatn.get_today_date())
-        s_sql = s_sql.replace("%TODAYPLUS%",funcdate.today_plusdays(0))
+        s_sql = s_sql.replace("%TODAYPLUS%",funcdatn.get_today_plusdays(0))
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)

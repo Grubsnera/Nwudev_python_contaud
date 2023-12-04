@@ -8,7 +8,6 @@ import sqlite3
 
 # OPEN OWN MODULES
 from _my_modules import funcconf
-from _my_modules import funcdate
 from _my_modules import funcdatn
 from _my_modules import funcfile
 from _my_modules import funcsms
@@ -164,7 +163,7 @@ def people_list_masterfile():
         PEOP.EMP_END < Date('%TODAY%')
     """
     s_sql = s_sql.replace("%CYEAR%", funcdatn.get_current_year())
-    s_sql = s_sql.replace("%TODAY%", funcdate.cur_monthend())
+    s_sql = s_sql.replace("%TODAY%", funcdatn.get_current_month_end())
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: X001_People_start_end_master")

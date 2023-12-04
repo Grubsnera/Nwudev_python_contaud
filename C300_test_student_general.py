@@ -11,7 +11,6 @@ import sqlite3
 # Import own modules
 from _my_modules import funcconf
 from _my_modules import funccsv
-from _my_modules import funcdate
 from _my_modules import funcdatn
 from _my_modules import funcfile
 from _my_modules import funcmail
@@ -212,7 +211,7 @@ def test_student_general():
     s_sql = s_sql.replace("%TODAY%",funcdatn.get_today_date())
     so_curs.execute(s_sql)
     s_sql = "UPDATE "+sr_file+" SET DATE_RETEST = '%NYEARB%'"
-    s_sql = s_sql.replace("%NYEARB%",funcdate.next_yearbegin())
+    s_sql = s_sql.replace("%NYEARB%",funcdatn.get_next_year_begin())
     so_curs.execute(s_sql)
     so_conn.commit()
 
@@ -254,7 +253,7 @@ def test_student_general():
         sr_filet = sr_file
         sx_path = re_path + funcdatn.get_current_year() + "/"
         sx_file = "Idno_001a_list_ytd_"
-        sx_filet = sx_file + funcdate.prev_monthendfile()
+        sx_filet = sx_file + funcdatn.get_previous_month_end_file()
         # Read the header data
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
         # Write the data

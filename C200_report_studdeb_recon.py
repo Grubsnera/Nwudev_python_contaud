@@ -14,7 +14,6 @@ import sqlite3
 
 # Import own modules
 from _my_modules import funcconf
-from _my_modules import funcdate
 from _my_modules import funcdatn
 from _my_modules import funccsv
 from _my_modules import funcfile
@@ -664,7 +663,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
         sr_filet = sr_file
         sx_path = re_path + s_year + "/"
         sx_file = "Debtor_000_postmonth"
-        sx_filet = sx_file + funcdate.prev_monthendfile()
+        sx_filet = sx_file + funcdatn.get_previous_month_end_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
         funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
         funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
@@ -907,7 +906,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     sr_filet = sr_file
     sx_path = re_path + s_year + "/"
     sx_file = "Debtor_002_studbal_"
-    # sx_filet = sx_file + funcdate.prev_monthendfile()
+    # sx_filet = sx_file + funcdatn.get_previous_month_end_file()
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
     funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
     funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)    
@@ -956,7 +955,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     sr_filet = sr_file
     sx_path = re_path + s_year + "/"
     sx_file = "Debtor_002_studbal_open_"
-    # sx_filet = sx_file + funcdate.prev_monthendfile()
+    # sx_filet = sx_file + funcdatn.get_previous_month_end_file()
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
     funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
     funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
@@ -1348,7 +1347,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     sr_filet = sr_file
     sx_path = re_path + s_year + "/"
     sx_file = "Debtor_000_vss_gl_summmonth_"
-    # sx_filet = sx_file + funcdate.prev_monthendfile()
+    # sx_filet = sx_file + funcdatn.get_previous_month_end_file()
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
     funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
     # funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
@@ -1619,7 +1618,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
         sr_filet = sr_file
         sx_path = re_path + s_year + "/"
         sx_file = "Debtor_003_vss_gl_recon_"
-        sx_filet = sx_file + funcdate.cur_monthendfile()
+        sx_filet = sx_file + funcdatn.get_current_month_end_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
         funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
         funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
@@ -3052,7 +3051,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     sr_filet = sr_file
     sx_path = re_path + s_year + "/"
     sx_file = "Debtor_002_vsssummtypeburs_"
-    sx_filet = sx_file + funcdate.prev_monthendfile()
+    sx_filet = sx_file + funcdatn.get_previous_month_end_file()
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
     funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
     funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
@@ -3131,7 +3130,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     sr_filet = sr_file
     sx_path = re_path + s_year + "/"
     sx_file = "Debtor_001_glsummtypeburs_"
-    sx_filet = sx_file + funcdate.prev_monthendfile()
+    sx_filet = sx_file + funcdatn.get_previous_month_end_file()
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
     funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
     funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
@@ -3340,7 +3339,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     sr_filet = sr_file
     sx_path = re_path + s_year + "/"
     sx_file = "Debtor_010c_burs_matched_summmonth_"
-    # sx_filet = sx_file + funcdate.prev_monthendfile()
+    # sx_filet = sx_file + funcdatn.get_previous_month_end_file()
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
     funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
     # funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
@@ -3382,7 +3381,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     sr_filet = sr_file
     sx_path = re_path + s_year + "/"
     sx_file = "Debtor_010d_test_burs_ingl_novss_"
-    sx_filet = sx_file + funcdate.prev_monthendfile()
+    sx_filet = sx_file + funcdatn.get_previous_month_end_file()
     s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
     funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
     funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
@@ -4250,7 +4249,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
         s_sql = s_sql.replace("%FINDING%", s_finding)
         s_sql = s_sql.replace("%FILEP%", s_fprefix)
         s_sql = s_sql.replace("%TODAY%", funcdatn.get_today_date())
-        s_sql = s_sql.replace("%DAYS%", funcdate.cur_monthend())
+        s_sql = s_sql.replace("%DAYS%", funcdatn.get_current_month_end())
         so_curs.execute(s_sql)
         so_conn.commit()
         funcfile.writelog("%t BUILD TABLE: " + sr_file)
