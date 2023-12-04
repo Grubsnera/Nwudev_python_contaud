@@ -25,7 +25,7 @@ END OF SCRIPT
 *****************************************************************************"""
 
 
-def log_capture(s_date=funcdate.yesterday(), l_history=False):
+def log_capture(s_date=funcdatn.get_yesterday_date(), l_history=False):
     """
     Import and report project log file
     :param s_date: Log date to import (default = Yesterday)
@@ -313,6 +313,6 @@ def log_capture(s_date=funcdate.yesterday(), l_history=False):
 if __name__ == '__main__':
     try:
         log_capture(funcdatn.get_today_date(), False)
-        # log_capture(funcdate.yesterday(), True)
+        # log_capture(funcdatn.get_yesterday_date(), True)
     except Exception as e:
         funcsys.ErrMessage(e)

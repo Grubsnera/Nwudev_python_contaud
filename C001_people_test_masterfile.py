@@ -5491,7 +5491,7 @@ def people_test_masterfile():
         SEC_DATE_TO >= Date('%TODAY%'))
     ;"""
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-    s_sql = s_sql.replace("%TODAY%", funcdate.yesterday())
+    s_sql = s_sql.replace("%TODAY%", funcdatn.get_yesterday_date())
     so_curs.execute(s_sql)
     so_conn.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)

@@ -87,7 +87,7 @@ LOGS
 if funcdatn.get_today_name() in "MonTueWedThuFriSatSun":
     import A002_log
     try:
-        A002_log.log_capture(funcdate.yesterday(), True)
+        A002_log.log_capture(funcdatn.get_yesterday_date(), True)
         if l_mail:
             funcmail.send_mail('std_success_nwu', 'NWUIAPython:Success:A002_log',
                           'NWUIAPython: Success: A002_log')

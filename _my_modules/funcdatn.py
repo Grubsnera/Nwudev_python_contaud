@@ -37,6 +37,8 @@ get_current_month_file(): Get the current month in YYYYMM format.
 get_current_year(): Return today's year as a string in YYYY format.
 get_current_year_begin(): Return the date for the first day of this year.
 get_current_year_end(): Return the date for the last day of this year.
+get_yesterday_date(): Return yesterday's date in YYYY-MM-DD format.
+get_yesterday_date_file(): Return yesterday's date in YYYYMMDD format.
 get_previous_month(): Return the previous month as a string in MM format.
 get_previous_month_begin(): Return the first day of the previous month in YYYY-MM-DD format.
 get_previous_month_end(): Return the last day of the previous month as a string in YYYY-MM-DD format.
@@ -158,7 +160,26 @@ def get_current_year_end():
     return first_day_of_year
 
 
-from datetime import date, timedelta
+def get_yesterday_date():
+    """
+    YESTERDAY date ex: 2019-09-06
+    :return: str: YYYY-MM-DD
+    """
+    # Compute yesterday's date only once
+    yesterday_date = date.today() - timedelta(days=1)
+    # Return the date as a string in the format YYYY-MM-DD
+    return yesterday_date.strftime("%Y-%m-%d")
+
+
+def get_yesterday_date_file():
+    """
+    YESTERDAY date ex: 20190906
+    :return: str: YYYYMMDD
+    """
+    # Compute yesterday's date only once
+    yesterday_date = date.today() - timedelta(days=1)
+    # Return the date as a string in the format YYYY-MM-DD
+    return yesterday_date.strftime("%Y%m%d")
 
 
 def get_previous_month():
@@ -241,6 +262,8 @@ if __name__ == '__main__':
     print(get_current_year())
     print(get_current_year_begin())
     print(get_current_year_end())
+    print(get_yesterday_date())
+    print(get_yesterday_date_file())
     print(get_previous_month())
     print(get_previous_month_begin())
     print(get_previous_month_end())

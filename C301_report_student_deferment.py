@@ -194,8 +194,8 @@ def studdeb_deferments(s_period="curr"):
       DEFER.ENDDATE <= Date('%YEARE%')
     """
     if s_period == "curr":
-        s_sql = s_sql.replace("%YEARB%", funcdate.cur_yearbegin())
-        s_sql = s_sql.replace("%YEARE%", funcdate.cur_yearend())
+        s_sql = s_sql.replace("%YEARB%", funcdatn.get_current_year_begin())
+        s_sql = s_sql.replace("%YEARE%", funcdatn.get_current_year_end())
     elif s_period == "prev":
         s_sql = s_sql.replace("%YEARB%", funcdate.prev_yearbegin())
         s_sql = s_sql.replace("%YEARE%", funcdate.prev_yearend())
@@ -578,7 +578,7 @@ def studdeb_deferments(s_period="curr"):
         ELSE 8
     END;"""
     if s_period == "curr":
-        s_sql = s_sql.replace("%YEARE%", funcdate.cur_yearend())
+        s_sql = s_sql.replace("%YEARE%", funcdatn.get_current_year_end())
     elif s_period == "prev":
         s_sql = s_sql.replace("%YEARE%", funcdate.prev_yearend())
     else:

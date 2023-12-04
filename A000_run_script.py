@@ -84,11 +84,11 @@ def run_scripts(s_script: str = "a003", s_parameter1: str = "", s_parameter2: st
         import A002_log
         try:
             if s_script == 'a002' and s_parameter1[0:1] == 'y':
-                A002_log.log_capture(funcdate.yesterday(), True)
+                A002_log.log_capture(funcdatn.get_yesterday_date(), True)
             elif s_script == 'all':
-                A002_log.log_capture(funcdate.yesterday(), True)
+                A002_log.log_capture(funcdatn.get_yesterday_date(), True)
             elif s_script == 'general':
-                A002_log.log_capture(funcdate.yesterday(), True)
+                A002_log.log_capture(funcdatn.get_yesterday_date(), True)
             else:
                 A002_log.log_capture(funcdatn.get_today_date(), False)
             l_return = True

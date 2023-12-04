@@ -108,8 +108,8 @@ ORDER BY
 s_sql_prev = s_sql
 
 so_curs.execute("DROP TABLE IF EXISTS X103_PER_ABSENCE_ATTENDANCES_CURR")
-s_sql = s_sql.replace("%CYEARB%",funcdate.cur_yearbegin())
-s_sql = s_sql.replace("%CYEARE%",funcdate.cur_yearend())
+s_sql = s_sql.replace("%CYEARB%",funcdatn.get_current_year_begin())
+s_sql = s_sql.replace("%CYEARE%",funcdatn.get_current_year_end())
 so_curs.execute(s_sql)
 so_conn.commit()
 

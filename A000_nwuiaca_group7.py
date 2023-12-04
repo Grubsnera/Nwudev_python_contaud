@@ -47,7 +47,7 @@ def group7_functions():
         s_function: str = "A002_log"
         if funcdatn.get_today_name() in "MonTueWedThuFriSatSun":
             try:
-                A002_log.log_capture(funcdate.yesterday(), True)
+                A002_log.log_capture(funcdatn.get_yesterday_date(), True)
                 # pass
             except Exception as e:
                 funcsys.ErrMessage(e)

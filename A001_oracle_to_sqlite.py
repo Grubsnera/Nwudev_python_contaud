@@ -310,9 +310,9 @@ def oracle_to_sqlite(s_table="000b_Table - temp.csv", s_tables="TEMP"):
                 if "%CYEAR%" in tb_whe:
                     tb_whe = tb_whe.replace("%CYEAR%", funcdatn.get_current_year())
                 if "%CYEARB%" in tb_whe:
-                    tb_whe = tb_whe.replace("%CYEARB%", funcdate.cur_yearbegin())
+                    tb_whe = tb_whe.replace("%CYEARB%", funcdatn.get_current_year_begin())
                 if "%CYEARE%" in tb_whe:
-                    tb_whe = tb_whe.replace("%CYEARE%", funcdate.cur_yearend())
+                    tb_whe = tb_whe.replace("%CYEARE%", funcdatn.get_current_year_end())
                 if "%CMONTHB%" in tb_whe:
                     tb_whe = tb_whe.replace("%CMONTHB%", funcdate.cur_monthbegin())
                 if "%CMONTHE%" in tb_whe:

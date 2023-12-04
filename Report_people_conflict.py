@@ -207,8 +207,8 @@ WHERE
   X000_ALL_DECLARATIONS.DECLARATION_DATE >= Date("%CYEARB%") AND
   X000_ALL_DECLARATIONS.DECLARATION_DATE <= Date("%CYEARE%")
 """
-s_sql = s_sql.replace("%CYEARB%",funcdate.cur_yearbegin())
-s_sql = s_sql.replace("%CYEARE%",funcdate.cur_yearend())
+s_sql = s_sql.replace("%CYEARB%",funcdatn.get_current_year_begin())
+s_sql = s_sql.replace("%CYEARE%",funcdatn.get_current_year_end())
 so_curs.execute("DROP TABLE IF EXISTS X001_DECLARATIONS_CURR")
 so_curs.execute(s_sql)
 

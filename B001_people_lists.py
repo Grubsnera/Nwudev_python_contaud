@@ -947,8 +947,8 @@ def people_lists():
       PER_ALL_ASSIGNMENTS_F.EFFECTIVE_START_DATE <= Date('%CYEARB%'))
     """
     so_curs.execute("DROP VIEW IF EXISTS X000_ASSIGNMENTS")
-    s_sql = s_sql.replace("%CYEARB%", funcdate.cur_yearbegin())
-    s_sql = s_sql.replace("%CYEARE%", funcdate.cur_yearend())
+    s_sql = s_sql.replace("%CYEARB%", funcdatn.get_current_year_begin())
+    s_sql = s_sql.replace("%CYEARE%", funcdatn.get_current_year_end())
     so_curs.execute("DROP VIEW IF EXISTS X000_PER_ALL_ASSIGNMENTS")
     so_curs.execute(s_sql)
     so_conn.commit()
@@ -1063,8 +1063,8 @@ def people_lists():
         (SEC.SEC_DATE_TO >= Date('%CYEARE%') AND
         SEC.SEC_DATE_FROM <= Date('%CYEARB%'))
     """
-    s_sql = s_sql.replace("%CYEARB%", funcdate.cur_yearbegin())
-    s_sql = s_sql.replace("%CYEARE%", funcdate.cur_yearend())
+    s_sql = s_sql.replace("%CYEARB%", funcdatn.get_current_year_begin())
+    s_sql = s_sql.replace("%CYEARE%", funcdatn.get_current_year_end())
     so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
     so_curs.execute(s_sql)
     so_conn.commit()
@@ -1765,7 +1765,7 @@ def people_lists():
         funcsms.send_telegram("", "administrator", "<b>" + str(i_count) + "</b> Active employees method 2")
 
     # Build current year assignment round 1 ******************************************
-    funcpeople.assign01(so_conn, "X001_ASSIGNMENT_CURR_01", funcdate.cur_yearbegin(), funcdate.cur_yearend(),
+    funcpeople.assign01(so_conn, "X001_ASSIGNMENT_CURR_01", funcdatn.get_current_year_begin(), funcdatn.get_current_year_end(),
                         funcdatn.get_today_date(), "Build current year assignments 1...")
     # Build current year assignment round 2 ******************************************
     funcpeople.assign02(so_conn, "X001_ASSIGNMENT_CURR", "X001_ASSIGNMENT_CURR_01",

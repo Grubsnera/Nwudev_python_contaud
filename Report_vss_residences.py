@@ -140,8 +140,8 @@ WHERE
 ORDER BY
   RESIDENCEID
 """
-s_sql = s_sql.replace("%CYEARB%",funcdate.cur_yearbegin())
-s_sql = s_sql.replace("%CYEARE%",funcdate.cur_yearend())
+s_sql = s_sql.replace("%CYEARB%",funcdatn.get_current_year_begin())
+s_sql = s_sql.replace("%CYEARE%",funcdatn.get_current_year_end())
 so_curs.execute("DROP TABLE IF EXISTS X001_Active_residence")
 so_curs.execute(s_sql)
 so_conn.commit()
@@ -245,8 +245,8 @@ WHERE
   (TRANSINST.STARTDATE <= Date("%CYEARB%") AND
   TRANSINST.ENDDATE >= Date("%CYEARE%"))
 """
-s_sql = s_sql.replace("%CYEARB%",funcdate.cur_yearbegin())
-s_sql = s_sql.replace("%CYEARE%",funcdate.cur_yearend())
+s_sql = s_sql.replace("%CYEARB%",funcdatn.get_current_year_begin())
+s_sql = s_sql.replace("%CYEARE%",funcdatn.get_current_year_end())
 so_curs.execute("DROP TABLE IF EXISTS X002_Current_rate")
 so_curs.execute(s_sql)
 so_conn.commit()
@@ -356,8 +356,8 @@ ORDER BY
   STUDENT,
   ACCOMMRESIDENCY.AUDITDATETIME
 """
-s_sql = s_sql.replace("%CYEARB%",funcdate.cur_yearbegin())
-s_sql = s_sql.replace("%CYEARE%",funcdate.cur_yearend())
+s_sql = s_sql.replace("%CYEARB%",funcdatn.get_current_year_begin())
+s_sql = s_sql.replace("%CYEARE%",funcdatn.get_current_year_end())
 so_curs.execute("DROP TABLE IF EXISTS X003_Current_accom_log")
 so_curs.execute(s_sql)
 so_conn.commit()

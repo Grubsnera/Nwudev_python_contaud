@@ -279,8 +279,8 @@ def people_test_conflict():
     ;"""
     sqlite_cursor.execute("DROP TABLE IF EXISTS " + sr_file)
     s_sqlp = s_sql
-    s_sql = s_sql.replace("%CYEARB%", funcdate.cur_yearbegin())
-    s_sql = s_sql.replace("%CYEARE%", funcdate.cur_yearend())
+    s_sql = s_sql.replace("%CYEARB%", funcdatn.get_current_year_begin())
+    s_sql = s_sql.replace("%CYEARE%", funcdatn.get_current_year_end())
     sqlite_cursor.execute(s_sql)
     sqlite_connection.commit()
     funcfile.writelog("%t BUILD TABLE: " + sr_file)
