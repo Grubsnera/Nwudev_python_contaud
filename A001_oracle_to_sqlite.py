@@ -154,7 +154,7 @@ def oracle_to_sqlite(s_table="000b_Table - temp.csv", s_tables="TEMP"):
                     elif row[7] == funcdatn.get_today_name():
                         # Do if table schedule = day of week
                         tb_extract = True
-                    elif row[7] == funcdate.cur_daystrip():
+                    elif row[7] == funcdatn.get_today_day_strip():
                         # Do if table schedule = day of month
                         tb_extract = True                    
                     else:
