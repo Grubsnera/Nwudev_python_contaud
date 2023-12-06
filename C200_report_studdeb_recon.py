@@ -78,7 +78,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     so_path: str = "W:/Kfs_vss_studdeb/"  # Source database path
     if s_period == "curr":
         s_year: str = funcdatn.get_current_year()
-        s_prev_year = funcdatn.get_previous_year()
+        s_prev_year = "prev"
         so_file: str = "Kfs_vss_studdeb.sqlite"  # Source database
     elif s_period == "prev":
         s_year = funcdatn.get_previous_year()
@@ -961,31 +961,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
     funcfile.writelog("%t EXPORT DATA: "+sx_path+sx_file)
 
     # CALCULATE CLOSING BALANCES ***************************************************
-    if s_period == "curr":
-        print("Sum vss student closing balances per campus...")
-        sr_file = "X002da_vss_student_balance_clos"
-        s_sql = "Create Table " + sr_file + " As " + """
-        Select
-            Case
-                WHEN FDEBTCOLLECTIONSITE = '-9' THEN 'Mahikeng'
-                WHEN FDEBTCOLLECTIONSITE = '-2' THEN 'Vanderbijlpark'
-                ELSE 'Potchefstroom'    
-            End AS CAMPUS,
-            TRAN.FBUSENTID AS STUDENT,  
-            Cast(Round(Total(TRAN.AMOUNT),2) AS REAL) AS BALANCE
-        From
-            VSSOLDD.X010_Studytrans TRAN
-        WHERE
-            TRAN.TRANSCODE != ""
-        GROUP BY
-            TRAN.FBUSENTID,
-            TRAN.FDEBTCOLLECTIONSITE
-        ;"""
-        so_curs.execute("DROP TABLE IF EXISTS " + sr_file)
-        so_curs.execute(s_sql)
-        so_conn.commit()
-        funcfile.writelog("%t BUILD TABLE: " + sr_file)
-    elif s_period == "prev":
+    if s_period == "curr" or s_period == "prev":
         print("Sum vss student closing balances per campus...")
         sr_file = "X002da_vss_student_balance_clos"
         s_sql = "Create Table " + sr_file + " As " + """
