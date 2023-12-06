@@ -55,57 +55,84 @@ get_next_year_begin(): Return first day of next year as a string in YYYY-MM-DD f
 
 
 def get_today_date():
-    # Get today's date in YYYY-MM-DD format
+    """
+    Today's date.
+    :return: str: YYYY-MM-DD
+    """
     return date.today().strftime("%Y-%m-%d")
 
 
 def get_today_date_file():
-    # Get today's date in YYYY-MM-DD format
+    """
+    Today's date without special characters.
+    :return: str: YYYYMMDD
+    """
     return date.today().strftime("%Y%m%d")
 
 
 def get_today_name():
+    """
+    Today's weekday name. Example Mon, Tue, Wed ...
+    :return: str: Weekday
+    """
     # Get the current local datetime
     today = datetime.now()
     return today.strftime('%a')
 
 
 def get_today_day():
-    """Return today's day as a string in DD format, e.g., '01' for the first day of the month."""
+    """
+    Today's day. Example 01.
+    :return: str: DD
+    """
     return date.today().strftime("%d")
 
 
 def get_today_day_strip():
-    """Return today's day as a string in 'D' format, e.g., '1' for the first day of the month."""
+    """
+    Today's day. Example 1.
+    :return: str: D
+    """
     return str(date.today().day)
 
 
 def get_today_plusdays(i_days=14):
+    """
+    Today plus a number of days.
+    :param i_days: Number of days to add to today's date.
+    :return: str: YYYY-MM_DD
+    """
     future_date = datetime.today() + timedelta(days=i_days)
     return future_date.strftime("%Y-%m-%d")
 
 
 def get_current_month():
-    """Return today's month as a string in MM format, e.g., '01' for the January."""
+    """
+    The current month. Example 01.
+    :return: str: MM
+    """
     return date.today().strftime("%m")
 
 
 def get_current_month_begin():
-    """Return the first day of the current month in YYYY-MM-DD format. Example 2023-04-01"""
+    """
+    The first day of the current month.
+    :return: str: YYYY-MM-DD
+    """
     today = datetime.today()
     first_day_of_month = datetime(today.year, today.month, 1)
     return first_day_of_month.strftime("%Y-%m-%d")
 
 
 def get_current_month_end():
-    """Return the last day of the current month in YYYY-MM-DD format. Example 2023-04-30"""
-    # Get the current date
+    """
+    The last day of the current month.
+    :return: str: YYYY-MM-DD
+    """
     today = datetime.now()
     year = today.year
     month = today.month
-    # Find the last day of the month
     last_day = calendar.monthrange(year, month)[1]
-    # Return the YYYY-MM-DD formatted date string
     return f"{year}-{month:02d}-{last_day}"
 
 
@@ -113,8 +140,9 @@ def get_current_month_end_next(cutoff_days: int = 7):
     """
     Function to return the end of this month or the next month.
     :param cutoff_days: Cutoff days
-    :return: YYYY-MM-DD
+    :return: str: YYYY-MM-DD
     """
+
     """
     In essence, this function allows you to determine when the cutoff is for the end of the month, taking into
     account a buffer of a certain number of days specified by cutoff_days. If today’s date is within cutoff_days
@@ -148,22 +176,38 @@ def get_current_month_end_next(cutoff_days: int = 7):
 
 
 def get_current_month_file():
+    """
+    The current year and month without special characters.
+    :return: str: YYYYMM
+    """
     # Get the current month in YYYYMM format
     return date.today().strftime("%Y%m")
 
 
 def get_current_year():
+    """
+    The curent year.
+    :return: str: YYYY
+    """
     """Return today's year as a string in YYYY format, e.g., '2023' for 2023."""
     return date.today().strftime("%Y")
 
 
 def get_current_year_begin():
+    """
+    The first day of the current year.
+    :return: str: YYYY-MM-DD
+    """
     today = date.today()
     first_day_of_year = date(today.year, 1, 1)
     return first_day_of_year.strftime("%Y-%m-%d")
 
 
 def get_current_year_end():
+    """
+    The last day of the current year.
+    :return: str: YYYY-MM-DD
+    """
     today = date.today()
     first_day_of_year = date(today.year, 12, 31)
     return first_day_of_year.strftime("%Y-%m-%d")
@@ -171,28 +215,27 @@ def get_current_year_end():
 
 def get_yesterday_date():
     """
-    YESTERDAY date ex: 2019-09-06
+    Yesterday's date.
     :return: str: YYYY-MM-DD
     """
-    # Compute yesterday's date only once
     yesterday_date = date.today() - timedelta(days=1)
-    # Return the date as a string in the format YYYY-MM-DD
     return yesterday_date.strftime("%Y-%m-%d")
 
 
 def get_yesterday_date_file():
     """
-    YESTERDAY date ex: 20190906
+    Yesterday's date without special characters.
     :return: str: YYYYMMDD
     """
-    # Compute yesterday's date only once
     yesterday_date = date.today() - timedelta(days=1)
-    # Return the date as a string in the format YYYY-MM-DD
     return yesterday_date.strftime("%Y%m%d")
 
 
 def get_previous_month():
-    """Return the previous month as a string in MM format, e.g., '01' for January."""
+    """
+    The previous month. Example 01 for January.
+    :return: str: MM
+    """
     today = date.today()
     first_of_this_month = date(today.year, today.month, 1)
     last_day_of_previous_month = first_of_this_month - timedelta(days=1)
@@ -200,20 +243,22 @@ def get_previous_month():
 
 
 def get_previous_month_begin():
-    """Return the first day of the previous month in YYYY-MM-DD format."""
+    """
+    The first day of the previous month.
+    :return: str: YYYY-MM-DD
+    """
     today = datetime.today()
-    # Calculate the first day of the current month
     first_day_of_current_month = datetime(today.year, today.month, 1)
-    # Subtract one day to get to the last day of the previous month
     last_day_of_previous_month = first_day_of_current_month - timedelta(days=1)
-    # Now that we have the last day of the previous month, we can extract the year and month
-    # and create a new datetime object for the first day of that month
     first_day_of_previous_month = datetime(last_day_of_previous_month.year, last_day_of_previous_month.month, 1)
     return first_day_of_previous_month.strftime("%Y-%m-%d")
 
 
 def get_previous_month_end():
-    """Return the last day of the previous month as a string in YYYY-MM-DD format."""
+    """
+    The last day of the previous month.
+    :return: str: YYYY-MM-DD
+    """
     today = date.today()
     first_of_this_month = date(today.year, today.month, 1)
     last_day_of_previous_month = first_of_this_month - timedelta(days=1)
@@ -221,7 +266,10 @@ def get_previous_month_end():
 
 
 def get_previous_month_end_file():
-    """Return the last day of the previous month as a string in YYYYMMDD format."""
+    """
+    The last day of the previous month without special characters.
+    :return: str: YYYYMMDD
+    """
     today = date.today()
     first_of_this_month = date(today.year, today.month, 1)
     last_day_of_previous_month = first_of_this_month - timedelta(days=1)
@@ -229,7 +277,10 @@ def get_previous_month_end_file():
 
 
 def get_previous_month_file():
-    """Return the last day of the previous month as a string in YYYYMM format."""
+    """
+    The year and previous month without special characters.
+    :return: str: YYYYMM
+    """
     today = date.today()
     first_of_this_month = date(today.year, today.month, 1)
     last_day_of_previous_month = first_of_this_month - timedelta(days=1)
@@ -237,33 +288,48 @@ def get_previous_month_file():
 
 
 def get_previous_year():
-    """Return previous year as a string in YYYY format, e.g., '2022' for 2023."""
+    """
+    The previous year.
+    :return: str: YYYY
+    """
     last_year = date.today().year - 1
     return str(last_year)
 
 
 def get_previous_year_begin():
-    """Return the first day of the previous year as a string in YYYY-MM-DD format."""
+    """
+    The first day of the previous year.
+    :return: str: YYYY-MM-DD
+    """
     last_year = date.today().year - 1
     first_day_of_year = date(last_year, 1, 1)
     return first_day_of_year.strftime("%Y-%m-%d")
 
 
 def get_previous_year_end():
-    """Return the last day of the previous year as a string in YYYY-MM-DD format."""
+    """
+    The last day of the previous year.
+    :return: str: YYYY-MM-DD
+    """
     last_year = date.today().year - 1
     first_day_of_year = date(last_year, 12, 31)
     return first_day_of_year.strftime("%Y-%m-%d")
 
 
 def get_next_year():
-    """Return next year as a string in YYYY format."""
+    """
+    The next year.
+    :return: str: YYYY
+    """
     last_year = date.today().year + 1
     return str(last_year)
 
 
 def get_next_year_begin():
-    """Return the first day of the previous year as a string in YYYY-MM-DD format."""
+    """
+    The first day of next year.
+    :return: str: YYYY-MM-DD
+    """
     last_year = date.today().year + 1
     first_day_of_year = date(last_year, 1, 1)
     return first_day_of_year.strftime("%Y-%m-%d")
