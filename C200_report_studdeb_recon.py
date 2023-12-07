@@ -1594,7 +1594,7 @@ def report_studdeb_recon(dopenmaf: float = 0, dopenpot: float = 0, dopenvaa: flo
         sr_filet = sr_file
         sx_path = re_path + s_year + "/"
         sx_file = "Debtor_003_vss_gl_recon_"
-        sx_filet = sx_file + funcdatn.get_current_month_end_file()
+        sx_filet = sx_file + funcdatn.get_current_month_file()
         s_head = funccsv.get_colnames_sqlite(so_conn, sr_filet)
         funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_file, s_head)
         funccsv.write_data(so_conn, "main", sr_filet, sx_path, sx_filet, s_head)
