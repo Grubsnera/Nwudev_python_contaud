@@ -89,10 +89,12 @@ if l_debug:
 funcfile.writelog("BEGIN OF SCRIPT")
 
 """*****************************************************************************
-TEST ACTIVE CIPC DIRECTOR ACTIVE VENDOR NO DECLARATION
+TEST ACTIVE CIPC DIRECTOR LIST
 *****************************************************************************"""
 
 """ DESCRIPTION
+A test to distribute a list of all active CIPC directorships to employees FYI to take into account when
+declaring interests.
 """
 
 """ INDEX
@@ -103,10 +105,10 @@ TEST ACTIVE CIPC DIRECTOR ACTIVE VENDOR NO DECLARATION
 
 # DECLARE TEST VARIABLES
 count_findings_after: int = 0
-test_description = "Active CIPC director active vendor no declaration"
-test_file_name: str = "active_cipc_vendor_no_declaration"
-test_file_prefix: str = "X201a"
-test_finding: str = "ACTIVE CIPC DIRECTOR ACTIVE VENDOR NO DECLARATION"
+test_description = "Active CIPC director list"
+test_file_name: str = "active_cipc_director_list"
+test_file_prefix: str = "X200a"
+test_finding: str = "ACTIVE CIPC DIRECTOR LIST"
 test_report_file: str = "002_reported.txt"
 
 # OBTAIN TEST RUN FLAG
@@ -129,34 +131,24 @@ else:
     table_name = test_file_prefix + f"a_{test_file_name}"
     s_sql = f"CREATE TABLE {table_name} As " + """
     Select
-        m.nwu_number,
-        m.name_address,
-        m.company_name,
-        m.company_registration_number,
-        m.vendor_id,
-        m.vendor_name,
-        m.vendor_type,
-        m.vendor_match_type,
-        Case
-            When m.vendor_match_type = 1 Then 'On registration number'
-            When m.vendor_match_type = 2 Then 'CIPC name in vendor'
-            When m.vendor_match_type = 3 Then 'Vendor name in CIPC'
-            else 'Unknown'
-        End As vendor_match_description,
-        m.match_type As interest_match_type,
-        Case
-            When m.match_type = 1 Then 'On registration number'
-            When m.match_type = 2 Then 'CIPC name in interest'
-            else 'No match'
-        End As interest_match_description,
-        m.declaration_id,
-        m.interest_id,
-        m.entity_name,
-        m.regno_director,
-        m.entity_registration_number,
-        m.exclude_combination
+        d.nwu_number,
+        d.employee_name,
+        d.national_identifier,
+        d.user_person_type,
+        d.position_name,
+        d.date_submitted,
+        d.import_date,
+        d.registration_number,
+        d.company_name,
+        d.enterprise_type,
+        d.company_status,
+        d.history_date,
+        d.business_start_date,
+        d.directorship_status,
+        d.directorship_start_date,
+        d.nwu_number || '-' || d.registration_number As exclude_combination
     From
-        X200e_master_table m    
+        X004x_searchworks_directors d    
     ;"""
     if l_debug:
         # print(s_sql)
@@ -170,7 +162,7 @@ else:
     exclude_employee_company = funcstat.stat_tuple(sqlite_cursor,
                                          "KFS.X000_Own_kfs_lookups",
                                          "LOOKUP_CODE",
-                                         "LOOKUP='EXCLUDE EMPLOYEE COMPANY 34(5)'")
+                                         "LOOKUP='EXCLUDE EMPLOYEE COMPANY LIST'")
     if l_debug:
         print('List of employees and companies to exclude:')
         print(exclude_employee_company)
@@ -187,17 +179,13 @@ else:
     s_sql = f"CREATE TABLE {table_name} As " + f"""
     Select
         'NWU' As org,
-        f.vendor_type,
         f.nwu_number,
-        f.name_address,
-        f.company_registration_number,
-        f.company_name,
-        f.vendor_id,
-        f.vendor_match_description
+        f.registration_number,
+        f.employee_name,
+        f.company_name
     From
         {test_file_prefix}a_{test_file_name} f
     Where
-        f.interest_match_type = 0 And
         f.exclude_combination Not In {exclude_employee_company}
     ;"""
     if l_debug:
@@ -231,7 +219,7 @@ else:
         if l_debug:
             print("Join previously reported to current findings...")
         today = funcdatn.get_today_date()
-        next_test_date = funcdatn.get_current_month_end_next()
+        next_test_date = funcdatn.get_current_year_end()
         s_sql = f"CREATE TABLE {table_name} As" + f"""
         Select
             f.*,
@@ -246,8 +234,7 @@ else:
             {test_file_prefix}b_finding f Left Join
             Z001ab_setprev p On
             p.FIELD1 = f.nwu_number And
-            p.FIELD2 = f.company_registration_number And
-            p.FIELD3 = f.vendor_id
+            p.FIELD2 = f.registration_number
         ;"""
         if l_debug:
             # print(s_sql)
@@ -264,10 +251,10 @@ else:
         Select
             p.PROCESS,
             p.nwu_number AS FIELD1,
-            p.company_registration_number AS FIELD2,
-            p.vendor_id AS FIELD3,
-            p.name_address AS FIELD4,
-            p.company_name AS FIELD5,
+            p.registration_number AS FIELD2,
+            p.employee_name AS FIELD3,
+            p.company_name AS FIELD4,
+            '' AS FIELD5,
             p.DATE_REPORTED,
             p.DATE_RETEST,
             p.REMARK
@@ -290,7 +277,8 @@ else:
             # Read the header data
             s_head = funccsv.get_colnames_sqlite(sqlite_connection, table_name)
             # Write the data
-            if l_record:
+            l_record_temporary: bool = True
+            if l_record and l_record_temporary:
                 funccsv.write_data(sqlite_connection, "main", table_name, sx_path, sx_file, s_head, "a", ".txt")
                 funcfile.writelog("%t FINDING: " + str(count_findings_after) + " new finding(s) to export")
                 funcfile.writelog(f"%t EXPORT DATA: {table_name}")
@@ -321,21 +309,14 @@ else:
         s_sql = f"CREATE TABLE {table_name} As " + f"""
         Select
             p.org,
-            p.vendor_type,
-            p.company_registration_number,
-            p.company_name,
-            d.company_status,
-            p.vendor_match_description,
-            p.vendor_id,
-            k.VENDOR_NAME As vendor_name,
-            k.TRAN_COUNT As transaction_count,
-            k.NET_PMT_AMT As total_payment_amount,
-            k.LAST_PMT_DT As last_payment_date,
-            -- Employee                
-            p.nwu_number As emp_number,
-            e.name_address As emp_name,
+            'OTHER' As vendor_type,
+            p.nwu_number,
+            p.employee_name,
             e.user_person_type As emp_person_type,
             e.position_name As emp_position,
+            p.registration_number,
+            p.company_name,
+            d.company_status,
             Lower(e.email_address) As emp_mail1,
             p.nwu_number || '@nwu.ac.za' As emp_mail2,
             -- Supervisor
@@ -398,15 +379,14 @@ else:
             End As audit_supervisor_mail2
         From
             {test_file_prefix}d_addprev p Left Join
-            X004x_searchworks_directors d On d.nwu_number = p.nwu_number And d.registration_number = p.company_registration_number Left Join
+            X004x_searchworks_directors d On d.nwu_number = p.nwu_number And d.registration_number = p.registration_number Left Join
             PEOPLE.X000_PEOPLE e On e.employee_number = p.nwu_number Left Join
             PEOPLE.X000_PEOPLE s On s.employee_number = e.supervisor_number Left Join
             PEOPLE.X000_PEOPLE n On n.employee_number = s.supervisor_number Left Join
-            KFSCURR.X002aa_Report_payments_summary k On k.vendor_id = p.vendor_id Left join
-            Z001af_officer oc On oc.CAMPUS = p.vendor_type Left Join
+            Z001af_officer oc On oc.CAMPUS = 'OTHER' Left Join
             Z001af_officer oo On oo.CAMPUS = p.org Left Join
             Z001af_officer oa On oa.CAMPUS = 'AUD' Left Join
-            Z001ag_supervisor sc On sc.CAMPUS = p.vendor_type Left Join
+            Z001ag_supervisor sc On sc.CAMPUS = 'OTHER' Left Join
             Z001ag_supervisor so On so.CAMPUS = p.org Left Join
             Z001ag_supervisor sa On sa.CAMPUS = 'AUD'
         Where
@@ -426,24 +406,18 @@ else:
         s_sql = f"CREATE TABLE {table_name} As " + f"""
         Select
             '{test_finding}' As Audit_finding,
-            f.emp_number As Employee_nwu,
-            f.emp_name As Employee,
+            f.nwu_number || '-' || f.registration_number As Unique_id,
+            f.nwu_number As Employee_nwu,
+            f.employee_name As Employee,
             f.emp_person_type As Employee_person_type,
             f.emp_position As Employee_position,
             f.emp_mail1 As Employee_mail1,
             f.emp_mail2 As Employee_mail2,
             'Active' As CIPC_director,
-            f.company_registration_number As CIPC_regno,
+            f.registration_number As CIPC_regno,
             f.company_name As CIPC_company,
             f.company_status As CIPC_company_status,
             f.org As Organization,
-            f.vendor_match_description As Vendor_match_by,
-            f.vendor_type As NWU_Vendor_type,
-            f.vendor_id As NWU_vendor_id,
-            f.vendor_name As NWU_vendor,
-            f.transaction_count As Transaction_count,
-            f.total_payment_amount As Transaction_total_amount,
-            f.last_payment_date As Transaction_last_date,
             f.sup_name As Supervisor,
             f.sup2_name As Supervisor_next,
             f.campus_officer_name As Responsible_officer,
