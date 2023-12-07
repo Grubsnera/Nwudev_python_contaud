@@ -154,7 +154,6 @@ def get_current_month_end_next(cutoff_days: int = 7):
     today = date.today()
     year = today.year
     month = today.month
-    day = today.day
 
     # Calculate the last day of the current month
     last_day_of_month = calendar.monthrange(year, month)[1]
@@ -186,7 +185,7 @@ def get_current_month_file():
 
 def get_current_year():
     """
-    The curent year.
+    The current year.
     :return: str: YYYY
     """
     """Return today's year as a string in YYYY format, e.g., '2023' for 2023."""
