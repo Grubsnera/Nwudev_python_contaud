@@ -3180,7 +3180,7 @@ def people_test_conflict():
                 # Read the header data
                 s_head = funccsv.get_colnames_sqlite(sqlite_connection, table_name)
                 # Write the data
-                l_record_temporary: bool = False
+                l_record_temporary: bool = True
                 if l_record and l_record_temporary:
                     funccsv.write_data(sqlite_connection, "main", table_name, sx_path, sx_file, s_head, "a", ".txt")
                     funcfile.writelog("%t FINDING: " + str(count_findings_after) + " new finding(s) to export")
