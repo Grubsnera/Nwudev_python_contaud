@@ -71,6 +71,8 @@ funcfile.writelog("OPEN DATABASE: " + source_database)
 # ATTACH DATA SOURCES
 sqlite_cursor.execute("ATTACH DATABASE 'W:/People/People.sqlite' AS 'PEOPLE'")
 funcfile.writelog("%t ATTACH DATABASE: PEOPLE.SQLITE")
+sqlite_cursor.execute("ATTACH DATABASE 'W:/People_leave/People_leave.sqlite' AS 'LEAVE'")
+funcfile.writelog("%t ATTACH DATABASE: PAYROLL.SQLITE")
 sqlite_cursor.execute("ATTACH DATABASE 'W:/People_payroll/People_payroll.sqlite' AS 'PAYROLL'")
 funcfile.writelog("%t ATTACH DATABASE: PAYROLL.SQLITE")
 sqlite_cursor.execute("ATTACH DATABASE 'W:/Kfs/Kfs.sqlite' AS 'KFS'")
@@ -140,6 +142,7 @@ else:
         v.NET_PMT_AMT,
         v.APPROVE_EMP_NO,
         v.APPROVE_EMP_NAME,
+        v.APPROVE_DATE,
         p.oe_code,
         v.A_COUNT,
         v.ACC_COST_STRING,
@@ -269,6 +272,87 @@ else:
     sqlite_connection.commit()
     funcfile.writelog(f"%t BUILD TABLE: {table_name}")
 
+    # Build a list where an employee approved a transaction while on leave
+    if l_debug:
+        print("Fetch initial data from the master table...")
+    table_name = test_file_prefix + f"f_{test_file_name}"
+    s_sql = f"CREATE TABLE {table_name} As " + f"""
+    Select
+        v.EDOC,
+        v.VENDOR_ID,
+        v.VENDOR_NAME,
+        v.PMT_DT,
+        v.NET_PMT_AMT,
+        v.APPROVE_EMP_NO,
+        v.APPROVE_EMP_NAME,
+        v.APPROVE_DATE,
+        v.oe_code,
+        v.A_COUNT,
+        v.ACC_COST_STRING,
+        v.ORG_ID,
+        v.ORG_NM,
+        a.EMPLOYEE_NUMBER,
+        a.DATE_START,
+        a.DATE_END,
+        a.ABSENCE_DAYS,
+        a.LEAVE_TYPE,
+        a.REASON_DESCRIP
+    From
+        X001aa_single_supplier_single_user v Left join
+        LEAVE.X103_PER_ABSENCE_ATTENDANCES_CURR a On a.EMPLOYEE_NUMBER = v.APPROVE_EMP_NO And
+            v.APPROVE_DATE BETWEEN a.DATE_START AND a.DATE_END
+    ;"""
+    if l_debug:
+        # print(s_sql)
+        pass
+    sqlite_cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
+    funcfile.writelog(f"%t BUILD TABLE: {table_name}")
+
+    # Build a list where an employee approved a transaction while on leave
+    if l_debug:
+        print("Fetch initial data from the master table...")
+    table_name = test_file_prefix + f"g_{test_file_name}"
+    s_sql = f"CREATE TABLE {table_name} As " + f"""
+    Select
+        v.EDOC,
+        v.VENDOR_ID,
+        v.VENDOR_NAME,
+        v.PMT_DT,
+        v.NET_PMT_AMT,
+        v.APPROVE_EMP_NO,
+        v.APPROVE_EMP_NAME,
+        v.APPROVE_DATE,
+        v.oe_code,
+        v.A_COUNT,
+        v.ACC_COST_STRING,
+        v.ORG_ID,
+        v.ORG_NM,
+        v.EMPLOYEE_NUMBER,
+        v.DATE_START,
+        v.DATE_END,
+        Total(v.ABSENCE_DAYS) As Total_ABSENCE_DAYS,
+        v.LEAVE_TYPE,
+        v.REASON_DESCRIP
+    From
+        X001af_single_supplier_single_user v
+    Group By
+        v.EDOC,
+        v.VENDOR_ID,
+        v.APPROVE_EMP_NO,
+        v.APPROVE_DATE,
+        v.DATE_START,
+        v.DATE_END,
+        v.LEAVE_TYPE
+    ;"""
+    if l_debug:
+        # print(s_sql)
+        pass
+    sqlite_cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+    sqlite_cursor.execute(s_sql)
+    sqlite_connection.commit()
+    funcfile.writelog(f"%t BUILD TABLE: {table_name}")
 
 """*****************************************************************************
 END OF SCRIPT
