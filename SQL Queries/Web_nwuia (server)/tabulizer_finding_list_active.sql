@@ -3,7 +3,8 @@
         -- When assi.ia_assi_permission = {user_id}
         When assi.ia_assi_permission = 855
         Then Concat('Foreign - ', cate.ia_assicate_name, ' (', type.ia_assitype_name, ') ', assi.ia_assi_name, ' (', assi.ia_assi_auto, ')')
-        Else Concat('<a title="Assignment edit" href="index.php?option=com_rsform&view=rsform&formId=', assi.ia_assi_formedit, '&recordId=', assi.ia_assi_auto, '&recordHash=', assi.ia_assi_token, '&action=edit&category=', assi.ia_assicate_auto, '" target="_blank" rel="noopener nofollow noreferrer">', Concat(cate.ia_assicate_name, ' (', type.ia_assitype_name, ') ', assi.ia_assi_name, ' (', assi.ia_assi_auto, ')'), '</a>')
+        Else Concat(cate.ia_assicate_name, ' (', type.ia_assitype_name, ') ', assi.ia_assi_name, ' (', assi.ia_assi_auto, ')')
+        -- Else Concat('<a title="Assignment edit" href="index.php?option=com_rsform&view=rsform&formId=', assi.ia_assi_formedit, '&recordId=', assi.ia_assi_auto, '&recordHash=', assi.ia_assi_token, '&action=edit&category=', assi.ia_assicate_auto, '" target="_blank" rel="noopener nofollow noreferrer">', Concat(cate.ia_assicate_name, ' (', type.ia_assitype_name, ') ', assi.ia_assi_name, ' (', assi.ia_assi_auto, ')'), '</a>')
     End  As assignment,
     user.ia_user_name As owner,
     Case
