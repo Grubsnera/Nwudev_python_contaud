@@ -89,8 +89,8 @@ def main():
         scheduler.add_job(group3, 'cron', hour=16, minute=30)
         scheduler.add_job(group4, 'cron', hour=17, minute=0)
         scheduler.add_job(group4, 'cron', hour=17, minute=2)
-        scheduler.add_job(group5, 'cron', hour=17, minute=15)
-        scheduler.add_job(group5, 'cron', hour=17, minute=17)
+        scheduler.add_job(group5, 'cron', hour=20, minute=0)
+        scheduler.add_job(group5, 'cron', hour=20, minute=2)
 
         scheduler.start()
 

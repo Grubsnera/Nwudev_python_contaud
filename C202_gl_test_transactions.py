@@ -158,7 +158,7 @@ def gl_test_transactions():
     *****************************************************************************"""
 
     # Deactivated on 20240126 by Albert
-    l_run_professional_fee_student:bool = false
+    l_run_professional_fee_student:bool = False
     if not l_run_professional_fee_student:
 
         # TODO Delete table no longer used

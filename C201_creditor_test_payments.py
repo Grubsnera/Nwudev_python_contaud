@@ -1127,12 +1127,12 @@ def creditor_test_payments():
 
     # IMPORT OFFICERS FOR MAIL REPORTING PURPOSES
     if i_finding_before > 0 and i_finding_after > 0:
-        functest.get_officer(so_curs, "HR", "TEST " + s_finding + " OFFICER")
+        functest.get_officer(so_curs, "KFS", "TEST " + s_finding + " OFFICER")
         so_conn.commit()
 
     # IMPORT SUPERVISORS FOR MAIL REPORTING PURPOSES
     if i_finding_before > 0 and i_finding_after > 0:
-        functest.get_supervisor(so_curs, "HR", "TEST " + s_finding + " SUPERVISOR")
+        functest.get_supervisor(so_curs, "KFS", "TEST " + s_finding + " SUPERVISOR")
         so_conn.commit()
 
     # ADD CONTACT DETAILS TO FINDINGS
@@ -2033,7 +2033,7 @@ def creditor_test_payments():
     *****************************************************************************"""
 
     # Deactivated on 2024-01-26 Albert
-    l_run_quote_split: bool = false
+    l_run_quote_split: bool = False
     if not l_run_quote_split:
 
         # TODO Delete files from the database

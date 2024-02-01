@@ -79,6 +79,8 @@ sqlite_cursor.execute("ATTACH DATABASE 'W:/Kfs/Kfs.sqlite' AS 'KFS'")
 funcfile.writelog("%t ATTACH DATABASE: KFS.SQLITE")
 sqlite_cursor.execute("ATTACH DATABASE 'W:/Kfs/Kfs_curr.sqlite' AS 'KFSCURR'")
 funcfile.writelog("%t ATTACH DATABASE: KFS_CURR.SQLITE")
+sqlite_cursor.execute("ATTACH DATABASE 'W:/Kfs/Kfs_prev.sqlite' AS 'KFSPREV'")
+funcfile.writelog("%t ATTACH DATABASE: KFS_PREV.SQLITE")
 sqlite_cursor.execute("ATTACH DATABASE 'W:/Vss/Vss_curr.sqlite' AS 'VSSCURR'")
 funcfile.writelog("%t ATTACH DATABASE: VSS_CURR.SQLITE")
 
@@ -138,6 +140,7 @@ else:
         v.EDOC,
         v.VENDOR_ID,
         v.VENDOR_NAME,
+        v.VENDOR_TYPE,        
         v.PMT_DT,
         v.NET_PMT_AMT,
         v.APPROVE_EMP_NO,
@@ -149,10 +152,9 @@ else:
         SubStr(v.ACC_COST_STRING, 4, 7) As ORG_ID,
         a.ORG_NM
     From
-        KFSCURR.X001ac_Report_payments_approve v Left Join
+        KFSPREV.X001ac_Report_payments_approve v Left Join
         PEOPLE.X000_PEOPLE p On p.employee_number = v.APPROVE_EMP_NO Left Join
         KFS.X000_Account a On a.ACCOUNT_NBR = SubStr(v.ACC_COST_STRING, 4, 7) 
-        
     Where
         v.VENDOR_TYPE In ('DV', 'PO') And
         v.PMT_STAT_CD = 'EXTR' And
@@ -175,6 +177,7 @@ else:
     Select
         v.VENDOR_ID,
         v.VENDOR_NAME,
+        v.VENDOR_TYPE,
         v.ORG_ID,
         v.ORG_NM,
         v.APPROVE_EMP_NO,
@@ -205,6 +208,7 @@ else:
     Select
         v.VENDOR_ID,
         v.VENDOR_NAME,
+        v.VENDOR_TYPE,
         v.ORG_ID,
         v.ORG_NM,
         Count('count') As count_approver
@@ -232,6 +236,7 @@ else:
     Select
         v.VENDOR_ID,
         v.VENDOR_NAME,
+        v.VENDOR_TYPE,
         Count('count') As count_organization,
         Sum(v.count_approver) As count_approver
     From
@@ -255,6 +260,7 @@ else:
     Select
         v.VENDOR_ID,
         v.VENDOR_NAME,
+        v.VENDOR_TYPE,
         v.count_organization,
         v.count_approver,
         p.LAST_PMT_DT,
@@ -262,7 +268,7 @@ else:
         p.NET_PMT_AMT
     From
         X001ad_single_supplier_single_user v Left Join
-        KFSCURR.X002aa_Report_payments_summary p On p.VENDOR_ID = v.VENDOR_ID    
+        KFSPREV.X002aa_Report_payments_summary p On p.VENDOR_ID = v.VENDOR_ID    
     ;"""
     if l_debug:
         # print(s_sql)
